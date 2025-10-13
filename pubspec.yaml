@@ -1,0 +1,52 @@
+name: flutter_ui_template
+description: "Flutter UI模板项目 - 基于可可世界的UI设计"
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: "^3.7.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 基础图标
+  cupertino_icons: ^1.0.2
+
+  # 状态管理
+  provider: ^6.1.1
+  flutter_riverpod: ^2.4.9
+
+  # 国际化
+  intl: ^0.20.2
+  flutter_localizations:
+    sdk: flutter
+
+  # 屏幕适配
+  flutter_screenutil: ^5.9.0
+
+  # 动画
+  lottie: ^3.1.0
+  flutter_animate: ^4.5.0
+
+  # 图标库
+  phosphor_flutter: ^2.0.0
+
+  # Google字体
+  google_fonts: ^6.1.0
+
+  # 本地存储
+  shared_preferences: ^2.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/animations/
+    - assets/images/
