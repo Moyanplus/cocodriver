@@ -1,0 +1,279 @@
+{
+  "@@locale": "en",
+  "appTitle": "Flutter UI Template",
+  "@appTitle": {
+    "description": "Application title"
+  },
+  "welcomeTitle": "Welcome to Flutter UI Template",
+  "@welcomeTitle": {
+    "description": "Welcome title"
+  },
+  "welcomeSubtitle": "A UI template based on Cocoa World design",
+  "@welcomeSubtitle": {
+    "description": "Welcome subtitle"
+  },
+  "home": "Home",
+  "@home": {
+    "description": "Home tab"
+  },
+  "category": "Category",
+  "@category": {
+    "description": "Category tab"
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile tab"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings page title"
+  },
+  "themeSystem": "Theme System",
+  "@themeSystem": {
+    "description": "Theme system feature card title"
+  },
+  "themeSystemDesc": "Multiple beautiful themes",
+  "@themeSystemDesc": {
+    "description": "Theme system feature card description"
+  },
+  "navigationSystem": "Navigation System",
+  "@navigationSystem": {
+    "description": "Navigation system feature card title"
+  },
+  "navigationSystemDesc": "Smooth page transitions",
+  "@navigationSystemDesc": {
+    "description": "Navigation system feature card description"
+  },
+  "componentLibrary": "Component Library",
+  "@componentLibrary": {
+    "description": "Component library feature card title"
+  },
+  "componentLibraryDesc": "Rich UI components",
+  "@componentLibraryDesc": {
+    "description": "Component library feature card description"
+  },
+  "settingsPage": "Settings Page",
+  "@settingsPage": {
+    "description": "Settings page feature card title"
+  },
+  "settingsPageDesc": "Personalized configuration",
+  "@settingsPageDesc": {
+    "description": "Settings page feature card description"
+  },
+  "appearanceSettings": "Appearance Settings",
+  "@appearanceSettings": {
+    "description": "Appearance settings group title"
+  },
+  "themeManagement": "Theme Management",
+  "@themeManagement": {
+    "description": "Theme management setting item"
+  },
+  "themeManagementDesc": "Choose your favorite theme",
+  "@themeManagementDesc": {
+    "description": "Theme management setting item description"
+  },
+  "fontSize": "Font Size",
+  "@fontSize": {
+    "description": "Font size setting item"
+  },
+  "fontSizeDesc": "Adjust application font size",
+  "@fontSizeDesc": {
+    "description": "Font size setting item description"
+  },
+  "functionSettings": "Function Settings",
+  "@functionSettings": {
+    "description": "Function settings group title"
+  },
+  "notificationSettings": "Notification Settings",
+  "@notificationSettings": {
+    "description": "Notification settings item"
+  },
+  "notificationSettingsDesc": "Manage application notifications",
+  "@notificationSettingsDesc": {
+    "description": "Notification settings item description"
+  },
+  "privacySettings": "Privacy Settings",
+  "@privacySettings": {
+    "description": "Privacy settings item"
+  },
+  "privacySettingsDesc": "Manage privacy and security",
+  "@privacySettingsDesc": {
+    "description": "Privacy settings item description"
+  },
+  "downloadSettings": "Download Settings",
+  "@downloadSettings": {
+    "description": "Download settings item"
+  },
+  "downloadSettingsDesc": "Configure download options",
+  "@downloadSettingsDesc": {
+    "description": "Download settings item description"
+  },
+  "about": "About",
+  "@about": {
+    "description": "About group title"
+  },
+  "aboutApp": "About App",
+  "@aboutApp": {
+    "description": "About app setting item"
+  },
+  "aboutAppDesc": "View application information",
+  "@aboutAppDesc": {
+    "description": "About app setting item description"
+  },
+  "helpSupport": "Help & Support",
+  "@helpSupport": {
+    "description": "Help & support setting item"
+  },
+  "helpSupportDesc": "Get help and support",
+  "@helpSupportDesc": {
+    "description": "Help & support setting item description"
+  },
+  "feedback": "Feedback",
+  "@feedback": {
+    "description": "Feedback setting item"
+  },
+  "feedbackDesc": "Submit feedback and suggestions",
+  "@feedbackDesc": {
+    "description": "Feedback setting item description"
+  },
+  "advanced": "Advanced",
+  "@advanced": {
+    "description": "Advanced settings group title"
+  },
+  "clearCache": "Clear Cache",
+  "@clearCache": {
+    "description": "Clear cache setting item"
+  },
+  "clearCacheDesc": "Clean application cache data",
+  "@clearCacheDesc": {
+    "description": "Clear cache setting item description"
+  },
+  "resetSettings": "Reset Settings",
+  "@resetSettings": {
+    "description": "Reset settings item"
+  },
+  "resetSettingsDesc": "Restore default settings",
+  "@resetSettingsDesc": {
+    "description": "Reset settings item description"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Language setting item"
+  },
+  "languageDesc": "Choose application display language",
+  "@languageDesc": {
+    "description": "Language setting item description"
+  },
+  "chinese": "中文",
+  "@chinese": {
+    "description": "Chinese language option"
+  },
+  "english": "English",
+  "@english": {
+    "description": "English language option"
+  },
+  "notificationFeature": "Notification Feature",
+  "@notificationFeature": {
+    "description": "Notification feature prompt"
+  },
+  "clickedFeature": "Clicked {feature}",
+  "@clickedFeature": {
+    "description": "Feature click prompt",
+    "placeholders": {
+      "feature": {
+        "type": "String",
+        "description": "Feature name"
+      }
+    }
+  },
+  "featureInDevelopment": "{feature} feature is under development...",
+  "@featureInDevelopment": {
+    "description": "Feature under development prompt",
+    "placeholders": {
+      "feature": {
+        "type": "String",
+        "description": "Feature name"
+      }
+    }
+  },
+  "cacheCleared": "Cache cleared",
+  "@cacheCleared": {
+    "description": "Cache clear success prompt"
+  },
+  "settingsReset": "Settings reset",
+  "@settingsReset": {
+    "description": "Settings reset success prompt"
+  },
+  "clearCacheConfirm": "Are you sure you want to clear the application cache? This will delete all temporary data.",
+  "@clearCacheConfirm": {
+    "description": "Clear cache confirmation dialog content"
+  },
+  "resetSettingsConfirm": "Are you sure you want to reset all settings? This will restore the application's default configuration.",
+  "@resetSettingsConfirm": {
+    "description": "Reset settings confirmation dialog content"
+  },
+  "appDescription": "This is a Flutter UI template project based on Cocoa World design.",
+  "@appDescription": {
+    "description": "Application description"
+  },
+  "features": "Features:",
+  "@features": {
+    "description": "Features list title"
+  },
+  "featureThemes": "• Multiple beautiful themes",
+  "@featureThemes": {
+    "description": "Themes feature"
+  },
+  "featureResponsive": "• Responsive design",
+  "@featureResponsive": {
+    "description": "Responsive feature"
+  },
+  "featureNavigation": "• Smooth navigation",
+  "@featureNavigation": {
+    "description": "Navigation feature"
+  },
+  "featureComponents": "• Rich component library",
+  "@featureComponents": {
+    "description": "Component library feature"
+  },
+  "copyright": "© 2024 Flutter UI Template",
+  "@copyright": {
+    "description": "Copyright information"
+  },
+  "commonQuestions": "Common Questions:",
+  "@commonQuestions": {
+    "description": "Common questions title"
+  },
+  "questionTheme": "Q: How to change theme?",
+  "@questionTheme": {
+    "description": "Theme question"
+  },
+  "answerTheme": "A: Go to Settings > Theme Management, choose your favorite theme.",
+  "@answerTheme": {
+    "description": "Theme question answer"
+  },
+  "questionCustomize": "Q: How to customize interface?",
+  "@questionCustomize": {
+    "description": "Customize question"
+  },
+  "answerCustomize": "A: You can modify theme configuration and component styles in the source code.",
+  "@answerCustomize": {
+    "description": "Customize question answer"
+  },
+  "moreHelp": "For more help, please check the project documentation or submit an Issue.",
+  "@moreHelp": {
+    "description": "More help prompt"
+  },
+  "feedbackContent": "Thank you for using our app!\n\nIf you have any questions or suggestions, please contact us through the following ways:\n\n• Submit an Issue to the project repository\n• Send email feedback\n• Participate in community discussions\n\nYour feedback is important to us!",
+  "@feedbackContent": {
+    "description": "Feedback dialog content"
+  }
+}

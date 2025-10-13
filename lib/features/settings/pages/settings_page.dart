@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../l10n/app_localizations.dart';
+
+import '../../../core/utils/responsive_utils.dart';
+import '../../../core/utils/adaptive_utils.dart';
+import 'language_settings_page.dart';
 
 /// 设置页面
 class SettingsPage extends ConsumerStatefulWidget {
@@ -13,141 +19,155 @@ class SettingsPage extends ConsumerStatefulWidget {
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('设置'),
+        title: Text(l10n.settings),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
-      body: _buildPageContent(),
+      body: _buildPageContent(l10n),
     );
   }
 
-  Widget _buildPageContent() {
+  Widget _buildPageContent(AppLocalizations l10n) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: ResponsiveUtils.getResponsivePadding(all: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 外观设置
           _buildSection(
-            title: '外观设置',
+            title: l10n.appearanceSettings,
             icon: PhosphorIcons.palette(),
             children: [
               _buildSettingsTile(
                 icon: PhosphorIcons.palette(),
-                title: '主题管理',
-                subtitle: '选择您喜欢的主题',
+                title: l10n.themeManagement,
+                subtitle: l10n.themeManagementDesc,
                 onTap: () {
                   Navigator.of(context).pushNamed('/settings/theme');
                 },
               ),
               _buildSettingsTile(
                 icon: PhosphorIcons.textAa(),
-                title: '字体大小',
-                subtitle: '调整应用字体大小',
+                title: l10n.fontSize,
+                subtitle: l10n.fontSizeDesc,
                 onTap: () {
-                  _showFontSizeDialog();
+                  _showFontSizeDialog(l10n);
+                },
+              ),
+              _buildSettingsTile(
+                icon: PhosphorIcons.translate(),
+                title: l10n.language,
+                subtitle: l10n.languageDesc,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const LanguageSettingsPage(),
+                    ),
+                  );
                 },
               ),
             ],
           ),
 
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 功能设置
           _buildSection(
-            title: '功能设置',
+            title: l10n.functionSettings,
             icon: PhosphorIcons.gear(),
             children: [
               _buildSettingsTile(
                 icon: PhosphorIcons.bell(),
-                title: '通知设置',
-                subtitle: '管理应用通知',
+                title: l10n.notificationSettings,
+                subtitle: l10n.notificationSettingsDesc,
                 onTap: () {
-                  _showNotificationSettings();
+                  _showNotificationSettings(l10n);
                 },
               ),
               _buildSettingsTile(
                 icon: PhosphorIcons.lock(),
-                title: '隐私设置',
-                subtitle: '管理隐私和安全',
+                title: l10n.privacySettings,
+                subtitle: l10n.privacySettingsDesc,
                 onTap: () {
-                  _showPrivacySettings();
+                  _showPrivacySettings(l10n);
                 },
               ),
               _buildSettingsTile(
                 icon: PhosphorIcons.download(),
-                title: '下载设置',
-                subtitle: '配置下载选项',
+                title: l10n.downloadSettings,
+                subtitle: l10n.downloadSettingsDesc,
                 onTap: () {
-                  _showDownloadSettings();
+                  _showDownloadSettings(l10n);
                 },
               ),
             ],
           ),
 
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 关于设置
           _buildSection(
-            title: '关于',
+            title: l10n.about,
             icon: PhosphorIcons.info(),
             children: [
               _buildSettingsTile(
                 icon: PhosphorIcons.info(),
-                title: '关于应用',
-                subtitle: '查看应用信息',
+                title: l10n.aboutApp,
+                subtitle: l10n.aboutAppDesc,
                 onTap: () {
-                  _showAboutDialog();
+                  _showAboutDialog(l10n);
                 },
               ),
               _buildSettingsTile(
                 icon: PhosphorIcons.question(),
-                title: '帮助与支持',
-                subtitle: '获取帮助和支持',
+                title: l10n.helpSupport,
+                subtitle: l10n.helpSupportDesc,
                 onTap: () {
-                  _showHelpDialog();
+                  _showHelpDialog(l10n);
                 },
               ),
               _buildSettingsTile(
                 icon: PhosphorIcons.chatCircle(),
-                title: '意见反馈',
-                subtitle: '提交反馈和建议',
+                title: l10n.feedback,
+                subtitle: l10n.feedbackDesc,
                 onTap: () {
-                  _showFeedbackDialog();
+                  _showFeedbackDialog(l10n);
                 },
               ),
             ],
           ),
 
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 高级设置
           _buildSection(
-            title: '高级',
+            title: l10n.advanced,
             icon: PhosphorIcons.wrench(),
             children: [
               _buildSettingsTile(
                 icon: PhosphorIcons.trash(),
-                title: '清除缓存',
-                subtitle: '清理应用缓存数据',
+                title: l10n.clearCache,
+                subtitle: l10n.clearCacheDesc,
                 onTap: () {
-                  _showClearCacheDialog();
+                  _showClearCacheDialog(l10n);
                 },
               ),
               _buildSettingsTile(
                 icon: PhosphorIcons.arrowClockwise(),
-                title: '重置设置',
-                subtitle: '恢复默认设置',
+                title: l10n.resetSettings,
+                subtitle: l10n.resetSettingsDesc,
                 onTap: () {
-                  _showResetSettingsDialog();
+                  _showResetSettingsDialog(l10n);
                 },
               ),
             ],
           ),
 
-          const SizedBox(height: 80),
+          SizedBox(height: 80.h),
         ],
       ),
     );
@@ -163,19 +183,31 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       children: [
         Row(
           children: [
-            Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
-            const SizedBox(width: 8),
+            Icon(
+              icon,
+              color: Theme.of(context).colorScheme.primary,
+              size: ResponsiveUtils.getIconSize(20),
+            ),
+            SizedBox(width: 8.w),
             Text(
               title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.onSurface,
+                fontSize: ResponsiveUtils.getResponsiveFontSize(16),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        Card(child: Column(children: children)),
+        SizedBox(height: 12.h),
+        Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              ResponsiveUtils.getCardRadius(),
+            ),
+          ),
+          child: Column(children: children),
+        ),
       ],
     );
   }
@@ -187,199 +219,218 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     required VoidCallback onTap,
     Widget? trailing,
   }) {
-    return ListTile(
+    return AdaptiveUtils.adaptiveListTile(
       leading: CircleAvatar(
+        radius: ResponsiveUtils.getIconSize(16),
         backgroundColor: Theme.of(
           context,
         ).colorScheme.primary.withValues(alpha: 0.1),
-        child: Icon(icon, color: Theme.of(context).colorScheme.primary),
+        child: Icon(
+          icon,
+          color: Theme.of(context).colorScheme.primary,
+          size: ResponsiveUtils.getIconSize(16),
+        ),
       ),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: trailing ?? const Icon(Icons.arrow_forward_ios, size: 16),
+      title: Text(
+        title,
+        style: TextStyle(fontSize: ResponsiveUtils.getResponsiveFontSize(14)),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(fontSize: ResponsiveUtils.getResponsiveFontSize(12)),
+      ),
+      trailing:
+          trailing ??
+          Icon(Icons.arrow_forward_ios, size: ResponsiveUtils.getIconSize(16)),
       onTap: onTap,
     );
   }
 
-  void _showFontSizeDialog() {
+  void _showFontSizeDialog(AppLocalizations l10n) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('字体大小'),
-        content: const Text('字体大小设置功能正在开发中...'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('确定'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(l10n.fontSize),
+            content: Text(l10n.featureInDevelopment(l10n.fontSize)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.ok),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
-  void _showNotificationSettings() {
+  void _showNotificationSettings(AppLocalizations l10n) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('通知设置'),
-        content: const Text('通知设置功能正在开发中...'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('确定'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(l10n.notificationSettings),
+            content: Text(l10n.featureInDevelopment(l10n.notificationSettings)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.ok),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
-  void _showPrivacySettings() {
+  void _showPrivacySettings(AppLocalizations l10n) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('隐私设置'),
-        content: const Text('隐私设置功能正在开发中...'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('确定'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(l10n.privacySettings),
+            content: Text(l10n.featureInDevelopment(l10n.privacySettings)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.ok),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
-  void _showDownloadSettings() {
+  void _showDownloadSettings(AppLocalizations l10n) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('下载设置'),
-        content: const Text('下载设置功能正在开发中...'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('确定'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(l10n.downloadSettings),
+            content: Text(l10n.featureInDevelopment(l10n.downloadSettings)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.ok),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
-  void _showAboutDialog() {
+  void _showAboutDialog(AppLocalizations l10n) {
     showAboutDialog(
       context: context,
-      applicationName: 'Flutter UI模板',
+      applicationName: l10n.appTitle,
       applicationVersion: '1.0.0',
       applicationIcon: Icon(PhosphorIcons.squaresFour(), size: 48),
-      children: const [
-        Text('这是一个基于可可世界设计的Flutter UI模板项目。'),
-        SizedBox(height: 16),
-        Text('特性：'),
-        Text('• 多种精美主题'),
-        Text('• 响应式设计'),
-        Text('• 流畅的导航'),
-        Text('• 丰富的组件库'),
-        SizedBox(height: 16),
-        Text('© 2024 Flutter UI模板'),
+      children: [
+        Text(l10n.appDescription),
+        const SizedBox(height: 16),
+        Text(l10n.features),
+        Text(l10n.featureThemes),
+        Text(l10n.featureResponsive),
+        Text(l10n.featureNavigation),
+        Text(l10n.featureComponents),
+        const SizedBox(height: 16),
+        Text(l10n.copyright),
       ],
     );
   }
 
-  void _showHelpDialog() {
+  void _showHelpDialog(AppLocalizations l10n) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('帮助与支持'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('常见问题：'),
-            SizedBox(height: 8),
-            Text('Q: 如何更换主题？'),
-            Text('A: 进入设置 > 主题管理，选择您喜欢的主题。'),
-            SizedBox(height: 8),
-            Text('Q: 如何自定义界面？'),
-            Text('A: 您可以修改源代码中的主题配置和组件样式。'),
-            SizedBox(height: 8),
-            Text('如需更多帮助，请查看项目文档或提交Issue。'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('确定'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(l10n.helpSupport),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.commonQuestions),
+                const SizedBox(height: 8),
+                Text(l10n.questionTheme),
+                Text(l10n.answerTheme),
+                const SizedBox(height: 8),
+                Text(l10n.questionCustomize),
+                Text(l10n.answerCustomize),
+                const SizedBox(height: 8),
+                Text(l10n.moreHelp),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.ok),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
-  void _showFeedbackDialog() {
+  void _showFeedbackDialog(AppLocalizations l10n) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('意见反馈'),
-        content: const Text(
-          '感谢您的使用！\n\n如有问题或建议，请通过以下方式联系我们：\n\n• 提交Issue到项目仓库\n• 发送邮件反馈\n• 参与社区讨论\n\n您的反馈对我们很重要！',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('确定'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(l10n.feedback),
+            content: Text(l10n.feedbackContent),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.ok),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
-  void _showClearCacheDialog() {
+  void _showClearCacheDialog(AppLocalizations l10n) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('清除缓存'),
-        content: const Text('确定要清除应用缓存吗？这将删除所有临时数据。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(l10n.clearCache),
+            content: Text(l10n.clearCacheConfirm),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(l10n.cacheCleared)));
+                },
+                child: Text(l10n.ok),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('缓存已清除')));
-            },
-            child: const Text('确定'),
-          ),
-        ],
-      ),
     );
   }
 
-  void _showResetSettingsDialog() {
+  void _showResetSettingsDialog(AppLocalizations l10n) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('重置设置'),
-        content: const Text('确定要重置所有设置吗？这将恢复应用的默认配置。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(l10n.resetSettings),
+            content: Text(l10n.resetSettingsConfirm),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(l10n.settingsReset)));
+                },
+                child: Text(l10n.ok),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('设置已重置')));
-            },
-            child: const Text('确定'),
-          ),
-        ],
-      ),
     );
   }
 }

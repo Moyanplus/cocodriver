@@ -1,30 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
+import '../theme/theme_models.dart';
 import '../theme/theme_config_factory.dart';
-
-/// 主题类型枚举
-enum ThemeType {
-  system, // 跟随系统
-  light, // 浅色主题
-  dark, // 深色主题
-  // 高级主题
-  hawaiianNight, // 夏威夷夜晚
-  yuanShanQingDai, // 远山青黛
-  seaSaltCheese, // 海盐芝士
-  crabapple, // 海棠依旧
-  icelandSunrise, // 冰岛日出
-  lavender, // 薰衣草
-  forgetMeNot, // 勿忘草
-  daisy, // 雏菊
-  freshOrange, // 鲜橙
-  cherryBlossom, // 樱粉
-  rainbowBlue, // 虹蓝
-  springGreen, // 春绿
-  midsummer, // 盛夏
-  coolAutumn, // 凉秋
-  clearWinter, // 清冬
-}
 
 /// 主题服务
 class ThemeService {
@@ -198,21 +175,4 @@ class ThemeService {
 
   /// 获取所有主题类型列表
   List<ThemeType> getAllThemes() => ThemeType.values;
-}
-
-/// 主题信息类
-class ThemeInfo {
-  final String name;
-  final String description;
-  final IconData icon;
-  final Color color;
-  final bool isPremium;
-
-  ThemeInfo({
-    required this.name,
-    required this.description,
-    required this.icon,
-    required this.color,
-    this.isPremium = false,
-  });
 }

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../services/theme_service.dart';
-import 'app_colors.dart';
+import 'theme_models.dart';
 
 /// 主题配置工厂
 /// 负责创建和缓存主题配置，避免重复创建
@@ -147,28 +146,60 @@ class ThemeConfigFactory {
   /// 获取文字主题（带缓存）
   static TextTheme _getTextTheme(Brightness brightness) {
     if (brightness == Brightness.dark) {
-      return _darkTextTheme ??= GoogleFonts.interTextTheme(
-        ThemeData.dark().textTheme,
-      );
+      return _darkTextTheme ??= _createTextTheme(ThemeData.dark().textTheme);
     } else {
-      return _lightTextTheme ??= GoogleFonts.interTextTheme();
+      return _lightTextTheme ??= _createTextTheme(ThemeData.light().textTheme);
+    }
+  }
+
+  /// 创建文字主题，支持离线模式
+  static TextTheme _createTextTheme(TextTheme baseTheme) {
+    try {
+      // 尝试使用Google Fonts
+      return GoogleFonts.interTextTheme(baseTheme);
+    } catch (e) {
+      // 如果Google Fonts加载失败，使用系统默认字体
+      return baseTheme;
     }
   }
 
   /// 创建应用栏主题
   static AppBarTheme _createAppBarTheme(ColorScheme colorScheme) {
     return AppBarTheme(
-      titleTextStyle: GoogleFonts.inter(
+      titleTextStyle: _createTextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: colorScheme.onPrimary,
       ),
-      toolbarTextStyle: GoogleFonts.inter(
+      toolbarTextStyle: _createTextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: colorScheme.onPrimary,
       ),
     );
+  }
+
+  /// 创建文字样式，支持离线模式
+  static TextStyle _createTextStyle({
+    required double fontSize,
+    required FontWeight fontWeight,
+    required Color color,
+  }) {
+    try {
+      // 尝试使用Google Fonts
+      return GoogleFonts.inter(
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: color,
+      );
+    } catch (e) {
+      // 如果Google Fonts加载失败，使用系统默认字体
+      return TextStyle(
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: color,
+      );
+    }
   }
 
   /// 创建图标主题

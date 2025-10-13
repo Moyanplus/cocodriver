@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../core/providers/theme_provider.dart';
-import '../../../core/services/theme_service.dart';
+import '../../../core/theme/theme_models.dart';
+import '../../../core/navigation/navigation_providers.dart';
+import '../../../core/utils/responsive_utils.dart';
+import '../../../core/utils/adaptive_utils.dart';
 
 /// 应用侧边栏
 class AppDrawerWidget extends ConsumerStatefulWidget {
@@ -23,10 +26,10 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
           // 顶部用户信息区域
           Container(
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 20,
-              bottom: 20,
-              left: 20,
-              right: 20,
+              top: MediaQuery.of(context).padding.top + 20.h,
+              bottom: 20.h,
+              left: 20.w,
+              right: 20.w,
             ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -42,7 +45,7 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
               children: [
                 // 头像
                 _buildAvatar(context),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 // 用户信息
                 _buildUserInfo(context),
               ],
@@ -64,23 +67,23 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
         shape: BoxShape.circle,
         border: Border.all(
           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-          width: 3,
+          width: 3.w,
         ),
         boxShadow: [
           BoxShadow(
             color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 8.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
       child: CircleAvatar(
-        radius: 50,
+        radius: ResponsiveUtils.getIconSize(50),
         backgroundColor: Theme.of(context).colorScheme.surface,
         child: Text(
           'F',
           style: TextStyle(
-            fontSize: 30,
+            fontSize: ResponsiveUtils.getResponsiveFontSize(30),
             fontWeight: FontWeight.bold,
             color: Theme.of(context).colorScheme.primary,
           ),
@@ -98,15 +101,17 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
             color: Theme.of(context).colorScheme.onSurface,
+            fontSize: ResponsiveUtils.getResponsiveFontSize(16),
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         Text(
           'UI模板项目',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: Theme.of(
               context,
             ).colorScheme.onSurface.withValues(alpha: 0.7),
+            fontSize: ResponsiveUtils.getResponsiveFontSize(12),
           ),
         ),
       ],
@@ -194,14 +199,14 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
     required VoidCallback onTap,
     bool isSelected = false,
     Widget? trailing,
-  }) => ListTile(
+  }) => AdaptiveUtils.adaptiveListTile(
     leading: Icon(
       icon,
       color:
           isSelected
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.onSurface,
-      size: 24.0,
+      size: ResponsiveUtils.getIconSize(24),
     ),
     title: Text(
       title,
@@ -211,6 +216,7 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
             isSelected
                 ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).colorScheme.onSurface,
+        fontSize: ResponsiveUtils.getResponsiveFontSize(14),
       ),
     ),
     trailing: trailing,
@@ -220,7 +226,7 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
   /// 构建底部
   Widget _buildFooter(BuildContext context, WidgetRef ref) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: ResponsiveUtils.getResponsivePadding(all: 16),
       child: Row(
         children: [
           Icon(
@@ -228,15 +234,16 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
             color: Theme.of(
               context,
             ).colorScheme.onSurface.withValues(alpha: 0.7),
+            size: ResponsiveUtils.getIconSize(16),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Text(
             '版本 1.0.0',
             style: TextStyle(
               color: Theme.of(
                 context,
               ).colorScheme.onSurface.withValues(alpha: 0.7),
-              fontSize: 12,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(12),
             ),
           ),
           const Spacer(),
@@ -251,6 +258,7 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
                   color: Theme.of(
                     context,
                   ).colorScheme.onSurface.withValues(alpha: 0.8),
+                  size: ResponsiveUtils.getIconSize(20),
                 ),
                 onPressed: () async {
                   // 切换主题：浅色 <-> 深色

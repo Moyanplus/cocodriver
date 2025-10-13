@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../l10n/app_localizations.dart';
 
 import '../../../core/mixins/smart_keep_alive_mixin.dart';
+import '../../../core/utils/responsive_utils.dart';
 
 /// 首页
 class HomePage extends ConsumerStatefulWidget {
@@ -15,6 +18,8 @@ class _HomePageState extends ConsumerState<HomePage>
     with SmartKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: RefreshIndicator(
@@ -22,36 +27,41 @@ class _HomePageState extends ConsumerState<HomePage>
           // 模拟刷新
           await Future.delayed(const Duration(seconds: 1));
         },
-        child: _buildPageContent(),
+        child: _buildPageContent(l10n),
       ),
     );
   }
 
-  Widget _buildPageContent() {
+  Widget _buildPageContent(AppLocalizations l10n) {
     return CustomScrollView(
       physics: const ClampingScrollPhysics(),
       slivers: [
         // 欢迎标题
         SliverToBoxAdapter(
           child: Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: ResponsiveUtils.getResponsivePadding(
+              horizontal: 16,
+              vertical: 16,
+            ).copyWith(bottom: 8.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '欢迎使用Flutter UI模板',
+                  l10n.welcomeTitle,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(24),
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
-                  '这是一个基于可可世界设计的UI模板',
+                  l10n.welcomeSubtitle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(
                       context,
                     ).colorScheme.onSurface.withValues(alpha: 0.7),
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(14),
                   ),
                 ),
               ],
@@ -61,45 +71,49 @@ class _HomePageState extends ConsumerState<HomePage>
 
         // 功能卡片
         SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: ResponsiveUtils.getResponsivePadding(horizontal: 16),
           sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.5,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: ResponsiveUtils.getGridColumns(),
+              crossAxisSpacing: ResponsiveUtils.getSpacing(),
+              mainAxisSpacing: ResponsiveUtils.getSpacing(),
+              childAspectRatio: ResponsiveUtils.isMobile ? 1.5 : 1.8,
             ),
             delegate: SliverChildListDelegate([
               _buildFeatureCard(
                 icon: Icons.palette,
-                title: '主题系统',
-                subtitle: '多种精美主题',
+                title: l10n.themeSystem,
+                subtitle: l10n.themeSystemDesc,
                 color: Colors.blue,
+                l10n: l10n,
               ),
               _buildFeatureCard(
                 icon: Icons.navigation,
-                title: '导航系统',
-                subtitle: '流畅的页面切换',
+                title: l10n.navigationSystem,
+                subtitle: l10n.navigationSystemDesc,
                 color: Colors.green,
+                l10n: l10n,
               ),
               _buildFeatureCard(
                 icon: Icons.widgets,
-                title: '组件库',
-                subtitle: '丰富的UI组件',
+                title: l10n.componentLibrary,
+                subtitle: l10n.componentLibraryDesc,
                 color: Colors.orange,
+                l10n: l10n,
               ),
               _buildFeatureCard(
                 icon: Icons.settings,
-                title: '设置页面',
-                subtitle: '个性化配置',
+                title: l10n.settingsPage,
+                subtitle: l10n.settingsPageDesc,
                 color: Colors.purple,
+                l10n: l10n,
               ),
             ]),
           ),
         ),
 
         // 底部间距
-        const SliverToBoxAdapter(child: SizedBox(height: 80)),
+        SliverToBoxAdapter(child: SizedBox(height: 80.h)),
       ],
     );
   }
@@ -109,20 +123,26 @@ class _HomePageState extends ConsumerState<HomePage>
     required String title,
     required String subtitle,
     required Color color,
+    required AppLocalizations l10n,
   }) {
     return Card(
       elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ResponsiveUtils.getCardRadius()),
+      ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(ResponsiveUtils.getCardRadius()),
         onTap: () {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('点击了$title')));
+          ).showSnackBar(SnackBar(content: Text(l10n.clickedFeature(title))));
         },
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: ResponsiveUtils.getResponsivePadding(all: 16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(
+              ResponsiveUtils.getCardRadius(),
+            ),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -135,23 +155,34 @@ class _HomePageState extends ConsumerState<HomePage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 32, color: color),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
+              Icon(icon, size: ResponsiveUtils.getIconSize(28), color: color),
+              SizedBox(height: 6.h),
+              Flexible(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(14),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.7),
+              SizedBox(height: 2.h),
+              Flexible(
+                child: Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(12),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

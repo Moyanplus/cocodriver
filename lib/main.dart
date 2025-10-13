@@ -3,13 +3,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'core/providers/app_providers.dart';
-import 'core/providers/theme_provider.dart';
-import 'presentation/pages/main_screen_page.dart';
+import 'core/navigation/navigation_providers.dart';
+import 'core/providers/localization_providers.dart';
+import 'core/utils/memory_manager.dart';
+import 'core/utils/performance_monitor.dart';
+import 'core/di/injection_container.dart' as di;
+import 'features/app/pages/main_screen_page.dart';
 import 'features/settings/pages/settings_page.dart';
 import 'features/settings/pages/theme_settings_page.dart';
+import 'features/settings/pages/language_settings_page.dart';
+import 'l10n/app_localizations.dart';
 
-void main() {
+void main() async {
+  // 确保Flutter绑定系统已初始化
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 初始化依赖注入
+  await di.init();
+
+  // 启动性能监控
+  di.get<MemoryManager>().startMonitoring();
+  di.get<PerformanceMonitor>().startMonitoring();
+
   runApp(const AppProviders(child: MyApp()));
 }
 
@@ -24,8 +39,9 @@ class MyApp extends ConsumerStatefulWidget {
 class _MyAppState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
-    // 使用 Riverpod 获取主题数据
+    // 使用 Riverpod 获取主题数据和语言数据
     final themeData = ref.watch(themeDataProvider);
+    final currentLocale = ref.watch(currentLocaleProvider);
 
     return ScreenUtilInit(
       // 设计稿尺寸（使用 iPhone 14 Pro 的尺寸作为基准）
@@ -36,9 +52,10 @@ class _MyAppState extends ConsumerState<MyApp> {
         return MaterialApp(
           title: 'Flutter UI模板',
           theme: themeData,
-          locale: const Locale('zh'),
-          supportedLocales: const [Locale('zh'), Locale('en')],
+          locale: currentLocale,
+          supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: const [
+            AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
@@ -48,6 +65,7 @@ class _MyAppState extends ConsumerState<MyApp> {
           routes: {
             '/settings': (context) => const SettingsPage(),
             '/settings/theme': (context) => const ThemeSettingsPage(),
+            '/settings/language': (context) => const LanguageSettingsPage(),
           },
           builder:
               (context, child) => MediaQuery(

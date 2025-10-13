@@ -1,0 +1,279 @@
+{
+  "@@locale": "zh",
+  "appTitle": "Flutter UI模板",
+  "@appTitle": {
+    "description": "应用标题"
+  },
+  "welcomeTitle": "欢迎使用Flutter UI模板",
+  "@welcomeTitle": {
+    "description": "欢迎标题"
+  },
+  "welcomeSubtitle": "这是一个基于可可世界设计的UI模板",
+  "@welcomeSubtitle": {
+    "description": "欢迎副标题"
+  },
+  "home": "首页",
+  "@home": {
+    "description": "首页标签"
+  },
+  "category": "分类",
+  "@category": {
+    "description": "分类标签"
+  },
+  "profile": "我的",
+  "@profile": {
+    "description": "个人资料标签"
+  },
+  "settings": "设置",
+  "@settings": {
+    "description": "设置页面标题"
+  },
+  "themeSystem": "主题系统",
+  "@themeSystem": {
+    "description": "主题系统功能卡片标题"
+  },
+  "themeSystemDesc": "多种精美主题",
+  "@themeSystemDesc": {
+    "description": "主题系统功能卡片描述"
+  },
+  "navigationSystem": "导航系统",
+  "@navigationSystem": {
+    "description": "导航系统功能卡片标题"
+  },
+  "navigationSystemDesc": "流畅的页面切换",
+  "@navigationSystemDesc": {
+    "description": "导航系统功能卡片描述"
+  },
+  "componentLibrary": "组件库",
+  "@componentLibrary": {
+    "description": "组件库功能卡片标题"
+  },
+  "componentLibraryDesc": "丰富的UI组件",
+  "@componentLibraryDesc": {
+    "description": "组件库功能卡片描述"
+  },
+  "settingsPage": "设置页面",
+  "@settingsPage": {
+    "description": "设置页面功能卡片标题"
+  },
+  "settingsPageDesc": "个性化配置",
+  "@settingsPageDesc": {
+    "description": "设置页面功能卡片描述"
+  },
+  "appearanceSettings": "外观设置",
+  "@appearanceSettings": {
+    "description": "外观设置分组标题"
+  },
+  "themeManagement": "主题管理",
+  "@themeManagement": {
+    "description": "主题管理设置项"
+  },
+  "themeManagementDesc": "选择您喜欢的主题",
+  "@themeManagementDesc": {
+    "description": "主题管理设置项描述"
+  },
+  "fontSize": "字体大小",
+  "@fontSize": {
+    "description": "字体大小设置项"
+  },
+  "fontSizeDesc": "调整应用字体大小",
+  "@fontSizeDesc": {
+    "description": "字体大小设置项描述"
+  },
+  "functionSettings": "功能设置",
+  "@functionSettings": {
+    "description": "功能设置分组标题"
+  },
+  "notificationSettings": "通知设置",
+  "@notificationSettings": {
+    "description": "通知设置项"
+  },
+  "notificationSettingsDesc": "管理应用通知",
+  "@notificationSettingsDesc": {
+    "description": "通知设置项描述"
+  },
+  "privacySettings": "隐私设置",
+  "@privacySettings": {
+    "description": "隐私设置项"
+  },
+  "privacySettingsDesc": "管理隐私和安全",
+  "@privacySettingsDesc": {
+    "description": "隐私设置项描述"
+  },
+  "downloadSettings": "下载设置",
+  "@downloadSettings": {
+    "description": "下载设置项"
+  },
+  "downloadSettingsDesc": "配置下载选项",
+  "@downloadSettingsDesc": {
+    "description": "下载设置项描述"
+  },
+  "about": "关于",
+  "@about": {
+    "description": "关于分组标题"
+  },
+  "aboutApp": "关于应用",
+  "@aboutApp": {
+    "description": "关于应用设置项"
+  },
+  "aboutAppDesc": "查看应用信息",
+  "@aboutAppDesc": {
+    "description": "关于应用设置项描述"
+  },
+  "helpSupport": "帮助与支持",
+  "@helpSupport": {
+    "description": "帮助与支持设置项"
+  },
+  "helpSupportDesc": "获取帮助和支持",
+  "@helpSupportDesc": {
+    "description": "帮助与支持设置项描述"
+  },
+  "feedback": "意见反馈",
+  "@feedback": {
+    "description": "意见反馈设置项"
+  },
+  "feedbackDesc": "提交反馈和建议",
+  "@feedbackDesc": {
+    "description": "意见反馈设置项描述"
+  },
+  "advanced": "高级",
+  "@advanced": {
+    "description": "高级设置分组标题"
+  },
+  "clearCache": "清除缓存",
+  "@clearCache": {
+    "description": "清除缓存设置项"
+  },
+  "clearCacheDesc": "清理应用缓存数据",
+  "@clearCacheDesc": {
+    "description": "清除缓存设置项描述"
+  },
+  "resetSettings": "重置设置",
+  "@resetSettings": {
+    "description": "重置设置项"
+  },
+  "resetSettingsDesc": "恢复默认设置",
+  "@resetSettingsDesc": {
+    "description": "重置设置项描述"
+  },
+  "ok": "确定",
+  "@ok": {
+    "description": "确定按钮"
+  },
+  "cancel": "取消",
+  "@cancel": {
+    "description": "取消按钮"
+  },
+  "language": "语言",
+  "@language": {
+    "description": "语言设置项"
+  },
+  "languageDesc": "选择应用显示语言",
+  "@languageDesc": {
+    "description": "语言设置项描述"
+  },
+  "chinese": "中文",
+  "@chinese": {
+    "description": "中文语言选项"
+  },
+  "english": "English",
+  "@english": {
+    "description": "英文语言选项"
+  },
+  "notificationFeature": "通知功能",
+  "@notificationFeature": {
+    "description": "通知功能提示"
+  },
+  "clickedFeature": "点击了{feature}",
+  "@clickedFeature": {
+    "description": "功能点击提示",
+    "placeholders": {
+      "feature": {
+        "type": "String",
+        "description": "功能名称"
+      }
+    }
+  },
+  "featureInDevelopment": "{feature}功能正在开发中...",
+  "@featureInDevelopment": {
+    "description": "功能开发中提示",
+    "placeholders": {
+      "feature": {
+        "type": "String",
+        "description": "功能名称"
+      }
+    }
+  },
+  "cacheCleared": "缓存已清除",
+  "@cacheCleared": {
+    "description": "缓存清除成功提示"
+  },
+  "settingsReset": "设置已重置",
+  "@settingsReset": {
+    "description": "设置重置成功提示"
+  },
+  "clearCacheConfirm": "确定要清除应用缓存吗？这将删除所有临时数据。",
+  "@clearCacheConfirm": {
+    "description": "清除缓存确认对话框内容"
+  },
+  "resetSettingsConfirm": "确定要重置所有设置吗？这将恢复应用的默认配置。",
+  "@resetSettingsConfirm": {
+    "description": "重置设置确认对话框内容"
+  },
+  "appDescription": "这是一个基于可可世界设计的Flutter UI模板项目。",
+  "@appDescription": {
+    "description": "应用描述"
+  },
+  "features": "特性：",
+  "@features": {
+    "description": "特性列表标题"
+  },
+  "featureThemes": "• 多种精美主题",
+  "@featureThemes": {
+    "description": "主题特性"
+  },
+  "featureResponsive": "• 响应式设计",
+  "@featureResponsive": {
+    "description": "响应式特性"
+  },
+  "featureNavigation": "• 流畅的导航",
+  "@featureNavigation": {
+    "description": "导航特性"
+  },
+  "featureComponents": "• 丰富的组件库",
+  "@featureComponents": {
+    "description": "组件库特性"
+  },
+  "copyright": "© 2024 Flutter UI模板",
+  "@copyright": {
+    "description": "版权信息"
+  },
+  "commonQuestions": "常见问题：",
+  "@commonQuestions": {
+    "description": "常见问题标题"
+  },
+  "questionTheme": "Q: 如何更换主题？",
+  "@questionTheme": {
+    "description": "主题问题"
+  },
+  "answerTheme": "A: 进入设置 > 主题管理，选择您喜欢的主题。",
+  "@answerTheme": {
+    "description": "主题问题答案"
+  },
+  "questionCustomize": "Q: 如何自定义界面？",
+  "@questionCustomize": {
+    "description": "自定义问题"
+  },
+  "answerCustomize": "A: 您可以修改源代码中的主题配置和组件样式。",
+  "@answerCustomize": {
+    "description": "自定义问题答案"
+  },
+  "moreHelp": "如需更多帮助，请查看项目文档或提交Issue。",
+  "@moreHelp": {
+    "description": "更多帮助提示"
+  },
+  "feedbackContent": "感谢您的使用！\n\n如有问题或建议，请通过以下方式联系我们：\n\n• 提交Issue到项目仓库\n• 发送邮件反馈\n• 参与社区讨论\n\n您的反馈对我们很重要！",
+  "@feedbackContent": {
+    "description": "反馈对话框内容"
+  }
+}
