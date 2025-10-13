@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/mixins/smart_keep_alive_mixin.dart';
+import '../models/category_data.dart';
+
 /// 分类页面
 class CategoryPage extends ConsumerStatefulWidget {
   const CategoryPage({super.key});
@@ -10,53 +13,21 @@ class CategoryPage extends ConsumerStatefulWidget {
 }
 
 class _CategoryPageState extends ConsumerState<CategoryPage>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
-
-  // 模拟分类数据
-  final Map<String, List<Map<String, dynamic>>> _categories = {
-    '工具': [
-      {'name': '计算器', 'icon': Icons.calculate, 'color': Colors.blue},
-      {'name': '二维码', 'icon': Icons.qr_code, 'color': Colors.green},
-      {'name': '颜色选择', 'icon': Icons.color_lens, 'color': Colors.orange},
-      {'name': '单位转换', 'icon': Icons.swap_horiz, 'color': Colors.purple},
-    ],
-    '媒体': [
-      {'name': '图片压缩', 'icon': Icons.image, 'color': Colors.pink},
-      {'name': '音频转换', 'icon': Icons.audiotrack, 'color': Colors.teal},
-      {'name': '视频处理', 'icon': Icons.video_library, 'color': Colors.red},
-      {'name': '格式转换', 'icon': Icons.transform, 'color': Colors.indigo},
-    ],
-    '网络': [
-      {'name': '网络测速', 'icon': Icons.speed, 'color': Colors.cyan},
-      {'name': 'IP查询', 'icon': Icons.network_check, 'color': Colors.amber},
-      {'name': '端口扫描', 'icon': Icons.router, 'color': Colors.deepOrange},
-      {'name': 'Ping测试', 'icon': Icons.network_ping, 'color': Colors.lime},
-    ],
-    '生活': [
-      {'name': '天气查询', 'icon': Icons.wb_sunny, 'color': Colors.yellow},
-      {'name': '汇率转换', 'icon': Icons.attach_money, 'color': Colors.green},
-      {'name': '邮编查询', 'icon': Icons.location_on, 'color': Colors.blue},
-      {'name': '身份证查询', 'icon': Icons.badge, 'color': Colors.brown},
-    ],
-  };
-
+    with SmartKeepAliveClientMixin {
+  // 分类展开状态
   final Map<String, bool> _categoryExpanded = {};
 
   @override
   void initState() {
     super.initState();
     // 初始化所有分类为展开状态
-    for (final category in _categories.keys) {
+    for (final category in CategoryData.categoryNames) {
       _categoryExpanded[category] = true;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: RefreshIndicator(
@@ -76,10 +47,10 @@ class _CategoryPageState extends ConsumerState<CategoryPage>
         // 功能分类列表
         SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
-            final category = _categories.keys.elementAt(index);
-            final tools = _categories[category]!;
+            final category = CategoryData.categoryNames[index];
+            final tools = CategoryData.getToolsForCategory(category);
             return _buildCategorySection(category, tools);
-          }, childCount: _categories.length),
+          }, childCount: CategoryData.categoryNames.length),
         ),
 
         // 底部间距
@@ -89,10 +60,7 @@ class _CategoryPageState extends ConsumerState<CategoryPage>
   }
 
   /// 构建分类区域
-  Widget _buildCategorySection(
-    String category,
-    List<Map<String, dynamic>> tools,
-  ) {
+  Widget _buildCategorySection(String category, List<CategoryTool> tools) {
     final isExpanded = _categoryExpanded[category] ?? true;
     final int appCount = tools.length;
 
@@ -179,24 +147,25 @@ class _CategoryPageState extends ConsumerState<CategoryPage>
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
             alignment: Alignment.topCenter,
-            child: isExpanded
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            for (final tool in tools)
-                              _buildFunctionButton(tool),
-                          ],
-                        ),
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(),
+            child:
+                isExpanded
+                    ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final tool in tools)
+                                _buildFunctionButton(tool),
+                            ],
+                          ),
+                        ],
+                      ),
+                    )
+                    : const SizedBox.shrink(),
           ),
         ],
       ),
@@ -204,10 +173,7 @@ class _CategoryPageState extends ConsumerState<CategoryPage>
   }
 
   /// 构建功能按钮
-  Widget _buildFunctionButton(Map<String, dynamic> tool) {
-    final IconData functionIcon = tool['icon'] as IconData;
-    final Color color = tool['color'] as Color;
-
+  Widget _buildFunctionButton(CategoryTool tool) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -215,7 +181,7 @@ class _CategoryPageState extends ConsumerState<CategoryPage>
         onTap: () {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('点击了${tool['name']}')));
+          ).showSnackBar(SnackBar(content: Text('点击了${tool.name}')));
         },
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 1),
@@ -228,11 +194,11 @@ class _CategoryPageState extends ConsumerState<CategoryPage>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(functionIcon, size: 16, color: color),
+              Icon(tool.icon, size: 16, color: tool.color),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
-                  tool['name'] as String,
+                  tool.name,
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.normal,

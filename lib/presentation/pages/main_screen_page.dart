@@ -2,76 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-import '../../features/home/pages/home_page.dart';
-import '../../features/category/pages/category_page.dart';
-import '../../features/user/pages/user_profile_page.dart';
+import '../../core/providers/main_screen_providers.dart';
 import '../../shared/widgets/common/app_drawer_widget.dart';
-
-/// 主屏幕状态
-class MainScreenState {
-  final int currentIndex;
-  final PageController pageController;
-  final List<Widget> pages;
-
-  MainScreenState({
-    required this.currentIndex,
-    required this.pageController,
-    required this.pages,
-  });
-
-  MainScreenState copyWith({
-    int? currentIndex,
-    PageController? pageController,
-    List<Widget>? pages,
-  }) {
-    return MainScreenState(
-      currentIndex: currentIndex ?? this.currentIndex,
-      pageController: pageController ?? this.pageController,
-      pages: pages ?? this.pages,
-    );
-  }
-}
-
-/// 主屏幕提供者
-class MainScreenNotifier extends StateNotifier<MainScreenState> {
-  MainScreenNotifier()
-    : super(
-        MainScreenState(
-          currentIndex: 0,
-          pageController: PageController(initialPage: 0),
-          pages: const [HomePage(), CategoryPage(), UserProfilePage()],
-        ),
-      );
-
-  /// 切换页面
-  void switchPage(int index) {
-    if (index != state.currentIndex) {
-      state.pageController.animateToPage(
-        index,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-      state = state.copyWith(currentIndex: index);
-    }
-  }
-
-  /// 处理页面变化
-  void handlePageChange(int index, WidgetRef ref) {
-    switchPage(index);
-  }
-
-  @override
-  void dispose() {
-    state.pageController.dispose();
-    super.dispose();
-  }
-}
-
-/// 主屏幕提供者
-final mainScreenProvider =
-    StateNotifierProvider<MainScreenNotifier, MainScreenState>((ref) {
-      return MainScreenNotifier();
-    });
 
 /// 主屏幕组件
 class MainScreen extends ConsumerStatefulWidget {
@@ -84,21 +16,22 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   Widget build(BuildContext context) {
-    final mainScreenState = ref.watch(mainScreenProvider);
-    final mainScreenNotifier = ref.read(mainScreenProvider.notifier);
-    final currentIndex = mainScreenState.currentIndex;
+    final currentIndex = ref.watch(currentPageIndexProvider);
+    final pageController = ref.watch(pageControllerProvider);
+    final pages = ref.watch(pagesProvider);
+    final pageNavigation = ref.watch(pageNavigationProvider);
 
     return Scaffold(
       drawer: const AppDrawerWidget(),
       body: _buildBodyWithSliverAppBar(
-        mainScreenState,
-        mainScreenNotifier,
+        pageController,
+        pages,
         currentIndex,
+        pageNavigation,
       ),
       bottomNavigationBar: _buildBottomNavigationBar(
-        mainScreenState,
-        mainScreenNotifier,
         currentIndex,
+        pageNavigation,
       ),
       resizeToAvoidBottomInset: false,
     );
@@ -106,9 +39,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   /// 构建带有SliverAppBar的页面内容
   Widget _buildBodyWithSliverAppBar(
-    MainScreenState state,
-    MainScreenNotifier notifier,
+    PageController pageController,
+    List<Widget> pages,
     int currentIndex,
+    PageNavigation pageNavigation,
   ) => NestedScrollView(
     headerSliverBuilder:
         (context, innerBoxIsScrolled) => [
@@ -136,35 +70,38 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             ],
           ),
         ],
-    body: _buildPageContent(state, notifier, currentIndex),
+    body: _buildPageContent(
+      pageController,
+      pages,
+      currentIndex,
+      pageNavigation,
+    ),
   );
 
   /// 构建页面内容
   Widget _buildPageContent(
-    MainScreenState state,
-    MainScreenNotifier notifier,
+    PageController pageController,
+    List<Widget> pages,
     int currentIndex,
+    PageNavigation pageNavigation,
   ) => Center(
     child: ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 900),
       child: PageView(
-        controller: state.pageController,
+        controller: pageController,
         physics: const ClampingScrollPhysics(),
         onPageChanged: (index) {
-          setState(() {
-            notifier.switchPage(index);
-          });
+          pageNavigation.handlePageChange(index);
         },
-        children: state.pages,
+        children: pages,
       ),
     ),
   );
 
   /// 构建底部导航栏
   Widget _buildBottomNavigationBar(
-    MainScreenState state,
-    MainScreenNotifier notifier,
     int currentIndex,
+    PageNavigation pageNavigation,
   ) => SafeArea(
     bottom: false,
     child: Container(
@@ -172,7 +109,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       padding: const EdgeInsets.only(bottom: 0),
       child: NavigationBar(
         selectedIndex: currentIndex,
-        onDestinationSelected: (index) => notifier.handlePageChange(index, ref),
+        onDestinationSelected:
+            (index) => pageNavigation.handlePageChange(index),
         height: 56,
         destinations: [
           NavigationDestination(
