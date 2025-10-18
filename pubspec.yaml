@@ -1,5 +1,5 @@
-name: flutter_ui_template
-description: "Flutter UI模板项目 - 基于可可世界的UI设计"
+name: coco_cloud_drive
+description: "可可云盘 - 第三方聚合云盘客户端，支持百度网盘、阿里云盘、夸克云盘、蓝奏云盘等"
 publish_to: "none"
 
 version: 1.0.0+1
