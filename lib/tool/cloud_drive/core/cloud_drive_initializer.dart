@@ -1,4 +1,5 @@
 import 'cloud_drive_dependency_injection.dart';
+import '../../../../core/logging/log_manager.dart';
 
 /// 云盘模块初始化器
 class CloudDriveInitializer {
@@ -17,9 +18,18 @@ class CloudDriveInitializer {
       // 标记为已初始化
       _isInitialized = true;
 
-      print('✅ 云盘模块初始化成功');
+      LogManager().cloudDrive(
+        '云盘模块初始化成功',
+        className: 'CloudDriveInitializer',
+        methodName: 'initialize',
+      );
     } catch (e) {
-      print('❌ 云盘模块初始化失败: $e');
+      LogManager().error(
+        '云盘模块初始化失败: $e',
+        className: 'CloudDriveInitializer',
+        methodName: 'initialize',
+        exception: e,
+      );
       rethrow;
     }
   }
@@ -32,7 +42,11 @@ class CloudDriveInitializer {
     if (_isInitialized) {
       CloudDriveDIContainer.instance.reset();
       _isInitialized = false;
-      print('🔄 云盘模块已重置');
+      LogManager().cloudDrive(
+        '云盘模块已重置',
+        className: 'CloudDriveInitializer',
+        methodName: 'reset',
+      );
     }
   }
 }

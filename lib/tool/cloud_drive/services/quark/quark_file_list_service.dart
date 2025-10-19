@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import 'quark_base_service.dart';
 import 'quark_config.dart';
@@ -13,22 +13,14 @@ class QuarkFileListService {
     int page = 1,
     int pageSize = 50,
   }) async {
-    DebugService.log(
-      '📁 夸克云盘 - 获取文件列表开始',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('📁 夸克云盘 - 获取文件列表开始');
 
     try {
-      final dio = QuarkBaseService.createDio(account);
+      final dio = await QuarkBaseService.createDioWithAuth(account);
       final queryParams = _buildFileListParams(parentFileId, page, pageSize);
       final uri = _buildFileListUri(queryParams);
 
-      DebugService.log(
-        '🔗 请求URL: $uri',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔗 请求URL: $uri');
 
       final response = await dio.getUri(uri);
 
@@ -47,11 +39,7 @@ class QuarkFileListService {
 
       return _parseFileList(responseData, parentFileId);
     } catch (e) {
-      DebugService.log(
-        '❌ 夸克云盘 - 获取文件列表异常: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 获取文件列表异常: $e');
       rethrow;
     }
   }
@@ -103,11 +91,7 @@ class QuarkFileListService {
       }
     }
 
-    DebugService.log(
-      '✅ 夸克云盘 - 文件列表获取成功，共 ${fileList.length} 个文件',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('✅ 夸克云盘 - 文件列表获取成功，共 ${fileList.length} 个文件');
 
     return fileList;
   }
@@ -172,11 +156,7 @@ class QuarkFileListService {
         folderId: parentId,
       );
     } catch (e) {
-      DebugService.log(
-        '❌ 解析文件数据失败: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 解析文件数据失败: $e');
       return null;
     }
   }

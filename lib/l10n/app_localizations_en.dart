@@ -9,19 +9,17 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Flutter UI Template';
+  String get appTitle => 'Coco Cloud Drive';
 
   @override
-  String get welcomeTitle => 'Welcome to Flutter UI Template';
+  String get welcomeTitle => 'Welcome to Coco Cloud Drive';
 
   @override
-  String get welcomeSubtitle => 'A UI template based on Cocoa World design';
+  String get welcomeSubtitle =>
+      'Unified cloud drive management supporting Baidu, Aliyun, Quark and more';
 
   @override
   String get home => 'Home';
-
-  @override
-  String get category => 'Category';
 
   @override
   String get profile => 'Profile';
@@ -30,28 +28,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings => 'Settings';
 
   @override
-  String get themeSystem => 'Theme System';
+  String get themeSystem => 'Multi-Cloud Support';
 
   @override
-  String get themeSystemDesc => 'Multiple beautiful themes';
+  String get themeSystemDesc => 'Support Baidu, Aliyun and more';
 
   @override
-  String get navigationSystem => 'Navigation System';
+  String get navigationSystem => 'File Management';
 
   @override
-  String get navigationSystemDesc => 'Smooth page transitions';
+  String get navigationSystemDesc => 'Upload, download, share files';
 
   @override
-  String get componentLibrary => 'Component Library';
+  String get componentLibrary => 'Batch Operations';
 
   @override
-  String get componentLibraryDesc => 'Rich UI components';
+  String get componentLibraryDesc => 'Batch upload, download, move';
 
   @override
-  String get settingsPage => 'Settings Page';
+  String get settingsPage => 'Secure Storage';
 
   @override
-  String get settingsPageDesc => 'Personalized configuration';
+  String get settingsPageDesc => 'Encrypted storage, privacy protection';
 
   @override
   String get appearanceSettings => 'Appearance Settings';
@@ -172,25 +170,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appDescription =>
-      'This is a Flutter UI template project based on Cocoa World design.';
+      'Coco Cloud Drive is a third-party aggregated cloud drive client that supports unified management of multiple mainstream cloud drive services.';
 
   @override
   String get features => 'Features:';
 
   @override
-  String get featureThemes => '• Multiple beautiful themes';
+  String get featureThemes => '• Unified multi-cloud management';
 
   @override
-  String get featureResponsive => '• Responsive design';
+  String get featureResponsive => '• High-speed download and upload';
 
   @override
-  String get featureNavigation => '• Smooth navigation';
+  String get featureNavigation => '• File sharing features';
 
   @override
-  String get featureComponents => '• Rich component library';
+  String get featureComponents => '• Secure encrypted storage';
 
   @override
-  String get copyright => '© 2024 Flutter UI Template';
+  String get copyright => '© 2024 Coco Cloud Drive';
 
   @override
   String get commonQuestions => 'Common Questions:';

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
+import '../../../../core/logging/log_category.dart';
 import '../../models/cloud_drive_models.dart';
 import 'ali_config.dart';
 
@@ -9,6 +10,18 @@ import 'ali_config.dart';
 abstract class AliBaseService {
   /// 创建配置好的Dio实例
   static Dio createDio(CloudDriveAccount account) {
+    // 记录云盘服务初始化日志
+    LogManager().cloudDrive(
+      '创建阿里云盘Dio实例',
+      className: 'AliBaseService',
+      methodName: 'createDio',
+      data: {
+        'accountId': account.id,
+        'accountName': account.name,
+        'baseUrl': AliConfig.baseUrl,
+      },
+    );
+
     final dio = Dio(
       BaseOptions(
         baseUrl: AliConfig.baseUrl,
@@ -55,38 +68,44 @@ abstract class AliBaseService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          DebugService.log(
-            '📤 阿里云盘请求: ${options.method} ${options.uri}',
-            category: DebugCategory.tools,
-            subCategory: AliConfig.logSubCategory,
+          LogManager().network(
+            '阿里云盘请求: ${options.method} ${options.uri}',
+            className: 'AliBaseService',
+            methodName: 'onRequest',
+            data: {
+              'method': options.method,
+              'uri': options.uri.toString(),
+              'headers': options.headers,
+              'data': options.data?.toString(),
+            },
           );
-          DebugService.log(
-            '📤 请求头: ${options.headers}',
-            category: DebugCategory.tools,
-            subCategory: AliConfig.logSubCategory,
-          );
-          if (options.data != null) {
-            DebugService.log(
-              '📤 请求体: ${options.data}',
-              category: DebugCategory.tools,
-              subCategory: AliConfig.logSubCategory,
-            );
-          }
           handler.next(options);
         },
         onResponse: (response, handler) {
-          DebugService.log(
-            '📥 阿里云盘响应: ${response.statusCode} ${response.requestOptions.uri}',
-            category: DebugCategory.tools,
-            subCategory: AliConfig.logSubCategory,
+          LogManager().network(
+            '阿里云盘响应: ${response.statusCode} ${response.requestOptions.uri}',
+            className: 'AliBaseService',
+            methodName: 'onResponse',
+            data: {
+              'statusCode': response.statusCode,
+              'uri': response.requestOptions.uri.toString(),
+              'data': response.data?.toString(),
+            },
           );
           handler.next(response);
         },
         onError: (error, handler) {
-          DebugService.log(
-            '❌ 阿里云盘请求错误: ${error.message}',
-            category: DebugCategory.tools,
-            subCategory: AliConfig.logSubCategory,
+          LogManager().error(
+            '阿里云盘请求错误: ${error.message}',
+            category: LogCategory.network,
+            className: 'AliBaseService',
+            methodName: 'onError',
+            data: {
+              'errorType': error.type.toString(),
+              'message': error.message,
+              'uri': error.requestOptions.uri.toString(),
+            },
+            exception: error,
           );
           handler.next(error);
         },

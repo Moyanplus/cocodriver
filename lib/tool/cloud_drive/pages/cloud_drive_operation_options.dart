@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../core/services/base/debug_service.dart';
-import '../../../features/download/services/download_service.dart';
-import '../../../features/download/services/download_config_service.dart';
+import '../../../../core/logging/log_manager.dart';
+import '../../../../tool/download/services/download_service.dart';
+import '../../../../tool/download/services/download_config_service.dart';
 import '../models/cloud_drive_models.dart';
 import '../base/cloud_drive_operation_service.dart';
 import '../services/quark/quark_auth_service.dart';
@@ -54,11 +54,11 @@ class _CloudDriveOperationOptionsState
 
   @override
   Widget build(BuildContext context) {
-    DebugService.log('🎨 操作选项组件 - 构建开始');
-    DebugService.log(
+    LogManager().cloudDrive('🎨 操作选项组件 - 构建开始');
+    LogManager().cloudDrive(
       '📄 文件: ${widget.file.name} (${widget.file.isFolder ? '文件夹' : '文件'})',
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '👤 账号: ${widget.account.name} (${widget.account.type.displayName})',
     );
 
@@ -68,8 +68,8 @@ class _CloudDriveOperationOptionsState
           widget.account.type,
         ).getSupportedOperations();
 
-    DebugService.log('🔧 支持的操作: $supportedOps');
-    DebugService.log('🎨 UI配置: ${uiConfig.keys}');
+    LogManager().cloudDrive('🔧 支持的操作: $supportedOps');
+    LogManager().cloudDrive('🎨 UI配置: ${uiConfig.keys}');
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -149,11 +149,7 @@ class _CloudDriveOperationOptionsState
     final options = <Widget>[];
 
     // 添加调试日志
-    DebugService.log(
-      '🔧 构建操作选项 - 支持的操作: $supportedOps',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.operationOptions',
-    );
+    LogManager().cloudDrive('🔧 构建操作选项 - 支持的操作: $supportedOps');
 
     // 文件详情
     options.add(
@@ -221,11 +217,7 @@ class _CloudDriveOperationOptionsState
 
     // 删除文件
     if (supportedOps['delete'] == true) {
-      DebugService.log(
-        '✅ 删除选项已启用，添加删除操作',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.operationOptions',
-      );
+      LogManager().cloudDrive('✅ 删除选项已启用，添加删除操作');
       options.add(
         _buildOperationTile(
           icon: Icons.delete_rounded,
@@ -235,10 +227,8 @@ class _CloudDriveOperationOptionsState
         ),
       );
     } else {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 删除选项未启用: supportedOps[delete] = ${supportedOps['delete']}',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.operationOptions',
       );
     }
 
@@ -291,9 +281,9 @@ class _CloudDriveOperationOptionsState
   }
 
   Future<void> _downloadFile() async {
-    DebugService.log('🔗 操作选项 - 开始下载文件');
-    DebugService.log('📄 文件: ${widget.file.name}');
-    DebugService.log('👤 账号: ${widget.account.name}');
+    LogManager().cloudDrive('🔗 操作选项 - 开始下载文件');
+    LogManager().cloudDrive('📄 文件: ${widget.file.name}');
+    LogManager().cloudDrive('👤 账号: ${widget.account.name}');
 
     setState(() => _isLoading = true);
 
@@ -304,7 +294,7 @@ class _CloudDriveOperationOptionsState
       );
 
       if (downloadUrl != null) {
-        DebugService.log('✅ 操作选项 - 下载链接获取成功: $downloadUrl');
+        LogManager().cloudDrive('✅ 操作选项 - 下载链接获取成功: $downloadUrl');
 
         // 获取下载配置
         final downloadConfig = await DownloadConfigService().loadConfig();
@@ -320,12 +310,12 @@ class _CloudDriveOperationOptionsState
             );
             if (headers['Cookie'] != null) {
               authHeaders['Cookie'] = headers['Cookie']!;
-              DebugService.log(
+              LogManager().cloudDrive(
                 '🍪 夸克云盘 - 下载任务使用刷新后的完整cookie: ${headers['Cookie']!.length}字符',
               );
             }
           } catch (e) {
-            DebugService.log('⚠️ 夸克认证服务调用失败，使用原始cookie: $e');
+            LogManager().cloudDrive('⚠️ 夸克认证服务调用失败，使用原始cookie: $e');
             authHeaders['Cookie'] = widget.account.cookies ?? '';
           }
         } else if (widget.account.type == CloudDriveType.ali) {
@@ -334,11 +324,11 @@ class _CloudDriveOperationOptionsState
               widget.account.authorizationToken!.isNotEmpty) {
             authHeaders['Authorization'] =
                 'Bearer ${widget.account.authorizationToken}';
-            DebugService.log(
+            LogManager().cloudDrive(
               '🔑 阿里云盘 - 下载任务使用Authorization认证: ${widget.account.authorizationToken!.length}字符',
             );
           } else {
-            DebugService.log('⚠️ 阿里云盘 - 账号缺少Authorization Token');
+            LogManager().cloudDrive('⚠️ 阿里云盘 - 账号缺少Authorization Token');
           }
         } else {
           // 其他云盘使用Cookie认证
@@ -371,12 +361,12 @@ class _CloudDriveOperationOptionsState
               ),
             );
           }
-          DebugService.log('✅ 下载任务创建成功: $taskId');
+          LogManager().cloudDrive('✅ 下载任务创建成功: $taskId');
         } else {
           throw Exception('创建下载任务失败');
         }
       } else {
-        DebugService.log('❌ 操作选项 - 下载链接获取失败');
+        LogManager().cloudDrive('❌ 操作选项 - 下载链接获取失败');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -387,7 +377,7 @@ class _CloudDriveOperationOptionsState
         }
       }
     } catch (e) {
-      DebugService.error('❌ 操作选项 - 下载文件异常', e);
+      LogManager().error('❌ 操作选项 - 下载文件异常');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('下载失败: $e'), backgroundColor: Colors.red),
@@ -401,15 +391,15 @@ class _CloudDriveOperationOptionsState
 
   /// 高速下载 - 使用第三方解析服务
   Future<void> _highSpeedDownload() async {
-    DebugService.log('🚀 操作选项 - 开始高速下载');
-    DebugService.log('📄 文件: ${widget.file.name}');
-    DebugService.log('👤 账号: ${widget.account.name}');
+    LogManager().cloudDrive('🚀 操作选项 - 开始高速下载');
+    LogManager().cloudDrive('📄 文件: ${widget.file.name}');
+    LogManager().cloudDrive('👤 账号: ${widget.account.name}');
 
     setState(() => _isLoading = true);
 
     try {
       // 第一步：自动生成分享链接
-      DebugService.log('🔗 自动生成分享链接');
+      LogManager().cloudDrive('🔗 自动生成分享链接');
       final shareLink = await CloudDriveOperationService.createShareLink(
         account: widget.account,
         files: [widget.file],
@@ -421,7 +411,7 @@ class _CloudDriveOperationOptionsState
         throw Exception('生成分享链接失败');
       }
 
-      DebugService.log('✅ 分享链接生成成功: $shareLink');
+      LogManager().cloudDrive('✅ 分享链接生成成功: $shareLink');
 
       // 第二步：使用分享链接进行高速下载
       final downloadUrls =
@@ -433,14 +423,16 @@ class _CloudDriveOperationOptionsState
           );
 
       if (downloadUrls != null && downloadUrls.isNotEmpty) {
-        DebugService.log('✅ 操作选项 - 高速下载链接获取成功，共 ${downloadUrls.length} 个链接');
+        LogManager().cloudDrive(
+          '✅ 操作选项 - 高速下载链接获取成功，共 ${downloadUrls.length} 个链接',
+        );
 
         // 显示下载链接选择对话框
         if (mounted) {
           _showDownloadUrlSelectionDialog(downloadUrls);
         }
       } else {
-        DebugService.log('❌ 操作选项 - 高速下载链接获取失败');
+        LogManager().cloudDrive('❌ 操作选项 - 高速下载链接获取失败');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -451,7 +443,7 @@ class _CloudDriveOperationOptionsState
         }
       }
     } catch (e) {
-      DebugService.error('❌ 操作选项 - 高速下载异常', e);
+      LogManager().error('❌ 操作选项 - 高速下载异常');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('高速下载失败: $e'), backgroundColor: Colors.red),
@@ -559,12 +551,12 @@ class _CloudDriveOperationOptionsState
           );
           if (headers['Cookie'] != null) {
             authHeaders['Cookie'] = headers['Cookie']!;
-            DebugService.log(
+            LogManager().cloudDrive(
               '🍪 夸克云盘 - 高速下载任务使用刷新后的完整cookie: ${headers['Cookie']!.length}字符',
             );
           }
         } catch (e) {
-          DebugService.log('⚠️ 夸克认证服务调用失败，使用原始cookie: $e');
+          LogManager().cloudDrive('⚠️ 夸克认证服务调用失败，使用原始cookie: $e');
           authHeaders['Cookie'] = widget.account.cookies ?? '';
         }
       } else if (widget.account.type == CloudDriveType.ali) {
@@ -573,11 +565,11 @@ class _CloudDriveOperationOptionsState
             widget.account.authorizationToken!.isNotEmpty) {
           authHeaders['Authorization'] =
               'Bearer ${widget.account.authorizationToken}';
-          DebugService.log(
+          LogManager().cloudDrive(
             '🔑 阿里云盘 - 高速下载任务使用Authorization认证: ${widget.account.authorizationToken!.length}字符',
           );
         } else {
-          DebugService.log('⚠️ 阿里云盘 - 账号缺少Authorization Token');
+          LogManager().cloudDrive('⚠️ 阿里云盘 - 账号缺少Authorization Token');
         }
       } else {
         // 其他云盘使用Cookie认证
@@ -613,12 +605,12 @@ class _CloudDriveOperationOptionsState
             ),
           );
         }
-        DebugService.log('✅ 高速下载任务创建成功: $taskId');
+        LogManager().cloudDrive('✅ 高速下载任务创建成功: $taskId');
       } else {
         throw Exception('创建高速下载任务失败');
       }
     } catch (e) {
-      DebugService.error('❌ 高速下载任务创建失败', e);
+      LogManager().error('❌ 高速下载任务创建失败');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('高速下载失败: $e'), backgroundColor: Colors.red),
@@ -629,7 +621,7 @@ class _CloudDriveOperationOptionsState
 
   /// 分享文件
   Future<void> _shareFile() async {
-    DebugService.log('🔗 开始分享文件: ${widget.file.name}');
+    LogManager().cloudDrive('🔗 开始分享文件: ${widget.file.name}');
 
     // 显示分享对话框
     final result = await _showShareDialog();
@@ -693,7 +685,7 @@ class _CloudDriveOperationOptionsState
         widget.onOperationResult?.call('分享链接创建失败', false);
       }
     } catch (e) {
-      DebugService.error('❌ 分享文件失败: $e', null);
+      LogManager().error('❌ 分享文件失败: $e');
       widget.onOperationResult?.call('分享文件失败: $e', false);
     } finally {
       setState(() {
@@ -835,9 +827,9 @@ class _CloudDriveOperationOptionsState
       );
 
   Future<void> _copyFile() async {
-    DebugService.log('🔗 操作选项 - 开始复制文件');
-    DebugService.log('📄 文件: ${widget.file.name}');
-    DebugService.log('👤 账号: ${widget.account.name}');
+    LogManager().cloudDrive('🔗 操作选项 - 开始复制文件');
+    LogManager().cloudDrive('📄 文件: ${widget.file.name}');
+    LogManager().cloudDrive('👤 账号: ${widget.account.name}');
 
     // 设置待操作文件，显示悬浮按钮
     ref
@@ -934,14 +926,14 @@ class _CloudDriveOperationOptionsState
       );
 
       if (success) {
-        DebugService.log('✅ 操作选项 - 文件重命名成功');
+        LogManager().cloudDrive('✅ 操作选项 - 文件重命名成功');
 
         // 使用保存的notifier引用更新状态
         try {
           notifier.updateFileInState(fileId, newName);
-          DebugService.log('✅ 状态更新成功');
+          LogManager().cloudDrive('✅ 状态更新成功');
         } catch (e) {
-          DebugService.error('❌ 状态更新失败', e);
+          LogManager().error('❌ 状态更新失败');
         }
 
         // 重命名成功后关闭底部弹窗
@@ -956,7 +948,7 @@ class _CloudDriveOperationOptionsState
           );
         }
       } else {
-        DebugService.log('❌ 操作选项 - 文件重命名失败');
+        LogManager().cloudDrive('❌ 操作选项 - 文件重命名失败');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -967,7 +959,7 @@ class _CloudDriveOperationOptionsState
         }
       }
     } catch (e) {
-      DebugService.error('❌ 操作选项 - 重命名文件异常', e);
+      LogManager().error('❌ 操作选项 - 重命名文件异常');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('重命名失败: $e'), backgroundColor: Colors.red),
@@ -977,9 +969,9 @@ class _CloudDriveOperationOptionsState
   }
 
   Future<void> _moveFile() async {
-    DebugService.log('🔗 操作选项 - 开始移动文件');
-    DebugService.log('📄 文件: ${widget.file.name}');
-    DebugService.log('👤 账号: ${widget.account.name}');
+    LogManager().cloudDrive('🔗 操作选项 - 开始移动文件');
+    LogManager().cloudDrive('📄 文件: ${widget.file.name}');
+    LogManager().cloudDrive('👤 账号: ${widget.account.name}');
 
     // 设置待操作文件，显示悬浮按钮
     ref
@@ -1016,7 +1008,7 @@ class _CloudDriveOperationOptionsState
       );
 
       if (success) {
-        DebugService.log('✅ 操作选项 - 文件移动成功');
+        LogManager().cloudDrive('✅ 操作选项 - 文件移动成功');
 
         // 使用保存的notifier引用更新状态
         try {
@@ -1025,9 +1017,9 @@ class _CloudDriveOperationOptionsState
           } else {
             notifier.removeFileFromState(fileId);
           }
-          DebugService.log('✅ 状态更新成功');
+          LogManager().cloudDrive('✅ 状态更新成功');
         } catch (e) {
-          DebugService.error('❌ 状态更新失败', e);
+          LogManager().error('❌ 状态更新失败');
         }
 
         if (mounted) {
@@ -1039,7 +1031,7 @@ class _CloudDriveOperationOptionsState
           );
         }
       } else {
-        DebugService.log('❌ 操作选项 - 文件移动失败');
+        LogManager().cloudDrive('❌ 操作选项 - 文件移动失败');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -1050,7 +1042,7 @@ class _CloudDriveOperationOptionsState
         }
       }
     } catch (e) {
-      DebugService.error('❌ 操作选项 - 移动文件异常', e);
+      LogManager().error('❌ 操作选项 - 移动文件异常');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('移动失败: $e'), backgroundColor: Colors.red),
@@ -1060,9 +1052,9 @@ class _CloudDriveOperationOptionsState
   }
 
   Future<void> _deleteFile() async {
-    DebugService.log('🔗 操作选项 - 开始删除文件');
-    DebugService.log('📄 文件: ${widget.file.name}');
-    DebugService.log('👤 账号: ${widget.account.name}');
+    LogManager().cloudDrive('🔗 操作选项 - 开始删除文件');
+    LogManager().cloudDrive('📄 文件: ${widget.file.name}');
+    LogManager().cloudDrive('👤 账号: ${widget.account.name}');
 
     // 显示确认对话框
     final confirmed = await showDialog<bool>(
@@ -1101,7 +1093,7 @@ class _CloudDriveOperationOptionsState
     );
 
     if (confirmed != true) {
-      DebugService.log('❌ 用户取消删除操作');
+      LogManager().cloudDrive('❌ 用户取消删除操作');
       return;
     }
 
@@ -1125,19 +1117,19 @@ class _CloudDriveOperationOptionsState
         file: widget.file,
       );
 
-      DebugService.log('🔍 删除操作完成，结果: $success');
-      DebugService.log('🔍 mounted状态: $mounted');
+      LogManager().cloudDrive('🔍 删除操作完成，结果: $success');
+      LogManager().cloudDrive('🔍 mounted状态: $mounted');
 
       if (success) {
-        DebugService.log('✅ 操作选项 - 文件删除成功');
+        LogManager().cloudDrive('✅ 操作选项 - 文件删除成功');
         final message = '文件删除成功: $fileName';
 
         // 使用保存的notifier引用更新状态
         try {
           notifier.removeFileFromState(fileId);
-          DebugService.log('✅ 状态更新成功');
+          LogManager().cloudDrive('✅ 状态更新成功');
         } catch (e) {
-          DebugService.error('❌ 状态更新失败', e);
+          LogManager().error('❌ 状态更新失败');
         }
 
         // 使用回调函数显示结果
@@ -1145,7 +1137,7 @@ class _CloudDriveOperationOptionsState
           widget.onOperationResult!(message, true);
         } else if (_savedContext != null) {
           // 使用保存的context显示SnackBar
-          DebugService.log('🔍 使用保存的context显示成功SnackBar');
+          LogManager().cloudDrive('🔍 使用保存的context显示成功SnackBar');
           try {
             final scaffoldMessenger = ScaffoldMessenger.of(_savedContext!);
             if (scaffoldMessenger.mounted) {
@@ -1156,18 +1148,18 @@ class _CloudDriveOperationOptionsState
                   duration: const Duration(seconds: 3),
                 ),
               );
-              DebugService.log('🔍 成功SnackBar已显示');
+              LogManager().cloudDrive('🔍 成功SnackBar已显示');
             } else {
-              DebugService.log('❌ ScaffoldMessenger未挂载');
+              LogManager().cloudDrive('❌ ScaffoldMessenger未挂载');
             }
           } catch (e) {
-            DebugService.error('❌ 显示SnackBar失败', e);
+            LogManager().error('❌ 显示SnackBar失败');
           }
         } else {
-          DebugService.log('❌ 没有可用的context');
+          LogManager().cloudDrive('❌ 没有可用的context');
         }
       } else {
-        DebugService.log('❌ 操作选项 - 文件删除失败');
+        LogManager().cloudDrive('❌ 操作选项 - 文件删除失败');
         final message = '文件删除失败: $fileName';
 
         // 使用回调函数显示结果
@@ -1175,7 +1167,7 @@ class _CloudDriveOperationOptionsState
           widget.onOperationResult!(message, false);
         } else if (_savedContext != null) {
           // 使用保存的context显示SnackBar
-          DebugService.log('🔍 使用保存的context显示失败SnackBar');
+          LogManager().cloudDrive('🔍 使用保存的context显示失败SnackBar');
           try {
             final scaffoldMessenger = ScaffoldMessenger.of(_savedContext!);
             if (scaffoldMessenger.mounted) {
@@ -1186,19 +1178,19 @@ class _CloudDriveOperationOptionsState
                   duration: const Duration(seconds: 3),
                 ),
               );
-              DebugService.log('🔍 失败SnackBar已显示');
+              LogManager().cloudDrive('🔍 失败SnackBar已显示');
             } else {
-              DebugService.log('❌ ScaffoldMessenger未挂载');
+              LogManager().cloudDrive('❌ ScaffoldMessenger未挂载');
             }
           } catch (e) {
-            DebugService.error('❌ 显示SnackBar失败', e);
+            LogManager().error('❌ 显示SnackBar失败');
           }
         } else {
-          DebugService.log('❌ 没有可用的context');
+          LogManager().cloudDrive('❌ 没有可用的context');
         }
       }
     } catch (e) {
-      DebugService.error('❌ 操作选项 - 删除文件异常', e);
+      LogManager().error('❌ 操作选项 - 删除文件异常');
       final message = '删除失败: $e';
 
       // 使用回调函数显示结果
@@ -1206,7 +1198,7 @@ class _CloudDriveOperationOptionsState
         widget.onOperationResult!(message, false);
       } else if (_savedContext != null) {
         // 使用保存的context显示SnackBar
-        DebugService.log('🔍 使用保存的context显示异常SnackBar');
+        LogManager().cloudDrive('🔍 使用保存的context显示异常SnackBar');
         try {
           final scaffoldMessenger = ScaffoldMessenger.of(_savedContext!);
           if (scaffoldMessenger.mounted) {
@@ -1217,15 +1209,15 @@ class _CloudDriveOperationOptionsState
                 duration: const Duration(seconds: 3),
               ),
             );
-            DebugService.log('🔍 异常SnackBar已显示');
+            LogManager().cloudDrive('🔍 异常SnackBar已显示');
           } else {
-            DebugService.log('❌ ScaffoldMessenger未挂载');
+            LogManager().cloudDrive('❌ ScaffoldMessenger未挂载');
           }
         } catch (e2) {
-          DebugService.error('❌ 显示SnackBar失败', e2);
+          LogManager().error('❌ 显示SnackBar失败');
         }
       } else {
-        DebugService.log('❌ 没有可用的context');
+        LogManager().cloudDrive('❌ 没有可用的context');
       }
     }
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/cloud_drive_models.dart';
+import '../utils/file_type_utils.dart';
 
 /// 云盘基础组件
 class CloudDriveBaseWidgets {
@@ -21,81 +22,9 @@ class CloudDriveBaseWidgets {
       return Icon(Icons.folder, size: size, color: Colors.blue);
     }
 
-    // 根据文件扩展名显示不同图标
-    final extension = _getFileExtension(file.name).toLowerCase();
-    IconData iconData;
-    Color iconColor;
-
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-      case 'bmp':
-      case 'webp':
-        iconData = Icons.image;
-        iconColor = Colors.green;
-        break;
-      case 'mp4':
-      case 'avi':
-      case 'mov':
-      case 'wmv':
-      case 'flv':
-      case 'webm':
-        iconData = Icons.video_file;
-        iconColor = Colors.red;
-        break;
-      case 'mp3':
-      case 'wav':
-      case 'flac':
-      case 'aac':
-      case 'ogg':
-        iconData = Icons.audio_file;
-        iconColor = Colors.orange;
-        break;
-      case 'pdf':
-        iconData = Icons.picture_as_pdf;
-        iconColor = Colors.red;
-        break;
-      case 'doc':
-      case 'docx':
-        iconData = Icons.description;
-        iconColor = Colors.blue;
-        break;
-      case 'xls':
-      case 'xlsx':
-        iconData = Icons.table_chart;
-        iconColor = Colors.green;
-        break;
-      case 'ppt':
-      case 'pptx':
-        iconData = Icons.slideshow;
-        iconColor = Colors.orange;
-        break;
-      case 'txt':
-      case 'md':
-      case 'json':
-      case 'xml':
-      case 'html':
-      case 'css':
-      case 'js':
-        iconData = Icons.text_snippet;
-        iconColor = Colors.grey;
-        break;
-      case 'zip':
-      case 'rar':
-      case '7z':
-      case 'tar':
-      case 'gz':
-        iconData = Icons.archive;
-        iconColor = Colors.purple;
-        break;
-      default:
-        iconData = Icons.insert_drive_file;
-        iconColor = Colors.grey;
-    }
-
-    return Icon(iconData, size: size, color: iconColor);
+    // 使用统一的文件类型工具类
+    final fileTypeInfo = FileTypeUtils.getFileTypeInfo(file.name);
+    return Icon(fileTypeInfo.iconData, size: size, color: fileTypeInfo.color);
   }
 
   /// 格式化文件大小
@@ -127,15 +56,6 @@ class CloudDriveBaseWidgets {
     } else {
       return '刚刚';
     }
-  }
-
-  /// 获取文件扩展名
-  static String _getFileExtension(String fileName) {
-    final lastDotIndex = fileName.lastIndexOf('.');
-    if (lastDotIndex == -1 || lastDotIndex == fileName.length - 1) {
-      return '';
-    }
-    return fileName.substring(lastDotIndex + 1);
   }
 
   /// 加载指示器

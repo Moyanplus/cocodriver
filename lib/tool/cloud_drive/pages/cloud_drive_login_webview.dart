@@ -1,13 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:dio/dio.dart';
+// import 'dart:convert';
+// import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../utils/token_parser.dart';
 import '../models/cloud_drive_models.dart';
 
@@ -37,58 +37,22 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
   double _currentZoom = 1.0;
   // 新增：123云盘登录成功后的token
 
-  /// 根据云盘类型获取日志分类
-  String get _logSubCategory {
-    switch (widget.cloudDriveType) {
-      case CloudDriveType.quark:
-        return 'cloudDrive.quark';
-      case CloudDriveType.baidu:
-        return 'cloudDrive.baidu';
-      case CloudDriveType.lanzou:
-        return 'cloudDrive.lanzou';
-      case CloudDriveType.pan123:
-        return 'cloudDrive.pan123';
-      case CloudDriveType.ali:
-        return 'cloudDrive.ali';
-    }
-  }
-
   // 提取 set-cookie 字段中的 name=value
   String extractCookies(String setCookieHeader, List<String> targetNames) {
-    DebugService.log(
-      '🔍 开始提取cookie: $setCookieHeader',
-      category: DebugCategory.tools,
-      subCategory: _logSubCategory,
-    );
-    DebugService.log(
-      '🎯 目标cookie: $targetNames',
-      category: DebugCategory.tools,
-      subCategory: _logSubCategory,
-    );
+    LogManager().cloudDrive('🔍 开始提取cookie: $setCookieHeader');
+    LogManager().cloudDrive('🎯 目标cookie: $targetNames');
 
     final cookies = <String, String>{};
 
     // 首先尝试按逗号分割（标准的多个set-cookie格式）
     final cookieParts = setCookieHeader.split(RegExp(r',(?=[^ ;]+=)'));
-    DebugService.log(
-      '🍪 按逗号分割的cookie部分数量: ${cookieParts.length}',
-      category: DebugCategory.tools,
-      subCategory: _logSubCategory,
-    );
+    LogManager().cloudDrive('🍪 按逗号分割的cookie部分数量: ${cookieParts.length}');
 
     for (final part in cookieParts) {
       // 对于每个part，按分号分割获取所有的name=value对
       final segments = part.split(';');
-      DebugService.log(
-        '🔍 处理cookie部分: $part',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
-      DebugService.log(
-        '🍪 分号分割的段数: ${segments.length}',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 处理cookie部分: $part');
+      LogManager().cloudDrive('🍪 分号分割的段数: ${segments.length}');
 
       for (final segment in segments) {
         final kv = segment.trim();
@@ -107,37 +71,21 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
             'secure',
             'samesite',
           ].contains(name.toLowerCase())) {
-            DebugService.log(
-              '🍪 解析cookie: $name = $value',
-              category: DebugCategory.tools,
-              subCategory: _logSubCategory,
-            );
+            LogManager().cloudDrive('🍪 解析cookie: $name = $value');
 
             if (targetNames.contains(name)) {
               cookies[name] = value;
-              DebugService.log(
-                '✅ 匹配目标cookie: $name = $value',
-                category: DebugCategory.tools,
-                subCategory: _logSubCategory,
-              );
+              LogManager().cloudDrive('✅ 匹配目标cookie: $name = $value');
             }
           } else {
-            DebugService.log(
-              '⏭️ 跳过cookie属性: $name = $value',
-              category: DebugCategory.tools,
-              subCategory: _logSubCategory,
-            );
+            LogManager().cloudDrive('⏭️ 跳过cookie属性: $name = $value');
           }
         }
       }
     }
 
     final result = cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
-    DebugService.log(
-      '🎯 提取结果: $result',
-      category: DebugCategory.tools,
-      subCategory: _logSubCategory,
-    );
+    LogManager().cloudDrive('🎯 提取结果: $result');
     return result;
   }
 
@@ -152,11 +100,11 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
         setState(() {
           _currentZoom = newZoom;
         });
-        DebugService.log(
+        LogManager().cloudDrive(
           '🔍 缩放比例调整为: ${(_currentZoom * 100).toStringAsFixed(0)}%',
         );
       } catch (e) {
-        DebugService.error('❌ 调整缩放失败: $e', null);
+        LogManager().error('❌ 调整缩放失败: $e');
       }
     }
   }
@@ -172,17 +120,19 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
     }
   }
 
+  @override
+  void dispose() {
+    // 清理WebView资源
+    _webViewController = null;
+    LogManager().cloudDrive('🧹 WebView资源已清理');
+    super.dispose();
+  }
+
   /// 通用登录监听器
   void _setupGenericLoginListener(LoginDetectionConfig detectionConfig) {
-    DebugService.log(
-      '🔧 开始设置${widget.cloudDriveType.displayName}登录监听',
-      category: DebugCategory.tools,
-      subCategory: _logSubCategory,
-    );
-    DebugService.log(
+    LogManager().cloudDrive('🔧 开始设置${widget.cloudDriveType.displayName}登录监听');
+    LogManager().cloudDrive(
       '⚙️ 检测方法: ${detectionConfig.detectionMethod}, 间隔: ${detectionConfig.checkInterval.inSeconds}秒',
-      category: DebugCategory.tools,
-      subCategory: _logSubCategory,
     );
 
     int retryCount = 0;
@@ -190,30 +140,22 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
     // 定期检查登录状态
     Timer.periodic(detectionConfig.checkInterval, (timer) async {
       if (!mounted) {
-        DebugService.log(
-          '⚠️ WebView已销毁，停止监听',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
+        LogManager().cloudDrive('⚠️ WebView已销毁，停止监听');
         timer.cancel();
         return;
       }
 
       retryCount++;
       if (retryCount > detectionConfig.maxRetries) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '⏰ ${widget.cloudDriveType.displayName}登录检测超时，停止监听',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
         );
         timer.cancel();
         return;
       }
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '🔍 检查${widget.cloudDriveType.displayName}登录状态... (${retryCount}/${detectionConfig.maxRetries})',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
       );
 
       bool isLoggedIn = false;
@@ -224,10 +166,8 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
           final token = await _getAuthorizationToken();
           isLoggedIn = token.isNotEmpty;
           if (isLoggedIn) {
-            DebugService.log(
+            LogManager().cloudDrive(
               '🔑 检测到token: ${token.substring(0, token.length > 50 ? 50 : token.length)}...',
-              category: DebugCategory.tools,
-              subCategory: _logSubCategory,
             );
           }
           break;
@@ -241,11 +181,7 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
                 (indicator) => url.contains(indicator),
               );
               if (isLoggedIn) {
-                DebugService.log(
-                  '🌐 检测到登录成功URL: $url',
-                  category: DebugCategory.tools,
-                  subCategory: _logSubCategory,
-                );
+                LogManager().cloudDrive('🌐 检测到登录成功URL: $url');
               }
             }
           }
@@ -253,50 +189,59 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
 
         case 'cookie':
           final cookies = await _getCookies();
+          // 使用Cookie处理配置的priorityCookieNames进行检测
+          final config = widget.cloudDriveType.webViewConfig;
+          final cookieConfig =
+              config.cookieProcessingConfig ??
+              CookieProcessingConfig.defaultConfig;
+
+          LogManager().cloudDrive(
+            '🔍 检查Cookie: ${cookieConfig.priorityCookieNames}',
+          );
+          LogManager().cloudDrive(
+            '🍪 获取到的Cookie: ${cookies.isNotEmpty ? '有' : '无'}',
+          );
+
+          // 检查是否包含所有必需的Cookie
+          final requiredCookies = cookieConfig.requiredCookies;
           isLoggedIn =
               cookies.isNotEmpty &&
-              detectionConfig.successIndicators.any(
-                (indicator) => cookies.contains(indicator),
+              requiredCookies.every(
+                (cookieName) => cookies.contains(cookieName),
               );
+
           if (isLoggedIn) {
-            DebugService.log(
-              '🍪 检测到登录成功Cookie',
-              category: DebugCategory.tools,
-              subCategory: _logSubCategory,
-            );
+            LogManager().cloudDrive('🍪 检测到登录成功Cookie: 所有必需Cookie都存在');
+          } else {
+            LogManager().cloudDrive('🍪 登录检测失败: 缺少必需的Cookie');
+            // 详细检查每个必需Cookie
+            for (final cookieName in requiredCookies) {
+              final hasCookie = cookies.contains(cookieName);
+              LogManager().cloudDrive(
+                '🍪 $cookieName: ${hasCookie ? '存在' : '缺失'}',
+              );
+            }
           }
           break;
       }
 
       if (isLoggedIn && !_isLoggedIn) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '🎉 检测到${widget.cloudDriveType.displayName}登录成功！',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
         );
 
         setState(() {
           _isLoggedIn = true;
         });
         timer.cancel();
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ ${widget.cloudDriveType.displayName}登录监听完成，停止定时器',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
         );
       } else if (isLoggedIn) {
-        DebugService.log(
-          '✅ 已登录状态，停止监听',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 已登录状态，停止监听');
         timer.cancel();
       } else {
-        DebugService.log(
-          '⏳ 未检测到登录成功，继续监听...',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
+        LogManager().cloudDrive('⏳ 未检测到登录成功，继续监听...');
       }
     });
   }
@@ -304,11 +249,19 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
   @override
   Widget build(BuildContext context) {
     final config = widget.cloudDriveType.webViewConfig;
-    final rules = config.cookieCaptureRules;
+    // final rules = config.cookieCaptureRules; // 暂时注释掉
     return Scaffold(
       appBar: AppBar(
         title: Text('登录${widget.cloudDriveType.displayName}'),
         actions: [
+          // 取消按钮
+          IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: '取消登录',
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
           // 刷新按钮
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -343,6 +296,21 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
               ),
             ],
           ),
+          // 测试按钮 - 手动获取Cookie
+          IconButton(
+            icon: const Icon(Icons.cookie, color: Colors.orange),
+            onPressed: () async {
+              LogManager().cloudDrive('🧪 手动测试获取Cookie');
+              final cookies = await _getCookies();
+              LogManager().cloudDrive(
+                '🍪 测试结果: ${cookies.isNotEmpty ? '成功' : '失败'}',
+              );
+              if (cookies.isNotEmpty) {
+                LogManager().cloudDrive('🍪 Cookie内容: $cookies');
+              }
+            },
+            tooltip: '测试获取Cookie',
+          ),
           if (_isLoggedIn)
             IconButton(
               icon: const Icon(Icons.check_circle, color: Colors.green),
@@ -362,7 +330,7 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
               userAgent: config.effectiveUserAgent, // 使用新的UserAgent配置方法
               allowsInlineMediaPlayback: true,
               mediaPlaybackRequiresUserGesture: false,
-              useShouldInterceptRequest: true,
+              useShouldInterceptRequest: false, // 暂时禁用请求拦截
               // 启用手势缩放
               supportZoom: true,
               displayZoomControls: false, // 不显示缩放控制按钮
@@ -374,166 +342,156 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
               allowContentAccess: false,
               // 减少日志输出
               domStorageEnabled: true,
-              databaseEnabled: false,
+              databaseEnabled: true, // 启用数据库支持
+              // 错误处理相关设置
+              allowsLinkPreview: false,
+              isFraudulentWebsiteWarningEnabled: false,
+              allowsBackForwardNavigationGestures: true,
+              // 性能优化
+              cacheEnabled: true,
+              clearCache: false,
             ),
             onWebViewCreated: (controller) {
               _webViewController = controller;
             },
-            shouldInterceptRequest: (controller, request) async {
-              // 检查是否启用请求拦截
-              final interceptConfig =
-                  config.requestInterceptConfig ??
-                  RequestInterceptConfig.cookieBasedConfig;
-              if (!interceptConfig.enableRequestIntercept) {
-                DebugService.log(
-                  '⏭️ 请求拦截已禁用，跳过拦截: ${request.url}',
-                  category: DebugCategory.tools,
-                  subCategory: _logSubCategory,
-                );
-                return null;
-              }
+            // 暂时注释掉请求拦截功能
+            // shouldInterceptRequest: (controller, request) async {
+            //   // 检查是否启用请求拦截
+            //   final interceptConfig =
+            //       config.requestInterceptConfig ??
+            //       RequestInterceptConfig.cookieBasedConfig;
+            //   if (!interceptConfig.enableRequestIntercept) {
+            //     LogManager().cloudDrive('⏭️ 请求拦截已禁用，跳过拦截: ${request.url}');
+            //     return null;
+            //   }
 
-              // 检查是否为跳过拦截的认证类型
-              final authTypeString = widget.cloudDriveType.authType.name;
-              if (interceptConfig.skipInterceptForAuthTypes.contains(
-                authTypeString,
-              )) {
-                DebugService.log(
-                  '⏭️ 认证类型 $authTypeString 跳过拦截: ${request.url}',
-                  category: DebugCategory.tools,
-                  subCategory: _logSubCategory,
-                );
-                return null;
-              }
+            //   // 检查是否为跳过拦截的认证类型
+            //   final authTypeString = widget.cloudDriveType.authType.name;
+            //   if (interceptConfig.skipInterceptForAuthTypes.contains(
+            //     authTypeString,
+            //   )) {
+            //     LogManager().cloudDrive(
+            //       '⏭️ 认证类型 $authTypeString 跳过拦截: ${request.url}',
+            //     );
+            //     return null;
+            //   }
 
-              // 多步多 cookie 捕获
-              for (final rule in rules) {
-                if (request.url.toString().contains(rule.urlPattern)) {
-                  DebugService.log('🔍 拦截: ${rule.urlPattern}');
-                  try {
-                    // 获取多个域名的 cookie
-                    String? webviewCookies;
-                    if (rule.cookieDomains.isNotEmpty) {
-                      final allCookies = <String>[];
-                      for (final domain in rule.cookieDomains) {
-                        try {
-                          final cookies = await CookieManager.instance()
-                              .getCookies(url: WebUri(domain));
-                          if (cookies.isNotEmpty) {
-                            final domainCookies = cookies
-                                .map((c) => '${c.name}=${c.value}')
-                                .join('; ');
-                            allCookies.add(domainCookies);
-                          }
-                        } catch (e) {
-                          DebugService.log('⚠️ 获取Cookie失败: $domain');
-                        }
-                      }
-                      webviewCookies = allCookies.join('; ');
-                    }
+            //   // 多步多 cookie 捕获
+            //   for (final rule in rules) {
+            //     if (request.url.toString().contains(rule.urlPattern)) {
+            //       LogManager().cloudDrive('🔍 拦截: ${rule.urlPattern}');
+            //       try {
+            //         // 获取多个域名的 cookie
+            //         String? webviewCookies;
+            //         if (rule.cookieDomains.isNotEmpty) {
+            //           final allCookies = <String>[];
+            //           for (final domain in rule.cookieDomains) {
+            //             try {
+            //               final cookies = await CookieManager.instance()
+            //                   .getCookies(url: WebUri(domain));
+            //               if (cookies.isNotEmpty) {
+            //                 final domainCookies = cookies
+            //                     .map((c) => '${c.name}=${c.value}')
+            //                     .join('; ');
+            //                 allCookies.add(domainCookies);
+            //               }
+            //             } catch (e) {
+            //               LogManager().cloudDrive('⚠️ 获取Cookie失败: $domain');
+            //             }
+            //           }
+            //           webviewCookies = allCookies.join('; ');
+            //         }
 
-                    final headers = <String, String>{};
-                    if (request.headers != null) {
-                      headers.addAll(request.headers!);
-                    }
-                    headers['User-Agent'] =
-                        config.effectiveUserAgent; // 使用配置化UserAgent
-                    if (webviewCookies != null && webviewCookies.isNotEmpty) {
-                      headers['Cookie'] = webviewCookies;
-                    }
+            //         final headers = <String, String>{};
+            //         if (request.headers != null) {
+            //           headers.addAll(request.headers!);
+            //         }
+            //         headers['User-Agent'] =
+            //             config.effectiveUserAgent; // 使用配置化UserAgent
+            //         if (webviewCookies != null && webviewCookies.isNotEmpty) {
+            //           headers['Cookie'] = webviewCookies;
+            //         }
 
-                    final response = await Dio().get(
-                      request.url.toString(),
-                      options: Options(headers: headers),
-                    );
+            //         final response = await Dio().get(
+            //           request.url.toString(),
+            //           options: Options(headers: headers),
+            //         );
 
-                    // 提取 cookie
-                    final setCookies = <String>[];
-                    response.headers.forEach((name, values) {
-                      if (name.toLowerCase() == 'set-cookie') {
-                        setCookies.addAll(values);
-                      }
-                    });
-                    final setCookiesString = setCookies.join('; ');
+            //         // 提取 cookie
+            //         final setCookies = <String>[];
+            //         response.headers.forEach((name, values) {
+            //           if (name.toLowerCase() == 'set-cookie') {
+            //             setCookies.addAll(values);
+            //           }
+            //         });
+            //         final setCookiesString = setCookies.join('; ');
 
-                    DebugService.log(
-                      '🍪 原始set-cookie: $setCookiesString',
-                      category: DebugCategory.tools,
-                      subCategory: _logSubCategory,
-                    );
+            //         LogManager().cloudDrive(
+            //           '🍪 原始set-cookie: $setCookiesString',
+            //         );
 
-                    final extracted = extractCookies(
-                      setCookiesString,
-                      rule.cookieNames,
-                    );
+            //         final extracted = extractCookies(
+            //           setCookiesString,
+            //           rule.cookieNames,
+            //         );
 
-                    DebugService.log(
-                      '🍪 提取的cookie: $extracted',
-                      category: DebugCategory.tools,
-                      subCategory: _logSubCategory,
-                    );
+            //         LogManager().cloudDrive('🍪 提取的cookie: $extracted');
 
-                    if (extracted.isNotEmpty) {
-                      for (final kv in extracted.split(';')) {
-                        final parts = kv.trim().split('=');
-                        if (parts.length == 2) {
-                          _cookieMap[parts[0]] = parts[1];
-                          DebugService.log(
-                            '🍪 保存cookie: ${parts[0]} = ${parts[1]}',
-                            category: DebugCategory.tools,
-                            subCategory: _logSubCategory,
-                          );
-                        }
-                      }
-                      DebugService.log('✅ 捕获: $extracted');
-                    } else {
-                      DebugService.log(
-                        '⚠️ 未提取到任何cookie',
-                        category: DebugCategory.tools,
-                        subCategory: _logSubCategory,
-                      );
-                    }
+            //         if (extracted.isNotEmpty) {
+            //           for (final kv in extracted.split(';')) {
+            //             final parts = kv.trim().split('=');
+            //             if (parts.length == 2) {
+            //               _cookieMap[parts[0]] = parts[1];
+            //               LogManager().cloudDrive(
+            //                 '🍪 保存cookie: ${parts[0]} = ${parts[1]}',
+            //               );
+            //             }
+            //           }
+            //           LogManager().cloudDrive('✅ 捕获: $extracted');
+            //         } else {
+            //           LogManager().cloudDrive('⚠️ 未提取到任何cookie');
+            //         }
 
-                    // 检查是否所有 cookie 都已捕获
-                    final allNames = rules.expand((r) => r.cookieNames).toSet();
-                    final allGot = allNames.every(_cookieMap.containsKey);
-                    if (allGot && !_isLoggedIn) {
-                      final merged = allNames
-                          .map((k) => '$k=${_cookieMap[k]}')
-                          .join('; ');
-                      setState(() {
-                        _isLoggedIn = true;
-                      });
-                      DebugService.log('🎉 登录成功: $merged');
-                    }
+            //         // 检查是否所有 cookie 都已捕获
+            //         final allNames = rules.expand((r) => r.cookieNames).toSet();
+            //         final allGot = allNames.every(_cookieMap.containsKey);
+            //         if (allGot && !_isLoggedIn) {
+            //           final merged = allNames
+            //               .map((k) => '$k=${_cookieMap[k]}')
+            //               .join('; ');
+            //           setState(() {
+            //             _isLoggedIn = true;
+            //           });
+            //           LogManager().cloudDrive('🎉 登录成功: $merged');
+            //         }
 
-                    // 转换响应头格式
-                    final responseHeaders = <String, String>{};
-                    response.headers.forEach((name, values) {
-                      if (values.isNotEmpty) {
-                        responseHeaders[name] = values.first;
-                      }
-                    });
+            //         // 转换响应头格式
+            //         final responseHeaders = <String, String>{};
+            //         response.headers.forEach((name, values) {
+            //           if (values.isNotEmpty) {
+            //             responseHeaders[name] = values.first;
+            //           }
+            //         });
 
-                    return WebResourceResponse(
-                      contentType:
-                          responseHeaders['content-type'] ?? 'application/json',
-                      contentEncoding: 'utf-8',
-                      data: Uint8List.fromList(
-                        utf8.encode(response.data.toString()),
-                      ),
-                      statusCode: response.statusCode ?? 200,
-                      reasonPhrase: response.statusMessage ?? 'OK',
-                      headers: responseHeaders,
-                    );
-                  } catch (e) {
-                    DebugService.error('❌ 请求失败: $e', null);
-                    return null;
-                  }
-                }
-              }
-              return null;
-            },
+            //         return WebResourceResponse(
+            //           contentType:
+            //               responseHeaders['content-type'] ?? 'application/json',
+            //           contentEncoding: 'utf-8',
+            //           data: Uint8List.fromList(
+            //             utf8.encode(response.data.toString()),
+            //           ),
+            //           statusCode: response.statusCode ?? 200,
+            //           reasonPhrase: response.statusMessage ?? 'OK',
+            //           headers: responseHeaders,
+            //         );
+            //       } catch (e) {
+            //         LogManager().error('❌ 请求失败: $e');
+            //         return null;
+            //       }
+            //     }
+            //   }
+            //   return null;
+            // },
             onLoadStart: (controller, url) {
               setState(() => _isLoading = true);
             },
@@ -550,8 +508,32 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
                   _currentZoom = zoomLevel;
                 });
               } catch (e) {
-                DebugService.error('❌ 获取缩放比例失败: $e', null);
+                LogManager().error('❌ 获取缩放比例失败: $e');
               }
+            },
+            // 添加错误处理回调
+            onReceivedError: (controller, request, error) {
+              setState(() {
+                _isLoading = false;
+              });
+              LogManager().error('❌ WebView错误: ${error.description}');
+              LogManager().cloudDrive('❌ 加载失败: ${error.description}');
+            },
+            onReceivedHttpError: (controller, request, errorResponse) {
+              setState(() {
+                _isLoading = false;
+              });
+              LogManager().error('❌ HTTP错误: ${errorResponse.statusCode}');
+              LogManager().cloudDrive('❌ HTTP错误: ${errorResponse.statusCode}');
+            },
+            onReceivedServerTrustAuthRequest: (controller, challenge) async {
+              // 接受所有SSL证书（用于云盘登录）
+              LogManager().cloudDrive(
+                '🔒 SSL证书验证: ${challenge.protectionSpace.host}',
+              );
+              return ServerTrustAuthResponse(
+                action: ServerTrustAuthResponseAction.PROCEED,
+              );
             },
           ),
           if (_isLoading) const Center(child: CircularProgressIndicator()),
@@ -580,187 +562,213 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
                 ),
               ),
             ),
-          if (_isLoggedIn)
-            Positioned(
-              bottom: 32.h,
-              right: 32.w,
-              child: FloatingActionButton.extended(
-                heroTag: 'confirmLogin',
-                onPressed: _confirmLogin,
-                backgroundColor: Colors.green,
-                icon: const Icon(Icons.check),
-                label: const Text('完成并返回'),
-              ),
+          // 手动检测登录状态的FAB
+          Positioned(
+            bottom: 32.h,
+            right: 32.w,
+            child: FloatingActionButton.extended(
+              heroTag: 'checkLogin',
+              onPressed: _isLoggedIn ? _confirmLogin : _manualCheckLogin,
+              backgroundColor: _isLoggedIn ? Colors.green : Colors.blue,
+              icon: Icon(_isLoggedIn ? Icons.check : Icons.search),
+              label: Text(_isLoggedIn ? '完成并返回' : '检测登录'),
             ),
+          ),
         ],
       ),
     );
   }
 
+  /// 手动检测登录状态
+  Future<void> _manualCheckLogin() async {
+    if (_webViewController == null) {
+      LogManager().cloudDrive('❌ WebView控制器为空，无法检测登录状态');
+      _showSnackBar('WebView未初始化，无法检测登录状态');
+      return;
+    }
+
+    LogManager().cloudDrive('🔍 开始手动检测登录状态...');
+    _showSnackBar('正在检测登录状态...');
+
+    try {
+      final config = widget.cloudDriveType.webViewConfig;
+      final detectionConfig = config.loginDetectionConfig;
+
+      if (detectionConfig == null) {
+        LogManager().cloudDrive('❌ 未配置登录检测');
+        _showSnackBar('未配置登录检测');
+        return;
+      }
+
+      bool isLoggedIn = false;
+      String detectionResult = '';
+
+      // 根据检测方法进行检测
+      switch (detectionConfig.detectionMethod) {
+        case 'token':
+          final token = await _getAuthorizationToken();
+          isLoggedIn = token.isNotEmpty;
+          detectionResult = isLoggedIn ? '检测到Token' : '未检测到Token';
+          break;
+
+        case 'url':
+          final currentUrl = await _webViewController!.getUrl();
+          if (currentUrl != null) {
+            final url = currentUrl.toString();
+            isLoggedIn = detectionConfig.successIndicators.any(
+              (indicator) => url.contains(indicator),
+            );
+            detectionResult = isLoggedIn ? 'URL匹配成功' : 'URL不匹配';
+          } else {
+            detectionResult = '无法获取当前URL';
+          }
+          break;
+
+        case 'cookie':
+          final cookies = await _getCookies();
+          final cookieConfig =
+              config.cookieProcessingConfig ??
+              CookieProcessingConfig.defaultConfig;
+
+          // 检查必需Cookie
+          final requiredCookies = cookieConfig.requiredCookies;
+          isLoggedIn =
+              cookies.isNotEmpty &&
+              requiredCookies.every(
+                (cookieName) => cookies.contains(cookieName),
+              );
+
+          if (isLoggedIn) {
+            detectionResult = '检测到所有必需Cookie';
+          } else {
+            final missingCookies =
+                requiredCookies
+                    .where((cookieName) => !cookies.contains(cookieName))
+                    .toList();
+            detectionResult = '缺少必需Cookie: ${missingCookies.join(', ')}';
+          }
+          break;
+      }
+
+      LogManager().cloudDrive('🔍 检测结果: $detectionResult');
+
+      if (isLoggedIn && !_isLoggedIn) {
+        setState(() {
+          _isLoggedIn = true;
+        });
+        _showSnackBar('✅ 登录检测成功！');
+        LogManager().cloudDrive(
+          '🎉 手动检测到${widget.cloudDriveType.displayName}登录成功！',
+        );
+      } else if (isLoggedIn) {
+        _showSnackBar('✅ 已登录状态');
+      } else {
+        _showSnackBar('❌ $detectionResult');
+      }
+    } catch (e) {
+      LogManager().error('❌ 手动检测登录状态失败: $e');
+      _showSnackBar('检测失败: $e');
+    }
+  }
+
+  /// 显示提示消息
+  void _showSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+      );
+    }
+  }
+
   /// 确认登录
   Future<void> _confirmLogin() async {
     if (_webViewController == null) {
-      DebugService.log(
-        '❌ WebView控制器为空，无法确认登录',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
+      LogManager().cloudDrive('❌ WebView控制器为空，无法确认登录');
       return;
     }
 
     try {
-      DebugService.log(
-        '🔐 开始确认登录流程',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
-      DebugService.log(
-        '👤 云盘类型: ${widget.cloudDriveType.displayName}',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
-      DebugService.log(
-        '🔑 认证方式: ${widget.cloudDriveType.authType}',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
+      LogManager().cloudDrive('🔐 开始确认登录流程');
+      LogManager().cloudDrive('👤 云盘类型: ${widget.cloudDriveType.displayName}');
+      LogManager().cloudDrive('🔑 认证方式: ${widget.cloudDriveType.authType}');
 
       String authData = '';
 
       // 根据认证方式获取不同的认证数据
       switch (widget.cloudDriveType.authType) {
         case AuthType.cookie:
-          DebugService.log(
-            '🍪 使用Cookie认证方式',
-            category: DebugCategory.tools,
-            subCategory: _logSubCategory,
-          );
+          LogManager().cloudDrive('🍪 使用Cookie认证方式');
           // 获取Cookie
           authData = await _getCookies();
           if (authData.isEmpty) {
-            DebugService.log(
-              '❌ 未获取到Cookie',
-              category: DebugCategory.tools,
-              subCategory: _logSubCategory,
-            );
+            LogManager().cloudDrive('❌ 未获取到Cookie');
             return;
           }
-          DebugService.log(
-            '✅ 获取到Cookie: ${authData.length} 个字符',
-            category: DebugCategory.tools,
-            subCategory: _logSubCategory,
-          );
-          DebugService.log(
-            '🍪 Cookie内容预览: ${authData.substring(0, authData.length > 200 ? 200 : authData.length)}...',
-            category: DebugCategory.tools,
-            subCategory: _logSubCategory,
-          );
+          LogManager().cloudDrive('✅ 获取到Cookie: ${authData.length} 个字符');
+          LogManager().cloudDrive('🍪 Cookie内容预览: $authData');
           break;
 
         case AuthType.authorization:
-          DebugService.log(
-            '🔑 使用Authorization Token认证方式',
-            category: DebugCategory.tools,
-            subCategory: _logSubCategory,
-          );
+          LogManager().cloudDrive('🔑 使用Authorization Token认证方式');
           // 获取Authorization Token
           authData = await _getAuthorizationToken();
           if (authData.isEmpty) {
-            DebugService.log(
-              '❌ 未获取到Authorization Token',
-              category: DebugCategory.tools,
-              subCategory: _logSubCategory,
-            );
+            LogManager().cloudDrive('❌ 未获取到Authorization Token');
             return;
           }
-          DebugService.log(
+          LogManager().cloudDrive(
             '✅ 获取到Authorization Token: ${authData.length} 个字符',
-            category: DebugCategory.tools,
-            subCategory: _logSubCategory,
           );
-          DebugService.log(
+          LogManager().cloudDrive(
             '🔑 Token内容预览: ${authData.substring(0, authData.length > 100 ? 100 : authData.length)}...',
-            category: DebugCategory.tools,
-            subCategory: _logSubCategory,
           );
           break;
+        case AuthType.qrCode:
+          // TODO: Handle this case.
+          throw UnimplementedError();
       }
 
-      DebugService.log(
-        '📤 准备调用登录成功回调',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
+      LogManager().cloudDrive('📤 准备调用登录成功回调');
 
       // 调用登录成功回调
       await widget.onLoginSuccess(authData);
 
-      DebugService.log(
-        '✅ 登录成功回调执行完成',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
+      LogManager().cloudDrive('✅ 登录成功回调执行完成');
 
       // 执行登录后处理（如果配置要求）
       final config = widget.cloudDriveType.webViewConfig;
       final postLoginConfig = config.postLoginConfig;
       if (postLoginConfig?.hasPostLoginProcessing == true) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '🔄 执行登录后处理: ${postLoginConfig!.postLoginMessage ?? '处理云盘特定逻辑'}',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
         );
 
         // 执行配置的登录后动作
         for (final action in postLoginConfig.postLoginActions) {
-          DebugService.log(
-            '⚡ 执行登录后动作: $action',
-            category: DebugCategory.tools,
-            subCategory: _logSubCategory,
-          );
+          LogManager().cloudDrive('⚡ 执行登录后动作: $action');
         }
       }
 
       // 关闭WebView
       if (mounted) {
-        DebugService.log(
-          '🚪 关闭WebView页面',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
+        LogManager().cloudDrive('🚪 关闭WebView页面');
         Navigator.of(context).pop();
       }
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 确认登录失败: $e',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 确认登录失败: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
     }
   }
 
   // Helper to get cookies from the webview
   Future<String> _getCookies() async {
     if (_webViewController == null) {
-      DebugService.log(
-        '❌ WebView控制器为空，无法获取Cookie',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
+      LogManager().cloudDrive('❌ WebView控制器为空，无法获取Cookie');
       return '';
     }
 
     try {
-      DebugService.log(
-        '🍪 开始获取WebView Cookie',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
+      LogManager().cloudDrive('🍪 开始获取WebView Cookie');
 
       final config = widget.cloudDriveType.webViewConfig;
       final cookieConfig =
@@ -769,29 +777,19 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
       // 优先使用拦截器捕获的Cookie（如果配置启用）
       if (cookieConfig.useInterceptedCookies &&
           cookieConfig.priorityCookieNames.isNotEmpty) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '🔍 检查已捕获的优先Cookie: ${cookieConfig.priorityCookieNames}',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
         );
 
         for (final cookieName in cookieConfig.priorityCookieNames) {
           if (_cookieMap.containsKey(cookieName)) {
             final priorityCookie = '$cookieName=${_cookieMap[cookieName]}';
-            DebugService.log(
-              '✅ 使用已捕获的优先Cookie: $priorityCookie',
-              category: DebugCategory.tools,
-              subCategory: _logSubCategory,
-            );
+            LogManager().cloudDrive('✅ 使用已捕获的优先Cookie: $priorityCookie');
             return priorityCookie;
           }
         }
 
-        DebugService.log(
-          '⚠️ 未找到已捕获的优先Cookie，尝试从document.cookie获取',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
+        LogManager().cloudDrive('⚠️ 未找到已捕获的优先Cookie，尝试从document.cookie获取');
       }
 
       final result = await _webViewController!.evaluateJavascript(
@@ -800,23 +798,13 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
 
       final cookies = result?.toString() ?? '';
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '🍪 Cookie获取结果: ${cookies.isNotEmpty ? '成功' : '失败'}',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
       );
 
       if (cookies.isNotEmpty) {
-        DebugService.log(
-          '🍪 获取到Cookie: ${cookies.length} 个字符',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
-        DebugService.log(
-          '🍪 Cookie内容预览: ${cookies.substring(0, cookies.length > 200 ? 200 : cookies.length)}...',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
+        LogManager().cloudDrive('🍪 获取到Cookie: ${cookies.length} 个字符');
+        LogManager().cloudDrive('🍪 Cookie内容预览: $cookies');
 
         // 如果配置要求提取特定Cookie
         if (cookieConfig.extractSpecificCookies &&
@@ -830,25 +818,13 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
           }
         }
       } else {
-        DebugService.log(
-          '❌ 未获取到Cookie',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 未获取到Cookie');
       }
 
       return cookies;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 获取WebView Cookie失败: $e',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 获取WebView Cookie失败: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return '';
     }
   }
@@ -858,10 +834,8 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
     String cookies,
     CookieProcessingConfig cookieConfig,
   ) {
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔍 从document.cookie中提取特定Cookie: ${cookieConfig.priorityCookieNames}',
-      category: DebugCategory.tools,
-      subCategory: _logSubCategory,
     );
 
     final cookieMap = <String, String>{};
@@ -881,25 +855,15 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
     for (final cookieName in cookieConfig.priorityCookieNames) {
       if (cookieMap.containsKey(cookieName)) {
         final extractedCookie = '$cookieName=${cookieMap[cookieName]}';
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 从document.cookie中提取到优先Cookie: $extractedCookie',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
         );
         return extractedCookie;
       }
     }
 
-    DebugService.log(
-      '❌ document.cookie中未找到优先Cookie',
-      category: DebugCategory.tools,
-      subCategory: _logSubCategory,
-    );
-    DebugService.log(
-      '🍪 可用的cookie: ${cookieMap.keys.toList()}',
-      category: DebugCategory.tools,
-      subCategory: _logSubCategory,
-    );
+    LogManager().cloudDrive('❌ document.cookie中未找到优先Cookie');
+    LogManager().cloudDrive('🍪 可用的cookie: ${cookieMap.keys.toList()}');
 
     return '';
   }
@@ -907,37 +871,23 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
   // Helper to get authorization token from the webview
   Future<String> _getAuthorizationToken() async {
     if (_webViewController == null) {
-      DebugService.log(
-        '❌ WebView控制器为空，无法获取token',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
+      LogManager().cloudDrive('❌ WebView控制器为空，无法获取token');
       return '';
     }
 
     try {
-      DebugService.log(
-        '🔍 开始获取Authorization Token',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 开始获取Authorization Token');
 
       final config = widget.cloudDriveType.webViewConfig;
       final tokenConfig = config.tokenConfig;
 
       if (tokenConfig == null) {
-        DebugService.log(
-          '⚠️ 未配置TokenConfig，无法获取token',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
+        LogManager().cloudDrive('⚠️ 未配置TokenConfig，无法获取token');
         return '';
       }
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '📋 TokenConfig配置: localStorageKeys=${tokenConfig.localStorageKeys}, sessionStorageKeys=${tokenConfig.sessionStorageKeys}, cookieNames=${tokenConfig.cookieNames}',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
       );
 
       // 使用配置化的token获取方式 - 简化JavaScript，只获取原始数据
@@ -952,20 +902,14 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
             );
             final data = result?.toString() ?? '';
             if (data.isNotEmpty) {
-              DebugService.log(
+              LogManager().cloudDrive(
                 '✅ 从localStorage.$key获取到原始数据: ${data.length}字符',
-                category: DebugCategory.tools,
-                subCategory: _logSubCategory,
               );
               rawData = data;
               break;
             }
           } catch (e) {
-            DebugService.log(
-              '⚠️ 从localStorage.$key获取数据失败: $e',
-              category: DebugCategory.tools,
-              subCategory: _logSubCategory,
-            );
+            LogManager().cloudDrive('⚠️ 从localStorage.$key获取数据失败: $e');
           }
         }
       }
@@ -979,20 +923,14 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
             );
             final data = result?.toString() ?? '';
             if (data.isNotEmpty) {
-              DebugService.log(
+              LogManager().cloudDrive(
                 '✅ 从sessionStorage.$key获取到原始数据: ${data.length}字符',
-                category: DebugCategory.tools,
-                subCategory: _logSubCategory,
               );
               rawData = data;
               break;
             }
           } catch (e) {
-            DebugService.log(
-              '⚠️ 从sessionStorage.$key获取数据失败: $e',
-              category: DebugCategory.tools,
-              subCategory: _logSubCategory,
-            );
+            LogManager().cloudDrive('⚠️ 从sessionStorage.$key获取数据失败: $e');
           }
         }
       }
@@ -1007,44 +945,24 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
           if (cookies.isNotEmpty) {
             // 简单获取cookie字符串，让TokenParser处理提取逻辑
             rawData = cookies;
-            DebugService.log(
-              '✅ 获取到cookie原始数据: ${cookies.length}字符',
-              category: DebugCategory.tools,
-              subCategory: _logSubCategory,
-            );
+            LogManager().cloudDrive('✅ 获取到cookie原始数据: ${cookies.length}字符');
           }
         } catch (e) {
-          DebugService.log(
-            '⚠️ 获取cookie数据失败: $e',
-            category: DebugCategory.tools,
-            subCategory: _logSubCategory,
-          );
+          LogManager().cloudDrive('⚠️ 获取cookie数据失败: $e');
         }
       }
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '📜 原始数据获取完成: ${rawData.isNotEmpty ? '成功' : '失败'}',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
       );
 
       if (rawData.isNotEmpty) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '🔑 获取到原始数据: ${rawData.substring(0, rawData.length > 100 ? 100 : rawData.length)}...',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
         );
-        DebugService.log(
-          '🔑 原始数据长度: ${rawData.length} 字符',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
+        LogManager().cloudDrive('🔑 原始数据长度: ${rawData.length} 字符');
 
-        DebugService.log(
-          '🔧 准备调用TokenParser.parseToken',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
+        LogManager().cloudDrive('🔧 准备调用TokenParser.parseToken');
 
         // 使用TokenParser解析原始数据
         final parsedToken = TokenParser.parseToken(
@@ -1053,38 +971,18 @@ class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
           widget.cloudDriveType,
         );
 
-        DebugService.log(
-          '🔑 TokenParser调用完成',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
-        DebugService.log(
-          '🔑 解析后Token长度: ${parsedToken.length} 字符',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
+        LogManager().cloudDrive('🔑 TokenParser调用完成');
+        LogManager().cloudDrive('🔑 解析后Token长度: ${parsedToken.length} 字符');
 
         return parsedToken;
       } else {
-        DebugService.log(
-          '❌ 未获取到原始数据',
-          category: DebugCategory.tools,
-          subCategory: _logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 未获取到原始数据');
       }
 
       return '';
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 获取WebView Authorization Token失败: $e',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: _logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 获取WebView Authorization Token失败: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return '';
     }
   }

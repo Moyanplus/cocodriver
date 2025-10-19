@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import 'pan123_base_service.dart';
 import 'pan123_config.dart';
@@ -12,45 +12,25 @@ class Pan123FileOperationService {
     dynamic error,
     StackTrace? stackTrace,
   ) {
-    DebugService.log(
-      '❌ 123云盘 - $operation 失败: $error',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
+    LogManager().cloudDrive('❌ 123云盘 - $operation 失败: $error');
     if (stackTrace != null) {
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
     }
   }
 
   /// 统一日志记录
   static void _logInfo(String message, {Map<String, dynamic>? params}) {
-    DebugService.log(
-      message,
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
+    LogManager().cloudDrive(message);
   }
 
   /// 统一成功日志记录
   static void _logSuccess(String message, {Map<String, dynamic>? details}) {
-    DebugService.log(
-      '✅ 123云盘 - $message',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
+    LogManager().cloudDrive('✅ 123云盘 - $message');
   }
 
   /// 统一错误日志记录
   static void _logError(String message, dynamic error) {
-    DebugService.log(
-      '❌ 123云盘 - $message: $error',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
+    LogManager().cloudDrive('❌ 123云盘 - $message: $error');
   }
 
   /// 重命名文件
@@ -131,24 +111,14 @@ class Pan123FileOperationService {
     required String targetParentFileId,
   }) async {
     try {
-      DebugService.log(
-        '🚚 123云盘 - 开始移动文件',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
+      LogManager().cloudDrive('🚚 123云盘 - 开始移动文件');
+      LogManager().cloudDrive(
         '📋 123云盘 - 请求参数: fileId=$fileId, targetParentFileId=$targetParentFileId',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
       );
 
       // 验证账号登录状态
       if (!account.isLoggedIn) {
-        DebugService.log(
-          '❌ 123云盘 - 账号未登录，请先登录',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 123云盘 - 账号未登录，请先登录');
         return false;
       }
 
@@ -180,21 +150,13 @@ class Pan123FileOperationService {
         'RequestSource': null,
       };
 
-      DebugService.log(
-        '🌐 123云盘 - 请求URL: $url',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('🌐 123云盘 - 请求URL: $url');
 
       // 发送请求
       final dio = Pan123BaseService.createDio(account);
       final response = await dio.post(url.toString(), data: params);
 
-      DebugService.log(
-        '📡 123云盘 - 响应状态: ${response.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('📡 123云盘 - 响应状态: ${response.statusCode}');
 
       final responseData = response.data as Map<String, dynamic>;
 
@@ -204,26 +166,16 @@ class Pan123FileOperationService {
       );
 
       if (processedResponse['code'] == 0) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 123云盘 - 文件移动成功: $fileId -> $targetParentFileId',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
         );
         return true;
       } else {
-        DebugService.log(
-          '❌ 123云盘 - 文件移动失败',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 123云盘 - 文件移动失败');
         return false;
       }
     } catch (e) {
-      DebugService.log(
-        '❌ 123云盘 - 移动文件失败: $e',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 123云盘 - 移动文件失败: $e');
       return false;
     }
   }
@@ -240,24 +192,14 @@ class Pan123FileOperationService {
     String? parentFileId,
   }) async {
     try {
-      DebugService.log(
-        '📋 123云盘 - 开始复制文件',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
+      LogManager().cloudDrive('📋 123云盘 - 开始复制文件');
+      LogManager().cloudDrive(
         '📋 123云盘 - 请求参数: fileId=$fileId, targetFileId=$targetFileId',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
       );
 
       // 验证账号登录状态
       if (!account.isLoggedIn) {
-        DebugService.log(
-          '❌ 123云盘 - 账号未登录，请先登录',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 123云盘 - 账号未登录，请先登录');
         return false;
       }
 
@@ -282,21 +224,13 @@ class Pan123FileOperationService {
         'targetFileId': int.tryParse(targetFileId) ?? 0,
       };
 
-      DebugService.log(
-        '🌐 123云盘 - 请求URL: $url',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('🌐 123云盘 - 请求URL: $url');
 
       // 发送请求
       final dio = Pan123BaseService.createDio(account);
       final response = await dio.post(url.toString(), data: params);
 
-      DebugService.log(
-        '📡 123云盘 - 响应状态: ${response.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('📡 123云盘 - 响应状态: ${response.statusCode}');
 
       final responseData = response.data as Map<String, dynamic>;
 
@@ -306,26 +240,14 @@ class Pan123FileOperationService {
       );
 
       if (processedResponse['code'] == 0) {
-        DebugService.log(
-          '✅ 123云盘 - 文件复制成功: $fileId -> $targetFileId',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 123云盘 - 文件复制成功: $fileId -> $targetFileId');
         return true;
       } else {
-        DebugService.log(
-          '❌ 123云盘 - 文件复制失败',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 123云盘 - 文件复制失败');
         return false;
       }
     } catch (e) {
-      DebugService.log(
-        '❌ 123云盘 - 复制文件失败: $e',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 123云盘 - 复制文件失败: $e');
       return false;
     }
   }
@@ -342,24 +264,14 @@ class Pan123FileOperationService {
     String? parentFileId,
   }) async {
     try {
-      DebugService.log(
-        '🗑️ 123云盘 - 开始删除文件',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
+      LogManager().cloudDrive('🗑️ 123云盘 - 开始删除文件');
+      LogManager().cloudDrive(
         '📋 123云盘 - 请求参数: fileId=$fileId, fileName=$fileName',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
       );
 
       // 验证账号登录状态
       if (!account.isLoggedIn) {
-        DebugService.log(
-          '❌ 123云盘 - 账号未登录，请先登录',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 123云盘 - 账号未登录，请先登录');
         return false;
       }
 
@@ -419,21 +331,13 @@ class Pan123FileOperationService {
         'safeBox': false,
       };
 
-      DebugService.log(
-        '🌐 123云盘 - 请求URL: $url',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('🌐 123云盘 - 请求URL: $url');
 
       // 发送请求
       final dio = Pan123BaseService.createDio(account);
       final response = await dio.post(url.toString(), data: params);
 
-      DebugService.log(
-        '📡 123云盘 - 响应状态: ${response.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('📡 123云盘 - 响应状态: ${response.statusCode}');
 
       final responseData = response.data as Map<String, dynamic>;
 
@@ -443,26 +347,14 @@ class Pan123FileOperationService {
       );
 
       if (processedResponse['code'] == 0) {
-        DebugService.log(
-          '✅ 123云盘 - 文件删除成功: $fileId',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 123云盘 - 文件删除成功: $fileId');
         return true;
       } else {
-        DebugService.log(
-          '❌ 123云盘 - 文件删除失败',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 123云盘 - 文件删除失败');
         return false;
       }
     } catch (e) {
-      DebugService.log(
-        '❌ 123云盘 - 删除文件失败: $e',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 123云盘 - 删除文件失败: $e');
       return false;
     }
   }

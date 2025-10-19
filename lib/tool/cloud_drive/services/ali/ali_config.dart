@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 
 /// 阿里云盘配置
 class AliConfig {
@@ -199,11 +199,7 @@ class AliConfig {
       final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
       return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
     } catch (e) {
-      DebugService.log(
-        '⚠️ 时间戳格式化失败: $e',
-        category: DebugCategory.tools,
-        subCategory: logSubCategory,
-      );
+      LogManager().cloudDrive('⚠️ 时间戳格式化失败: $e');
       return '未知时间';
     }
   }

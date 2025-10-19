@@ -20,7 +20,6 @@
 格式: {功能}_{page}.dart
 示例:
 - home_page.dart
-- category_page.dart
 - user_profile_page.dart
 - settings_page.dart
 - theme_settings_page.dart
@@ -129,7 +128,6 @@ features/
 格式: {功能}Page
 示例:
 class HomePage extends StatelessWidget {}
-class CategoryPage extends StatelessWidget {}
 class UserProfilePage extends StatelessWidget {}
 ```
 
@@ -213,7 +211,6 @@ const double DEFAULT_PADDING = 16.0;
 #### 页面文件
 - `main_screen.dart` → `main_screen_page.dart`
 - `home_page.dart` → `home_page.dart` ✓ (已符合规范)
-- `category_page.dart` → `category_page.dart` ✓ (已符合规范)
 - `user_page.dart` → `user_profile_page.dart`
 - `settings_page.dart` → `settings_page.dart` ✓ (已符合规范)
 - `theme_settings_page.dart` → `theme_settings_page.dart` ✓ (已符合规范)

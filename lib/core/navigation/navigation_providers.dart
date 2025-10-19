@@ -5,8 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/theme_models.dart';
 import '../services/theme_service.dart';
 import '../../features/home/pages/home_page.dart';
-import '../../features/category/pages/category_page.dart';
 import '../../features/user/pages/user_profile_page.dart';
+import '../../tool/cloud_drive/pages/cloud_drive_assistant_page.dart';
 
 // ==================== 应用Provider包装器 ====================
 /// 应用提供者包装器
@@ -151,7 +151,7 @@ final currentPageIndexProvider = StateProvider<int>((ref) => 0);
 
 /// 页面列表提供者
 final pagesProvider = Provider<List<Widget>>(
-  (ref) => const [HomePage(), CategoryPage(), UserProfilePage()],
+  (ref) => const [HomePage(), CloudDriveAssistantPage(), UserProfilePage()],
 );
 
 /// 页面导航状态提供者

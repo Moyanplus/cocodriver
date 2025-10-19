@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../base/cloud_drive_file_service.dart';
 import '../models/cloud_drive_models.dart';
 import '../business/cloud_drive_business_service.dart';
@@ -40,7 +40,7 @@ class _CloudDriveFileDetailPageState extends State<CloudDriveFileDetailPage> {
         _error = null;
       });
 
-      DebugService.log('📄 开始加载文件详情: ${widget.file.name}');
+      LogManager().cloudDrive('📄 开始加载文件详情: ${widget.file.name}');
 
       final detail = await CloudDriveFileService.getFileDetail(
         account: widget.account,
@@ -54,7 +54,7 @@ class _CloudDriveFileDetailPageState extends State<CloudDriveFileDetailPage> {
         });
       }
     } catch (e) {
-      DebugService.error('❌ 加载文件详情失败: $e', null);
+      LogManager().error('❌ 加载文件详情失败: $e');
       if (mounted) {
         setState(() {
           _error = e.toString();
@@ -280,7 +280,7 @@ class _CloudDriveFileDetailPageState extends State<CloudDriveFileDetailPage> {
           backgroundColor: Colors.green,
         ),
       );
-      DebugService.log('📋 提取码已复制: $password');
+      LogManager().cloudDrive('📋 提取码已复制: $password');
     }
   }
 
@@ -291,7 +291,7 @@ class _CloudDriveFileDetailPageState extends State<CloudDriveFileDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('下载链接已复制'), backgroundColor: Colors.green),
       );
-      DebugService.log('📋 下载链接已复制: $downloadLink');
+      LogManager().cloudDrive('📋 下载链接已复制: $downloadLink');
     }
   }
 
@@ -340,7 +340,7 @@ class _CloudDriveFileDetailPageState extends State<CloudDriveFileDetailPage> {
             backgroundColor: Colors.green,
           ),
         );
-        DebugService.log('✅ 下载任务创建成功: ${result.taskId}');
+        LogManager().cloudDrive('✅ 下载任务创建成功: ${result.taskId}');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -353,7 +353,7 @@ class _CloudDriveFileDetailPageState extends State<CloudDriveFileDetailPage> {
       // 关闭加载对话框
       Navigator.of(context).pop();
 
-      DebugService.error('❌ 下载失败: $e', null);
+      LogManager().error('❌ 下载失败: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('下载失败: $e'), backgroundColor: Colors.red),
       );

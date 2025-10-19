@@ -9,19 +9,16 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appTitle => 'Flutter UI模板';
+  String get appTitle => '可可云盘';
 
   @override
-  String get welcomeTitle => '欢迎使用Flutter UI模板';
+  String get welcomeTitle => '欢迎使用可可云盘';
 
   @override
-  String get welcomeSubtitle => '这是一个基于可可世界设计的UI模板';
+  String get welcomeSubtitle => '聚合云盘管理，支持百度网盘、阿里云盘、夸克云盘等';
 
   @override
   String get home => '首页';
-
-  @override
-  String get category => '分类';
 
   @override
   String get profile => '我的';
@@ -30,28 +27,28 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings => '设置';
 
   @override
-  String get themeSystem => '主题系统';
+  String get themeSystem => '多云盘支持';
 
   @override
-  String get themeSystemDesc => '多种精美主题';
+  String get themeSystemDesc => '支持百度网盘、阿里云盘等';
 
   @override
-  String get navigationSystem => '导航系统';
+  String get navigationSystem => '文件管理';
 
   @override
-  String get navigationSystemDesc => '流畅的页面切换';
+  String get navigationSystemDesc => '上传、下载、分享文件';
 
   @override
-  String get componentLibrary => '组件库';
+  String get componentLibrary => '批量操作';
 
   @override
-  String get componentLibraryDesc => '丰富的UI组件';
+  String get componentLibraryDesc => '批量上传、下载、移动';
 
   @override
-  String get settingsPage => '设置页面';
+  String get settingsPage => '安全存储';
 
   @override
-  String get settingsPageDesc => '个性化配置';
+  String get settingsPageDesc => '加密存储，保护隐私';
 
   @override
   String get appearanceSettings => '外观设置';

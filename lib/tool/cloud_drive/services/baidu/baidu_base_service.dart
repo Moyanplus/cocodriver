@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import 'baidu_config.dart';
 
@@ -31,50 +31,24 @@ class BaiduBaseService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          DebugService.log(
+          LogManager().cloudDrive(
             '📡 百度网盘 - 发送请求: ${options.method} ${options.uri}',
-            category: DebugCategory.tools,
-            subCategory: BaiduConfig.logSubCategory,
           );
-          DebugService.log(
-            '📋 百度网盘 - 请求头: ${options.headers}',
-            category: DebugCategory.tools,
-            subCategory: BaiduConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('📋 百度网盘 - 请求头: ${options.headers}');
           if (options.data != null) {
-            DebugService.log(
-              '📤 百度网盘 - 请求体: ${options.data}',
-              category: DebugCategory.tools,
-              subCategory: BaiduConfig.logSubCategory,
-            );
+            LogManager().cloudDrive('📤 百度网盘 - 请求体: ${options.data}');
           }
           handler.next(options);
         },
         onResponse: (response, handler) {
-          DebugService.log(
-            '📡 百度网盘 - 收到响应: ${response.statusCode}',
-            category: DebugCategory.tools,
-            subCategory: BaiduConfig.logSubCategory,
-          );
-          DebugService.log(
-            '📄 百度网盘 - 响应数据: ${response.data}',
-            category: DebugCategory.tools,
-            subCategory: BaiduConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('📡 百度网盘 - 收到响应: ${response.statusCode}');
+          LogManager().cloudDrive('📄 百度网盘 - 响应数据: ${response.data}');
           handler.next(response);
         },
         onError: (error, handler) {
-          DebugService.log(
-            '❌ 百度网盘 - 请求错误: ${error.message}',
-            category: DebugCategory.tools,
-            subCategory: BaiduConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('❌ 百度网盘 - 请求错误: ${error.message}');
           if (error.response != null) {
-            DebugService.log(
-              '📄 百度网盘 - 错误响应: ${error.response?.data}',
-              category: DebugCategory.tools,
-              subCategory: BaiduConfig.logSubCategory,
-            );
+            LogManager().cloudDrive('📄 百度网盘 - 错误响应: ${error.response?.data}');
           }
           handler.next(error);
         },
@@ -98,26 +72,14 @@ class BaiduBaseService {
 
   /// 处理API响应
   static Map<String, dynamic> handleApiResponse(Map<String, dynamic> response) {
-    DebugService.log(
-      '📊 百度网盘 - 处理API响应: errno=${response['errno']}',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('📊 百度网盘 - 处理API响应: errno=${response['errno']}');
 
     if (isSuccessResponse(response)) {
-      DebugService.log(
-        '✅ 百度网盘 - API请求成功',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('✅ 百度网盘 - API请求成功');
       return response;
     } else {
       final message = getResponseMessage(response);
-      DebugService.log(
-        '❌ 百度网盘 - API请求失败: $message',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 百度网盘 - API请求失败: $message');
       throw Exception(message);
     }
   }
@@ -147,11 +109,7 @@ class BaiduBaseService {
       params['search'] = search;
     }
 
-    DebugService.log(
-      '🔧 百度网盘 - 构建请求参数: $params',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🔧 百度网盘 - 构建请求参数: $params');
 
     return params;
   }
@@ -159,20 +117,12 @@ class BaiduBaseService {
   /// 格式化时间戳
   static String formatTimestamp(int timestamp) {
     if (timestamp == 0) {
-      DebugService.log(
-        '⚠️ 百度网盘 - 时间戳为0，返回未知时间',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('⚠️ 百度网盘 - 时间戳为0，返回未知时间');
       return '未知时间';
     }
 
     final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
-    DebugService.log(
-      '⏰ 百度网盘 - 时间戳转换: $timestamp -> $dateTime',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('⏰ 百度网盘 - 时间戳转换: $timestamp -> $dateTime');
 
     // 返回具体的日期时间格式
     final year = dateTime.year;
@@ -182,11 +132,7 @@ class BaiduBaseService {
     final minute = dateTime.minute.toString().padLeft(2, '0');
 
     final formatted = '$year-$month-$day $hour:$minute';
-    DebugService.log(
-      '📅 百度网盘 - 格式化时间: $formatted',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('📅 百度网盘 - 格式化时间: $formatted');
 
     return formatted;
   }
@@ -194,11 +140,7 @@ class BaiduBaseService {
   /// 格式化文件大小
   static String formatFileSize(int bytes) {
     if (bytes == 0) {
-      DebugService.log(
-        '📏 百度网盘 - 文件大小为0，返回0 B',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📏 百度网盘 - 文件大小为0，返回0 B');
       return '0 B';
     }
 
@@ -206,28 +148,18 @@ class BaiduBaseService {
     int i = 0;
     double size = bytes.toDouble();
 
-    DebugService.log(
-      '📏 百度网盘 - 开始格式化文件大小: $bytes bytes',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('📏 百度网盘 - 开始格式化文件大小: $bytes bytes');
 
     while (size >= 1024 && i < suffixes.length - 1) {
       size /= 1024;
       i++;
-      DebugService.log(
+      LogManager().cloudDrive(
         '📏 百度网盘 - 转换步骤: ${suffixes[i - 1]} -> ${suffixes[i]}, 大小: $size',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
       );
     }
 
     final result = '${size.toStringAsFixed(1)} ${suffixes[i]}';
-    DebugService.log(
-      '✅ 百度网盘 - 文件大小格式化完成: $bytes bytes -> $result',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('✅ 百度网盘 - 文件大小格式化完成: $bytes bytes -> $result');
 
     return result;
   }

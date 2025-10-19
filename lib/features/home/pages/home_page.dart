@@ -81,28 +81,28 @@ class _HomePageState extends ConsumerState<HomePage>
             ),
             delegate: SliverChildListDelegate([
               _buildFeatureCard(
-                icon: Icons.palette,
+                icon: Icons.cloud,
                 title: l10n.themeSystem,
                 subtitle: l10n.themeSystemDesc,
                 color: Colors.blue,
                 l10n: l10n,
               ),
               _buildFeatureCard(
-                icon: Icons.navigation,
+                icon: Icons.folder,
                 title: l10n.navigationSystem,
                 subtitle: l10n.navigationSystemDesc,
                 color: Colors.green,
                 l10n: l10n,
               ),
               _buildFeatureCard(
-                icon: Icons.widgets,
+                icon: Icons.playlist_add_check,
                 title: l10n.componentLibrary,
                 subtitle: l10n.componentLibraryDesc,
                 color: Colors.orange,
                 l10n: l10n,
               ),
               _buildFeatureCard(
-                icon: Icons.settings,
+                icon: Icons.security,
                 title: l10n.settingsPage,
                 subtitle: l10n.settingsPageDesc,
                 color: Colors.purple,

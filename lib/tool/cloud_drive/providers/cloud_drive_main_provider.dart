@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../core/cloud_drive_initializer.dart';
 import '../models/cloud_drive_models.dart';
 import 'cloud_drive_state.dart';
@@ -12,10 +12,10 @@ class CloudDriveMainProvider extends StateNotifier<CloudDriveState> {
   /// 初始化云盘模块
   Future<void> initialize() async {
     try {
-      DebugService.log(
-        '🚀 Provider: 开始初始化云盘模块',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.provider',
+      LogManager().cloudDrive(
+        '开始初始化云盘模块',
+        className: 'CloudDriveMainProvider',
+        methodName: 'initialize',
       );
 
       state = state.copyWith(isInitialized: false);
@@ -25,16 +25,17 @@ class CloudDriveMainProvider extends StateNotifier<CloudDriveState> {
 
       state = state.copyWith(isInitialized: true);
 
-      DebugService.log(
-        '✅ Provider: 云盘模块初始化成功',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.provider',
+      LogManager().cloudDrive(
+        '云盘模块初始化成功',
+        className: 'CloudDriveMainProvider',
+        methodName: 'initialize',
       );
     } catch (e) {
-      DebugService.log(
-        '❌ Provider: 云盘模块初始化失败 - $e',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.provider',
+      LogManager().error(
+        '云盘模块初始化失败 - $e',
+        className: 'CloudDriveMainProvider',
+        methodName: 'initialize',
+        exception: e,
       );
       rethrow;
     }
@@ -43,10 +44,10 @@ class CloudDriveMainProvider extends StateNotifier<CloudDriveState> {
   /// 重置云盘模块
   Future<void> reset() async {
     try {
-      DebugService.log(
-        '🔄 Provider: 开始重置云盘模块',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.provider',
+      LogManager().cloudDrive(
+        '开始重置云盘模块',
+        className: 'CloudDriveMainProvider',
+        methodName: 'reset',
       );
 
       // 重置云盘模块
@@ -55,16 +56,17 @@ class CloudDriveMainProvider extends StateNotifier<CloudDriveState> {
       // 重置状态
       state = const CloudDriveState();
 
-      DebugService.log(
-        '✅ Provider: 云盘模块重置成功',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.provider',
+      LogManager().cloudDrive(
+        '云盘模块重置成功',
+        className: 'CloudDriveMainProvider',
+        methodName: 'reset',
       );
     } catch (e) {
-      DebugService.log(
-        '❌ Provider: 云盘模块重置失败 - $e',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.provider',
+      LogManager().error(
+        '云盘模块重置失败 - $e',
+        className: 'CloudDriveMainProvider',
+        methodName: 'reset',
+        exception: e,
       );
       rethrow;
     }

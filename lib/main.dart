@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,6 +14,8 @@ import 'features/settings/pages/settings_page.dart';
 import 'features/settings/pages/theme_settings_page.dart';
 import 'features/settings/pages/language_settings_page.dart';
 import 'l10n/app_localizations.dart';
+import 'test/pages/webview_test_page.dart';
+import 'tool/cloud_drive/services/services_registry.dart';
 
 void main() async {
   // 确保Flutter绑定系统已初始化
@@ -21,9 +24,12 @@ void main() async {
   // 初始化依赖注入
   await di.init();
 
+  // 初始化云盘服务
+  CloudDriveServicesRegistry.initialize();
+
   // 启动性能监控
   di.get<MemoryManager>().startMonitoring();
-  di.get<PerformanceMonitor>().startMonitoring();
+  // di.get<PerformanceMonitor>().startMonitoring(); // 暂时关闭性能监控日志
 
   runApp(const AppProviders(child: MyApp()));
 }
@@ -50,7 +56,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       splitScreenMode: true,
       builder: (context, child) {
         return MaterialApp(
-          title: 'Flutter UI模板',
+          title: '可可云盘',
           theme: themeData,
           locale: currentLocale,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -66,6 +72,9 @@ class _MyAppState extends ConsumerState<MyApp> {
             '/settings': (context) => const SettingsPage(),
             '/settings/theme': (context) => const ThemeSettingsPage(),
             '/settings/language': (context) => const LanguageSettingsPage(),
+            // 测试页面路由（仅在debug模式可用）
+            if (kDebugMode)
+              '/test/webview': (context) => const WebViewTestPage(),
           },
           builder:
               (context, child) => MediaQuery(

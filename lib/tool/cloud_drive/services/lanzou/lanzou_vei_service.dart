@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import 'lanzou_config.dart';
 
 /// 蓝奏云vei参数管理服务
@@ -19,11 +19,7 @@ class LanzouVeiService {
   /// 从HTML页面中提取vei参数
   static String? extractVeiFromHtml(String html) {
     try {
-      DebugService.log(
-        '🔍 蓝奏云 - 开始从HTML中提取vei参数',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 蓝奏云 - 开始从HTML中提取vei参数');
 
       // 使用正则表达式匹配vei参数
       final regex = RegExp(r"'vei':'([^']+)'");
@@ -31,11 +27,7 @@ class LanzouVeiService {
 
       if (match != null && match.groupCount >= 1) {
         final vei = match.group(1);
-        DebugService.log(
-          '✅ 蓝奏云 - 成功提取vei参数: $vei',
-          category: DebugCategory.tools,
-          subCategory: LanzouConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 蓝奏云 - 成功提取vei参数: $vei');
         return vei;
       }
 
@@ -45,29 +37,21 @@ class LanzouVeiService {
 
       if (match2 != null && match2.groupCount >= 1) {
         final vei = match2.group(1);
-        DebugService.log(
-          '✅ 蓝奏云 - 成功提取vei参数(备用): $vei',
-          category: DebugCategory.tools,
-          subCategory: LanzouConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 蓝奏云 - 成功提取vei参数(备用): $vei');
         return vei;
       }
 
-      DebugService.error('❌ 蓝奏云 - 无法从HTML中提取vei参数', null);
+      LogManager().cloudDrive('❌ 蓝奏云 - 无法从HTML中提取vei参数');
       return null;
     } catch (e) {
-      DebugService.error('❌ 蓝奏云 - 提取vei参数时发生错误: $e', e);
+      LogManager().cloudDrive('❌ 蓝奏云 - 提取vei参数时发生错误: $e');
       return null;
     }
   }
 
   /// 创建包含Cookie的请求头
   static Map<String, String> _createHeaders(String cookies, String uid) {
-    DebugService.log(
-      '🔧 蓝奏云 - 创建vei请求头',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🔧 蓝奏云 - 创建vei请求头');
 
     final headers = Map<String, String>.from(LanzouConfig.pageHeaders);
     headers['Cookie'] = cookies;
@@ -75,11 +59,7 @@ class LanzouVeiService {
     headers['Origin'] = LanzouConfig.baseUrl;
     headers['X-Requested-With'] = 'XMLHttpRequest';
 
-    DebugService.log(
-      '🔧 蓝奏云 - vei请求头创建完成',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🔧 蓝奏云 - vei请求头创建完成');
 
     return headers;
   }
@@ -90,16 +70,8 @@ class LanzouVeiService {
     String? cookies,
   }) async {
     try {
-      DebugService.log(
-        '🔍 蓝奏云 - 开始获取vei参数',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
-      DebugService.log(
-        '👤 蓝奏云 - 用户ID: $userId',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 蓝奏云 - 开始获取vei参数');
+      LogManager().cloudDrive('👤 蓝奏云 - 用户ID: $userId');
 
       // 创建包含Cookie的请求头
       final headers =
@@ -125,25 +97,20 @@ class LanzouVeiService {
         if (vei != null) {
           // 将vei参数存储到配置中
           LanzouConfig.setVeiParameter(vei);
-          DebugService.log(
-            '✅ 蓝奏云 - 成功获取并存储vei参数: $vei',
-            category: DebugCategory.tools,
-            subCategory: LanzouConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('✅ 蓝奏云 - 成功获取并存储vei参数: $vei');
           return vei;
         } else {
-          DebugService.error('❌ 蓝奏云 - 无法从响应中提取vei参数', null);
+          LogManager().cloudDrive('❌ 蓝奏云 - 无法从响应中提取vei参数');
           return null;
         }
       } else {
-        DebugService.error(
+        LogManager().cloudDrive(
           '❌ 蓝奏云 - 获取vei参数失败，状态码: ${response.statusCode}',
-          null,
         );
         return null;
       }
     } catch (e) {
-      DebugService.error('❌ 蓝奏云 - 获取vei参数时发生错误: $e', e);
+      LogManager().cloudDrive('❌ 蓝奏云 - 获取vei参数时发生错误: $e');
       return null;
     }
   }
@@ -155,33 +122,21 @@ class LanzouVeiService {
     String? cookies,
   }) async {
     try {
-      DebugService.log(
-        '🔍 蓝奏云 - 检查vei参数状态',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 蓝奏云 - 检查vei参数状态');
 
       // 如果已经有vei参数，直接返回
       if (LanzouConfig.hasVeiParameter()) {
         final vei = LanzouConfig.getVeiParameter();
-        DebugService.log(
-          '✅ 蓝奏云 - 使用已缓存的vei参数: $vei',
-          category: DebugCategory.tools,
-          subCategory: LanzouConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 蓝奏云 - 使用已缓存的vei参数: $vei');
         return vei;
       }
 
       // 如果没有vei参数，则获取
-      DebugService.log(
-        '🔄 蓝奏云 - 未找到vei参数，开始获取',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔄 蓝奏云 - 未找到vei参数，开始获取');
 
       return await getVeiParameter(userId, cookies: cookies);
     } catch (e) {
-      DebugService.error('❌ 蓝奏云 - 初始化vei参数失败: $e', e);
+      LogManager().cloudDrive('❌ 蓝奏云 - 初始化vei参数失败: $e');
       return null;
     }
   }

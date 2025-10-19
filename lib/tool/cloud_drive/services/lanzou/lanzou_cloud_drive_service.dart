@@ -2,7 +2,7 @@ import 'dart:io'; // Added for File
 
 import 'package:dio/dio.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import 'lanzou_base_service.dart';
 import 'lanzou_config.dart';
@@ -18,45 +18,25 @@ class LanzouCloudDriveService {
     dynamic error,
     StackTrace? stackTrace,
   ) {
-    DebugService.log(
-      '❌ 蓝奏云盘 - $operation 失败: $error',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('❌ 蓝奏云盘 - $operation 失败: $error');
     if (stackTrace != null) {
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
     }
   }
 
   /// 统一日志记录
   static void _logInfo(String message, {Map<String, dynamic>? params}) {
-    DebugService.log(
-      message,
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive(message);
   }
 
   /// 统一成功日志记录
   static void _logSuccess(String message, {Map<String, dynamic>? details}) {
-    DebugService.log(
-      '✅ 蓝奏云盘 - $message',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('✅ 蓝奏云盘 - $message');
   }
 
   /// 统一错误日志记录
   static void _logError(String message, dynamic error) {
-    DebugService.log(
-      '❌ 蓝奏云盘 - $message: $error',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('❌ 蓝奏云盘 - $message: $error');
   }
 
   // 创建dio实例 - 使用统一的基础服务
@@ -76,31 +56,15 @@ class LanzouCloudDriveService {
   /// 从 Cookie 中提取 UID
   static String? extractUidFromCookies(String cookies) {
     try {
-      DebugService.log(
-        '🔍 蓝奏云 - 开始从 Cookie 中提取 UID',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
-      DebugService.log(
-        '🍪 蓝奏云 - 原始 Cookie 长度: ${cookies.length}',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
-      DebugService.log(
-        '🍪 蓝奏云 - Cookie 预览: ${cookies.substring(0, cookies.length > 200 ? 200 : cookies.length)}...',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 蓝奏云 - 开始从 Cookie 中提取 UID');
+      LogManager().cloudDrive('🍪 蓝奏云 - 原始 Cookie 长度: ${cookies.length}');
+      LogManager().cloudDrive('🍪 蓝奏云 - Cookie 预览: $cookies');
 
       final cookieMap = <String, String>{};
 
       // 清理 Cookie 字符串
       String cleanCookies = cookies.replaceAll('"', '').trim();
-      DebugService.log(
-        '🧹 蓝奏云 - 清理后的 Cookie: $cleanCookies',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🧹 蓝奏云 - 清理后的 Cookie: $cleanCookies');
 
       for (final cookie in cleanCookies.split(';')) {
         final trimmedCookie = cookie.trim();
@@ -111,57 +75,27 @@ class LanzouCloudDriveService {
           final name = parts[0].trim();
           final value = parts.sublist(1).join('=').trim(); // 处理值中可能包含 = 的情况
           cookieMap[name] = value;
-          DebugService.log(
-            '🍪 蓝奏云 - 解析 Cookie: $name = $value',
-            category: DebugCategory.tools,
-            subCategory: LanzouConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('🍪 蓝奏云 - 解析 Cookie: $name = $value');
         }
       }
 
       final uid = cookieMap['ylogin'];
-      DebugService.log(
-        '🔍 蓝奏云 - 从 Cookie 中提取到 UID: $uid',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 蓝奏云 - 从 Cookie 中提取到 UID: $uid');
 
       if (uid == null || uid.isEmpty) {
-        DebugService.log(
-          '❌ 蓝奏云 - 未找到 ylogin Cookie',
-          category: DebugCategory.tools,
-          subCategory: LanzouConfig.logSubCategory,
-        );
-        DebugService.log(
+        LogManager().cloudDrive('❌ 蓝奏云 - 未找到 ylogin Cookie');
+        LogManager().cloudDrive(
           '🔑 蓝奏云 - 所有 Cookie 键: ${cookieMap.keys.toList()}',
-          category: DebugCategory.tools,
-          subCategory: LanzouConfig.logSubCategory,
         );
-        DebugService.log(
-          '🍪 蓝奏云 - 所有 Cookie 值: $cookieMap',
-          category: DebugCategory.tools,
-          subCategory: LanzouConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('🍪 蓝奏云 - 所有 Cookie 值: $cookieMap');
       } else {
-        DebugService.log(
-          '✅ 蓝奏云 - 成功提取 UID: $uid',
-          category: DebugCategory.tools,
-          subCategory: LanzouConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 蓝奏云 - 成功提取 UID: $uid');
       }
 
       return uid;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 蓝奏云 - 提取 UID 失败: $e',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 蓝奏云 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 蓝奏云 - 提取 UID 失败: $e');
+      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -208,21 +142,9 @@ class LanzouCloudDriveService {
 
   /// 创建请求头
   static Map<String, String> _createHeaders(String cookies, String uid) {
-    DebugService.log(
-      '🔧 蓝奏云 - 创建请求头',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '👤 蓝奏云 - UID: $uid',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '🔧 蓝奏云 - Cookie 长度: ${cookies.length}',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🔧 蓝奏云 - 创建请求头');
+    LogManager().cloudDrive('👤 蓝奏云 - UID: $uid');
+    LogManager().cloudDrive('🔧 蓝奏云 - Cookie 长度: ${cookies.length}');
 
     final headers = Map<String, String>.from(LanzouConfig.defaultHeaders);
     headers['Cookie'] = cookies;
@@ -230,16 +152,8 @@ class LanzouCloudDriveService {
     headers['Origin'] = LanzouConfig.baseUrl;
     headers['X-Requested-With'] = 'XMLHttpRequest';
 
-    DebugService.log(
-      '🔧 蓝奏云 - 请求头创建完成',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '🔧 蓝奏云 - 请求头键: ${headers.keys.toList()}',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🔧 蓝奏云 - 请求头创建完成');
+    LogManager().cloudDrive('🔧 蓝奏云 - 请求头键: ${headers.keys.toList()}');
 
     return headers;
   }

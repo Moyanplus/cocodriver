@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import 'quark_base_service.dart';
 import 'quark_config.dart';
@@ -12,10 +12,9 @@ class QuarkFileOperationService {
     required CloudDriveFile file,
     required String targetFolderId,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 夸克云盘 - 移动文件开始: ${file.name}',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
@@ -27,15 +26,13 @@ class QuarkFileOperationService {
       );
 
       final uri = _buildOperationUri('moveFile', queryParams);
-      DebugService.log(
+      LogManager().cloudDrive(
         '🔗 请求URL: $uri',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
-      DebugService.log(
+      LogManager().cloudDrive(
         '📤 请求体: $requestBody',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
 
       final response = await dio.postUri(uri, data: requestBody);
@@ -57,29 +54,26 @@ class QuarkFileOperationService {
       final isFinished = data['finish'] as bool? ?? false;
 
       if (isFinished) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 夸克云盘 - 移动文件完成: ${file.name}',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
         return true;
       }
 
       if (taskId != null) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '⏳ 夸克云盘 - 移动文件任务创建: $taskId',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
         return await _waitForTaskCompletion(account, taskId);
       }
 
       return false;
     } catch (e) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 移动文件失败: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       rethrow;
     }
@@ -90,10 +84,9 @@ class QuarkFileOperationService {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '🗑️ 夸克云盘 - 删除文件开始: ${file.name}',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
@@ -102,15 +95,13 @@ class QuarkFileOperationService {
       final requestBody = QuarkConfig.buildDeleteFileBody(fileIds: [file.id]);
 
       final uri = _buildOperationUri('deleteFile', queryParams);
-      DebugService.log(
+      LogManager().cloudDrive(
         '🔗 请求URL: $uri',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
-      DebugService.log(
+      LogManager().cloudDrive(
         '📤 请求体: $requestBody',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
 
       final response = await dio.postUri(uri, data: requestBody);
@@ -132,29 +123,26 @@ class QuarkFileOperationService {
       final isFinished = data['finish'] as bool? ?? false;
 
       if (isFinished) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 夸克云盘 - 删除文件完成: ${file.name}',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
         return true;
       }
 
       if (taskId != null) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '⏳ 夸克云盘 - 删除文件任务创建: $taskId',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
         return await _waitForTaskCompletion(account, taskId);
       }
 
       return false;
     } catch (e) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 删除文件失败: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       rethrow;
     }
@@ -166,10 +154,9 @@ class QuarkFileOperationService {
     required CloudDriveFile file,
     required String newName,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '✏️ 夸克云盘 - 重命名文件开始: ${file.name} -> $newName',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
@@ -181,15 +168,13 @@ class QuarkFileOperationService {
       );
 
       final uri = _buildOperationUri('renameFile', queryParams);
-      DebugService.log(
+      LogManager().cloudDrive(
         '🔗 请求URL: $uri',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
-      DebugService.log(
+      LogManager().cloudDrive(
         '📤 请求体: $requestBody',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
 
       final response = await dio.postUri(uri, data: requestBody);
@@ -199,10 +184,9 @@ class QuarkFileOperationService {
       }
 
       final responseData = response.data;
-      DebugService.log(
+      LogManager().cloudDrive(
         '📥 夸克云盘 - 重命名响应: $responseData',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
 
       if (!QuarkBaseService.isApiSuccess(
@@ -212,17 +196,15 @@ class QuarkFileOperationService {
         throw Exception('重命名文件失败: $message');
       }
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '✅ 夸克云盘 - 重命名文件完成: ${file.name} -> $newName',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return true;
     } catch (e) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 重命名文件失败: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       rethrow;
     }
@@ -234,10 +216,9 @@ class QuarkFileOperationService {
     required String taskId,
     int retryIndex = 0,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '📋 夸克云盘 - 查询任务状态: $taskId',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
@@ -248,10 +229,9 @@ class QuarkFileOperationService {
       );
 
       final uri = _buildOperationUri('getTask', queryParams);
-      DebugService.log(
+      LogManager().cloudDrive(
         '🔗 请求URL: $uri',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
 
       final response = await dio.getUri(uri);
@@ -270,23 +250,20 @@ class QuarkFileOperationService {
       }
 
       final data = QuarkBaseService.getResponseData(responseData, 'data');
-      DebugService.log(
+      LogManager().cloudDrive(
         '📋 任务状态查询成功: $data',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
 
       return data;
     } catch (e, stackTrace) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 查询任务状态异常: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
-      DebugService.log(
+      LogManager().cloudDrive(
         '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return null;
     }
@@ -297,10 +274,9 @@ class QuarkFileOperationService {
     CloudDriveAccount account,
     String taskId,
   ) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '⏳ 等待任务完成: $taskId',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     const maxRetries = 30; // 最多重试30次
@@ -320,33 +296,29 @@ class QuarkFileOperationService {
             taskData[QuarkConfig.responseFields['taskStatus']] as int?;
 
         if (status == QuarkConfig.taskStatus['success']) {
-          DebugService.log(
+          LogManager().cloudDrive(
             '✅ 任务执行成功: $taskId',
-            category: DebugCategory.tools,
-            subCategory: QuarkConfig.logSubCategory,
+            
           );
           return true;
         } else if (status == QuarkConfig.taskStatus['failed']) {
-          DebugService.log(
+          LogManager().cloudDrive(
             '❌ 任务执行失败: $taskId',
-            category: DebugCategory.tools,
-            subCategory: QuarkConfig.logSubCategory,
+            
           );
           return false;
         }
 
-        DebugService.log(
+        LogManager().cloudDrive(
           '⏳ 任务仍在进行中: $taskId (状态: $status)',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
       }
     }
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '⚠️ 任务轮询超时: $taskId',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
     return false;
   }

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../models/cloud_drive_models.dart';
 
 /// 通用Token解析器
@@ -19,38 +19,22 @@ class TokenParser {
     CloudDriveType cloudDriveType,
   ) {
     // 首先输出调用确认日志
-    DebugService.log(
+    LogManager().cloudDrive(
       '🚀 TokenParser.parseToken被调用 - ${cloudDriveType.displayName}',
-      category: DebugCategory.tools,
-      subCategory: 'tokenParser.${cloudDriveType.name}',
     );
 
     if (rawToken.isEmpty) {
-      DebugService.log(
-        '❌ rawToken为空，直接返回',
-        category: DebugCategory.tools,
-        subCategory: 'tokenParser.${cloudDriveType.name}',
-      );
+      LogManager().cloudDrive('❌ rawToken为空，直接返回');
       return '';
     }
 
     final logSubCategory = 'tokenParser.${cloudDriveType.name}';
 
     try {
-      DebugService.log(
-        '🔍 开始解析token: ${cloudDriveType.displayName}',
-        category: DebugCategory.tools,
-        subCategory: logSubCategory,
-      );
-      DebugService.log(
-        '📝 原始token长度: ${rawToken.length}',
-        category: DebugCategory.tools,
-        subCategory: logSubCategory,
-      );
-      DebugService.log(
+      LogManager().cloudDrive('🔍 开始解析token: ${cloudDriveType.displayName}');
+      LogManager().cloudDrive('📝 原始token长度: ${rawToken.length}');
+      LogManager().cloudDrive(
         '⚙️ 配置: isJsonFormat=${config.isJsonFormat}, jsonFieldPath=${config.jsonFieldPath}, enableDebugLog=${config.enableDebugLog}',
-        category: DebugCategory.tools,
-        subCategory: logSubCategory,
       );
 
       String processedToken = rawToken;
@@ -59,10 +43,8 @@ class TokenParser {
       if (config.cookieNames.isNotEmpty &&
           rawToken.contains('=') &&
           rawToken.contains(';')) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '🍪 检测到Cookie字符串，尝试提取指定Cookie: ${config.cookieNames}',
-          category: DebugCategory.tools,
-          subCategory: logSubCategory,
         );
 
         final extractedCookie = _extractCookieValue(
@@ -71,28 +53,16 @@ class TokenParser {
         );
         if (extractedCookie.isNotEmpty) {
           processedToken = extractedCookie;
-          DebugService.log(
-            '✅ 从Cookie中提取到值: ${processedToken.length}字符',
-            category: DebugCategory.tools,
-            subCategory: logSubCategory,
-          );
+          LogManager().cloudDrive('✅ 从Cookie中提取到值: ${processedToken.length}字符');
         } else {
-          DebugService.log(
-            '⚠️ 未从Cookie中找到指定值: ${config.cookieNames}',
-            category: DebugCategory.tools,
-            subCategory: logSubCategory,
-          );
+          LogManager().cloudDrive('⚠️ 未从Cookie中找到指定值: ${config.cookieNames}');
         }
       }
 
       // 步骤1: 移除引号（如果配置要求）
       if (config.removeQuotes) {
         processedToken = _removeQuotes(processedToken);
-        DebugService.log(
-          '✂️ 移除引号后长度: ${processedToken.length}',
-          category: DebugCategory.tools,
-          subCategory: logSubCategory,
-        );
+        LogManager().cloudDrive('✂️ 移除引号后长度: ${processedToken.length}');
       }
 
       // 步骤2: JSON格式解析
@@ -107,33 +77,19 @@ class TokenParser {
       // 步骤3: 添加token前缀（如果配置要求）
       if (config.tokenPrefix != null && config.tokenPrefix!.isNotEmpty) {
         processedToken = '${config.tokenPrefix}$processedToken';
-        DebugService.log(
-          '🏷️ 添加前缀后: ${config.tokenPrefix}[token]',
-          category: DebugCategory.tools,
-          subCategory: logSubCategory,
-        );
+        LogManager().cloudDrive('🏷️ 添加前缀后: ${config.tokenPrefix}[token]');
       }
 
-      DebugService.log(
-        '✅ token解析完成: ${processedToken.length}字符',
-        category: DebugCategory.tools,
-        subCategory: logSubCategory,
-      );
+      LogManager().cloudDrive('✅ token解析完成: ${processedToken.length}字符');
       if (processedToken.length > 50) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '📋 token预览: ${processedToken.substring(0, 50)}...',
-          category: DebugCategory.tools,
-          subCategory: logSubCategory,
         );
       }
 
       return processedToken;
     } catch (e) {
-      DebugService.log(
-        '❌ token解析失败: $e',
-        category: DebugCategory.tools,
-        subCategory: logSubCategory,
-      );
+      LogManager().cloudDrive('❌ token解析失败: $e');
       return rawToken; // 解析失败时返回原始token
     }
   }
@@ -162,57 +118,31 @@ class TokenParser {
     String logSubCategory,
   ) {
     try {
-      DebugService.log(
-        '📊 开始JSON解析...',
-        category: DebugCategory.tools,
-        subCategory: logSubCategory,
-      );
+      LogManager().cloudDrive('📊 开始JSON解析...');
 
       final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
 
-      DebugService.log(
-        '📊 JSON解析成功，字段数: ${jsonData.keys.length}',
-        category: DebugCategory.tools,
-        subCategory: logSubCategory,
-      );
-      DebugService.log(
-        '🔑 可用字段: ${jsonData.keys.join(', ')}',
-        category: DebugCategory.tools,
-        subCategory: logSubCategory,
-      );
+      LogManager().cloudDrive('📊 JSON解析成功，字段数: ${jsonData.keys.length}');
+      LogManager().cloudDrive('🔑 可用字段: ${jsonData.keys.join(', ')}');
 
       // 提取指定字段
       if (config.jsonFieldPath != null) {
         final fieldValue = _extractJsonField(jsonData, config.jsonFieldPath!);
         if (fieldValue != null) {
-          DebugService.log(
+          LogManager().cloudDrive(
             '✅ 成功提取字段 ${config.jsonFieldPath}: ${fieldValue.toString().length}字符',
-            category: DebugCategory.tools,
-            subCategory: logSubCategory,
           );
           return fieldValue.toString();
         } else {
-          DebugService.log(
-            '⚠️ 字段 ${config.jsonFieldPath} 不存在或为空',
-            category: DebugCategory.tools,
-            subCategory: logSubCategory,
-          );
+          LogManager().cloudDrive('⚠️ 字段 ${config.jsonFieldPath} 不存在或为空');
         }
       }
 
       // 如果没有指定字段路径，或者字段不存在，返回整个JSON字符串
-      DebugService.log(
-        '📄 返回完整JSON数据',
-        category: DebugCategory.tools,
-        subCategory: logSubCategory,
-      );
+      LogManager().cloudDrive('📄 返回完整JSON数据');
       return jsonString;
     } catch (e) {
-      DebugService.log(
-        '❌ JSON解析失败: $e',
-        category: DebugCategory.tools,
-        subCategory: logSubCategory,
-      );
+      LogManager().cloudDrive('❌ JSON解析失败: $e');
       return jsonString; // JSON解析失败时返回原始字符串
     }
   }
@@ -260,17 +190,9 @@ class TokenParser {
         }
       });
 
-      DebugService.log(
-        '📊 字段映射解析完成: ${result.keys.join(', ')}',
-        category: DebugCategory.tools,
-        subCategory: 'tokenParser.${cloudDriveType.name}',
-      );
+      LogManager().cloudDrive('📊 字段映射解析完成: ${result.keys.join(', ')}');
     } catch (e) {
-      DebugService.log(
-        '❌ 字段映射解析失败: $e',
-        category: DebugCategory.tools,
-        subCategory: 'tokenParser.${cloudDriveType.name}',
-      );
+      LogManager().cloudDrive('❌ 字段映射解析失败: $e');
     }
 
     return result;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../business/cloud_drive_business_service.dart';
 
 /// 直链解析页面
@@ -46,7 +46,7 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
     });
 
     try {
-      DebugService.log('🔗 开始解析直链: $url');
+      LogManager().cloudDrive('🔗 开始解析直链: $url');
 
       final result = await CloudDriveBusinessService.parseAndDownloadFile(
         shareUrl: url,
@@ -61,14 +61,14 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
           _isLoading = false;
           if (result.success && result.fileInfo != null) {
             _result = result.fileInfo;
-            DebugService.log('✅ 解析成功: ${result.fileInfo}');
+            LogManager().cloudDrive('✅ 解析成功: ${result.fileInfo}');
           } else {
             _error = result.message;
           }
         });
       }
     } catch (e) {
-      DebugService.error('❌ 解析直链失败: $e', null);
+      LogManager().error('❌ 解析直链失败: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -87,7 +87,7 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
           backgroundColor: Colors.green,
         ),
       );
-      DebugService.log('📋 直链已复制: ${_result!['directLink']}');
+      LogManager().cloudDrive('📋 直链已复制: ${_result!['directLink']}');
     }
   }
 
@@ -108,7 +108,7 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
           backgroundColor: Colors.green,
         ),
       );
-      DebugService.log('📋 所有信息已复制');
+      LogManager().cloudDrive('📋 所有信息已复制');
     }
   }
 

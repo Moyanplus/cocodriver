@@ -1,4 +1,4 @@
-package com.example.flutter_ui_template
+package com.driver.coco
 
 import io.flutter.embedding.android.FlutterActivity
 

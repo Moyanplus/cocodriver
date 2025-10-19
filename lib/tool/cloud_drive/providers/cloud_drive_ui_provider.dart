@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 
 /// UI状态管理
 class CloudDriveUIState {
@@ -91,10 +91,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
   void toggleAccountSelector() {
     state = state.copyWith(showAccountSelector: !state.showAccountSelector);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 切换账号选择器: ${state.showAccountSelector}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 
@@ -102,10 +101,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
   void setFloatingActionButton(bool show) {
     state = state.copyWith(showFloatingActionButton: show);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 设置悬浮按钮: $show',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 
@@ -113,10 +111,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
   void toggleSearchBar() {
     state = state.copyWith(showSearchBar: !state.showSearchBar);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 切换搜索栏: ${state.showSearchBar}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 
@@ -124,10 +121,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
   void toggleSortOptions() {
     state = state.copyWith(showSortOptions: !state.showSortOptions);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 切换排序选项: ${state.showSortOptions}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 
@@ -135,10 +131,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
   void toggleFilterOptions() {
     state = state.copyWith(showFilterOptions: !state.showFilterOptions);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 切换过滤器选项: ${state.showFilterOptions}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 
@@ -161,10 +156,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
 
     state = state.copyWith(currentViewMode: newViewMode);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 切换视图模式: $newViewMode',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 
@@ -173,10 +167,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
     if (['list', 'grid', 'detail'].contains(viewMode)) {
       state = state.copyWith(currentViewMode: viewMode);
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '🔄 设置视图模式: $viewMode',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.ui',
+        
       );
     }
   }
@@ -186,10 +179,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
     if (['name', 'size', 'modified', 'type'].contains(sortBy)) {
       state = state.copyWith(currentSortBy: sortBy);
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '🔄 设置排序方式: $sortBy',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.ui',
+        
       );
     }
   }
@@ -199,10 +191,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
     final newOrder = state.isAscending ? 'desc' : 'asc';
     state = state.copyWith(currentSortOrder: newOrder);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 切换排序顺序: $newOrder',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 
@@ -212,10 +203,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
       final newFilters = [...state.activeFilters, filter];
       state = state.copyWith(activeFilters: newFilters);
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '✅ 添加过滤器: $filter (共${newFilters.length}个)',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.ui',
+        
       );
     }
   }
@@ -225,10 +215,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
     final newFilters = state.activeFilters.where((f) => f != filter).toList();
     state = state.copyWith(activeFilters: newFilters);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '❌ 移除过滤器: $filter (剩余${newFilters.length}个)',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 
@@ -236,10 +225,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
   void clearFilters() {
     state = state.copyWith(activeFilters: []);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🗑️ 清除所有过滤器',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 
@@ -247,10 +235,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
   void toggleBreadcrumb() {
     state = state.copyWith(showBreadcrumb: !state.showBreadcrumb);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 切换面包屑: ${state.showBreadcrumb}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 
@@ -258,10 +245,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
   void toggleFilePreview() {
     state = state.copyWith(showFilePreview: !state.showFilePreview);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 切换文件预览: ${state.showFilePreview}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 
@@ -269,10 +255,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
   void toggleOperationPanel() {
     state = state.copyWith(showOperationPanel: !state.showOperationPanel);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 切换操作面板: ${state.showOperationPanel}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 
@@ -281,10 +266,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
     if (['light', 'dark', 'auto'].contains(theme)) {
       state = state.copyWith(selectedTheme: theme);
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '🎨 设置主题: $theme',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.ui',
+        
       );
     }
   }
@@ -293,10 +277,9 @@ class CloudDriveUIProvider extends StateNotifier<CloudDriveUIState> {
   void reset() {
     state = const CloudDriveUIState();
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 重置UI状态',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.ui',
+      
     );
   }
 }

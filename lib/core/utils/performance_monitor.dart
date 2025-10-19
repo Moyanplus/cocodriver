@@ -2,12 +2,19 @@ import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../logging/log_manager.dart';
+import '../logging/log_category.dart';
+import '../logging/log_formatter.dart';
+
 /// 性能监控器
 /// 监控应用性能指标，包括帧率、渲染时间等
 class PerformanceMonitor {
   static final PerformanceMonitor _instance = PerformanceMonitor._internal();
   factory PerformanceMonitor() => _instance;
   PerformanceMonitor._internal();
+
+  final LogManager _logManager = LogManager();
+  final LogFormatter _logFormatter = LogFormatter();
 
   final List<double> _frameTimes = [];
   final List<Duration> _renderTimes = [];
@@ -27,6 +34,13 @@ class PerformanceMonitor {
       SchedulerBinding.instance.addPersistentFrameCallback(_onFrame);
 
       developer.log('性能监控已启动');
+
+      // 记录性能监控启动日志
+      _logManager.performance(
+        '性能监控已启动',
+        className: 'PerformanceMonitor',
+        methodName: 'startMonitoring',
+      );
     }
   }
 
@@ -37,6 +51,13 @@ class PerformanceMonitor {
       // 注意：Flutter没有removePersistentFrameCallback方法
       // 我们通过_isMonitoring标志来控制
       developer.log('性能监控已停止');
+
+      // 记录性能监控停止日志
+      _logManager.performance(
+        '性能监控已停止',
+        className: 'PerformanceMonitor',
+        methodName: 'stopMonitoring',
+      );
     }
   }
 
@@ -86,6 +107,32 @@ class PerformanceMonitor {
         _frameTimes.reduce((a, b) => a + b) / _frameTimes.length;
     final maxFrameTime = _frameTimes.reduce((a, b) => a > b ? a : b);
     final minFrameTime = _frameTimes.reduce((a, b) => a < b ? a : b);
+
+    // 记录性能报告日志
+    final performanceMessage = _logFormatter.formatPerformance(
+      operation: '帧率监控',
+      duration: Duration(milliseconds: avgFrameTime.round()),
+      metrics: {
+        'avgFrameTime': avgFrameTime,
+        'maxFrameTime': maxFrameTime,
+        'minFrameTime': minFrameTime,
+        'frameCount': _frameCount,
+        'sampleCount': _frameTimes.length,
+      },
+    );
+
+    _logManager.performance(
+      performanceMessage,
+      className: 'PerformanceMonitor',
+      methodName: '_logPerformanceReport',
+      data: {
+        'avgFrameTime': avgFrameTime,
+        'maxFrameTime': maxFrameTime,
+        'minFrameTime': minFrameTime,
+        'frameCount': _frameCount,
+        'sampleCount': _frameTimes.length,
+      },
+    );
     final fps = 1000.0 / avgFrameTime;
 
     developer.log('''

@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../models/cloud_drive_models.dart';
 
 /// 云盘基础服务接口
@@ -248,36 +248,43 @@ abstract class CloudDriveBaseService implements CloudDriveServiceInterface {
 
   /// 记录操作日志
   void logOperation(String operation, Map<String, dynamic> params) {
-    DebugService.log(
-      '🔧 $operation - ${cloudDriveType.displayName}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.${cloudDriveType.name}',
+    LogManager().cloudDrive(
+      '$operation - ${cloudDriveType.displayName}',
+      className: 'CloudDriveBaseService',
+      methodName: 'logOperation',
+      data: {
+        'operation': operation,
+        'cloudDriveType': cloudDriveType.displayName,
+        'params': params,
+      },
     );
-
-    for (final entry in params.entries) {
-      DebugService.log(
-        '📋 ${entry.key}: ${entry.value}',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.${cloudDriveType.name}',
-      );
-    }
   }
 
   /// 记录错误日志
   void logError(String operation, dynamic error) {
-    DebugService.log(
-      '❌ $operation 失败 - ${cloudDriveType.displayName}: $error',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.${cloudDriveType.name}',
+    LogManager().error(
+      '$operation 失败 - ${cloudDriveType.displayName}: $error',
+      className: 'CloudDriveBaseService',
+      methodName: 'logError',
+      data: {
+        'operation': operation,
+        'cloudDriveType': cloudDriveType.displayName,
+      },
+      exception: error,
     );
   }
 
   /// 记录成功日志
   void logSuccess(String operation, [String? details]) {
-    DebugService.log(
-      '✅ $operation 成功 - ${cloudDriveType.displayName}${details != null ? ': $details' : ''}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.${cloudDriveType.name}',
+    LogManager().cloudDrive(
+      '$operation 成功 - ${cloudDriveType.displayName}${details != null ? ': $details' : ''}',
+      className: 'CloudDriveBaseService',
+      methodName: 'logSuccess',
+      data: {
+        'operation': operation,
+        'cloudDriveType': cloudDriveType.displayName,
+        'details': details,
+      },
     );
   }
 

@@ -8,6 +8,9 @@ enum AuthType {
 
   /// Authorization Bearer Token认证
   authorization,
+
+  /// 二维码扫码认证
+  qrCode,
 }
 
 /// 云盘类型枚举
@@ -102,6 +105,22 @@ extension CloudDriveTypeExtension on CloudDriveType {
     }
   }
 
+  /// 获取支持的认证方式列表
+  List<AuthType> get supportedAuthTypes {
+    switch (this) {
+      case CloudDriveType.ali:
+        return [AuthType.authorization, AuthType.qrCode];
+      case CloudDriveType.baidu:
+        return [AuthType.cookie, AuthType.qrCode];
+      case CloudDriveType.lanzou:
+        return [AuthType.cookie];
+      case CloudDriveType.pan123:
+        return [AuthType.cookie, AuthType.qrCode];
+      case CloudDriveType.quark:
+        return [AuthType.cookie, AuthType.qrCode];
+    }
+  }
+
   CloudDriveWebViewConfig get webViewConfig {
     switch (this) {
       case CloudDriveType.baidu:
@@ -119,7 +138,8 @@ extension CloudDriveTypeExtension on CloudDriveType {
           initialUrl: 'https://www.lanzou.com/',
           userAgentType: UserAgentType.pcChrome,
           rootDir: '/',
-          cookieProcessingConfig: CookieProcessingConfig.defaultConfig,
+          loginDetectionConfig: LoginDetectionConfig.lanzouConfig,
+          cookieProcessingConfig: CookieProcessingConfig.lanzouConfig,
           requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
         );
       case CloudDriveType.pan123:
@@ -127,7 +147,8 @@ extension CloudDriveTypeExtension on CloudDriveType {
           initialUrl: 'https://www.123pan.com/',
           userAgentType: UserAgentType.pcChrome,
           rootDir: '/',
-          cookieProcessingConfig: CookieProcessingConfig.defaultConfig,
+          loginDetectionConfig: LoginDetectionConfig.pan123Config,
+          cookieProcessingConfig: CookieProcessingConfig.pan123Config,
           requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
         );
       case CloudDriveType.ali:
@@ -145,7 +166,8 @@ extension CloudDriveTypeExtension on CloudDriveType {
           initialUrl: 'https://pan.quark.cn/',
           userAgentType: UserAgentType.pcChrome,
           rootDir: '/',
-          cookieProcessingConfig: CookieProcessingConfig.defaultConfig,
+          loginDetectionConfig: LoginDetectionConfig.quarkConfig,
+          cookieProcessingConfig: CookieProcessingConfig.quarkConfig,
           requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
         );
     }
@@ -159,6 +181,7 @@ class CloudDriveAccount {
   final CloudDriveType type;
   final String? cookies;
   final String? authorizationToken;
+  final String? qrCodeToken; // 二维码登录token
   final String? avatarUrl;
   final String? driveId;
   final DateTime createdAt;
@@ -170,6 +193,7 @@ class CloudDriveAccount {
     required this.type,
     this.cookies,
     this.authorizationToken,
+    this.qrCodeToken,
     this.avatarUrl,
     this.driveId,
     required this.createdAt,
@@ -183,6 +207,8 @@ class CloudDriveAccount {
         return cookies != null && cookies!.isNotEmpty;
       case AuthType.authorization:
         return authorizationToken != null && authorizationToken!.isNotEmpty;
+      case AuthType.qrCode:
+        return qrCodeToken != null && qrCodeToken!.isNotEmpty;
     }
   }
 
@@ -196,6 +222,10 @@ class CloudDriveAccount {
       case AuthType.authorization:
         return authorizationToken != null && authorizationToken!.isNotEmpty
             ? {'Authorization': 'Bearer $authorizationToken'}
+            : {};
+      case AuthType.qrCode:
+        return qrCodeToken != null && qrCodeToken!.isNotEmpty
+            ? {'Authorization': 'Bearer $qrCodeToken'}
             : {};
     }
   }
@@ -213,6 +243,7 @@ class CloudDriveAccount {
         ),
         cookies: json['cookies']?.toString(),
         authorizationToken: json['authorizationToken']?.toString(),
+        qrCodeToken: json['qrCodeToken']?.toString(),
         avatarUrl: json['avatarUrl']?.toString(),
         driveId: json['driveId']?.toString(),
         createdAt:
@@ -233,6 +264,7 @@ class CloudDriveAccount {
     'type': type.name,
     'cookies': cookies,
     'authorizationToken': authorizationToken,
+    'qrCodeToken': qrCodeToken,
     'avatarUrl': avatarUrl,
     'driveId': driveId,
     'createdAt': createdAt.toIso8601String(),
@@ -246,6 +278,7 @@ class CloudDriveAccount {
     CloudDriveType? type,
     String? cookies,
     String? authorizationToken,
+    String? qrCodeToken,
     String? avatarUrl,
     String? driveId,
     DateTime? createdAt,
@@ -256,6 +289,7 @@ class CloudDriveAccount {
     type: type ?? this.type,
     cookies: cookies ?? this.cookies,
     authorizationToken: authorizationToken ?? this.authorizationToken,
+    qrCodeToken: qrCodeToken ?? this.qrCodeToken,
     avatarUrl: avatarUrl ?? this.avatarUrl,
     driveId: driveId ?? this.driveId,
     createdAt: createdAt ?? this.createdAt,

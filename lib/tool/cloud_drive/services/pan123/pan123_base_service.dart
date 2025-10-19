@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import 'pan123_config.dart';
 
@@ -28,50 +28,24 @@ class Pan123BaseService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          DebugService.log(
+          LogManager().cloudDrive(
             '📡 123云盘 - 发送请求: ${options.method} ${options.uri}',
-            category: DebugCategory.tools,
-            subCategory: Pan123Config.logSubCategory,
           );
-          DebugService.log(
-            '📋 123云盘 - 请求头: ${options.headers}',
-            category: DebugCategory.tools,
-            subCategory: Pan123Config.logSubCategory,
-          );
+          LogManager().cloudDrive('📋 123云盘 - 请求头: ${options.headers}');
           if (options.data != null) {
-            DebugService.log(
-              '📤 123云盘 - 请求体: ${options.data}',
-              category: DebugCategory.tools,
-              subCategory: Pan123Config.logSubCategory,
-            );
+            LogManager().cloudDrive('📤 123云盘 - 请求体: ${options.data}');
           }
           handler.next(options);
         },
         onResponse: (response, handler) {
-          DebugService.log(
-            '📡 123云盘 - 收到响应: ${response.statusCode}',
-            category: DebugCategory.tools,
-            subCategory: Pan123Config.logSubCategory,
-          );
-          DebugService.log(
-            '📄 123云盘 - 响应数据: ${response.data}',
-            category: DebugCategory.tools,
-            subCategory: Pan123Config.logSubCategory,
-          );
+          LogManager().cloudDrive('📡 123云盘 - 收到响应: ${response.statusCode}');
+          LogManager().cloudDrive('📄 123云盘 - 响应数据: ${response.data}');
           handler.next(response);
         },
         onError: (error, handler) {
-          DebugService.log(
-            '❌ 123云盘 - 请求错误: ${error.message}',
-            category: DebugCategory.tools,
-            subCategory: Pan123Config.logSubCategory,
-          );
+          LogManager().cloudDrive('❌ 123云盘 - 请求错误: ${error.message}');
           if (error.response != null) {
-            DebugService.log(
-              '📄 123云盘 - 错误响应: ${error.response?.data}',
-              category: DebugCategory.tools,
-              subCategory: Pan123Config.logSubCategory,
-            );
+            LogManager().cloudDrive('📄 123云盘 - 错误响应: ${error.response?.data}');
           }
           handler.next(error);
         },
@@ -83,11 +57,7 @@ class Pan123BaseService {
 
   /// 获取错误信息
   static String getErrorMessage(int code) {
-    DebugService.log(
-      '🔍 123云盘 - 查找错误信息: code=$code',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
+    LogManager().cloudDrive('🔍 123云盘 - 查找错误信息: code=$code');
 
     return Pan123Config.getErrorMessage(code);
   }
@@ -106,26 +76,14 @@ class Pan123BaseService {
 
   /// 处理API响应
   static Map<String, dynamic> handleApiResponse(Map<String, dynamic> response) {
-    DebugService.log(
-      '📊 123云盘 - 处理API响应: code=${response['code']}',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
+    LogManager().cloudDrive('📊 123云盘 - 处理API响应: code=${response['code']}');
 
     if (isSuccessResponse(response)) {
-      DebugService.log(
-        '✅ 123云盘 - API请求成功',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('✅ 123云盘 - API请求成功');
       return response;
     } else {
       final message = getResponseMessage(response);
-      DebugService.log(
-        '❌ 123云盘 - API请求失败: $message',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 123云盘 - API请求失败: $message');
       throw Exception(message);
     }
   }
@@ -161,11 +119,7 @@ class Pan123BaseService {
       'inDirectSpace': 'false', // 不在直接空间中
     };
 
-    DebugService.log(
-      '🔧 123云盘 - 构建GET请求参数: $params',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
+    LogManager().cloudDrive('🔧 123云盘 - 构建GET请求参数: $params');
 
     return params;
   }

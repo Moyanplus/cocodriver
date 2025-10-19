@@ -1,100 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/services/base/debug_service.dart';
 
-/// 批量操作状态管理
-class CloudDriveBatchState {
-  final bool isBatchMode;
-  final Set<String> selectedItems;
-  final bool isAllSelected;
-  final String? currentBatchOperation;
-  final double batchProgress;
-  final int totalItems;
-  final int completedItems;
-  final int failedItems;
-  final List<String> failedItemIds;
-  final bool isBatchProcessing;
-  final String? batchError;
-  final Map<String, String> itemStatus; // itemId -> status
+import '../../../../core/logging/log_manager.dart';
+import '../models/cloud_drive_models.dart';
+import '../base/cloud_drive_file_service.dart';
+import '../base/cloud_drive_operation_service.dart';
+import 'cloud_drive_batch_state.dart';
 
-  const CloudDriveBatchState({
-    this.isBatchMode = false,
-    this.selectedItems = const {},
-    this.isAllSelected = false,
-    this.currentBatchOperation,
-    this.batchProgress = 0.0,
-    this.totalItems = 0,
-    this.completedItems = 0,
-    this.failedItems = 0,
-    this.failedItemIds = const [],
-    this.isBatchProcessing = false,
-    this.batchError,
-    this.itemStatus = const {},
-  });
-
-  CloudDriveBatchState copyWith({
-    bool? isBatchMode,
-    Set<String>? selectedItems,
-    bool? isAllSelected,
-    String? currentBatchOperation,
-    double? batchProgress,
-    int? totalItems,
-    int? completedItems,
-    int? failedItems,
-    List<String>? failedItemIds,
-    bool? isBatchProcessing,
-    String? batchError,
-    Map<String, String>? itemStatus,
-  }) => CloudDriveBatchState(
-    isBatchMode: isBatchMode ?? this.isBatchMode,
-    selectedItems: selectedItems ?? this.selectedItems,
-    isAllSelected: isAllSelected ?? this.isAllSelected,
-    currentBatchOperation: currentBatchOperation ?? this.currentBatchOperation,
-    batchProgress: batchProgress ?? this.batchProgress,
-    totalItems: totalItems ?? this.totalItems,
-    completedItems: completedItems ?? this.completedItems,
-    failedItems: failedItems ?? this.failedItems,
-    failedItemIds: failedItemIds ?? this.failedItemIds,
-    isBatchProcessing: isBatchProcessing ?? this.isBatchProcessing,
-    batchError: batchError ?? this.batchError,
-    itemStatus: itemStatus ?? this.itemStatus,
-  );
-
-  /// 选中的项目数量
-  int get selectedCount => selectedItems.length;
-
-  /// 是否有选中的项目
-  bool get hasSelectedItems => selectedItems.isNotEmpty;
-
-  /// 成功完成的项目数量
-  int get successItems => completedItems - failedItems;
-
-  /// 操作成功率
-  double get successRate {
-    return totalItems > 0 ? successItems / totalItems : 0.0;
-  }
-
-  /// 是否所有项目都已完成
-  bool get isCompleted => completedItems >= totalItems;
-
-  /// 是否所有项目都成功
-  bool get isAllSuccess => failedItems == 0 && isCompleted;
-
-  /// 是否有失败的项目
-  bool get hasFailedItems => failedItems > 0;
-}
-
-/// 批量操作Provider
-class CloudDriveBatchProvider extends StateNotifier<CloudDriveBatchState> {
-  CloudDriveBatchProvider() : super(const CloudDriveBatchState());
+/// 批量操作状态管理器
+class BatchOperationNotifier extends StateNotifier<BatchOperationState> {
+  BatchOperationNotifier() : super(const BatchOperationState());
 
   /// 进入批量模式
-  void enterBatchMode() {
-    state = state.copyWith(isBatchMode: true);
-
-    DebugService.log(
-      '🔄 进入批量模式',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
+  void enterBatchMode(String itemId) {
+    state = state.copyWith(
+      isBatchMode: true,
+      selectedItems: {itemId},
+      isAllSelected: false,
     );
   }
 
@@ -104,244 +25,186 @@ class CloudDriveBatchProvider extends StateNotifier<CloudDriveBatchState> {
       isBatchMode: false,
       selectedItems: {},
       isAllSelected: false,
-      currentBatchOperation: null,
-      batchProgress: 0.0,
-      totalItems: 0,
-      completedItems: 0,
-      failedItems: 0,
-      failedItemIds: [],
-      isBatchProcessing: false,
-      batchError: null,
-      itemStatus: {},
-    );
-
-    DebugService.log(
-      '🔄 退出批量模式',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
+      showFloatingActionButton: false,
+      pendingOperationFile: null,
+      pendingOperationType: null,
     );
   }
 
-  /// 选择项目
-  void selectItem(String itemId) {
+  /// 切换选择状态
+  void toggleSelection(String itemId, int totalItems) {
     final newSelectedItems = Set<String>.from(state.selectedItems);
-    newSelectedItems.add(itemId);
 
-    state = state.copyWith(
-      selectedItems: newSelectedItems,
-      isAllSelected: false,
-    );
+    if (newSelectedItems.contains(itemId)) {
+      newSelectedItems.remove(itemId);
+    } else {
+      newSelectedItems.add(itemId);
+    }
 
-    DebugService.log(
-      '✅ 选择项目: $itemId (共${newSelectedItems.length}个)',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
-    );
-  }
-
-  /// 取消选择项目
-  void deselectItem(String itemId) {
-    final newSelectedItems = Set<String>.from(state.selectedItems);
-    newSelectedItems.remove(itemId);
-
-    state = state.copyWith(
-      selectedItems: newSelectedItems,
-      isAllSelected: false,
-    );
-
-    DebugService.log(
-      '❌ 取消选择项目: $itemId (剩余${newSelectedItems.length}个)',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
-    );
-  }
-
-  /// 全选项目
-  void selectAllItems(List<String> allItemIds) {
-    state = state.copyWith(
-      selectedItems: Set<String>.from(allItemIds),
-      isAllSelected: true,
-    );
-
-    DebugService.log(
-      '✅ 全选项目: ${allItemIds.length}个',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
-    );
-  }
-
-  /// 取消全选
-  void deselectAllItems() {
-    state = state.copyWith(selectedItems: {}, isAllSelected: false);
-
-    DebugService.log(
-      '❌ 取消全选',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
-    );
-  }
-
-  /// 开始批量操作
-  void startBatchOperation(String operation, List<String> itemIds) {
-    state = state.copyWith(
-      currentBatchOperation: operation,
-      batchProgress: 0.0,
-      totalItems: itemIds.length,
-      completedItems: 0,
-      failedItems: 0,
-      failedItemIds: [],
-      isBatchProcessing: true,
-      batchError: null,
-      itemStatus: {},
-    );
-
-    DebugService.log(
-      '🔄 开始批量操作: $operation (${itemIds.length}个项目)',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
-    );
-  }
-
-  /// 更新批量操作进度
-  void updateBatchProgress(double progress, int completed) {
-    state = state.copyWith(batchProgress: progress, completedItems: completed);
-
-    DebugService.log(
-      '📊 更新批量进度: ${(progress * 100).toStringAsFixed(1)}% ($completed/${state.totalItems})',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
-    );
-  }
-
-  /// 更新项目状态
-  void updateItemStatus(String itemId, String status) {
-    final newItemStatus = Map<String, String>.from(state.itemStatus);
-    newItemStatus[itemId] = status;
-
-    state = state.copyWith(itemStatus: newItemStatus);
-
-    DebugService.log(
-      '📋 更新项目状态: $itemId -> $status',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
-    );
-  }
-
-  /// 标记项目成功
-  void markItemSuccess(String itemId) {
-    updateItemStatus(itemId, 'success');
-
-    DebugService.log(
-      '✅ 项目成功: $itemId',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
-    );
-  }
-
-  /// 标记项目失败
-  void markItemFailed(String itemId, String error) {
-    final newFailedItemIds = [...state.failedItemIds, itemId];
-    final newFailedItems = state.failedItems + 1;
-
-    state = state.copyWith(
-      failedItems: newFailedItems,
-      failedItemIds: newFailedItemIds,
-      batchError: error,
-    );
-
-    updateItemStatus(itemId, 'failed');
-
-    DebugService.log(
-      '❌ 项目失败: $itemId - $error',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
-    );
-  }
-
-  /// 完成批量操作
-  void completeBatchOperation() {
-    state = state.copyWith(
-      isBatchProcessing: false,
-      currentBatchOperation: null,
-      batchProgress: 1.0,
-    );
-
-    DebugService.log(
-      '✅ 批量操作完成: 成功${state.successItems}个, 失败${state.failedItems}个',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
-    );
-  }
-
-  /// 取消批量操作
-  void cancelBatchOperation() {
-    state = state.copyWith(
-      isBatchProcessing: false,
-      currentBatchOperation: null,
-      batchProgress: 0.0,
-      batchError: '操作已取消',
-    );
-
-    DebugService.log(
-      '🚫 取消批量操作',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
-    );
-  }
-
-  /// 重试失败的项目
-  void retryFailedItems() {
-    if (state.failedItemIds.isNotEmpty) {
+    // 如果没有选中项，自动关闭批量模式
+    if (newSelectedItems.isEmpty) {
       state = state.copyWith(
-        failedItems: 0,
-        failedItemIds: [],
-        batchError: null,
-        completedItems: state.successItems,
-        totalItems: state.failedItemIds.length,
+        selectedItems: newSelectedItems,
+        isBatchMode: false,
+        isAllSelected: false,
       );
-
-      DebugService.log(
-        '🔄 重试失败项目: ${state.failedItemIds.length}个',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.batch',
+    } else {
+      state = state.copyWith(
+        selectedItems: newSelectedItems,
+        isAllSelected: newSelectedItems.length == totalItems,
       );
     }
   }
 
-  /// 获取项目状态
-  String getItemStatus(String itemId) {
-    return state.itemStatus[itemId] ?? 'pending';
+  /// 切换全选状态
+  void toggleSelectAll(List<String> allItemIds) {
+    if (state.isAllSelected) {
+      // 取消全选并退出批量模式
+      state = state.copyWith(
+        selectedItems: {},
+        isAllSelected: false,
+        isBatchMode: false,
+      );
+    } else {
+      // 全选所有项目
+      state = state.copyWith(
+        selectedItems: allItemIds.toSet(),
+        isAllSelected: true,
+      );
+    }
   }
 
-  /// 获取批量操作统计
-  Map<String, dynamic> getBatchStats() {
-    return {
-      'totalItems': state.totalItems,
-      'completedItems': state.completedItems,
-      'successItems': state.successItems,
-      'failedItems': state.failedItems,
-      'successRate': state.successRate,
-      'progress': state.batchProgress,
-      'isCompleted': state.isCompleted,
-      'isAllSuccess': state.isAllSuccess,
-      'hasFailedItems': state.hasFailedItems,
-    };
+  /// 批量下载
+  Future<void> batchDownload({
+    required CloudDriveAccount account,
+    required List<CloudDriveFile> selectedFiles,
+    required List<CloudDriveFile> selectedFolders,
+  }) async {
+    if (selectedFiles.isEmpty) return;
+
+    try {
+      await CloudDriveFileService.batchDownloadFiles(
+        account: account,
+        files: selectedFiles,
+        folders: selectedFolders,
+      );
+
+      // 下载完成后退出批量模式
+      exitBatchMode();
+    } catch (e) {
+      LogManager().error('批量下载失败: $e');
+      rethrow;
+    }
   }
 
-  /// 重置批量状态
-  void reset() {
-    state = const CloudDriveBatchState();
+  /// 批量分享
+  Future<void> batchShare({
+    required CloudDriveAccount account,
+    required List<CloudDriveFile> selectedFiles,
+    required List<CloudDriveFile> selectedFolders,
+  }) async {
+    // TODO: 实现批量分享逻辑
+    exitBatchMode();
+  }
 
-    DebugService.log(
-      '🔄 重置批量状态',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.batch',
+  /// 设置待操作文件（复制/移动）
+  void setPendingOperation(CloudDriveFile file, String operationType) {
+    LogManager().cloudDrive('🎯 设置待操作文件: ${file.name} ($operationType)');
+
+    state = state.copyWith(
+      pendingOperationFile: file,
+      pendingOperationType: operationType,
+      showFloatingActionButton: true,
     );
+  }
+
+  /// 清除待操作文件
+  void clearPendingOperation() {
+    LogManager().cloudDrive('🧹 清除待操作文件');
+
+    state = state.copyWith(
+      pendingOperationFile: null,
+      pendingOperationType: null,
+      showFloatingActionButton: false,
+    );
+  }
+
+  /// 执行待操作（复制/移动到当前目录）
+  Future<bool> executePendingOperation({
+    required CloudDriveAccount account,
+    required List<PathInfo> currentPath,
+  }) async {
+    final file = state.pendingOperationFile;
+    final operationType = state.pendingOperationType;
+
+    LogManager().cloudDrive('🚀 executePendingOperation 开始执行');
+    LogManager().cloudDrive(
+      '📄 文件信息: ${file?.name ?? 'null'} (ID: ${file?.id ?? 'null'})',
+    );
+    LogManager().cloudDrive('🔧 操作类型: ${operationType ?? 'null'}');
+
+    if (file == null || operationType == null) {
+      LogManager().cloudDrive('❌ 待操作信息不完整');
+      return false;
+    }
+
+    LogManager().cloudDrive('✅ 参数验证通过');
+
+    // 获取当前目录路径或ID - 使用策略模式解耦
+    final targetFolderId =
+        CloudDriveOperationService.convertPathToTargetFolderId(
+          cloudDriveType: account.type,
+          folderPath: currentPath,
+        );
+
+    LogManager().cloudDrive('📁 目标文件夹ID: $targetFolderId');
+
+    try {
+      bool success = false;
+
+      if (operationType == 'copy') {
+        LogManager().cloudDrive('📋 开始执行复制操作');
+        success = await CloudDriveOperationService.copyFile(
+          account: account,
+          file: file,
+          destPath: targetFolderId,
+        );
+        LogManager().cloudDrive('📋 复制操作结果: $success');
+      } else if (operationType == 'move') {
+        LogManager().cloudDrive('📋 开始执行移动操作');
+        success = await CloudDriveOperationService.moveFile(
+          account: account,
+          file: file,
+          targetFolderId: targetFolderId,
+        );
+        LogManager().cloudDrive('📋 移动操作结果: $success');
+      } else {
+        LogManager().cloudDrive('❌ 未知的操作类型: $operationType');
+        return false;
+      }
+
+      if (success) {
+        LogManager().cloudDrive('✅ 操作执行成功');
+        LogManager().cloudDrive('🧹 开始清除待操作状态');
+        // 清除待操作状态
+        clearPendingOperation();
+        LogManager().cloudDrive('✅ 状态更新完成，无需重新加载目录');
+        return true;
+      } else {
+        LogManager().cloudDrive('❌ 操作执行失败');
+        return false;
+      }
+    } catch (e) {
+      LogManager().error('❌ 执行操作异常');
+      return false;
+    } finally {
+      LogManager().cloudDrive('🚀 executePendingOperation 执行结束');
+    }
   }
 }
 
-/// 批量操作Provider实例
-final cloudDriveBatchProvider =
-    StateNotifierProvider<CloudDriveBatchProvider, CloudDriveBatchState>(
-      (ref) => CloudDriveBatchProvider(),
+/// 批量操作Provider
+final batchOperationProvider =
+    StateNotifierProvider<BatchOperationNotifier, BatchOperationState>(
+      (ref) => BatchOperationNotifier(),
     );

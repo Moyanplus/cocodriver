@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../models/cloud_drive_models.dart';
 
 /// 文件操作状态
@@ -69,10 +69,9 @@ class CloudDriveOperationProvider
       error: null,
     );
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 开始操作: $operation',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.operation',
+      
     );
   }
 
@@ -90,10 +89,9 @@ class CloudDriveOperationProvider
       error: null,
     );
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '✅ 操作完成',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.operation',
+      
     );
   }
 
@@ -106,10 +104,9 @@ class CloudDriveOperationProvider
       error: error,
     );
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '❌ 操作失败: $error',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.operation',
+      
     );
   }
 
@@ -120,10 +117,9 @@ class CloudDriveOperationProvider
       pendingOperationType: operationType,
     );
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '📋 设置待操作文件: ${file.name} - $operationType',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.operation',
+      
     );
   }
 
@@ -134,10 +130,9 @@ class CloudDriveOperationProvider
       pendingOperationType: null,
     );
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🗑️ 清除待操作文件',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.operation',
+      
     );
   }
 
@@ -150,10 +145,9 @@ class CloudDriveOperationProvider
       state = state.copyWith(selectedFiles: []);
     }
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 切换批量模式: ${state.isBatchMode}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.operation',
+      
     );
   }
 
@@ -163,10 +157,9 @@ class CloudDriveOperationProvider
       final newSelectedFiles = [...state.selectedFiles, file];
       state = state.copyWith(selectedFiles: newSelectedFiles);
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '✅ 选择文件: ${file.name} (共${newSelectedFiles.length}个)',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.operation',
+        
       );
     }
   }
@@ -177,10 +170,9 @@ class CloudDriveOperationProvider
         state.selectedFiles.where((f) => f != file).toList();
     state = state.copyWith(selectedFiles: newSelectedFiles);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '❌ 取消选择文件: ${file.name} (剩余${newSelectedFiles.length}个)',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.operation',
+      
     );
   }
 
@@ -188,10 +180,9 @@ class CloudDriveOperationProvider
   void selectAllFiles(List<CloudDriveFile> allFiles) {
     state = state.copyWith(selectedFiles: allFiles);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '✅ 全选文件: ${allFiles.length}个',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.operation',
+      
     );
   }
 
@@ -199,10 +190,9 @@ class CloudDriveOperationProvider
   void deselectAllFiles() {
     state = state.copyWith(selectedFiles: []);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '❌ 取消全选',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.operation',
+      
     );
   }
 
@@ -215,10 +205,9 @@ class CloudDriveOperationProvider
   void reset() {
     state = const CloudDriveOperationState();
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 重置操作状态',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.operation',
+      
     );
   }
 }

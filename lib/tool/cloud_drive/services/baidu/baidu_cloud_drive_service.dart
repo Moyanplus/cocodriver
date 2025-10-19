@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import 'baidu_base_service.dart';
 import 'baidu_config.dart';
@@ -22,45 +22,25 @@ class BaiduCloudDriveService {
     dynamic error,
     StackTrace? stackTrace,
   ) {
-    DebugService.log(
-      '❌ 百度网盘 - $operation 失败: $error',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('❌ 百度网盘 - $operation 失败: $error');
     if (stackTrace != null) {
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
     }
   }
 
   /// 统一日志记录
   static void _logInfo(String message) {
-    DebugService.log(
-      message,
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive(message);
   }
 
   /// 统一成功日志记录
   static void _logSuccess(String message) {
-    DebugService.log(
-      '✅ 百度网盘 - $message',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('✅ 百度网盘 - $message');
   }
 
   /// 统一错误日志记录
   static void _logError(String message, dynamic error) {
-    DebugService.log(
-      '❌ 百度网盘 - $message: $error',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('❌ 百度网盘 - $message: $error');
   }
 
   /// 获取文件列表
@@ -124,9 +104,7 @@ class BaiduCloudDriveService {
       }
 
       final responseData = response.data;
-      _logInfo(
-        '📄 响应数据: ${responseData.toString().substring(0, responseData.toString().length > 200 ? 200 : responseData.toString().length)}...',
-      );
+      _logInfo('📄 响应数据: ${responseData.toString()}');
 
       // 检查错误码
       if (responseData['errno'] != 0) {
@@ -180,10 +158,8 @@ class BaiduCloudDriveService {
     final fileId = isDir ? path : fsId;
 
     // 添加调试日志
-    DebugService.log(
+    LogManager().cloudDrive(
       '📄 解析文件: $serverFilename (${isDir ? '文件夹' : '文件'}), ID: $fileId, fs_id: $fsId, path: $path, 大小: $size -> $sizeText, 时间: $modifiedTime',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
     );
 
     return CloudDriveFile(
@@ -281,20 +257,12 @@ class BaiduCloudDriveService {
   /// 验证Cookie有效性
   static Future<bool> validateCookies(CloudDriveAccount account) async {
     try {
-      DebugService.log(
-        '🔍 验证百度云盘Cookie有效性',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 验证百度云盘Cookie有效性');
 
       // 如果能获取到文件列表，说明Cookie有效
       return true;
     } catch (e) {
-      DebugService.log(
-        '❌ Cookie验证失败: $e',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ Cookie验证失败: $e');
       return false;
     }
   }
@@ -305,18 +273,10 @@ class BaiduCloudDriveService {
     required CloudDriveFile file,
   }) async {
     try {
-      DebugService.log(
-        '🔗 获取百度云盘文件下载链接: ${file.name} (${file.id})',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔗 获取百度云盘文件下载链接: ${file.name} (${file.id})');
 
       if (!account.isLoggedIn) {
-        DebugService.log(
-          '❌ 账号未登录',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 账号未登录');
         throw Exception('账号未登录');
       }
 
@@ -338,49 +298,27 @@ class BaiduCloudDriveService {
             DateTime.now().millisecondsSinceEpoch.toString(),
       };
 
-      DebugService.log(
-        '🌐 下载请求URL: $url',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📋 下载请求参数: $queryParams',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🌐 下载请求URL: $url');
+      LogManager().cloudDrive('📋 下载请求参数: $queryParams');
 
       final dio = _createDio(account);
       final response = await dio.getUri(
         url.replace(queryParameters: queryParams),
       );
 
-      DebugService.log(
-        '📡 下载响应状态码: ${response.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 下载响应体: ${response.data}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📡 下载响应状态码: ${response.statusCode}');
+      LogManager().cloudDrive('📄 下载响应体: ${response.data}');
 
       if (response.statusCode != 200) {
-        DebugService.log(
-          '❌ 请求失败: ${response.statusCode}',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 请求失败: ${response.statusCode}');
         throw Exception('请求失败: ${response.statusCode}');
       }
 
       final responseData = response.data;
 
       if (responseData['errno'] != 0) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 获取下载链接失败: ${_getErrorMessage(responseData['errno'])}',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
         );
         throw Exception('获取下载链接失败: ${_getErrorMessage(responseData['errno'])}');
       }
@@ -393,11 +331,7 @@ class BaiduCloudDriveService {
 
       return null;
     } catch (e) {
-      DebugService.log(
-        '❌ 获取下载链接失败: $e',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 获取下载链接失败: $e');
       rethrow;
     }
   }
@@ -409,47 +343,19 @@ class BaiduCloudDriveService {
     String pwd = '',
     int period = 1, // 1=1天, 7=7天, 30=30天, 365=365天, 0=永久
   }) async {
-    DebugService.log(
-      '🔗 百度网盘 - 开始生成分享链接',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
-    DebugService.log(
-      '📋 文件ID列表: $fileIds',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
-    DebugService.log(
-      '🔑 用户输入提取码: ${pwd.isEmpty ? '无' : pwd}',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
-    DebugService.log(
-      '🔑 实际使用提取码: ${pwd.isEmpty ? '0000' : pwd}',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
-    DebugService.log(
-      '⏰ 有效期: $period 天',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
-    DebugService.log(
-      '👤 账号: ${account.name}',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🔗 百度网盘 - 开始生成分享链接');
+    LogManager().cloudDrive('📋 文件ID列表: $fileIds');
+    LogManager().cloudDrive('🔑 用户输入提取码: ${pwd.isEmpty ? '无' : pwd}');
+    LogManager().cloudDrive('🔑 实际使用提取码: ${pwd.isEmpty ? '0000' : pwd}');
+    LogManager().cloudDrive('⏰ 有效期: $period 天');
+    LogManager().cloudDrive('👤 账号: ${account.name}');
 
     // 获取百度网盘参数
     final baiduParams = await BaiduParamService.getBaiduParams(account);
     final bdstoken = baiduParams['bdstoken'] as String?;
 
     if (bdstoken == null) {
-      DebugService.log(
-        '❌ 无法获取bdstoken',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 无法获取bdstoken');
       return null;
     }
 
@@ -472,94 +378,44 @@ class BaiduCloudDriveService {
       'bdstoken': bdstoken,
     };
 
-    DebugService.log(
-      '🌐 请求URL: $url',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
-    DebugService.log(
-      '📦 请求体: $body',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🌐 请求URL: $url');
+    LogManager().cloudDrive('📦 请求体: $body');
 
     try {
       final dio = _createDio(account);
       final response = await dio.postUri(url, data: body);
 
-      DebugService.log(
-        '📡 响应状态码: ${response.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 响应头: ${response.headers}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 响应体: ${response.data}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📡 响应状态码: ${response.statusCode}');
+      LogManager().cloudDrive('📄 响应头: ${response.headers}');
+      LogManager().cloudDrive('📄 响应体: ${response.data}');
 
       if (response.statusCode != 200) {
-        DebugService.log(
-          '❌ HTTP请求失败: ${response.statusCode}',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ HTTP请求失败: ${response.statusCode}');
         throw Exception('HTTP请求失败: ${response.statusCode}');
       }
 
       final data = response.data;
-      DebugService.log(
-        '📋 解析后的响应数据: $data',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📋 解析后的响应数据: $data');
 
       if (data['errno'] != 0) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ API错误: ${_getErrorMessage(data['errno'])} (errno: ${data['errno']})',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
         );
-        DebugService.log(
-          '📋 完整错误信息: ${data['show_msg'] ?? '无详细信息'}',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('📋 完整错误信息: ${data['show_msg'] ?? '无详细信息'}');
         throw Exception(_getErrorMessage(data['errno']));
       }
 
       if (data['link'] != null) {
         final link = data['link'] as String;
-        DebugService.log(
-          '✅ 分享链接生成成功: $link',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 分享链接生成成功: $link');
         return link;
       } else {
-        DebugService.log(
-          '❌ 响应中没有link字段',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
-        DebugService.log(
-          '📋 完整响应: $data',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 响应中没有link字段');
+        LogManager().cloudDrive('📋 完整响应: $data');
         return null;
       }
     } catch (e) {
-      DebugService.log(
-        '❌ 百度网盘分享请求异常: $e',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 百度网盘分享请求异常: $e');
       rethrow;
     }
   }
@@ -570,18 +426,10 @@ class BaiduCloudDriveService {
     required String fileId,
   }) async {
     try {
-      DebugService.log(
-        '📋 获取百度云盘文件详情: $fileId',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📋 获取百度云盘文件详情: $fileId');
 
       if (!account.isLoggedIn) {
-        DebugService.log(
-          '❌ 账号未登录',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 账号未登录');
         throw Exception('账号未登录');
       }
 
@@ -595,88 +443,46 @@ class BaiduCloudDriveService {
         'dlink': '1',
       };
 
-      DebugService.log(
-        '🌐 文件详情请求URL: $url',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📋 文件详情请求参数: $queryParams',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🌐 文件详情请求URL: $url');
+      LogManager().cloudDrive('📋 文件详情请求参数: $queryParams');
 
       final dio = _createDio(account);
       final response = await dio.getUri(
         url.replace(queryParameters: queryParams),
       );
 
-      DebugService.log(
-        '📡 文件详情响应状态码: ${response.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 文件详情响应体: ${response.data}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📡 文件详情响应状态码: ${response.statusCode}');
+      LogManager().cloudDrive('📄 文件详情响应体: ${response.data}');
 
       if (response.statusCode != 200) {
-        DebugService.log(
-          '❌ 请求失败: ${response.statusCode}',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 请求失败: ${response.statusCode}');
         throw Exception('请求失败: ${response.statusCode}');
       }
 
       final responseData = response.data;
-      DebugService.log(
-        '📋 文件详情响应数据: $responseData',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📋 文件详情响应数据: $responseData');
 
       if (responseData['errno'] != 0) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 文件详情API错误: ${_getErrorMessage(responseData['errno'])} (errno: ${responseData['errno']})',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
         );
         throw Exception('获取文件详情失败: ${_getErrorMessage(responseData['errno'])}');
       }
 
       // 百度网盘API返回的是info字段，不是list字段
       final List<dynamic> fileList = responseData['info'] ?? [];
-      DebugService.log(
-        '📋 文件详情列表长度: ${fileList.length}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📋 文件详情列表长度: ${fileList.length}');
 
       if (fileList.isNotEmpty) {
         final fileDetail = fileList.first as Map<String, dynamic>;
-        DebugService.log(
-          '✅ 获取文件详情成功: $fileDetail',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 获取文件详情成功: $fileDetail');
         return fileDetail;
       }
 
-      DebugService.log(
-        '❌ 文件详情列表为空',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 文件详情列表为空');
       return null;
     } catch (e) {
-      DebugService.log(
-        '❌ 获取文件详情失败: $e',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 获取文件详情失败: $e');
       rethrow;
     }
   }
@@ -786,15 +592,9 @@ class BaiduCloudDriveService {
   static Future<CloudDriveQuotaInfo?> getAccountQuota({
     required CloudDriveAccount account,
   }) async {
-    DebugService.log(
-      '📊 百度网盘 - 获取账号容量信息开始',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
-    DebugService.log(
+    LogManager().cloudDrive('📊 百度网盘 - 获取账号容量信息开始');
+    LogManager().cloudDrive(
       '👤 账号信息: ${account.name} (${account.type.displayName})',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
     );
 
     try {
@@ -808,66 +608,36 @@ class BaiduCloudDriveService {
         queryParameters: queryParams.map((k, v) => MapEntry(k, v.toString())),
       );
 
-      DebugService.log(
-        '🔗 请求URL: $uri',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔗 请求URL: $uri');
 
       final response = await dio.getUri(uri);
 
-      DebugService.log(
-        '📡 响应状态码: ${response.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📡 响应状态码: ${response.statusCode}');
 
       if (response.statusCode != 200) {
-        DebugService.log(
-          '❌ 获取容量信息失败，状态码: ${response.statusCode}',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 获取容量信息失败，状态码: ${response.statusCode}');
         throw Exception('获取容量信息失败，状态码: ${response.statusCode}');
       }
 
       final responseData = response.data;
-      DebugService.log(
-        '📄 容量信息响应: $responseData',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📄 容量信息响应: $responseData');
 
       if (responseData['errno'] != 0) {
         final errorMsg = BaiduConfig.getErrorMessage(responseData['errno']);
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ API返回错误: $errorMsg (errno: ${responseData['errno']})',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
         );
         throw Exception('获取容量信息失败: $errorMsg');
       }
 
       final quotaInfo = CloudDriveQuotaInfo.fromBaiduResponse(responseData);
 
-      DebugService.log(
-        '✅ 百度网盘 - 容量信息获取成功: ${quotaInfo.toString()}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('✅ 百度网盘 - 容量信息获取成功: ${quotaInfo.toString()}');
 
       return quotaInfo;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 百度网盘 - 获取容量信息异常: $e',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 百度网盘 - 获取容量信息异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -876,15 +646,9 @@ class BaiduCloudDriveService {
   static Future<CloudDriveAccountInfo?> getAccountUserInfo({
     required CloudDriveAccount account,
   }) async {
-    DebugService.log(
-      '👤 百度网盘 - 获取用户信息开始',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
-    DebugService.log(
+    LogManager().cloudDrive('👤 百度网盘 - 获取用户信息开始');
+    LogManager().cloudDrive(
       '👤 账号信息: ${account.name} (${account.type.displayName})',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
     );
 
     try {
@@ -898,76 +662,42 @@ class BaiduCloudDriveService {
         queryParameters: queryParams.map((k, v) => MapEntry(k, v.toString())),
       );
 
-      DebugService.log(
-        '🔗 请求URL: $uri',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔗 请求URL: $uri');
 
       final response = await dio.getUri(uri);
 
-      DebugService.log(
-        '📡 响应状态码: ${response.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📡 响应状态码: ${response.statusCode}');
 
       if (response.statusCode != 200) {
-        DebugService.log(
-          '❌ 获取用户信息失败，状态码: ${response.statusCode}',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 获取用户信息失败，状态码: ${response.statusCode}');
         throw Exception('获取用户信息失败，状态码: ${response.statusCode}');
       }
 
       final responseData = response.data;
-      DebugService.log(
-        '📄 用户信息响应: $responseData',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📄 用户信息响应: $responseData');
 
       if (responseData['error_code'] != 0) {
         final errorMsg = responseData['error_msg'] ?? '未知错误';
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ API返回错误: $errorMsg (error_code: ${responseData['error_code']})',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
         );
         throw Exception('获取用户信息失败: $errorMsg');
       }
 
       final userInfo = responseData['user_info'];
       if (userInfo == null) {
-        DebugService.log(
-          '❌ 响应中没有用户信息数据',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 响应中没有用户信息数据');
         throw Exception('响应中没有用户信息数据');
       }
 
       final accountInfo = CloudDriveAccountInfo.fromBaiduResponse(userInfo);
 
-      DebugService.log(
-        '✅ 百度网盘 - 用户信息获取成功: ${accountInfo.toString()}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('✅ 百度网盘 - 用户信息获取成功: ${accountInfo.toString()}');
 
       return accountInfo;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 百度网盘 - 获取用户信息异常: $e',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 百度网盘 - 获取用户信息异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -976,15 +706,9 @@ class BaiduCloudDriveService {
   static Future<CloudDriveAccountDetails?> getAccountDetails({
     required CloudDriveAccount account,
   }) async {
-    DebugService.log(
-      '📋 百度网盘 - 获取完整账号详情开始',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
-    DebugService.log(
+    LogManager().cloudDrive('📋 百度网盘 - 获取完整账号详情开始');
+    LogManager().cloudDrive(
       '👤 账号信息: ${account.name} (${account.type.displayName})',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
     );
 
     try {
@@ -998,10 +722,8 @@ class BaiduCloudDriveService {
       final quotaInfo = results[1] as CloudDriveQuotaInfo?;
 
       if (accountInfo == null || quotaInfo == null) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 获取账号详情失败: 用户信息=${accountInfo != null ? '成功' : '失败'}, 容量信息=${quotaInfo != null ? '成功' : '失败'}',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
         );
         return null;
       }
@@ -1011,29 +733,13 @@ class BaiduCloudDriveService {
         quotaInfo: quotaInfo,
       );
 
-      DebugService.log(
-        '✅ 百度网盘 - 完整账号详情获取成功',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📊 账号详情: ${accountDetails.toString()}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('✅ 百度网盘 - 完整账号详情获取成功');
+      LogManager().cloudDrive('📊 账号详情: ${accountDetails.toString()}');
 
       return accountDetails;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 百度网盘 - 获取完整账号详情异常: $e',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 百度网盘 - 获取完整账号详情异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -1045,10 +751,8 @@ class BaiduCloudDriveService {
     required String parentPath,
   }) async {
     try {
-      DebugService.log(
+      LogManager().cloudDrive(
         '📁 百度网盘 - 开始新建文件夹: $folderName, 父路径: $parentPath',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
       );
 
       // 获取bdstoken
@@ -1075,31 +779,17 @@ class BaiduCloudDriveService {
         queryParameters: urlParams.map((k, v) => MapEntry(k, v.toString())),
       );
 
-      DebugService.log(
-        '🔗 请求URL: $uri',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
+      LogManager().cloudDrive('🔗 请求URL: $uri');
+      LogManager().cloudDrive(
         '📤 请求体: ${requestBodyMap.entries.map((e) => '${e.key}=${e.value}').join('&')}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
       );
 
       // 发送请求
       final dio = _createDio(account);
       final response = await dio.postUri(uri, data: formData);
 
-      DebugService.log(
-        '📡 新建文件夹响应: ${response.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 响应数据: ${response.data}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📡 新建文件夹响应: ${response.statusCode}');
+      LogManager().cloudDrive('📄 响应数据: ${response.data}');
 
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
@@ -1122,41 +812,21 @@ class BaiduCloudDriveService {
             folderId: parentPath,
           );
 
-          DebugService.log(
-            '✅ 文件夹创建成功: $folderName',
-            category: DebugCategory.tools,
-            subCategory: BaiduConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('✅ 文件夹创建成功: $folderName');
 
           return folder;
         } else {
           final errorMsg = BaiduConfig.getErrorMessage(errno ?? -1);
-          DebugService.log(
-            '❌ 文件夹创建失败: $errorMsg (errno: $errno)',
-            category: DebugCategory.tools,
-            subCategory: BaiduConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('❌ 文件夹创建失败: $errorMsg (errno: $errno)');
           return null;
         }
       } else {
-        DebugService.log(
-          '❌ 文件夹创建请求失败: ${response.statusCode}',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 文件夹创建请求失败: ${response.statusCode}');
         return null;
       }
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 新建文件夹异常: $e',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 新建文件夹异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -1165,97 +835,47 @@ class BaiduCloudDriveService {
   static Future<void> testAccountDetails({
     required CloudDriveAccount account,
   }) async {
-    DebugService.log(
-      '🧪 百度网盘 - 测试账号详情功能开始',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🧪 百度网盘 - 测试账号详情功能开始');
 
     try {
       // 测试用户信息获取
-      DebugService.log(
-        '🔍 测试用户信息获取...',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 测试用户信息获取...');
       final userInfo = await getAccountUserInfo(account: account);
       if (userInfo != null) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 用户信息获取成功: ${userInfo.username} (${userInfo.vipStatusDescription})',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
         );
       } else {
-        DebugService.log(
-          '❌ 用户信息获取失败',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 用户信息获取失败');
       }
 
       // 测试容量信息获取
-      DebugService.log(
-        '🔍 测试容量信息获取...',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 测试容量信息获取...');
       final quotaInfo = await getAccountQuota(account: account);
       if (quotaInfo != null) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 容量信息获取成功: ${quotaInfo.formattedUsed}/${quotaInfo.formattedTotal} (${quotaInfo.usagePercentage.toStringAsFixed(1)}%)',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
         );
       } else {
-        DebugService.log(
-          '❌ 容量信息获取失败',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 容量信息获取失败');
       }
 
       // 测试完整账号详情获取
-      DebugService.log(
-        '🔍 测试完整账号详情获取...',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 测试完整账号详情获取...');
       final accountDetails = await getAccountDetails(account: account);
       if (accountDetails != null) {
-        DebugService.log(
-          '✅ 完整账号详情获取成功',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
-        DebugService.log(
+        LogManager().cloudDrive('✅ 完整账号详情获取成功');
+        LogManager().cloudDrive(
           '📊 详细信息: 用户=${accountDetails.accountInfo.username}, 存储=${accountDetails.quotaInfo.usagePercentage.toStringAsFixed(1)}%',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
         );
       } else {
-        DebugService.log(
-          '❌ 完整账号详情获取失败',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 完整账号详情获取失败');
       }
 
-      DebugService.log(
-        '🧪 百度网盘 - 账号详情功能测试完成',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🧪 百度网盘 - 账号详情功能测试完成');
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 百度网盘 - 账号详情功能测试异常: $e',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 百度网盘 - 账号详情功能测试异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
     }
   }
 }

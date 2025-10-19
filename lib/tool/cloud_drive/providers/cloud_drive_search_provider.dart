@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../models/cloud_drive_models.dart';
 import '../repositories/cloud_drive_repository.dart';
 import 'cloud_drive_state.dart';
@@ -21,10 +21,9 @@ class CloudDriveSearchProvider extends StateNotifier<CloudDriveSearchState> {
     bool refresh = false,
   }) async {
     try {
-      DebugService.log(
+      LogManager().cloudDrive(
         '🔍 Provider: 开始搜索文件',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.provider',
+        
       );
 
       // 如果是刷新，重置状态
@@ -75,10 +74,9 @@ class CloudDriveSearchProvider extends StateNotifier<CloudDriveSearchState> {
           );
         }
 
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ Provider: 搜索成功 - ${result.files.length} 个结果',
-          category: DebugCategory.tools,
-          subCategory: 'cloudDrive.provider',
+          
         );
       } else {
         state = state.copyWith(
@@ -86,19 +84,17 @@ class CloudDriveSearchProvider extends StateNotifier<CloudDriveSearchState> {
           error: result.error ?? '搜索失败',
         );
 
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ Provider: 搜索失败 - ${result.error}',
-          category: DebugCategory.tools,
-          subCategory: 'cloudDrive.provider',
+          
         );
       }
     } catch (e) {
       state = state.copyWith(isSearching: false, error: e.toString());
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ Provider: 搜索异常 - $e',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.provider',
+        
       );
     }
   }
@@ -132,10 +128,9 @@ class CloudDriveSearchProvider extends StateNotifier<CloudDriveSearchState> {
   void clear() {
     state = const CloudDriveSearchState();
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🗑️ Provider: 清空搜索结果',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.provider',
+      
     );
   }
 
@@ -143,10 +138,9 @@ class CloudDriveSearchProvider extends StateNotifier<CloudDriveSearchState> {
   void setKeyword(String keyword) {
     state = state.copyWith(keyword: keyword);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔍 Provider: 设置搜索关键词 - $keyword',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.provider',
+      
     );
   }
 
@@ -154,10 +148,9 @@ class CloudDriveSearchProvider extends StateNotifier<CloudDriveSearchState> {
   void setError(String error) {
     state = state.copyWith(error: error, isSearching: false);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '❌ Provider: 设置搜索错误状态 - $error',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.provider',
+      
     );
   }
 
@@ -165,10 +158,9 @@ class CloudDriveSearchProvider extends StateNotifier<CloudDriveSearchState> {
   void clearError() {
     state = state.copyWith(error: null);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '✅ Provider: 清除搜索错误状态',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.provider',
+      
     );
   }
 }

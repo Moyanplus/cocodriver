@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../base/cloud_drive_operation_service.dart';
 import '../../models/cloud_drive_models.dart';
 import 'pan123_cloud_drive_service.dart';
@@ -11,31 +11,17 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    DebugService.log(
-      '🔗 123云盘 - 获取下载链接开始',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
-    DebugService.log(
-      '📄 123云盘 - 文件信息: ${file.name} (ID: ${file.id})',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
-    DebugService.log(
+    LogManager().cloudDrive('🔗 123云盘 - 获取下载链接开始');
+    LogManager().cloudDrive('📄 123云盘 - 文件信息: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive(
       '👤 123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
     );
 
     try {
       // 使用配置中的文件大小解析方法
       final fileSize = Pan123Config.parseFileSize(file.size?.toString());
 
-      DebugService.log(
-        '📏 123云盘 - 解析的文件大小: $fileSize bytes',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('📏 123云盘 - 解析的文件大小: $fileSize bytes');
 
       // 从文件信息中提取S3KeyFlag和Etag
       String? s3keyFlag;
@@ -46,10 +32,8 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       s3keyFlag = null;
       etag = null;
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '🔍 123云盘 - 提取的参数: s3keyFlag=$s3keyFlag, etag=$etag',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
       );
 
       final downloadUrl = await Pan123CloudDriveService.getDownloadUrl(
@@ -66,31 +50,15 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
             downloadUrl.length > 100
                 ? '${downloadUrl.substring(0, 100)}...'
                 : downloadUrl;
-        DebugService.log(
-          '✅ 123云盘 - 下载链接获取成功: $preview',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 123云盘 - 下载链接获取成功: $preview');
       } else {
-        DebugService.log(
-          '❌ 123云盘 - 下载链接获取失败',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 123云盘 - 下载链接获取失败');
       }
 
       return downloadUrl;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 123云盘 - 获取下载链接异常: $e',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '📄 123云盘 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 123云盘 - 获取下载链接异常: $e');
+      LogManager().cloudDrive('📄 123云盘 - 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -103,14 +71,14 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String password,
   }) async {
     try {
-      DebugService.log('🚀 123云盘 - 高速下载: ${file.name}');
+      LogManager().cloudDrive('🚀 123云盘 - 高速下载: ${file.name}');
 
       // TODO: 实现123云盘高速下载
       // 这里需要调用第三方解析服务
 
       return null;
     } catch (e) {
-      DebugService.error('❌ 123云盘高速下载失败', e);
+      LogManager().error('❌ 123云盘高速下载失败');
       return null;
     }
   }
@@ -123,14 +91,14 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     int? expireDays,
   }) async {
     try {
-      DebugService.log('🔗 123云盘 - 生成分享链接');
+      LogManager().cloudDrive('🔗 123云盘 - 生成分享链接');
 
       // TODO: 实现123云盘分享链接生成
       // 这里需要调用123云盘的API来生成分享链接
 
       return null;
     } catch (e) {
-      DebugService.error('❌ 123云盘生成分享链接失败', e);
+      LogManager().error('❌ 123云盘生成分享链接失败');
       return null;
     }
   }
@@ -142,25 +110,11 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? targetFolderId,
   }) async {
     try {
-      DebugService.log(
-        '🚚 123云盘 - 移动文件开始',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '📄 123云盘 - 文件信息: ${file.name} (ID: ${file.id})',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '📁 123云盘 - 目标文件夹ID: ${targetFolderId ?? '根目录'}',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
+      LogManager().cloudDrive('🚚 123云盘 - 移动文件开始');
+      LogManager().cloudDrive('📄 123云盘 - 文件信息: ${file.name} (ID: ${file.id})');
+      LogManager().cloudDrive('📁 123云盘 - 目标文件夹ID: ${targetFolderId ?? '根目录'}');
+      LogManager().cloudDrive(
         '👤 123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
       );
 
       final success = await Pan123CloudDriveService.moveFile(
@@ -170,31 +124,19 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 123云盘 - 文件移动成功: ${file.name} -> ${targetFolderId ?? '根目录'}',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
         );
       } else {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 123云盘 - 文件移动失败: ${file.name} -> ${targetFolderId ?? '根目录'}',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
         );
       }
 
       return success;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 123云盘 - 移动文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '📄 123云盘 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 123云盘 - 移动文件异常: $e');
+      LogManager().cloudDrive('📄 123云盘 - 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -205,20 +147,10 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
   }) async {
     try {
-      DebugService.log(
-        '🗑️ 123云盘 - 删除文件开始',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '📄 123云盘 - 文件信息: ${file.name} (ID: ${file.id})',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
+      LogManager().cloudDrive('🗑️ 123云盘 - 删除文件开始');
+      LogManager().cloudDrive('📄 123云盘 - 文件信息: ${file.name} (ID: ${file.id})');
+      LogManager().cloudDrive(
         '👤 123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
       );
 
       // 解析文件大小
@@ -249,31 +181,15 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        DebugService.log(
-          '✅ 123云盘 - 文件删除成功: ${file.name}',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 123云盘 - 文件删除成功: ${file.name}');
       } else {
-        DebugService.log(
-          '❌ 123云盘 - 文件删除失败: ${file.name}',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 123云盘 - 文件删除失败: ${file.name}');
       }
 
       return success;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 123云盘 - 删除文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '📄 123云盘 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 123云盘 - 删除文件异常: $e');
+      LogManager().cloudDrive('📄 123云盘 - 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -285,25 +201,11 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String newName,
   }) async {
     try {
-      DebugService.log(
-        '✏️ 123云盘 - 重命名文件开始',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '📄 123云盘 - 文件信息: ${file.name} (ID: ${file.id})',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '🔄 123云盘 - 新文件名: $newName',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
+      LogManager().cloudDrive('✏️ 123云盘 - 重命名文件开始');
+      LogManager().cloudDrive('📄 123云盘 - 文件信息: ${file.name} (ID: ${file.id})');
+      LogManager().cloudDrive('🔄 123云盘 - 新文件名: $newName');
+      LogManager().cloudDrive(
         '👤 123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
       );
 
       final success = await Pan123CloudDriveService.renameFile(
@@ -313,31 +215,15 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        DebugService.log(
-          '✅ 123云盘 - 文件重命名成功: ${file.name} -> $newName',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 123云盘 - 文件重命名成功: ${file.name} -> $newName');
       } else {
-        DebugService.log(
-          '❌ 123云盘 - 文件重命名失败: ${file.name} -> $newName',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 123云盘 - 文件重命名失败: ${file.name} -> $newName');
       }
 
       return success;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 123云盘 - 重命名文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '📄 123云盘 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 123云盘 - 重命名文件异常: $e');
+      LogManager().cloudDrive('📄 123云盘 - 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -350,30 +236,12 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? newName,
   }) async {
     try {
-      DebugService.log(
-        '📋 123云盘 - 复制文件开始',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '📄 123云盘 - 文件信息: ${file.name} (ID: ${file.id})',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '📁 123云盘 - 目标路径: $destPath',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '🔄 123云盘 - 新文件名: ${newName ?? '使用原文件名'}',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
+      LogManager().cloudDrive('📋 123云盘 - 复制文件开始');
+      LogManager().cloudDrive('📄 123云盘 - 文件信息: ${file.name} (ID: ${file.id})');
+      LogManager().cloudDrive('📁 123云盘 - 目标路径: $destPath');
+      LogManager().cloudDrive('🔄 123云盘 - 新文件名: ${newName ?? '使用原文件名'}');
+      LogManager().cloudDrive(
         '👤 123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
       );
 
       // 解析目标文件夹ID
@@ -389,10 +257,8 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         targetFileId = cleanTargetId;
       }
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '📁 123云盘 - 解析后的目标文件夹ID: $targetFileId (原始: $destPath)',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
       );
 
       // 解析文件大小
@@ -421,31 +287,19 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 123云盘 - 文件复制成功: ${file.name} -> $targetFileId',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
         );
       } else {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 123云盘 - 文件复制失败: ${file.name} -> $targetFileId',
-          category: DebugCategory.tools,
-          subCategory: Pan123Config.logSubCategory,
         );
       }
 
       return success;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 123云盘 - 复制文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '📄 123云盘 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 123云盘 - 复制文件异常: $e');
+      LogManager().cloudDrive('📄 123云盘 - 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -477,41 +331,17 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String folderName,
     String? parentFolderId,
   }) async {
-    DebugService.log(
-      '📁 123云盘 - 创建文件夹开始',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
-    DebugService.log(
-      '📁 123云盘 - 文件夹名称: $folderName',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
-    DebugService.log(
-      '📁 123云盘 - 父文件夹ID: $parentFolderId',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
+    LogManager().cloudDrive('📁 123云盘 - 创建文件夹开始');
+    LogManager().cloudDrive('📁 123云盘 - 文件夹名称: $folderName');
+    LogManager().cloudDrive('📁 123云盘 - 父文件夹ID: $parentFolderId');
 
     try {
       // TODO: 实现123云盘创建文件夹功能
-      DebugService.log(
-        '⚠️ 123云盘 - 创建文件夹功能暂未实现',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('⚠️ 123云盘 - 创建文件夹功能暂未实现');
       return null;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 123云盘 - 创建文件夹异常: $e',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
-      DebugService.log(
-        '📄 123云盘 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 123云盘 - 创建文件夹异常: $e');
+      LogManager().cloudDrive('📄 123云盘 - 错误堆栈: $stackTrace');
       return null;
     }
   }

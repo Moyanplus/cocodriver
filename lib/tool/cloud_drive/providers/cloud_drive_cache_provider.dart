@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../base/cloud_drive_cache_service.dart';
 
 /// 缓存状态管理
@@ -83,10 +83,9 @@ class CloudDriveCacheProvider extends StateNotifier<CloudDriveCacheState> {
   void setFromCache(bool fromCache) {
     state = state.copyWith(isFromCache: fromCache);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '💾 设置缓存来源: $fromCache',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.cache',
+      
     );
   }
 
@@ -99,10 +98,9 @@ class CloudDriveCacheProvider extends StateNotifier<CloudDriveCacheState> {
       isFromCache: false,
     );
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🕒 更新刷新时间: ${now.toIso8601String()}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.cache',
+      
     );
   }
 
@@ -114,10 +112,9 @@ class CloudDriveCacheProvider extends StateNotifier<CloudDriveCacheState> {
 
       state = state.copyWith(cacheAge: age, isCacheValid: isValid);
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '⏰ 更新缓存年龄: ${age.inSeconds}秒, 有效: $isValid',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.cache',
+        
       );
     }
   }
@@ -126,10 +123,9 @@ class CloudDriveCacheProvider extends StateNotifier<CloudDriveCacheState> {
   void incrementCacheHit() {
     state = state.copyWith(cacheHitCount: state.cacheHitCount + 1);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '✅ 缓存命中: ${state.cacheHitCount}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.cache',
+      
     );
   }
 
@@ -137,10 +133,9 @@ class CloudDriveCacheProvider extends StateNotifier<CloudDriveCacheState> {
   void incrementCacheMiss() {
     state = state.copyWith(cacheMissCount: state.cacheMissCount + 1);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '❌ 缓存未命中: ${state.cacheMissCount}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.cache',
+      
     );
   }
 
@@ -156,10 +151,9 @@ class CloudDriveCacheProvider extends StateNotifier<CloudDriveCacheState> {
         cacheTimestamps: newTimestamps,
       );
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '➕ 添加缓存键: $key (共${newKeys.length}个)',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.cache',
+        
       );
     }
   }
@@ -172,10 +166,9 @@ class CloudDriveCacheProvider extends StateNotifier<CloudDriveCacheState> {
 
     state = state.copyWith(cacheKeys: newKeys, cacheTimestamps: newTimestamps);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '➖ 移除缓存键: $key (剩余${newKeys.length}个)',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.cache',
+      
     );
   }
 
@@ -195,10 +188,9 @@ class CloudDriveCacheProvider extends StateNotifier<CloudDriveCacheState> {
     // 调用缓存服务清除缓存
     CloudDriveCacheService.clearCache();
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🗑️ 清除所有缓存',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.cache',
+      
     );
   }
 
@@ -206,10 +198,9 @@ class CloudDriveCacheProvider extends StateNotifier<CloudDriveCacheState> {
   void toggleCache() {
     state = state.copyWith(enableCache: !state.enableCache);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 切换缓存: ${state.enableCache}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.cache',
+      
     );
   }
 
@@ -217,10 +208,9 @@ class CloudDriveCacheProvider extends StateNotifier<CloudDriveCacheState> {
   void setCacheExpiration(Duration expiration) {
     state = state.copyWith(cacheExpiration: expiration);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '⏰ 设置缓存过期时间: ${expiration.inMinutes}分钟',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.cache',
+      
     );
   }
 
@@ -247,10 +237,9 @@ class CloudDriveCacheProvider extends StateNotifier<CloudDriveCacheState> {
 
   /// 预加载缓存
   Future<void> preloadCache(List<String> keys) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 预加载缓存: ${keys.length}个键',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.cache',
+      
     );
 
     // TODO: 实现预加载逻辑
@@ -263,10 +252,9 @@ class CloudDriveCacheProvider extends StateNotifier<CloudDriveCacheState> {
   void reset() {
     state = const CloudDriveCacheState();
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔄 重置缓存状态',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.cache',
+      
     );
   }
 }

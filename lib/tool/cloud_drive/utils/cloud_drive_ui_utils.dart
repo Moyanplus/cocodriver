@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 
 /// 云盘UI工具类
 /// 提供通用的UI辅助方法，减少代码重复
@@ -87,11 +87,19 @@ class CloudDriveUIUtils {
         showSuccessMessage(context, successMessage);
       }
 
-      DebugService.log(
-        '📋 文本已复制到剪贴板: ${text.length > 50 ? '${text.substring(0, 50)}...' : text}',
+      LogManager().cloudDrive(
+        '文本已复制到剪贴板: ${text.length > 50 ? '${text.substring(0, 50)}...' : text}',
+        className: 'CloudDriveUIUtils',
+        methodName: 'copyToClipboard',
+        data: {'textLength': text.length},
       );
     } catch (e) {
-      DebugService.error('❌ 复制到剪贴板失败', e);
+      LogManager().error(
+        '复制到剪贴板失败',
+        className: 'CloudDriveUIUtils',
+        methodName: 'copyToClipboard',
+        exception: e,
+      );
 
       if (context.mounted) {
         showErrorMessage(context, '复制失败: ${e.toString()}');

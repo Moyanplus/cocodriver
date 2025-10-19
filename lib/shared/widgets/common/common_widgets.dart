@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'bottom_sheet_widget.dart';
 
 /// 通用组件
 class CommonWidgets {
@@ -141,6 +142,103 @@ class CommonWidgets {
       subtitle: subtitle != null ? Text(subtitle) : null,
       trailing: trailing,
       onTap: onTap,
+    );
+  }
+
+  // ==================== 底部弹窗便捷方法 ====================
+
+  /// 显示底部弹窗
+  static Future<T?> showBottomSheet<T>({
+    required BuildContext context,
+    String? title,
+    required Widget content,
+    List<Widget>? actions,
+    bool isScrollControlled = true,
+    bool isDismissible = true,
+    bool enableDrag = true,
+    double? maxHeight,
+  }) {
+    return BottomSheetWidget.show<T>(
+      context: context,
+      title: title,
+      content: content,
+      actions: actions,
+      isScrollControlled: isScrollControlled,
+      isDismissible: isDismissible,
+      enableDrag: enableDrag,
+      maxHeight: maxHeight,
+    );
+  }
+
+  /// 显示简单的底部弹窗
+  static Future<T?> showSimpleBottomSheet<T>({
+    required BuildContext context,
+    required Widget content,
+    bool isScrollControlled = true,
+    bool isDismissible = true,
+    bool enableDrag = true,
+  }) {
+    return BottomSheetWidget.showSimple<T>(
+      context: context,
+      content: content,
+      isScrollControlled: isScrollControlled,
+      isDismissible: isDismissible,
+      enableDrag: enableDrag,
+    );
+  }
+
+  /// 显示带标题的底部弹窗
+  static Future<T?> showBottomSheetWithTitle<T>({
+    required BuildContext context,
+    required String title,
+    required Widget content,
+    List<Widget>? actions,
+    bool isScrollControlled = true,
+    bool isDismissible = true,
+    bool enableDrag = true,
+  }) {
+    return BottomSheetWidget.showWithTitle<T>(
+      context: context,
+      title: title,
+      content: content,
+      actions: actions,
+      isScrollControlled: isScrollControlled,
+      isDismissible: isDismissible,
+      enableDrag: enableDrag,
+    );
+  }
+
+  /// 显示确认对话框（底部弹窗版本）
+  static Future<bool> showConfirmBottomSheet({
+    required BuildContext context,
+    required String title,
+    required String message,
+    String confirmText = '确认',
+    String cancelText = '取消',
+    Color? confirmColor,
+  }) {
+    return BottomSheetUtils.showConfirmDialog(
+      context: context,
+      title: title,
+      message: message,
+      confirmText: confirmText,
+      cancelText: cancelText,
+      confirmColor: confirmColor,
+    );
+  }
+
+  /// 显示信息对话框（底部弹窗版本）
+  static Future<void> showInfoBottomSheet({
+    required BuildContext context,
+    required String title,
+    required String message,
+    String buttonText = '确定',
+  }) {
+    return BottomSheetUtils.showInfoDialog(
+      context: context,
+      title: title,
+      message: message,
+      buttonText: buttonText,
     );
   }
 }

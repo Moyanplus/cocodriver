@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../models/cloud_drive_models.dart';
 
 /// 云盘异常类型
@@ -142,47 +142,41 @@ class CloudDriveException implements Exception {
 class CloudDriveErrorHandler {
   /// 处理错误
   static void handleError(CloudDriveException error) {
-    DebugService.log(
+    LogManager().cloudDrive(
       '❌ 云盘错误: ${error.message}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.error',
+      
     );
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '📋 错误详情: 类型=${error.type}, 云盘=${error.cloudDriveType?.displayName ?? '未知'}, 操作=${error.operation ?? '未知'}',
-      category: DebugCategory.tools,
-      subCategory: 'cloudDrive.error',
+      
     );
 
     if (error.statusCode != null) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '📊 状态码: ${error.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.error',
+        
       );
     }
 
     if (error.requestId != null) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '🆔 请求ID: ${error.requestId}',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.error',
+        
       );
     }
 
     if (error.context != null) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '📄 上下文: ${error.context}',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.error',
+        
       );
     }
 
     if (error.originalError != null) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '🔍 原始错误: ${error.originalError}',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.error',
+        
       );
     }
   }

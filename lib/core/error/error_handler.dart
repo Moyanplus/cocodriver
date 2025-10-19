@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 
 import 'exceptions.dart';
 import 'failures.dart';
+import '../logging/log_manager.dart';
+import '../logging/log_category.dart';
 
 /// 错误处理器
 /// 负责将各种异常转换为统一的Failure对象
@@ -14,6 +16,15 @@ class ErrorHandler {
 
   /// 处理异常并转换为Failure
   Failure handleException(dynamic exception) {
+    // 记录错误日志
+    LogManager().error(
+      '处理异常: ${exception.toString()}',
+      category: LogCategory.error,
+      className: 'ErrorHandler',
+      methodName: 'handleException',
+      exception: exception,
+    );
+
     if (kDebugMode) {
       print('ErrorHandler: Handling exception: $exception');
     }
@@ -56,6 +67,21 @@ class ErrorHandler {
 
   /// 处理Dio异常
   Failure _handleDioException(DioException exception) {
+    // 记录网络错误日志
+    LogManager().error(
+      'Dio异常: ${exception.type} - ${exception.message}',
+      category: LogCategory.network,
+      className: 'ErrorHandler',
+      methodName: '_handleDioException',
+      data: {
+        'type': exception.type.toString(),
+        'message': exception.message,
+        'statusCode': exception.response?.statusCode,
+        'url': exception.requestOptions.uri.toString(),
+      },
+      exception: exception,
+    );
+
     switch (exception.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:

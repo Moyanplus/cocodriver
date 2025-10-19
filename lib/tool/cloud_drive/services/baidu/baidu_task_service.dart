@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import 'baidu_base_service.dart';
 import 'baidu_config.dart';
@@ -17,64 +17,36 @@ class BaiduTaskService {
     required String taskId,
     required String taskType, // 'delete', 'move', 'copy', 'rename'
   }) async {
-    DebugService.log(
-      '🔄 百度网盘 - 开始轮询$taskType任务状态: $taskId',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🔄 百度网盘 - 开始轮询$taskType任务状态: $taskId');
 
     for (int i = 0; i < _maxRetries; i++) {
       try {
         final status = await _queryTaskStatus(account, taskId);
-        DebugService.log(
-          '📊 百度网盘 - 第${i + 1}次查询结果: $status',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('📊 百度网盘 - 第${i + 1}次查询结果: $status');
 
         if (status == 'success') {
-          DebugService.log(
-            '✅ 百度网盘 - $taskType任务完成',
-            category: DebugCategory.tools,
-            subCategory: BaiduConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('✅ 百度网盘 - $taskType任务完成');
           return true;
         } else if (status == 'failed') {
-          DebugService.log(
-            '❌ 百度网盘 - $taskType任务失败',
-            category: DebugCategory.tools,
-            subCategory: BaiduConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('❌ 百度网盘 - $taskType任务失败');
           return false;
         } else if (status == 'running') {
-          DebugService.log(
+          LogManager().cloudDrive(
             '⏳ 百度网盘 - $taskType任务进行中，等待${_retryInterval.inMilliseconds}毫秒后重试...',
-            category: DebugCategory.tools,
-            subCategory: BaiduConfig.logSubCategory,
           );
           await Future.delayed(_retryInterval);
         } else {
-          DebugService.log(
-            '❓ 百度网盘 - 未知任务状态: $status',
-            category: DebugCategory.tools,
-            subCategory: BaiduConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('❓ 百度网盘 - 未知任务状态: $status');
           return false;
         }
       } catch (e) {
-        DebugService.log(
-          '❌ 百度网盘 - 查询$taskType任务状态异常: $e',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 百度网盘 - 查询$taskType任务状态异常: $e');
         return false;
       }
     }
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '⏰ 百度网盘 - $taskType任务超时，超过${_maxRetries * _retryInterval.inMilliseconds / 1000}秒',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
     );
     return false;
   }
@@ -94,37 +66,21 @@ class BaiduTaskService {
       'dp-logid': DateTime.now().millisecondsSinceEpoch.toString(),
     };
 
-    DebugService.log(
-      '🔍 百度网盘 - 查询任务状态: $url',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
-    DebugService.log(
-      '📋 百度网盘 - 查询参数: $queryParams',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🔍 百度网盘 - 查询任务状态: $url');
+    LogManager().cloudDrive('📋 百度网盘 - 查询参数: $queryParams');
 
     try {
       final dio = BaiduBaseService.createDio(account);
       final response = await dio.get(url, queryParameters: queryParams);
 
-      DebugService.log(
-        '📡 百度网盘 - 任务状态查询响应: ${response.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📡 百度网盘 - 任务状态查询响应: ${response.statusCode}');
 
       if (response.statusCode != 200) {
         throw Exception('任务状态查询失败: ${response.statusCode}');
       }
 
       final data = response.data;
-      DebugService.log(
-        '📄 百度网盘 - 任务状态响应数据: $data',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📄 百度网盘 - 任务状态响应数据: $data');
 
       if (data['errno'] != 0) {
         final errorMsg = BaiduConfig.getErrorMessage(data['errno']);
@@ -137,24 +93,12 @@ class BaiduTaskService {
       }
 
       final status = result['status']?.toString() ?? '';
-      DebugService.log(
-        '📊 百度网盘 - 任务状态: $status',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📊 百度网盘 - 任务状态: $status');
 
       return status;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 百度网盘 - 查询任务状态失败: $e',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 百度网盘 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 百度网盘 - 查询任务状态失败: $e');
+      LogManager().cloudDrive('📄 百度网盘 - 错误堆栈: $stackTrace');
       rethrow;
     }
   }
@@ -165,11 +109,7 @@ class BaiduTaskService {
     required List<String> taskIds,
     required String taskType,
   }) async {
-    DebugService.log(
-      '🔄 百度网盘 - 开始批量轮询$taskType任务状态: $taskIds',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🔄 百度网盘 - 开始批量轮询$taskType任务状态: $taskIds');
 
     final results = <String, bool>{};
 
@@ -182,11 +122,7 @@ class BaiduTaskService {
       results[taskId] = success;
     }
 
-    DebugService.log(
-      '📊 百度网盘 - 批量任务轮询结果: $results',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('📊 百度网盘 - 批量任务轮询结果: $results');
 
     return results;
   }
@@ -196,11 +132,7 @@ class BaiduTaskService {
     required CloudDriveAccount account,
     required String taskId,
   }) async {
-    DebugService.log(
-      '❌ 百度网盘 - 取消任务: $taskId',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('❌ 百度网盘 - 取消任务: $taskId');
 
     try {
       // 使用配置中的API端点
@@ -215,46 +147,26 @@ class BaiduTaskService {
       final dio = BaiduBaseService.createDio(account);
       final response = await dio.get(url, queryParameters: queryParams);
 
-      DebugService.log(
-        '📡 百度网盘 - 取消任务响应: ${response.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📡 百度网盘 - 取消任务响应: ${response.statusCode}');
 
       if (response.statusCode != 200) {
         throw Exception('取消任务失败: ${response.statusCode}');
       }
 
       final data = response.data;
-      DebugService.log(
-        '📄 百度网盘 - 取消任务响应数据: $data',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📄 百度网盘 - 取消任务响应数据: $data');
 
       if (data['errno'] != 0) {
         final errorMsg = BaiduConfig.getErrorMessage(data['errno']);
         throw Exception('取消任务失败: $errorMsg');
       }
 
-      DebugService.log(
-        '✅ 百度网盘 - 任务取消成功: $taskId',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('✅ 百度网盘 - 任务取消成功: $taskId');
 
       return true;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 百度网盘 - 取消任务失败: $e',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 百度网盘 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 百度网盘 - 取消任务失败: $e');
+      LogManager().cloudDrive('📄 百度网盘 - 错误堆栈: $stackTrace');
       return false;
     }
   }

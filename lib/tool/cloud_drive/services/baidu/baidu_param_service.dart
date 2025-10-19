@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import 'baidu_base_service.dart';
 import 'baidu_config.dart';
@@ -22,20 +22,12 @@ class BaiduParamService {
     if (_paramCache.containsKey(cacheKey)) {
       final cacheTime = _cacheTimestamps[cacheKey];
       if (cacheTime != null && now.difference(cacheTime) < _cacheExpiry) {
-        DebugService.log(
-          '✅ 百度网盘 - 使用缓存的参数: ${_paramCache[cacheKey]}',
-          category: DebugCategory.tools,
-          subCategory: BaiduConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 百度网盘 - 使用缓存的参数: ${_paramCache[cacheKey]}');
         return _paramCache[cacheKey]!;
       }
     }
 
-    DebugService.log(
-      '🔄 百度网盘 - 获取参数',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🔄 百度网盘 - 获取参数');
 
     try {
       // 使用配置中的API端点
@@ -50,41 +42,21 @@ class BaiduParamService {
         'web': '1',
       };
 
-      DebugService.log(
-        '🌐 百度网盘 - 请求参数: $url',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📋 百度网盘 - 查询参数: $queryParams',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🌐 百度网盘 - 请求参数: $url');
+      LogManager().cloudDrive('📋 百度网盘 - 查询参数: $queryParams');
 
       final dio = BaiduBaseService.createDio(account);
       final response = await dio.get(url, queryParameters: queryParams);
 
-      DebugService.log(
-        '📡 百度网盘 - 参数请求响应状态码: ${response.statusCode}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 百度网盘 - 参数请求响应体: ${response.data}',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📡 百度网盘 - 参数请求响应状态码: ${response.statusCode}');
+      LogManager().cloudDrive('📄 百度网盘 - 参数请求响应体: ${response.data}');
 
       if (response.statusCode != 200) {
         throw Exception('参数请求失败: ${response.statusCode}');
       }
 
       final data = response.data;
-      DebugService.log(
-        '📋 百度网盘 - 参数响应数据: $data',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📋 百度网盘 - 参数响应数据: $data');
 
       if (data['errno'] != 0) {
         final errorMsg = BaiduConfig.getErrorMessage(data['errno']);
@@ -100,24 +72,12 @@ class BaiduParamService {
       _paramCache[cacheKey] = result;
       _cacheTimestamps[cacheKey] = now;
 
-      DebugService.log(
-        '✅ 百度网盘 - 参数获取成功: $result',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('✅ 百度网盘 - 参数获取成功: $result');
 
       return result;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 百度网盘 - 获取参数失败: $e',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 百度网盘 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: BaiduConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 百度网盘 - 获取参数失败: $e');
+      LogManager().cloudDrive('📄 百度网盘 - 错误堆栈: $stackTrace');
       rethrow;
     }
   }
@@ -144,21 +104,13 @@ class BaiduParamService {
   static void clearCache() {
     _paramCache.clear();
     _cacheTimestamps.clear();
-    DebugService.log(
-      '🧹 百度网盘 - 参数缓存已清除',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🧹 百度网盘 - 参数缓存已清除');
   }
 
   /// 清除指定账号的缓存
   static void clearCacheForAccount(String accountId) {
     _paramCache.remove(accountId);
     _cacheTimestamps.remove(accountId);
-    DebugService.log(
-      '🧹 百度网盘 - 已清除账号 $accountId 的参数缓存',
-      category: DebugCategory.tools,
-      subCategory: BaiduConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🧹 百度网盘 - 已清除账号 $accountId 的参数缓存');
   }
 }

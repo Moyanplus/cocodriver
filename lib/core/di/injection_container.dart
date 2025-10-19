@@ -13,6 +13,9 @@ import '../data/data_sources/local/local_data_source.dart';
 import '../data/data_sources/remote/remote_data_source.dart';
 import '../data/repositories/base_repository.dart';
 import '../error/error_handler.dart';
+import '../logging/log_manager.dart';
+import '../logging/log_config.dart';
+import '../logging/log_formatter.dart';
 
 /// 依赖注入容器
 /// 使用GetIt管理应用的所有依赖
@@ -49,6 +52,16 @@ Future<void> init() async {
 
   // 错误处理器
   sl.registerLazySingleton<ErrorHandler>(() => ErrorHandler());
+
+  // ==================== 日志系统 ====================
+  // 日志配置
+  sl.registerLazySingleton<LogConfig>(() => LogConfig());
+
+  // 日志管理器
+  sl.registerLazySingleton<LogManager>(() => LogManager());
+
+  // 日志格式化器
+  sl.registerLazySingleton<LogFormatter>(() => LogFormatter());
 
   // ==================== 数据源 ====================
   // 本地数据源
@@ -93,6 +106,9 @@ Future<void> init() async {
 
   // ==================== 其他服务 ====================
   // 可以在这里添加其他需要依赖注入的服务
+
+  // ==================== 初始化日志系统 ====================
+  await sl<LogManager>().initialize();
 }
 
 /// 重置依赖注入容器

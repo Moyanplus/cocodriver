@@ -51,7 +51,6 @@ class SettingsPage extends ConsumerStatefulWidget {
 // 2. 在 main_screen.dart 中添加
 pages: const [
   HomePage(),
-  CategoryPage(),
   UserPage(),
   SettingsPage(), // 新增
 ],
@@ -175,7 +174,6 @@ lib/
 │   ├── pages/             # 页面
 │   │   ├── main_screen.dart # 主屏幕
 │   │   ├── home_page.dart   # 首页
-│   │   ├── category_page.dart # 分类页
 │   │   └── user_page.dart    # 用户页
 │   └── widgets/           # 组件
 │       └── common/        # 通用组件

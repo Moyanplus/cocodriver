@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import '../../base/cloud_drive_operation_service.dart';
 import 'lanzou_cloud_drive_service.dart';
@@ -11,41 +11,19 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    DebugService.log(
-      '🔗 蓝奏云 - 获取下载链接开始',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '📄 蓝奏云 - 文件信息: ${file.name} (ID: ${file.id})',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
+    LogManager().cloudDrive('🔗 蓝奏云 - 获取下载链接开始');
+    LogManager().cloudDrive('📄 蓝奏云 - 文件信息: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive(
       '👤 蓝奏云 - 账号信息: ${account.name} (${account.type.displayName})',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
     );
 
     try {
       // 蓝奏云暂不支持API下载，返回null
-      DebugService.log(
-        '⚠️ 蓝奏云 - 暂不支持API下载，需要用户手动操作',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('⚠️ 蓝奏云 - 暂不支持API下载，需要用户手动操作');
       return null;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 蓝奏云 - 获取下载链接异常: $e',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 蓝奏云 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 蓝奏云 - 获取下载链接异常: $e');
+      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
       rethrow;
     }
   }
@@ -57,21 +35,9 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String shareUrl,
     required String password,
   }) async {
-    DebugService.log(
-      '🚀 蓝奏云 - 高速下载功能暂不支持',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '📄 蓝奏云 - 文件: ${file.name}',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '🔗 蓝奏云 - 分享链接: $shareUrl',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🚀 蓝奏云 - 高速下载功能暂不支持');
+    LogManager().cloudDrive('📄 蓝奏云 - 文件: ${file.name}');
+    LogManager().cloudDrive('🔗 蓝奏云 - 分享链接: $shareUrl');
     return null;
   }
 
@@ -82,46 +48,18 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? password,
     int? expireDays,
   }) async {
-    DebugService.log(
-      '🔗 蓝奏云 - 创建分享链接开始',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '📄 蓝奏云 - 文件数量: ${files.length}',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '🔐 蓝奏云 - 密码: ${password ?? '无'}',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '⏰ 蓝奏云 - 过期天数: ${expireDays ?? '永久'}',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🔗 蓝奏云 - 创建分享链接开始');
+    LogManager().cloudDrive('📄 蓝奏云 - 文件数量: ${files.length}');
+    LogManager().cloudDrive('🔐 蓝奏云 - 密码: ${password ?? '无'}');
+    LogManager().cloudDrive('⏰ 蓝奏云 - 过期天数: ${expireDays ?? '永久'}');
 
     try {
       // TODO: 实现蓝奏云分享链接生成
-      DebugService.log(
-        '⚠️ 蓝奏云 - 分享链接生成功能暂未实现',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('⚠️ 蓝奏云 - 分享链接生成功能暂未实现');
       return null;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 蓝奏云 - 创建分享链接异常: $e',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 蓝奏云 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 蓝奏云 - 创建分享链接异常: $e');
+      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -132,26 +70,10 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
     String? targetFolderId,
   }) async {
-    DebugService.log(
-      '🚚 蓝奏云 - 开始移动文件',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '📄 蓝奏云 - 文件: ${file.name} (ID: ${file.id})',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '📁 蓝奏云 - 目标文件夹ID: ${targetFolderId ?? '-1'}',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '👤 蓝奏云 - 账号: ${account.name}',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🚚 蓝奏云 - 开始移动文件');
+    LogManager().cloudDrive('📄 蓝奏云 - 文件: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('📁 蓝奏云 - 目标文件夹ID: ${targetFolderId ?? '-1'}');
+    LogManager().cloudDrive('👤 蓝奏云 - 账号: ${account.name}');
 
     try {
       // 调用蓝奏云服务的移动文件方法
@@ -162,31 +84,15 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        DebugService.log(
-          '✅ 蓝奏云 - 文件移动成功',
-          category: DebugCategory.tools,
-          subCategory: LanzouConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 蓝奏云 - 文件移动成功');
       } else {
-        DebugService.log(
-          '❌ 蓝奏云 - 文件移动失败',
-          category: DebugCategory.tools,
-          subCategory: LanzouConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 蓝奏云 - 文件移动失败');
       }
 
       return success;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 蓝奏云 - 移动文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 蓝奏云 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 蓝奏云 - 移动文件异常: $e');
+      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -196,36 +102,16 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    DebugService.log(
-      '🗑️ 蓝奏云 - 删除文件开始',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '📄 蓝奏云 - 文件: ${file.name} (ID: ${file.id})',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('🗑️ 蓝奏云 - 删除文件开始');
+    LogManager().cloudDrive('📄 蓝奏云 - 文件: ${file.name} (ID: ${file.id})');
 
     try {
       // TODO: 实现蓝奏云文件删除
-      DebugService.log(
-        '⚠️ 蓝奏云 - 文件删除功能暂未实现',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('⚠️ 蓝奏云 - 文件删除功能暂未实现');
       return false;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 蓝奏云 - 删除文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 蓝奏云 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 蓝奏云 - 删除文件异常: $e');
+      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -236,41 +122,17 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
     required String newName,
   }) async {
-    DebugService.log(
-      '✏️ 蓝奏云 - 重命名文件开始',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '�� 蓝奏云 - 原文件名: ${file.name} (ID: ${file.id})',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-    DebugService.log(
-      '📄 蓝奏云 - 新文件名: $newName',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
+    LogManager().cloudDrive('✏️ 蓝奏云 - 重命名文件开始');
+    LogManager().cloudDrive('�� 蓝奏云 - 原文件名: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('📄 蓝奏云 - 新文件名: $newName');
 
     try {
       // TODO: 实现蓝奏云文件重命名
-      DebugService.log(
-        '⚠️ 蓝奏云 - 文件重命名功能暂未实现',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('⚠️ 蓝奏云 - 文件重命名功能暂未实现');
       return false;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 蓝奏云 - 重命名文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 蓝奏云 - 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: LanzouConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 蓝奏云 - 重命名文件异常: $e');
+      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -309,16 +171,16 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String folderName,
     String? parentFolderId,
   }) async {
-    DebugService.log('📁 蓝奏云 - 创建文件夹开始');
-    DebugService.log('📁 文件夹名称: $folderName');
-    DebugService.log('📁 父文件夹ID: $parentFolderId');
+    LogManager().cloudDrive('📁 蓝奏云 - 创建文件夹开始');
+    LogManager().cloudDrive('📁 文件夹名称: $folderName');
+    LogManager().cloudDrive('📁 父文件夹ID: $parentFolderId');
 
     try {
       // TODO: 实现蓝奏云创建文件夹功能
-      DebugService.log('⚠️ 蓝奏云 - 创建文件夹功能暂未实现');
+      LogManager().cloudDrive('⚠️ 蓝奏云 - 创建文件夹功能暂未实现');
       return null;
     } catch (e) {
-      DebugService.error('❌ 蓝奏云 - 创建文件夹异常', e);
+      LogManager().error('❌ 蓝奏云 - 创建文件夹异常');
       return null;
     }
   }

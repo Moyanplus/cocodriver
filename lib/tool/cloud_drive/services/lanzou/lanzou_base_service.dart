@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import 'lanzou_config.dart';
 
@@ -31,49 +31,42 @@ class LanzouBaseService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          DebugService.log(
+          LogManager().cloudDrive(
             '📡 蓝奏云盘 - 发送请求: ${options.method} ${options.uri}',
-            category: DebugCategory.tools,
-            subCategory: LanzouConfig.logSubCategory,
+            
           );
-          DebugService.log(
+          LogManager().cloudDrive(
             '📋 蓝奏云盘 - 请求头: ${options.headers}',
-            category: DebugCategory.tools,
-            subCategory: LanzouConfig.logSubCategory,
+            
           );
           if (options.data != null) {
-            DebugService.log(
+            LogManager().cloudDrive(
               '📤 蓝奏云盘 - 请求体: ${options.data}',
-              category: DebugCategory.tools,
-              subCategory: LanzouConfig.logSubCategory,
+              
             );
           }
           handler.next(options);
         },
         onResponse: (response, handler) {
-          DebugService.log(
+          LogManager().cloudDrive(
             '📡 蓝奏云盘 - 收到响应: ${response.statusCode}',
-            category: DebugCategory.tools,
-            subCategory: LanzouConfig.logSubCategory,
+            
           );
-          DebugService.log(
+          LogManager().cloudDrive(
             '📄 蓝奏云盘 - 响应数据: ${response.data}',
-            category: DebugCategory.tools,
-            subCategory: LanzouConfig.logSubCategory,
+            
           );
           handler.next(response);
         },
         onError: (error, handler) {
-          DebugService.log(
+          LogManager().cloudDrive(
             '❌ 蓝奏云盘 - 请求错误: ${error.message}',
-            category: DebugCategory.tools,
-            subCategory: LanzouConfig.logSubCategory,
+            
           );
           if (error.response != null) {
-            DebugService.log(
+            LogManager().cloudDrive(
               '📄 蓝奏云盘 - 错误响应: ${error.response?.data}',
-              category: DebugCategory.tools,
-              subCategory: LanzouConfig.logSubCategory,
+              
             );
           }
           handler.next(error);

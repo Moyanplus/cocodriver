@@ -141,9 +141,45 @@ class LoginDetectionConfig {
     detectionMethod: 'cookie',
     checkInterval: Duration(seconds: 2),
     maxRetries: 30,
-    successIndicators: ['BDUSS'],
+    successIndicators: ['BDUSS', 'STOKEN', 'PCS_TOKEN'], // 与Cookie处理配置保持一致
     successUrl: 'https://pan.baidu.com/disk/home',
     successTitle: '百度网盘',
+    timeout: Duration(seconds: 30),
+  );
+
+  /// 123云盘登录检测配置
+  static const LoginDetectionConfig pan123Config = LoginDetectionConfig(
+    enableAutoDetection: true,
+    detectionMethod: 'cookie',
+    checkInterval: Duration(seconds: 2),
+    maxRetries: 30,
+    successIndicators: ['ctoken', 'b-user-id', '__uid'], // 与Cookie处理配置保持一致
+    successUrl: 'https://www.123pan.com/',
+    successTitle: '123云盘',
+    timeout: Duration(seconds: 30),
+  );
+
+  /// 蓝奏云登录检测配置
+  static const LoginDetectionConfig lanzouConfig = LoginDetectionConfig(
+    enableAutoDetection: true,
+    detectionMethod: 'cookie',
+    checkInterval: Duration(seconds: 2),
+    maxRetries: 30,
+    successIndicators: ['ylogin', 'phpdisk_info'], // 与Cookie处理配置保持一致
+    successUrl: 'https://pc.woozooo.com/mydisk.php',
+    successTitle: '蓝奏云',
+    timeout: Duration(seconds: 30),
+  );
+
+  /// 夸克云盘登录检测配置
+  static const LoginDetectionConfig quarkConfig = LoginDetectionConfig(
+    enableAutoDetection: true,
+    detectionMethod: 'cookie',
+    checkInterval: Duration(seconds: 2),
+    maxRetries: 30,
+    successIndicators: ['__puus', 'QKUID', 'QK_UID'], // 与Cookie处理配置保持一致
+    successUrl: 'https://pan.quark.cn/',
+    successTitle: '夸克网盘',
     timeout: Duration(seconds: 30),
   );
 }
@@ -173,6 +209,36 @@ class CookieProcessingConfig {
     extractSpecificCookies: true,
     priorityCookieNames: ['BDUSS', 'STOKEN', 'PCS_TOKEN'],
     requiredCookies: ['BDUSS', 'STOKEN', 'PCS_TOKEN'],
+    excludedDomains: ['google.com', 'facebook.com'],
+  );
+
+  /// 123云盘Cookie处理配置
+  static const CookieProcessingConfig pan123Config = CookieProcessingConfig(
+    enableProcessing: true,
+    useInterceptedCookies: true,
+    extractSpecificCookies: true,
+    priorityCookieNames: ['ctoken', 'b-user-id', '__uid'],
+    requiredCookies: ['ctoken', 'b-user-id'],
+    excludedDomains: ['google.com', 'facebook.com'],
+  );
+
+  /// 蓝奏云Cookie处理配置
+  static const CookieProcessingConfig lanzouConfig = CookieProcessingConfig(
+    enableProcessing: true,
+    useInterceptedCookies: true,
+    extractSpecificCookies: true,
+    priorityCookieNames: ['ylogin', 'phpdisk_info'],
+    requiredCookies: ['ylogin'],
+    excludedDomains: ['google.com', 'facebook.com'],
+  );
+
+  /// 夸克云盘Cookie处理配置
+  static const CookieProcessingConfig quarkConfig = CookieProcessingConfig(
+    enableProcessing: true,
+    useInterceptedCookies: true,
+    extractSpecificCookies: true,
+    priorityCookieNames: ['__puus'],
+    requiredCookies: ['__puus'],
     excludedDomains: ['google.com', 'facebook.com'],
   );
 }

@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../models/cloud_drive_models.dart';
 
 /// 云盘日志级别
@@ -140,42 +140,28 @@ class CloudDriveLogger {
 
     switch (level) {
       case CloudDriveLogLevel.debug:
-        DebugService.log(
+        LogManager().cloudDrive(
           '🔍 $operation - ${cloudDriveType.displayName}',
-          category: DebugCategory.tools,
-          subCategory: subCategory,
         );
         break;
       case CloudDriveLogLevel.info:
-        DebugService.log(
+        LogManager().cloudDrive(
           '🔧 $operation - ${cloudDriveType.displayName}',
-          category: DebugCategory.tools,
-          subCategory: subCategory,
         );
         break;
       case CloudDriveLogLevel.warning:
-        DebugService.log(
+        LogManager().cloudDrive(
           '⚠️ $operation - ${cloudDriveType.displayName}',
-          category: DebugCategory.tools,
-          subCategory: subCategory,
         );
         break;
       case CloudDriveLogLevel.error:
-        DebugService.log(
-          '❌ $operation - ${cloudDriveType.displayName}',
-          category: DebugCategory.tools,
-          subCategory: subCategory,
-        );
+        LogManager().cloudDrive('❌ $operation - ${cloudDriveType.displayName}');
         break;
     }
 
     if (params != null) {
       for (final entry in params.entries) {
-        DebugService.log(
-          '📋 ${entry.key}: ${entry.value}',
-          category: DebugCategory.tools,
-          subCategory: subCategory,
-        );
+        LogManager().cloudDrive('📋 ${entry.key}: ${entry.value}');
       }
     }
 
@@ -202,19 +188,13 @@ class CloudDriveLogger {
 
     final subCategory = 'cloudDrive.${cloudDriveType.name}';
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '❌ $operation 失败 - ${cloudDriveType.displayName}: $error',
-      category: DebugCategory.tools,
-      subCategory: subCategory,
     );
 
     if (context != null) {
       for (final entry in context.entries) {
-        DebugService.log(
-          '📋 ${entry.key}: ${entry.value}',
-          category: DebugCategory.tools,
-          subCategory: subCategory,
-        );
+        LogManager().cloudDrive('📋 ${entry.key}: ${entry.value}');
       }
     }
 
@@ -240,19 +220,13 @@ class CloudDriveLogger {
   }) {
     final subCategory = 'cloudDrive.${cloudDriveType.name}';
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '✅ $operation 成功 - ${cloudDriveType.displayName}${details != null ? ': $details' : ''}',
-      category: DebugCategory.tools,
-      subCategory: subCategory,
     );
 
     if (result != null) {
       for (final entry in result.entries) {
-        DebugService.log(
-          '📊 ${entry.key}: ${entry.value}',
-          category: DebugCategory.tools,
-          subCategory: subCategory,
-        );
+        LogManager().cloudDrive('📊 ${entry.key}: ${entry.value}');
       }
     }
 

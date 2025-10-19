@@ -1,24 +1,20 @@
 {
   "@@locale": "en",
-  "appTitle": "Flutter UI Template",
+  "appTitle": "Coco Cloud Drive",
   "@appTitle": {
     "description": "Application title"
   },
-  "welcomeTitle": "Welcome to Flutter UI Template",
+  "welcomeTitle": "Welcome to Coco Cloud Drive",
   "@welcomeTitle": {
     "description": "Welcome title"
   },
-  "welcomeSubtitle": "A UI template based on Cocoa World design",
+  "welcomeSubtitle": "Unified cloud drive management supporting Baidu, Aliyun, Quark and more",
   "@welcomeSubtitle": {
     "description": "Welcome subtitle"
   },
   "home": "Home",
   "@home": {
     "description": "Home tab"
-  },
-  "category": "Category",
-  "@category": {
-    "description": "Category tab"
   },
   "profile": "Profile",
   "@profile": {
@@ -28,35 +24,35 @@
   "@settings": {
     "description": "Settings page title"
   },
-  "themeSystem": "Theme System",
+  "themeSystem": "Multi-Cloud Support",
   "@themeSystem": {
-    "description": "Theme system feature card title"
+    "description": "Multi-cloud support feature card title"
   },
-  "themeSystemDesc": "Multiple beautiful themes",
+  "themeSystemDesc": "Support Baidu, Aliyun and more",
   "@themeSystemDesc": {
     "description": "Theme system feature card description"
   },
-  "navigationSystem": "Navigation System",
+  "navigationSystem": "File Management",
   "@navigationSystem": {
-    "description": "Navigation system feature card title"
+    "description": "File management feature card title"
   },
-  "navigationSystemDesc": "Smooth page transitions",
+  "navigationSystemDesc": "Upload, download, share files",
   "@navigationSystemDesc": {
     "description": "Navigation system feature card description"
   },
-  "componentLibrary": "Component Library",
+  "componentLibrary": "Batch Operations",
   "@componentLibrary": {
-    "description": "Component library feature card title"
+    "description": "Batch operations feature card title"
   },
-  "componentLibraryDesc": "Rich UI components",
+  "componentLibraryDesc": "Batch upload, download, move",
   "@componentLibraryDesc": {
     "description": "Component library feature card description"
   },
-  "settingsPage": "Settings Page",
+  "settingsPage": "Secure Storage",
   "@settingsPage": {
-    "description": "Settings page feature card title"
+    "description": "Secure storage feature card title"
   },
-  "settingsPageDesc": "Personalized configuration",
+  "settingsPageDesc": "Encrypted storage, privacy protection",
   "@settingsPageDesc": {
     "description": "Settings page feature card description"
   },
@@ -220,7 +216,7 @@
   "@resetSettingsConfirm": {
     "description": "Reset settings confirmation dialog content"
   },
-  "appDescription": "This is a Flutter UI template project based on Cocoa World design.",
+  "appDescription": "Coco Cloud Drive is a third-party aggregated cloud drive client that supports unified management of multiple mainstream cloud drive services.",
   "@appDescription": {
     "description": "Application description"
   },
@@ -228,23 +224,23 @@
   "@features": {
     "description": "Features list title"
   },
-  "featureThemes": "• Multiple beautiful themes",
+  "featureThemes": "• Unified multi-cloud management",
   "@featureThemes": {
     "description": "Themes feature"
   },
-  "featureResponsive": "• Responsive design",
+  "featureResponsive": "• High-speed download and upload",
   "@featureResponsive": {
     "description": "Responsive feature"
   },
-  "featureNavigation": "• Smooth navigation",
+  "featureNavigation": "• File sharing features",
   "@featureNavigation": {
     "description": "Navigation feature"
   },
-  "featureComponents": "• Rich component library",
+  "featureComponents": "• Secure encrypted storage",
   "@featureComponents": {
     "description": "Component library feature"
   },
-  "copyright": "© 2024 Flutter UI Template",
+  "copyright": "© 2024 Coco Cloud Drive",
   "@copyright": {
     "description": "Copyright information"
   },

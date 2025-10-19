@@ -1,6 +1,6 @@
-import '../../../core/services/base/debug_service.dart';
-import '../../../features/download/services/download_config_service.dart';
-import '../../../features/download/services/download_service.dart';
+import '../../../../core/logging/log_manager.dart';
+import '../../download/services/download_config_service.dart';
+import '../../download/services/download_service.dart';
 import '../models/cloud_drive_models.dart';
 import '../services/lanzou/lanzou_cloud_drive_service.dart';
 import '../services/lanzou/lanzou_direct_link_service.dart';
@@ -133,11 +133,20 @@ class CloudDriveFileService {
 
       // 目前只支持文件下载，文件夹下载需要递归处理
       if (folders.isNotEmpty) {
-        DebugService.log('⚠️ 文件夹批量下载暂未实现，跳过 ${folders.length} 个文件夹');
+        LogManager().warning(
+          '文件夹批量下载暂未实现，跳过 ${folders.length} 个文件夹',
+          className: 'CloudDriveFileService',
+          methodName: 'downloadFiles',
+          data: {'folderCount': folders.length},
+        );
       }
 
       if (files.isEmpty) {
-        DebugService.log('⚠️ 没有文件需要下载');
+        LogManager().warning(
+          '没有文件需要下载',
+          className: 'CloudDriveFileService',
+          methodName: 'downloadFiles',
+        );
         return;
       }
 
@@ -368,7 +377,7 @@ class CloudDriveFileService {
     String? password,
   }) async {
     try {
-      DebugService.log('🔗 开始解析蓝奏云直链: $shareUrl');
+      LogManager().cloudDrive('🔗 开始解析蓝奏云直链: $shareUrl');
 
       final result = await LanzouDirectLinkService.parseDirectLink(
         shareUrl: shareUrl,
@@ -376,14 +385,14 @@ class CloudDriveFileService {
       );
 
       if (result != null) {
-        DebugService.log('✅ 蓝奏云直链解析成功');
+        LogManager().cloudDrive('✅ 蓝奏云直链解析成功');
       } else {
-        DebugService.log('❌ 蓝奏云直链解析失败');
+        LogManager().cloudDrive('❌ 蓝奏云直链解析失败');
       }
 
       return result;
     } catch (e) {
-      DebugService.error('❌ 解析蓝奏云直链异常', e);
+      LogManager().error('❌ 解析蓝奏云直链异常');
       return null;
     }
   }
@@ -438,6 +447,9 @@ class CloudDriveFileService {
           return false;
         }
         break;
+      case AuthType.qrCode:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
 
     _logDebug('账号验证完成', account, '状态有效');
@@ -466,13 +478,15 @@ class CloudDriveFileService {
     for (int i = 0; i < files.length; i++) {
       final file = files[i];
       try {
-        DebugService.log('📥 下载文件 ${i + 1}/${files.length}: ${file.name}');
+        LogManager().cloudDrive(
+          '📥 下载文件 ${i + 1}/${files.length}: ${file.name}',
+        );
 
         // 获取下载链接
         final downloadUrl = await getDownloadUrl(account: account, file: file);
 
         if (downloadUrl == null) {
-          DebugService.error('❌ 无法获取下载链接: ${file.name}', null);
+          LogManager().error('❌ 无法获取下载链接: ${file.name}');
           failCount++;
           continue;
         }
@@ -485,11 +499,11 @@ class CloudDriveFileService {
               account.authorizationToken!.isNotEmpty) {
             authHeaders['Authorization'] =
                 'Bearer ${account.authorizationToken}';
-            DebugService.log(
+            LogManager().cloudDrive(
               '🔑 阿里云盘 - 批量下载任务使用Authorization认证: ${account.authorizationToken!.length}字符',
             );
           } else {
-            DebugService.log('⚠️ 阿里云盘 - 账号缺少Authorization Token');
+            LogManager().cloudDrive('⚠️ 阿里云盘 - 账号缺少Authorization Token');
           }
         } else if (account.type == CloudDriveType.quark) {
           // 夸克云盘使用Cookie认证
@@ -518,14 +532,14 @@ class CloudDriveFileService {
         );
 
         successCount++;
-        DebugService.log('✅ 文件下载任务创建成功: ${file.name}');
+        LogManager().cloudDrive('✅ 文件下载任务创建成功: ${file.name}');
       } catch (e) {
-        DebugService.error('❌ 下载文件失败: ${file.name}', e);
+        LogManager().error('❌ 下载文件失败: ${file.name}');
         failCount++;
       }
     }
 
-    DebugService.log('📥 批量下载完成: $successCount 成功, $failCount 失败');
+    LogManager().cloudDrive('📥 批量下载完成: $successCount 成功, $failCount 失败');
   }
 
   // ========== 日志辅助方法 ==========
@@ -537,10 +551,16 @@ class CloudDriveFileService {
     String? details,
   ]) {
     final message = details != null ? '$operation: $details' : operation;
-    DebugService.log(
-      '🔧 $message',
-      category: DebugCategory.tools,
-      subCategory: _getLogSubCategory(account.type),
+    LogManager().cloudDrive(
+      message,
+      className: 'CloudDriveFileService',
+      methodName: '_logOperation',
+      data: {
+        'operation': operation,
+        'accountId': account.id,
+        'accountType': account.type,
+        'details': details,
+      },
     );
   }
 
@@ -550,10 +570,16 @@ class CloudDriveFileService {
     CloudDriveAccount account,
     String details,
   ) {
-    DebugService.log(
-      '✅ $operation成功: $details',
-      category: DebugCategory.tools,
-      subCategory: _getLogSubCategory(account.type),
+    LogManager().cloudDrive(
+      '$operation成功: $details',
+      className: 'CloudDriveFileService',
+      methodName: '_logSuccess',
+      data: {
+        'operation': operation,
+        'accountId': account.id,
+        'accountType': account.type,
+        'details': details,
+      },
     );
   }
 
@@ -563,10 +589,16 @@ class CloudDriveFileService {
     CloudDriveAccount account,
     String details,
   ) {
-    DebugService.log(
-      '⚠️ $operation警告: $details',
-      category: DebugCategory.tools,
-      subCategory: _getLogSubCategory(account.type),
+    LogManager().warning(
+      '$operation警告: $details',
+      className: 'CloudDriveFileService',
+      methodName: '_logWarning',
+      data: {
+        'operation': operation,
+        'accountId': account.id,
+        'accountType': account.type,
+        'details': details,
+      },
     );
   }
 
@@ -576,11 +608,16 @@ class CloudDriveFileService {
     CloudDriveAccount account,
     dynamic error,
   ) {
-    DebugService.error(
-      '❌ $operation失败',
-      error,
-      category: DebugCategory.tools,
-      subCategory: _getLogSubCategory(account.type),
+    LogManager().error(
+      '$operation失败',
+      className: 'CloudDriveFileService',
+      methodName: '_logError',
+      data: {
+        'operation': operation,
+        'accountId': account.id,
+        'accountType': account.type,
+      },
+      exception: error,
     );
   }
 
@@ -591,11 +628,7 @@ class CloudDriveFileService {
     String? details,
   ]) {
     final message = details != null ? '$operation: $details' : operation;
-    DebugService.log(
-      '🔍 $message',
-      category: DebugCategory.tools,
-      subCategory: _getLogSubCategory(account.type),
-    );
+    LogManager().cloudDrive('🔍 $message');
   }
 
   /// 获取日志子分类

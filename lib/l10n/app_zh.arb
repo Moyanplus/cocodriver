@@ -1,24 +1,20 @@
 {
   "@@locale": "zh",
-  "appTitle": "Flutter UI模板",
+  "appTitle": "可可云盘",
   "@appTitle": {
     "description": "应用标题"
   },
-  "welcomeTitle": "欢迎使用Flutter UI模板",
+  "welcomeTitle": "欢迎使用可可云盘",
   "@welcomeTitle": {
     "description": "欢迎标题"
   },
-  "welcomeSubtitle": "这是一个基于可可世界设计的UI模板",
+  "welcomeSubtitle": "聚合云盘管理，支持百度网盘、阿里云盘、夸克云盘等",
   "@welcomeSubtitle": {
     "description": "欢迎副标题"
   },
   "home": "首页",
   "@home": {
     "description": "首页标签"
-  },
-  "category": "分类",
-  "@category": {
-    "description": "分类标签"
   },
   "profile": "我的",
   "@profile": {
@@ -28,35 +24,35 @@
   "@settings": {
     "description": "设置页面标题"
   },
-  "themeSystem": "主题系统",
+  "themeSystem": "多云盘支持",
   "@themeSystem": {
-    "description": "主题系统功能卡片标题"
+    "description": "多云盘支持功能卡片标题"
   },
-  "themeSystemDesc": "多种精美主题",
+  "themeSystemDesc": "支持百度网盘、阿里云盘等",
   "@themeSystemDesc": {
     "description": "主题系统功能卡片描述"
   },
-  "navigationSystem": "导航系统",
+  "navigationSystem": "文件管理",
   "@navigationSystem": {
-    "description": "导航系统功能卡片标题"
+    "description": "文件管理功能卡片标题"
   },
-  "navigationSystemDesc": "流畅的页面切换",
+  "navigationSystemDesc": "上传、下载、分享文件",
   "@navigationSystemDesc": {
     "description": "导航系统功能卡片描述"
   },
-  "componentLibrary": "组件库",
+  "componentLibrary": "批量操作",
   "@componentLibrary": {
-    "description": "组件库功能卡片标题"
+    "description": "批量操作功能卡片标题"
   },
-  "componentLibraryDesc": "丰富的UI组件",
+  "componentLibraryDesc": "批量上传、下载、移动",
   "@componentLibraryDesc": {
     "description": "组件库功能卡片描述"
   },
-  "settingsPage": "设置页面",
+  "settingsPage": "安全存储",
   "@settingsPage": {
-    "description": "设置页面功能卡片标题"
+    "description": "安全存储功能卡片标题"
   },
-  "settingsPageDesc": "个性化配置",
+  "settingsPageDesc": "加密存储，保护隐私",
   "@settingsPageDesc": {
     "description": "设置页面功能卡片描述"
   },

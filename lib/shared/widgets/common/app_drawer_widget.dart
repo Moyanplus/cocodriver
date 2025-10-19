@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../core/theme/theme_models.dart';
 import '../../../core/navigation/navigation_providers.dart';
+import '../../../core/providers/cloud_drive_type_provider.dart';
 import '../../../core/utils/responsive_utils.dart';
 import '../../../core/utils/adaptive_utils.dart';
+import '../../../tool/cloud_drive/models/cloud_drive_models.dart';
 
 /// 应用侧边栏
 class AppDrawerWidget extends ConsumerStatefulWidget {
@@ -51,6 +54,12 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
               ],
             ),
           ),
+          // 云盘类型选择器
+          _buildCloudDriveTypeSelector(context, ref),
+
+          // 测试页面区域（仅在debug模式显示）
+          if (kDebugMode) _buildTestPagesSection(context, ref),
+
           // 菜单项
           Expanded(child: _buildMenuItems(context, ref)),
           // 底部区域
@@ -115,6 +124,134 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
           ),
         ),
       ],
+    );
+  }
+
+  /// 构建云盘类型选择器
+  Widget _buildCloudDriveTypeSelector(BuildContext context, WidgetRef ref) {
+    final cloudDriveTypeState = ref.watch(cloudDriveTypeProvider);
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标题和开关
+          Row(
+            children: [
+              Icon(
+                PhosphorIcons.cloud(),
+                size: ResponsiveUtils.getIconSize(20),
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                '云盘类型',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              const Spacer(),
+              Switch(
+                value: cloudDriveTypeState.isFilterEnabled,
+                onChanged: (value) {
+                  ref.read(cloudDriveTypeProvider.notifier).toggleFilter();
+                },
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ],
+          ),
+
+          // 云盘类型选择器
+          if (cloudDriveTypeState.isFilterEnabled) ...[
+            SizedBox(height: 12.h),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children:
+                  cloudDriveTypeState.availableTypes.map((type) {
+                    final isSelected = cloudDriveTypeState.selectedType == type;
+                    return GestureDetector(
+                      onTap: () {
+                        if (isSelected) {
+                          ref
+                              .read(cloudDriveTypeProvider.notifier)
+                              .clearSelection();
+                        } else {
+                          ref
+                              .read(cloudDriveTypeProvider.notifier)
+                              .selectType(type);
+                        }
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 6.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color:
+                              isSelected
+                                  ? type.color.withValues(alpha: 0.2)
+                                  : Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(20.r),
+                          border: Border.all(
+                            color:
+                                isSelected
+                                    ? type.color
+                                    : Theme.of(context).colorScheme.outline
+                                        .withValues(alpha: 0.3),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              type.iconData,
+                              size: ResponsiveUtils.getIconSize(16),
+                              color:
+                                  isSelected
+                                      ? type.color
+                                      : Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              type.displayName,
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodySmall?.copyWith(
+                                color:
+                                    isSelected
+                                        ? type.color
+                                        : Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                fontWeight:
+                                    isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -338,6 +475,90 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
               ),
             ],
           ),
+    );
+  }
+
+  /// 构建测试页面区域
+  Widget _buildTestPagesSection(BuildContext context, WidgetRef ref) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标题
+          Row(
+            children: [
+              Icon(
+                PhosphorIcons.bug(),
+                size: ResponsiveUtils.getIconSize(20),
+                color: Colors.orange,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                '测试页面',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+
+          // 测试页面按钮
+          _buildTestChip(
+            context,
+            icon: PhosphorIcons.globe(),
+            label: 'WebView测试',
+            color: Colors.blue,
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context).pushNamed('/test/webview');
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建测试chip
+  Widget _buildTestChip(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: ResponsiveUtils.getIconSize(16), color: color),
+            SizedBox(width: 4.w),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

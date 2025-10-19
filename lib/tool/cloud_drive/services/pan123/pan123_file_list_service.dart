@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import 'pan123_base_service.dart';
 import 'pan123_config.dart';
@@ -11,45 +11,25 @@ class Pan123FileListService {
     dynamic error,
     StackTrace? stackTrace,
   ) {
-    DebugService.log(
-      '❌ 123云盘 - $operation 失败: $error',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
+    LogManager().cloudDrive('❌ 123云盘 - $operation 失败: $error');
     if (stackTrace != null) {
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: Pan123Config.logSubCategory,
-      );
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
     }
   }
 
   /// 统一日志记录
   static void _logInfo(String message, {Map<String, dynamic>? params}) {
-    DebugService.log(
-      message,
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
+    LogManager().cloudDrive(message);
   }
 
   /// 统一成功日志记录
   static void _logSuccess(String message, {Map<String, dynamic>? details}) {
-    DebugService.log(
-      '✅ 123云盘 - $message',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
+    LogManager().cloudDrive('✅ 123云盘 - $message');
   }
 
   /// 统一错误日志记录
   static void _logError(String message, dynamic error) {
-    DebugService.log(
-      '❌ 123云盘 - $message: $error',
-      category: DebugCategory.tools,
-      subCategory: Pan123Config.logSubCategory,
-    );
+    LogManager().cloudDrive('❌ 123云盘 - $message: $error');
   }
 
   /// 获取文件列表

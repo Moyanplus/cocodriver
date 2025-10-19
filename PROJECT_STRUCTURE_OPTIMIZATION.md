@@ -65,7 +65,6 @@ lib/
 │   │       └── home_provider.dart
 │   ├── category/                   # 分类功能
 │   │   ├── pages/
-│   │   │   └── category_page.dart
 │   │   ├── widgets/
 │   │   │   ├── category_section_widget.dart
 │   │   │   └── function_button_widget.dart

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../models/cloud_drive_models.dart';
 import '../services/baidu/baidu_cloud_drive_service.dart';
 import '../base/cloud_drive_account_service.dart';
 import '../base/cloud_drive_cache_service.dart';
 import '../base/cloud_drive_file_service.dart';
 import '../base/cloud_drive_operation_service.dart';
+import '../utils/file_type_utils.dart';
 
 /// 云盘状态管理
 class CloudDriveState {
@@ -164,34 +165,16 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
 
   /// 加载当前文件夹内容（智能缓存版本）
   Future<void> loadCurrentFolder({bool forceRefresh = false}) async {
-    DebugService.log(
-      '📂 云盘提供者 - 开始加载当前文件夹',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
-    DebugService.log(
-      '🔄 强制刷新: $forceRefresh',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
-    DebugService.log(
-      '📂 当前路径: ${state.folderPath}',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
-    DebugService.log(
+    LogManager().cloudDrive('📂 云盘提供者 - 开始加载当前文件夹');
+    LogManager().cloudDrive('🔄 强制刷新: $forceRefresh');
+    LogManager().cloudDrive('📂 当前路径: ${state.folderPath}');
+    LogManager().cloudDrive(
       '👤 当前账号: ${state.currentAccount?.name} (${state.currentAccount?.type.displayName})',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
     );
 
     final account = state.currentAccount;
     if (account == null) {
-      DebugService.log(
-        '❌ 云盘提供者 - 当前账号为空',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('❌ 云盘提供者 - 当前账号为空');
       return;
     }
 
@@ -200,40 +183,24 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
       account.id,
       state.folderPath, // 直接传递PathInfo列表
     );
-    DebugService.log(
-      '🔑 缓存键: $cacheKey',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
+    LogManager().cloudDrive('🔑 缓存键: $cacheKey');
 
     try {
       // 如果不是强制刷新，先尝试显示缓存数据
       if (!forceRefresh) {
-        DebugService.log(
-          '🔍 云盘提供者 - 尝试获取缓存数据',
-          category: DebugCategory.tools,
-          subCategory: 'tools.cloudDrive.navigation',
-        );
+        LogManager().cloudDrive('🔍 云盘提供者 - 尝试获取缓存数据');
         final cachedData = CloudDriveCacheService.getCachedData(
           cacheKey,
           const Duration(minutes: 5), // 缓存5分钟
         );
 
         if (cachedData != null) {
-          DebugService.log(
-            '📦 显示缓存数据: $cacheKey',
-            category: DebugCategory.tools,
-            subCategory: 'tools.cloudDrive.navigation',
-          );
-          DebugService.log(
+          LogManager().cloudDrive('📦 显示缓存数据: $cacheKey');
+          LogManager().cloudDrive(
             '📁 缓存文件夹数量: ${cachedData['folders']?.length ?? 0}',
-            category: DebugCategory.tools,
-            subCategory: 'tools.cloudDrive.navigation',
           );
-          DebugService.log(
+          LogManager().cloudDrive(
             '📄 缓存文件数量: ${cachedData['files']?.length ?? 0}',
-            category: DebugCategory.tools,
-            subCategory: 'tools.cloudDrive.navigation',
           );
 
           state = state.copyWith(
@@ -245,28 +212,16 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
           );
 
           // 如果有缓存数据，后台静默刷新，不显示加载状态
-          DebugService.log(
-            '🔄 云盘提供者 - 开始后台刷新',
-            category: DebugCategory.tools,
-            subCategory: 'tools.cloudDrive.navigation',
-          );
+          LogManager().cloudDrive('🔄 云盘提供者 - 开始后台刷新');
           state = state.copyWith(isRefreshing: true);
         } else {
           // 没有缓存数据，显示加载状态
-          DebugService.log(
-            '📡 云盘提供者 - 无缓存数据，显示加载状态',
-            category: DebugCategory.tools,
-            subCategory: 'tools.cloudDrive.navigation',
-          );
+          LogManager().cloudDrive('📡 云盘提供者 - 无缓存数据，显示加载状态');
           state = state.copyWith(isLoading: true);
         }
       } else {
         // 强制刷新，显示加载状态
-        DebugService.log(
-          '🔄 云盘提供者 - 强制刷新，显示加载状态',
-          category: DebugCategory.tools,
-          subCategory: 'tools.cloudDrive.navigation',
-        );
+        LogManager().cloudDrive('🔄 云盘提供者 - 强制刷新，显示加载状态');
         state = state.copyWith(
           isLoading: true,
           error: null,
@@ -286,63 +241,31 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
                 folderPath: state.folderPath,
               );
 
-      DebugService.log(
-        '📁 目标文件夹ID: $folderId',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
-      DebugService.log(
-        ' 页码: ${forceRefresh ? 1 : state.currentPage}',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('📁 目标文件夹ID: $folderId');
+      LogManager().cloudDrive(' 页码: ${forceRefresh ? 1 : state.currentPage}');
 
       // 获取最新数据
-      DebugService.log(
-        '📡 云盘提供者 - 开始调用文件列表API',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('📡 云盘提供者 - 开始调用文件列表API');
       final result = await CloudDriveFileService.getFileList(
         account: account,
         folderId: folderId,
         page: forceRefresh ? 1 : state.currentPage,
       );
 
-      DebugService.log(
-        '✅ 云盘提供者 - 文件列表API调用成功',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
-      DebugService.log(
-        '📁 返回文件夹数量: ${result['folders']?.length ?? 0}',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
-      DebugService.log(
-        '📄 返回文件数量: ${result['files']?.length ?? 0}',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('✅ 云盘提供者 - 文件列表API调用成功');
+      LogManager().cloudDrive('📁 返回文件夹数量: ${result['folders']?.length ?? 0}');
+      LogManager().cloudDrive('📄 返回文件数量: ${result['files']?.length ?? 0}');
 
       // 更新缓存
       CloudDriveCacheService.cacheData(cacheKey, result);
-      DebugService.log(
-        '💾 更新缓存: $cacheKey',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('💾 更新缓存: $cacheKey');
 
       // 更新状态
       final newFolders = result['folders'] ?? [];
       final newFiles = result['files'] ?? [];
       final hasMore = (newFolders.length + newFiles.length) >= 50;
 
-      DebugService.log(
-        '📊 是否还有更多数据: $hasMore',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('📊 是否还有更多数据: $hasMore');
 
       // 无论是强制刷新还是后台刷新，都应该替换数据而不是追加
       state = state.copyWith(
@@ -357,17 +280,11 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
         hasMoreData: hasMore,
       );
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '✅ 数据加载完成: ${newFolders.length} 个文件夹, ${newFiles.length} 个文件',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
       );
     } catch (e) {
-      DebugService.log(
-        '❌ 加载文件夹失败: $e',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('❌ 加载文件夹失败: $e');
       state = state.copyWith(
         isLoading: false,
         isRefreshing: false,
@@ -378,39 +295,17 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
 
   /// 进入文件夹
   Future<void> enterFolder(CloudDriveFile folder) async {
-    DebugService.log(
-      '🚀 云盘提供者 - 开始进入文件夹',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
-    DebugService.log(
-      '📁 文件夹名称: ${folder.name}',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
-    DebugService.log(
-      '🆔 文件夹ID: ${folder.id}',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
-    DebugService.log(
-      '📂 当前路径: ${state.folderPath}',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
-    DebugService.log(
+    LogManager().cloudDrive('🚀 云盘提供者 - 开始进入文件夹');
+    LogManager().cloudDrive('📁 文件夹名称: ${folder.name}');
+    LogManager().cloudDrive('🆔 文件夹ID: ${folder.id}');
+    LogManager().cloudDrive('📂 当前路径: ${state.folderPath}');
+    LogManager().cloudDrive(
       '👤 当前账号: ${state.currentAccount?.name} (${state.currentAccount?.type.displayName})',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
     );
 
     final account = state.currentAccount;
     if (account == null) {
-      DebugService.log(
-        '❌ 云盘提供者 - 当前账号为空',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('❌ 云盘提供者 - 当前账号为空');
       return;
     }
 
@@ -423,10 +318,8 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
         ...state.folderPath,
         PathInfo(id: folder.id, name: folder.name),
       ];
-      DebugService.log(
+      LogManager().cloudDrive(
         '📂 ${account.type.displayName}新路径（使用ID）: ${newPath.map((p) => '${p.name}(${p.id})').join(' -> ')}',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
       );
     } else {
       // 其他云盘：使用文件夹名称和ID
@@ -434,25 +327,15 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
         ...state.folderPath,
         PathInfo(id: folder.id, name: folder.name),
       ];
-      DebugService.log(
+      LogManager().cloudDrive(
         '📂 其他云盘新路径（使用名称）: ${newPath.map((p) => '${p.name}(${p.id})').join(' -> ')}',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
       );
     }
 
-    DebugService.log(
-      '🔍 进入文件夹: ${folder.name}, 路径: ${folder.id}',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
+    LogManager().cloudDrive('🔍 进入文件夹: ${folder.name}, 路径: ${folder.id}');
 
     try {
-      DebugService.log(
-        '🔄 云盘提供者 - 更新状态为加载中',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('🔄 云盘提供者 - 更新状态为加载中');
       state = state.copyWith(
         folderPath: newPath,
         folders: [],
@@ -469,27 +352,11 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
         folderPath: newPath,
       );
 
-      DebugService.log(
-        '🔧 策略模式路径构建结果: $folderId',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('🔧 策略模式路径构建结果: $folderId');
 
-      DebugService.log(
-        '📡 云盘提供者 - 开始调用文件列表API',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
-      DebugService.log(
-        '📡 目标文件夹ID: $folderId',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
-      DebugService.log(
-        '📡 页码: 1',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('📡 云盘提供者 - 开始调用文件列表API');
+      LogManager().cloudDrive('📡 目标文件夹ID: $folderId');
+      LogManager().cloudDrive('📡 页码: 1');
 
       // 直接调用 API 服务
       final result = await CloudDriveFileService.getFileList(
@@ -498,21 +365,9 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
         page: 1,
       );
 
-      DebugService.log(
-        '✅ 云盘提供者 - 文件列表API调用成功',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
-      DebugService.log(
-        '📁 返回文件夹数量: ${result['folders']?.length ?? 0}',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
-      DebugService.log(
-        '📄 返回文件数量: ${result['files']?.length ?? 0}',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('✅ 云盘提供者 - 文件列表API调用成功');
+      LogManager().cloudDrive('📁 返回文件夹数量: ${result['folders']?.length ?? 0}');
+      LogManager().cloudDrive('📄 返回文件数量: ${result['files']?.length ?? 0}');
 
       // 打印返回的文件和文件夹详情
       final folders = result['folders'] ?? [];
@@ -520,28 +375,16 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
 
       for (int i = 0; i < folders.length; i++) {
         final f = folders[i];
-        DebugService.log(
-          '📁 文件夹 ${i + 1}: ${f.name} (ID: ${f.id})',
-          category: DebugCategory.tools,
-          subCategory: 'tools.cloudDrive.navigation',
-        );
+        LogManager().cloudDrive('📁 文件夹 ${i + 1}: ${f.name} (ID: ${f.id})');
       }
 
       for (int i = 0; i < files.length; i++) {
         final f = files[i];
-        DebugService.log(
-          '📄 文件 ${i + 1}: ${f.name} (ID: ${f.id})',
-          category: DebugCategory.tools,
-          subCategory: 'tools.cloudDrive.navigation',
-        );
+        LogManager().cloudDrive('📄 文件 ${i + 1}: ${f.name} (ID: ${f.id})');
       }
 
       final hasMoreData = (folders.length + files.length) >= 50;
-      DebugService.log(
-        '�� 是否还有更多数据: $hasMoreData',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('�� 是否还有更多数据: $hasMoreData');
 
       state = state.copyWith(
         folders: folders,
@@ -550,60 +393,28 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
         hasMoreData: hasMoreData,
       );
 
-      DebugService.log(
-        '✅ 云盘提供者 - 进入文件夹完成',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('✅ 云盘提供者 - 进入文件夹完成');
     } catch (e) {
-      DebugService.log(
-        '❌ 云盘提供者 - 进入文件夹失败: $e',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('❌ 云盘提供者 - 进入文件夹失败: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   /// 返回上级
   Future<void> goBack() async {
-    DebugService.log(
-      '🔙 云盘提供者 - 开始返回上级',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
-    DebugService.log(
-      '📂 当前路径: ${state.folderPath}',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
-    DebugService.log(
-      '📂 路径长度: ${state.folderPath.length}',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
+    LogManager().cloudDrive('🔙 云盘提供者 - 开始返回上级');
+    LogManager().cloudDrive('📂 当前路径: ${state.folderPath}');
+    LogManager().cloudDrive('📂 路径长度: ${state.folderPath.length}');
 
     if (state.folderPath.isEmpty) {
-      DebugService.log(
-        '⚠️ 云盘提供者 - 已在根目录，无法返回',
-        category: DebugCategory.tools,
-        subCategory: 'tools.cloudDrive.navigation',
-      );
+      LogManager().cloudDrive('⚠️ 云盘提供者 - 已在根目录，无法返回');
       return;
     }
 
     final newPath = state.folderPath.sublist(0, state.folderPath.length - 1);
-    DebugService.log(
-      '📂 新路径: $newPath',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
+    LogManager().cloudDrive('📂 新路径: $newPath');
 
-    DebugService.log(
-      '🔄 云盘提供者 - 更新状态',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
+    LogManager().cloudDrive('🔄 云盘提供者 - 更新状态');
     state = state.copyWith(
       folderPath: newPath,
       folders: [],
@@ -612,17 +423,9 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
       hasMoreData: true,
     );
 
-    DebugService.log(
-      '📡 云盘提供者 - 开始加载当前文件夹',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
+    LogManager().cloudDrive('📡 云盘提供者 - 开始加载当前文件夹');
     await loadCurrentFolder();
-    DebugService.log(
-      '✅ 云盘提供者 - 返回上级完成',
-      category: DebugCategory.tools,
-      subCategory: 'tools.cloudDrive.navigation',
-    );
+    LogManager().cloudDrive('✅ 云盘提供者 - 返回上级完成');
   }
 
   /// 进入批量模式
@@ -718,39 +521,21 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
   /// 添加账号
   Future<void> addAccount(CloudDriveAccount account) async {
     try {
-      DebugService.log(
+      LogManager().cloudDrive(
         '➕ 开始添加账号: ${account.name} (${account.type.displayName})',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.account',
       );
-      DebugService.log(
-        '🍪 Cookie长度: ${account.cookies?.length ?? 0}',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.account',
-      );
+      LogManager().cloudDrive('🍪 Cookie长度: ${account.cookies?.length ?? 0}');
 
       await CloudDriveAccountService.addAccount(account);
-      DebugService.log(
-        '✅ 账号已保存到本地存储',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.account',
-      );
+      LogManager().cloudDrive('✅ 账号已保存到本地存储');
 
       // 执行云盘特定的初始化逻辑
       await _performAccountInitialization(account);
 
       await loadAccounts(); // 重新加载账号列表
-      DebugService.log(
-        '✅ 账号列表已重新加载',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.account',
-      );
+      LogManager().cloudDrive('✅ 账号列表已重新加载');
     } catch (e) {
-      DebugService.log(
-        '❌ 添加账号失败: $e',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.account',
-      );
+      LogManager().cloudDrive('❌ 添加账号失败: $e');
       state = state.copyWith(error: e.toString());
       rethrow;
     }
@@ -759,67 +544,35 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
   /// 执行账号特定的初始化逻辑
   Future<void> _performAccountInitialization(CloudDriveAccount account) async {
     try {
-      DebugService.log(
-        '🔧 开始执行账号初始化: ${account.type.displayName}',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.account',
-      );
+      LogManager().cloudDrive('🔧 开始执行账号初始化: ${account.type.displayName}');
 
       switch (account.type) {
         case CloudDriveType.baidu:
           // 百度网盘：自动获取API参数
           try {
-            DebugService.log(
-              '🔄 百度网盘 - 开始获取API参数',
-              category: DebugCategory.tools,
-              subCategory: 'cloudDrive.account',
-            );
+            LogManager().cloudDrive('🔄 百度网盘 - 开始获取API参数');
             await BaiduCloudDriveService.getBaiduParams(account);
-            DebugService.log(
-              '✅ 百度网盘 - API参数获取成功',
-              category: DebugCategory.tools,
-              subCategory: 'cloudDrive.account',
-            );
+            LogManager().cloudDrive('✅ 百度网盘 - API参数获取成功');
           } catch (e) {
-            DebugService.log(
-              '⚠️ 百度网盘 - API参数获取失败: $e',
-              category: DebugCategory.tools,
-              subCategory: 'cloudDrive.account',
-            );
+            LogManager().cloudDrive('⚠️ 百度网盘 - API参数获取失败: $e');
             // 参数获取失败不影响账号添加，只记录警告
           }
           break;
         case CloudDriveType.quark:
           // 夸克云盘：可以添加特定的初始化逻辑
-          DebugService.log(
-            '🔧 夸克云盘 - 无需特殊初始化',
-            category: DebugCategory.tools,
-            subCategory: 'cloudDrive.account',
-          );
+          LogManager().cloudDrive('🔧 夸克云盘 - 无需特殊初始化');
           break;
         case CloudDriveType.lanzou:
         case CloudDriveType.pan123:
         case CloudDriveType.ali:
           // 其他云盘：暂无特殊初始化需求
-          DebugService.log(
-            '🔧 ${account.type.displayName} - 无需特殊初始化',
-            category: DebugCategory.tools,
-            subCategory: 'cloudDrive.account',
-          );
+          LogManager().cloudDrive('🔧 ${account.type.displayName} - 无需特殊初始化');
           break;
       }
 
-      DebugService.log(
-        '✅ 账号初始化完成: ${account.type.displayName}',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.account',
-      );
+      LogManager().cloudDrive('✅ 账号初始化完成: ${account.type.displayName}');
     } catch (e) {
-      DebugService.log(
-        '⚠️ 账号初始化过程中发生异常: $e',
-        category: DebugCategory.tools,
-        subCategory: 'cloudDrive.account',
-      );
+      LogManager().cloudDrive('⚠️ 账号初始化过程中发生异常: $e');
       // 初始化失败不影响账号添加
     }
   }
@@ -874,16 +627,16 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
 
   /// 添加文件到状态（复制/移动成功后调用）
   void addFileToState(CloudDriveFile file, {String? operationType}) {
-    DebugService.log(
+    LogManager().cloudDrive(
       '➕ 添加文件到状态: ${file.name} (${file.isFolder ? '文件夹' : '文件'})',
     );
-    DebugService.log('🔧 操作类型: ${operationType ?? 'unknown'}');
+    LogManager().cloudDrive('🔧 操作类型: ${operationType ?? 'unknown'}');
 
     final currentState = state;
     final account = currentState.currentAccount;
 
     if (account == null) {
-      DebugService.log('❌ 无法添加文件到状态：当前账号为空');
+      LogManager().cloudDrive('❌ 无法添加文件到状态：当前账号为空');
       return;
     }
 
@@ -905,18 +658,18 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
       // 添加到文件夹列表
       final updatedFolders = [...currentState.folders, updatedFile];
       state = currentState.copyWith(folders: updatedFolders);
-      DebugService.log('✅ 文件夹已添加到状态，总文件夹数: ${updatedFolders.length}');
+      LogManager().cloudDrive('✅ 文件夹已添加到状态，总文件夹数: ${updatedFolders.length}');
     } else {
       // 添加到文件列表
       final updatedFiles = [...currentState.files, updatedFile];
       state = currentState.copyWith(files: updatedFiles);
-      DebugService.log('✅ 文件已添加到状态，总文件数: ${updatedFiles.length}');
+      LogManager().cloudDrive('✅ 文件已添加到状态，总文件数: ${updatedFiles.length}');
     }
   }
 
   /// 从本地状态中移除文件（删除成功后调用）
   void removeFileFromState(String fileId) {
-    DebugService.log('🗑️ 从状态中移除文件: $fileId');
+    LogManager().cloudDrive('🗑️ 从状态中移除文件: $fileId');
 
     final currentState = state;
     final updatedFiles =
@@ -926,14 +679,14 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
 
     state = currentState.copyWith(files: updatedFiles, folders: updatedFolders);
 
-    DebugService.log(
+    LogManager().cloudDrive(
       '✅ 文件已从状态中移除，剩余文件数: ${updatedFiles.length}，文件夹数: ${updatedFolders.length}',
     );
   }
 
   /// 从本地状态中移除文件夹（移动成功后调用）
   void removeFolderFromState(String folderId) {
-    DebugService.log('🗑️ 从状态中移除文件夹: $folderId');
+    LogManager().cloudDrive('🗑️ 从状态中移除文件夹: $folderId');
 
     final currentState = state;
     final updatedFolders =
@@ -941,12 +694,12 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
 
     state = currentState.copyWith(folders: updatedFolders);
 
-    DebugService.log('✅ 文件夹已从状态中移除，剩余文件夹数: ${updatedFolders.length}');
+    LogManager().cloudDrive('✅ 文件夹已从状态中移除，剩余文件夹数: ${updatedFolders.length}');
   }
 
   /// 更新文件信息（重命名成功后调用）
   void updateFileInState(String fileId, String newName) {
-    DebugService.log('✏️ 更新文件信息: $fileId -> $newName');
+    LogManager().cloudDrive('✏️ 更新文件信息: $fileId -> $newName');
 
     final currentState = state;
 
@@ -970,12 +723,12 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
 
     state = currentState.copyWith(files: updatedFiles, folders: updatedFolders);
 
-    DebugService.log('✅ 文件信息已更新');
+    LogManager().cloudDrive('✅ 文件信息已更新');
   }
 
   /// 设置待操作文件（复制/移动）
   void setPendingOperation(CloudDriveFile file, String operationType) {
-    DebugService.log('🎯 设置待操作文件: ${file.name} ($operationType)');
+    LogManager().cloudDrive('🎯 设置待操作文件: ${file.name} ($operationType)');
 
     state = state.copyWith(
       pendingOperationFile: file,
@@ -986,7 +739,7 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
 
   /// 清除待操作文件
   void clearPendingOperation() {
-    DebugService.log('🧹 清除待操作文件');
+    LogManager().cloudDrive('🧹 清除待操作文件');
 
     state = state.copyWith(
       pendingOperationFile: null,
@@ -1001,24 +754,24 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
     final operationType = state.pendingOperationType;
     final account = state.currentAccount;
 
-    DebugService.log('🚀 executePendingOperation 开始执行');
-    DebugService.log(
+    LogManager().cloudDrive('🚀 executePendingOperation 开始执行');
+    LogManager().cloudDrive(
       '📄 文件信息: ${file?.name ?? 'null'} (ID: ${file?.id ?? 'null'})',
     );
-    DebugService.log('🔧 操作类型: ${operationType ?? 'null'}');
-    DebugService.log(
+    LogManager().cloudDrive('🔧 操作类型: ${operationType ?? 'null'}');
+    LogManager().cloudDrive(
       '👤 账号信息: ${account?.name ?? 'null'} (${account?.type.displayName ?? 'null'})',
     );
 
     if (file == null || operationType == null || account == null) {
-      DebugService.log('❌ 待操作信息不完整');
-      DebugService.log('📄 file: ${file?.name ?? 'null'}');
-      DebugService.log('🔧 operationType: ${operationType ?? 'null'}');
-      DebugService.log('👤 account: ${account?.name ?? 'null'}');
+      LogManager().cloudDrive('❌ 待操作信息不完整');
+      LogManager().cloudDrive('📄 file: ${file?.name ?? 'null'}');
+      LogManager().cloudDrive('🔧 operationType: ${operationType ?? 'null'}');
+      LogManager().cloudDrive('👤 account: ${account?.name ?? 'null'}');
       return false;
     }
 
-    DebugService.log('✅ 参数验证通过');
+    LogManager().cloudDrive('✅ 参数验证通过');
 
     // 获取当前目录路径或ID - 使用策略模式解耦
     final targetFolderId =
@@ -1027,68 +780,68 @@ class CloudDriveNotifier extends StateNotifier<CloudDriveState> {
           folderPath: state.folderPath,
         );
 
-    DebugService.log('📁 目标文件夹ID: $targetFolderId');
-    DebugService.log('📂 当前文件夹路径: ${state.folderPath}');
+    LogManager().cloudDrive('📁 目标文件夹ID: $targetFolderId');
+    LogManager().cloudDrive('📂 当前文件夹路径: ${state.folderPath}');
 
     try {
       bool success = false;
 
       if (operationType == 'copy') {
-        DebugService.log('📋 开始执行复制操作');
+        LogManager().cloudDrive('📋 开始执行复制操作');
         success = await CloudDriveOperationService.copyFile(
           account: account,
           file: file,
           destPath: targetFolderId,
         );
-        DebugService.log('📋 复制操作结果: $success');
+        LogManager().cloudDrive('📋 复制操作结果: $success');
       } else if (operationType == 'move') {
-        DebugService.log('📋 开始执行移动操作');
+        LogManager().cloudDrive('📋 开始执行移动操作');
         success = await CloudDriveOperationService.moveFile(
           account: account,
           file: file,
           targetFolderId: targetFolderId,
         );
-        DebugService.log('📋 移动操作结果: $success');
+        LogManager().cloudDrive('📋 移动操作结果: $success');
       } else {
-        DebugService.log('❌ 未知的操作类型: $operationType');
+        LogManager().cloudDrive('❌ 未知的操作类型: $operationType');
         return false;
       }
 
       if (success) {
-        DebugService.log('✅ 操作执行成功');
+        LogManager().cloudDrive('✅ 操作执行成功');
 
         // 对于复制操作，直接添加文件到当前状态（如果目标是当前目录）
         if (operationType == 'copy') {
-          DebugService.log('📋 复制操作成功，直接添加文件到当前状态');
+          LogManager().cloudDrive('📋 复制操作成功，直接添加文件到当前状态');
           addFileToState(file, operationType: operationType);
         } else if (operationType == 'move') {
           // 对于移动操作，也添加文件到当前状态（如果目标是当前目录）
-          DebugService.log('📋 移动操作成功，直接添加文件到当前状态');
+          LogManager().cloudDrive('📋 移动操作成功，直接添加文件到当前状态');
           addFileToState(file, operationType: operationType);
         }
 
-        DebugService.log('🧹 开始清除待操作状态');
+        LogManager().cloudDrive('🧹 开始清除待操作状态');
         // 清除待操作状态
         clearPendingOperation();
 
         // 不再需要重新加载整个目录，因为已经直接更新了状态
-        DebugService.log('✅ 状态更新完成，无需重新加载目录');
+        LogManager().cloudDrive('✅ 状态更新完成，无需重新加载目录');
         return true;
       } else {
-        DebugService.log('❌ 操作执行失败');
-        DebugService.log('📄 失败的文件: ${file.name}');
-        DebugService.log('🔧 失败的操作: $operationType');
-        DebugService.log('📁 目标路径: $targetFolderId');
+        LogManager().cloudDrive('❌ 操作执行失败');
+        LogManager().cloudDrive('📄 失败的文件: ${file.name}');
+        LogManager().cloudDrive('🔧 失败的操作: $operationType');
+        LogManager().cloudDrive('📁 目标路径: $targetFolderId');
         return false;
       }
     } catch (e) {
-      DebugService.error('❌ 执行操作异常', e);
-      DebugService.log('📄 异常的文件: ${file.name}');
-      DebugService.log('🔧 异常的操作: $operationType');
-      DebugService.log('📁 目标路径: $targetFolderId');
+      LogManager().error('❌ 执行操作异常');
+      LogManager().cloudDrive('📄 异常的文件: ${file.name}');
+      LogManager().cloudDrive('🔧 异常的操作: $operationType');
+      LogManager().cloudDrive('📁 目标路径: $targetFolderId');
       return false;
     } finally {
-      DebugService.log('🚀 executePendingOperation 执行结束');
+      LogManager().cloudDrive('🚀 executePendingOperation 执行结束');
     }
   }
 }
@@ -1111,72 +864,10 @@ final fileTypeColorProvider = Provider.family<Color, String>(
 
 /// 获取文件类型图标（缓存版本）
 IconData _getFileTypeIcon(String fileName) {
-  final extension = fileName.split('.').last.toLowerCase();
-  switch (extension) {
-    case 'pdf':
-      return Icons.picture_as_pdf;
-    case 'doc':
-    case 'docx':
-      return Icons.description;
-    case 'xls':
-    case 'xlsx':
-      return Icons.table_chart;
-    case 'ppt':
-    case 'pptx':
-      return Icons.slideshow;
-    case 'jpg':
-    case 'jpeg':
-    case 'png':
-    case 'gif':
-      return Icons.image;
-    case 'mp4':
-    case 'avi':
-    case 'mov':
-      return Icons.video_file;
-    case 'mp3':
-    case 'wav':
-      return Icons.audio_file;
-    case 'zip':
-    case 'rar':
-    case '7z':
-      return Icons.archive;
-    default:
-      return Icons.insert_drive_file;
-  }
+  return FileTypeUtils.getFileTypeIcon(fileName);
 }
 
 /// 获取文件类型颜色（缓存版本）
 Color _getFileTypeColor(String fileName) {
-  final extension = fileName.split('.').last.toLowerCase();
-  switch (extension) {
-    case 'pdf':
-      return Colors.red;
-    case 'doc':
-    case 'docx':
-      return Colors.blue;
-    case 'xls':
-    case 'xlsx':
-      return Colors.green;
-    case 'ppt':
-    case 'pptx':
-      return Colors.orange;
-    case 'jpg':
-    case 'jpeg':
-    case 'png':
-    case 'gif':
-      return Colors.purple;
-    case 'mp4':
-    case 'avi':
-    case 'mov':
-      return Colors.indigo;
-    case 'mp3':
-    case 'wav':
-      return Colors.teal;
-    case 'zip':
-    case 'rar':
-    case '7z':
-      return Colors.amber;
-    default:
-      return Colors.grey;
-  }
+  return FileTypeUtils.getFileTypeColor(fileName);
 }

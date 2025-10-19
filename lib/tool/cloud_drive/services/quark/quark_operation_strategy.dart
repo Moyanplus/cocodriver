@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../base/cloud_drive_operation_service.dart';
 import '../../models/cloud_drive_models.dart';
 import 'quark_cloud_drive_service.dart';
@@ -13,20 +13,17 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔗 夸克云盘 - 获取下载链接开始',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '📄 文件信息: ${file.name} (ID: ${file.id})',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '👤 账号信息: ${account.name} (${account.type.displayName})',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
@@ -49,30 +46,26 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
             downloadUrl.length > 100
                 ? '${downloadUrl.substring(0, 100)}...'
                 : downloadUrl;
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 夸克云盘 - 下载链接获取成功: $preview',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
       } else {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 夸克云盘 - 下载链接获取失败: 返回null',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
       }
 
       return downloadUrl;
     } catch (e, stackTrace) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 获取下载链接异常: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
-      DebugService.log(
+      LogManager().cloudDrive(
         '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return null;
     }
@@ -85,30 +78,26 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String shareUrl,
     required String password,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '🚀 夸克云盘 - 获取高速下载链接开始',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
       // 这里需要实现夸克云盘的高速下载链接获取逻辑
-      DebugService.log(
+      LogManager().cloudDrive(
         '⚠️ 夸克云盘 - 高速下载链接功能暂未实现',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return null;
     } catch (e, stackTrace) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 获取高速下载链接异常: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
-      DebugService.log(
+      LogManager().cloudDrive(
         '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return null;
     }
@@ -121,15 +110,13 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? password,
     int? expireDays,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '🔗 夸克云盘 - 创建分享链接开始',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '📄 文件数量: ${files.length}',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
@@ -151,30 +138,26 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
 
       if (result != null) {
         final shareUrl = result['shareUrl']?.toString();
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 夸克云盘 - 分享链接创建成功: $shareUrl',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
         return shareUrl;
       } else {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 夸克云盘 - 分享链接创建失败: 返回null',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
         return null;
       }
     } catch (e, stackTrace) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 创建分享链接异常: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
-      DebugService.log(
+      LogManager().cloudDrive(
         '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return null;
     }
@@ -185,15 +168,13 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '🗑️ 夸克云盘 - 删除文件开始',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '📄 文件信息: ${file.name} (ID: ${file.id})',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
@@ -203,30 +184,26 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 夸克云盘 - 文件删除成功: ${file.name}',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
         return true;
       } else {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 夸克云盘 - 文件删除失败',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
         return false;
       }
     } catch (e, stackTrace) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 删除文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
-      DebugService.log(
+      LogManager().cloudDrive(
         '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return false;
     }
@@ -238,20 +215,17 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
     String? targetFolderId,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '🚚 夸克云盘 - 移动文件开始',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '📄 文件信息: ${file.name} (ID: ${file.id})',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '📁 目标文件夹ID: $targetFolderId',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
@@ -262,30 +236,26 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 夸克云盘 - 文件移动成功: ${file.name}',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
         return true;
       } else {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 夸克云盘 - 文件移动失败',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
         return false;
       }
     } catch (e, stackTrace) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 移动文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
-      DebugService.log(
+      LogManager().cloudDrive(
         '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return false;
     }
@@ -297,20 +267,17 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
     required String newName,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '✏️ 夸克云盘 - 重命名文件开始',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '📄 文件信息: ${file.name} (ID: ${file.id})',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '🆕 新名称: $newName',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
@@ -321,25 +288,22 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (result) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 夸克云盘 - 重命名文件成功: ${file.name} -> $newName',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
       } else {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 夸克云盘 - 重命名文件失败: ${file.name} -> $newName',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
       }
 
       return result;
     } catch (e) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 重命名文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return false;
     }
@@ -352,45 +316,38 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String destPath,
     String? newName,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '📋 夸克云盘 - 复制文件开始',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '📄 文件信息: ${file.name} (ID: ${file.id})',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '📁 目标路径: $destPath',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '🆕 新名称: $newName',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
       // 这里需要实现夸克云盘的复制文件逻辑
-      DebugService.log(
+      LogManager().cloudDrive(
         '⚠️ 夸克云盘 - 复制文件功能暂未实现',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return false;
     } catch (e, stackTrace) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 复制文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
-      DebugService.log(
+      LogManager().cloudDrive(
         '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return false;
     }
@@ -402,20 +359,17 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String folderName,
     String? parentFolderId,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '📁 夸克云盘 - 创建文件夹开始',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '📁 文件夹名称: $folderName',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
-    DebugService.log(
+    LogManager().cloudDrive(
       '📁 父文件夹ID: $parentFolderId',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
@@ -426,33 +380,29 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (result != null && result['success'] == true) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 夸克云盘 - 文件夹创建成功: $folderName',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
 
         // 直接返回服务层的结果，它已经包含了folder对象
         return result;
       } else {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 夸克云盘 - 文件夹创建失败',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
 
         return {'success': false, 'message': result?['message'] ?? '文件夹创建失败'};
       }
     } catch (e, stackTrace) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 创建文件夹异常: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
-      DebugService.log(
+      LogManager().cloudDrive(
         '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
 
       return {'success': false, 'message': '文件夹创建异常: $e'};
@@ -472,10 +422,9 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
       return fileList;
     } catch (e) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 获取文件列表异常: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return [];
     }
@@ -493,10 +442,9 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   Future<CloudDriveAccountDetails?> getAccountDetails({
     required CloudDriveAccount account,
   }) async {
-    DebugService.log(
+    LogManager().cloudDrive(
       '📋 夸克云盘 - 开始获取账号详情',
-      category: DebugCategory.tools,
-      subCategory: QuarkConfig.logSubCategory,
+      
     );
 
     try {
@@ -505,30 +453,26 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (accountDetails != null) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 夸克云盘 - 账号详情获取成功',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
         return accountDetails;
       } else {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 夸克云盘 - 账号详情获取失败: 返回null',
-          category: DebugCategory.tools,
-          subCategory: QuarkConfig.logSubCategory,
+          
         );
         return null;
       }
     } catch (e, stackTrace) {
-      DebugService.log(
+      LogManager().cloudDrive(
         '❌ 夸克云盘 - 获取账号详情异常: $e',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
-      DebugService.log(
+      LogManager().cloudDrive(
         '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: QuarkConfig.logSubCategory,
+        
       );
       return null;
     }

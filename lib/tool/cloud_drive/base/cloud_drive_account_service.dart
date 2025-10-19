@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../models/cloud_drive_models.dart';
 
 /// 云盘账号管理服务
@@ -12,7 +12,11 @@ class CloudDriveAccountService {
   /// 加载所有账号
   static Future<List<CloudDriveAccount>> loadAccounts() async {
     try {
-      DebugService.log('📂 加载云盘账号');
+      LogManager().cloudDrive(
+        '加载云盘账号',
+        className: 'CloudDriveAccountService',
+        methodName: 'loadAccounts',
+      );
       final prefs = await SharedPreferences.getInstance();
       final accountsJson = prefs.getString(_storageKey);
 
@@ -22,12 +26,22 @@ class CloudDriveAccountService {
             accountsList
                 .map((json) => CloudDriveAccount.fromJson(json))
                 .toList();
-        DebugService.log('✅ 成功加载 ${accounts.length} 个账号');
+        LogManager().cloudDrive(
+          '成功加载 ${accounts.length} 个账号',
+          className: 'CloudDriveAccountService',
+          methodName: 'loadAccounts',
+          data: {'count': accounts.length},
+        );
         return accounts;
       }
       return [];
     } catch (e) {
-      DebugService.error('❌ 加载云盘账号失败', e);
+      LogManager().error(
+        '加载云盘账号失败',
+        className: 'CloudDriveAccountService',
+        methodName: 'loadAccounts',
+        exception: e,
+      );
       return [];
     }
   }
@@ -35,28 +49,63 @@ class CloudDriveAccountService {
   /// 保存所有账号
   static Future<void> saveAccounts(List<CloudDriveAccount> accounts) async {
     try {
-      DebugService.log('💾 保存云盘账号: ${accounts.length} 个');
+      LogManager().cloudDrive(
+        '保存云盘账号: ${accounts.length} 个',
+        className: 'CloudDriveAccountService',
+        methodName: 'saveAccounts',
+        data: {'count': accounts.length},
+      );
       final prefs = await SharedPreferences.getInstance();
       final accountsJson = jsonEncode(accounts.map((a) => a.toJson()).toList());
       await prefs.setString(_storageKey, accountsJson);
-      DebugService.log('✅ 账号保存成功');
+      LogManager().cloudDrive(
+        '账号保存成功',
+        className: 'CloudDriveAccountService',
+        methodName: 'saveAccounts',
+      );
     } catch (e) {
-      DebugService.error('❌ 保存云盘账号失败', e);
+      LogManager().error(
+        '保存云盘账号失败',
+        className: 'CloudDriveAccountService',
+        methodName: 'saveAccounts',
+        exception: e,
+      );
     }
   }
 
   /// 添加账号
   static Future<void> addAccount(CloudDriveAccount account) async {
     try {
-      DebugService.log('💾 开始保存账号到本地存储: ${account.name}');
+      LogManager().cloudDrive(
+        '开始保存账号到本地存储: ${account.name}',
+        className: 'CloudDriveAccountService',
+        methodName: 'addAccount',
+        data: {'accountName': account.name, 'accountType': account.type},
+      );
       final accounts = await loadAccounts();
-      DebugService.log('📋 当前已有账号数量: ${accounts.length}');
+      LogManager().cloudDrive(
+        '当前已有账号数量: ${accounts.length}',
+        className: 'CloudDriveAccountService',
+        methodName: 'addAccount',
+        data: {'currentCount': accounts.length},
+      );
 
       accounts.add(account);
       await saveAccounts(accounts);
-      DebugService.log('✅ 账号保存成功: ${account.name}');
+      LogManager().cloudDrive(
+        '账号保存成功: ${account.name}',
+        className: 'CloudDriveAccountService',
+        methodName: 'addAccount',
+        data: {'accountName': account.name},
+      );
     } catch (e) {
-      DebugService.error('❌ 保存账号失败', e);
+      LogManager().error(
+        '保存账号失败',
+        className: 'CloudDriveAccountService',
+        methodName: 'addAccount',
+        data: {'accountName': account.name},
+        exception: e,
+      );
       rethrow;
     }
   }
@@ -69,10 +118,24 @@ class CloudDriveAccountService {
       if (index != -1) {
         accounts[index] = updatedAccount;
         await saveAccounts(accounts);
-        DebugService.log('✅ 更新账号成功: ${updatedAccount.name}');
+        LogManager().cloudDrive(
+          '更新账号成功: ${updatedAccount.name}',
+          className: 'CloudDriveAccountService',
+          methodName: 'updateAccount',
+          data: {
+            'accountName': updatedAccount.name,
+            'accountId': updatedAccount.id,
+          },
+        );
       }
     } catch (e) {
-      DebugService.error('❌ 更新账号失败', e);
+      LogManager().error(
+        '更新账号失败',
+        className: 'CloudDriveAccountService',
+        methodName: 'updateAccount',
+        data: {'accountId': updatedAccount.id},
+        exception: e,
+      );
       rethrow;
     }
   }
@@ -83,9 +146,20 @@ class CloudDriveAccountService {
       final accounts = await loadAccounts();
       accounts.removeWhere((a) => a.id == accountId);
       await saveAccounts(accounts);
-      DebugService.log('✅ 删除账号成功: $accountId');
+      LogManager().cloudDrive(
+        '删除账号成功: $accountId',
+        className: 'CloudDriveAccountService',
+        methodName: 'deleteAccount',
+        data: {'accountId': accountId},
+      );
     } catch (e) {
-      DebugService.error('❌ 删除账号失败', e);
+      LogManager().error(
+        '删除账号失败',
+        className: 'CloudDriveAccountService',
+        methodName: 'deleteAccount',
+        data: {'accountId': accountId},
+        exception: e,
+      );
       rethrow;
     }
   }
@@ -96,7 +170,13 @@ class CloudDriveAccountService {
       final accounts = await loadAccounts();
       return accounts.firstWhere((a) => a.id == accountId);
     } catch (e) {
-      DebugService.error('❌ 查找账号失败', e);
+      LogManager().error(
+        '查找账号失败',
+        className: 'CloudDriveAccountService',
+        methodName: 'findAccountById',
+        data: {'accountId': accountId},
+        exception: e,
+      );
       return null;
     }
   }
@@ -113,7 +193,7 @@ class CloudDriveAccountService {
     String driveId,
   ) async {
     try {
-      DebugService.log('💾 保存账号driveId: ${account.name} -> $driveId');
+      LogManager().cloudDrive('💾 保存账号driveId: ${account.name} -> $driveId');
 
       // 创建更新后的账号对象
       final updatedAccount = account.copyWith(driveId: driveId);
@@ -121,9 +201,9 @@ class CloudDriveAccountService {
       // 更新账号
       await updateAccount(updatedAccount);
 
-      DebugService.log('✅ 账号driveId保存成功: ${account.name}');
+      LogManager().cloudDrive('✅ 账号driveId保存成功: ${account.name}');
     } catch (e) {
-      DebugService.error('❌ 保存账号driveId失败', e);
+      LogManager().error('❌ 保存账号driveId失败');
       rethrow;
     }
   }

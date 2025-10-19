@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import '../../base/cloud_drive_operation_service.dart';
 import 'ali_cloud_drive_service.dart';
@@ -16,20 +16,14 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? folderId,
   }) async {
     try {
-      DebugService.log(
+      LogManager().cloudDrive(
         '📁 阿里云盘 - 获取文件列表: path=$path, folderId=$folderId',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
       );
 
       // 首先获取drive_id
       final driveId = await AliCloudDriveService.getDriveId(account: account);
       if (driveId == null) {
-        DebugService.log(
-          '❌ 阿里云盘 - 无法获取drive_id，文件列表获取失败',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 阿里云盘 - 无法获取drive_id，文件列表获取失败');
         return [];
       }
 
@@ -40,19 +34,11 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         parentFileId: folderId ?? 'root',
       );
 
-      DebugService.log(
-        '✅ 阿里云盘 - 文件列表获取完成: ${files.length} 个文件',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('✅ 阿里云盘 - 文件列表获取完成: ${files.length} 个文件');
 
       return files;
     } catch (e) {
-      DebugService.log(
-        '❌ 阿里云盘 - 获取文件列表异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 阿里云盘 - 获取文件列表异常: $e');
       return [];
     }
   }
@@ -67,11 +53,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
       return result;
     } catch (e) {
-      DebugService.log(
-        '❌ 阿里云盘 - 获取账号详情异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 阿里云盘 - 获取账号详情异常: $e');
       return null;
     }
   }
@@ -83,10 +65,8 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? parentFolderId,
   }) async {
     try {
-      DebugService.log(
+      LogManager().cloudDrive(
         '📁 阿里云盘 - 创建文件夹: name=$folderName, parentFolderId=$parentFolderId',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
       );
 
       // 使用专门的文件操作服务创建文件夹
@@ -97,10 +77,8 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (createdFolder != null) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 阿里云盘 - 文件夹创建操作完成: ${createdFolder.name} (ID: ${createdFolder.id})',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
         );
 
         // 返回创建成功的文件夹信息
@@ -115,19 +93,11 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
           },
         };
       } else {
-        DebugService.log(
-          '❌ 阿里云盘 - 文件夹创建操作失败: $folderName',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 阿里云盘 - 文件夹创建操作失败: $folderName');
         return null;
       }
     } catch (e) {
-      DebugService.log(
-        '❌ 阿里云盘 - 创建文件夹异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 阿里云盘 - 创建文件夹异常: $e');
       return null;
     }
   }
@@ -138,22 +108,14 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
   }) async {
     try {
-      DebugService.log(
-        '🗑️ 阿里云盘 - 删除文件: ${file.name}',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🗑️ 阿里云盘 - 删除文件: ${file.name}');
 
       // TODO: 实现阿里云盘删除文件
       // 这里需要实现具体的API调用逻辑
 
       return false;
     } catch (e) {
-      DebugService.log(
-        '❌ 阿里云盘 - 删除文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 阿里云盘 - 删除文件异常: $e');
       return false;
     }
   }
@@ -165,18 +127,12 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? targetFolderId,
   }) async {
     try {
-      DebugService.log(
+      LogManager().cloudDrive(
         '📋 阿里云盘 - 移动文件: ${file.name} -> $targetFolderId',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
       );
 
       if (targetFolderId == null) {
-        DebugService.log(
-          '❌ 阿里云盘 - 目标文件夹ID为空，移动失败',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 阿里云盘 - 目标文件夹ID为空，移动失败');
         return false;
       }
 
@@ -188,26 +144,18 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 阿里云盘 - 文件移动操作完成: ${file.name} -> $targetFolderId',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
         );
       } else {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 阿里云盘 - 文件移动操作失败: ${file.name} -> $targetFolderId',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
         );
       }
 
       return success;
     } catch (e) {
-      DebugService.log(
-        '❌ 阿里云盘 - 移动文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 阿里云盘 - 移动文件异常: $e');
       return false;
     }
   }
@@ -220,26 +168,14 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? newName,
   }) async {
     try {
-      DebugService.log(
-        '📄 阿里云盘 - 复制文件: ${file.name} -> $destPath',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📄 阿里云盘 - 复制文件: ${file.name} -> $destPath');
 
       // 阿里云盘暂不支持复制操作
-      DebugService.log(
-        '⚠️ 阿里云盘暂不支持复制操作',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('⚠️ 阿里云盘暂不支持复制操作');
 
       return false;
     } catch (e) {
-      DebugService.log(
-        '❌ 阿里云盘 - 复制文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 阿里云盘 - 复制文件异常: $e');
       return false;
     }
   }
@@ -251,11 +187,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String newName,
   }) async {
     try {
-      DebugService.log(
-        '✏️ 阿里云盘 - 重命名文件: ${file.name} -> $newName',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('✏️ 阿里云盘 - 重命名文件: ${file.name} -> $newName');
 
       // 使用专门的文件操作服务进行重命名
       final success = await AliFileOperationService.renameFile(
@@ -265,26 +197,14 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        DebugService.log(
-          '✅ 阿里云盘 - 文件重命名操作完成: ${file.name} -> $newName',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 阿里云盘 - 文件重命名操作完成: ${file.name} -> $newName');
       } else {
-        DebugService.log(
-          '❌ 阿里云盘 - 文件重命名操作失败: ${file.name} -> $newName',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 阿里云盘 - 文件重命名操作失败: ${file.name} -> $newName');
       }
 
       return success;
     } catch (e) {
-      DebugService.log(
-        '❌ 阿里云盘 - 重命名文件异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 阿里云盘 - 重命名文件异常: $e');
       return false;
     }
   }
@@ -295,11 +215,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
   }) async {
     try {
-      DebugService.log(
-        '🔗 阿里云盘 - 获取下载链接: ${file.name}',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔗 阿里云盘 - 获取下载链接: ${file.name}');
 
       // 使用专门的文件操作服务获取下载链接
       final downloadUrl = await AliFileOperationService.getDownloadUrl(
@@ -308,26 +224,14 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (downloadUrl != null) {
-        DebugService.log(
-          '✅ 阿里云盘 - 下载链接获取操作完成: ${file.name}',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 阿里云盘 - 下载链接获取操作完成: ${file.name}');
       } else {
-        DebugService.log(
-          '❌ 阿里云盘 - 下载链接获取操作失败: ${file.name}',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 阿里云盘 - 下载链接获取操作失败: ${file.name}');
       }
 
       return downloadUrl;
     } catch (e) {
-      DebugService.log(
-        '❌ 阿里云盘 - 获取下载链接异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 阿里云盘 - 获取下载链接异常: $e');
       return null;
     }
   }
@@ -340,20 +244,12 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String password,
   }) async {
     try {
-      DebugService.log(
-        '🚀 阿里云盘 - 获取高速下载链接: ${file.name}',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🚀 阿里云盘 - 获取高速下载链接: ${file.name}');
 
       // TODO: 实现阿里云盘高速下载
       return null;
     } catch (e) {
-      DebugService.log(
-        '❌ 阿里云盘 - 获取高速下载链接异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 阿里云盘 - 获取高速下载链接异常: $e');
       return null;
     }
   }
@@ -366,20 +262,12 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     int? expireDays,
   }) async {
     try {
-      DebugService.log(
-        '🔗 阿里云盘 - 创建分享链接: ${files.length}个文件',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔗 阿里云盘 - 创建分享链接: ${files.length}个文件');
 
       // TODO: 实现阿里云盘分享链接创建
       return null;
     } catch (e) {
-      DebugService.log(
-        '❌ 阿里云盘 - 创建分享链接异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 阿里云盘 - 创建分享链接异常: $e');
       return null;
     }
   }

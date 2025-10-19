@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import 'quark_auth_service.dart';
 import 'quark_config.dart';
@@ -25,19 +25,30 @@ abstract class QuarkBaseService {
 
   /// 创建带有刷新认证的dio实例
   static Future<Dio> createDioWithAuth(CloudDriveAccount account) async {
-    final authHeaders = await QuarkAuthService.buildAuthHeaders(account);
+    LogManager().cloudDrive('🔧 QuarkBaseService - 开始创建带认证的Dio实例');
+    LogManager().cloudDrive('👤 账号ID: ${account.id}');
 
-    final dio = Dio(
-      BaseOptions(
-        baseUrl: QuarkConfig.baseUrl,
-        connectTimeout: QuarkConfig.connectTimeout,
-        receiveTimeout: QuarkConfig.receiveTimeout,
-        headers: authHeaders,
-      ),
-    );
+    try {
+      LogManager().cloudDrive('🔄 调用 QuarkAuthService.buildAuthHeaders...');
+      final authHeaders = await QuarkAuthService.buildAuthHeaders(account);
+      LogManager().cloudDrive('✅ 获取认证头成功，键数量: ${authHeaders.length}');
 
-    _addInterceptors(dio);
-    return dio;
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: QuarkConfig.baseUrl,
+          connectTimeout: QuarkConfig.connectTimeout,
+          receiveTimeout: QuarkConfig.receiveTimeout,
+          headers: authHeaders,
+        ),
+      );
+
+      _addInterceptors(dio);
+      LogManager().cloudDrive('✅ Dio实例创建完成');
+      return dio;
+    } catch (e) {
+      LogManager().cloudDrive('❌ 创建Dio实例失败: $e');
+      rethrow;
+    }
   }
 
   /// 添加请求拦截器
@@ -46,49 +57,31 @@ abstract class QuarkBaseService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          DebugService.log(
-            '📡 发送请求: ${options.method} ${options.uri}',
-            category: DebugCategory.tools,
-            subCategory: QuarkConfig.logSubCategory,
+          LogManager().network(
+            '夸克云盘请求: ${options.method} ${options.uri}',
+            className: 'QuarkBaseService',
+            methodName: 'onRequest',
+            data: {
+              'method': options.method,
+              'uri': options.uri.toString(),
+              'headers': options.headers,
+              'data': options.data?.toString(),
+            },
           );
-          DebugService.log(
-            '📋 请求头: ${options.headers}',
-            category: DebugCategory.tools,
-            subCategory: QuarkConfig.logSubCategory,
-          );
-          if (options.data != null) {
-            DebugService.log(
-              '📤 请求体: ${options.data}',
-              category: DebugCategory.tools,
-              subCategory: QuarkConfig.logSubCategory,
-            );
-          }
           handler.next(options);
         },
         onResponse: (response, handler) {
-          DebugService.log(
-            '📡 收到响应: ${response.statusCode}',
-            category: DebugCategory.tools,
-            subCategory: QuarkConfig.logSubCategory,
-          );
-          DebugService.log(
+          LogManager().cloudDrive('📡 收到响应: ${response.statusCode}');
+          LogManager().cloudDrive(
             '📄 响应内容长度: ${response.data?.toString().length ?? 0}',
-            category: DebugCategory.tools,
-            subCategory: QuarkConfig.logSubCategory,
           );
           handler.next(response);
         },
         onError: (error, handler) {
-          DebugService.log(
-            '❌ 请求错误: ${error.message}',
-            category: DebugCategory.tools,
-            subCategory: QuarkConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('❌ 请求错误: ${error.message}');
           if (error.response != null) {
-            DebugService.log(
+            LogManager().cloudDrive(
               '📄 错误响应: ${error.response?.statusCode} - ${error.response?.data}',
-              category: DebugCategory.tools,
-              subCategory: QuarkConfig.logSubCategory,
             );
           }
           handler.next(error);
@@ -112,27 +105,24 @@ abstract class QuarkBaseService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          DebugService.log(
-            '📡 发送请求: ${options.method} ${options.uri}',
-            category: DebugCategory.tools,
-            subCategory: QuarkConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('📡 发送请求: ${options.method} ${options.uri}');
           handler.next(options);
         },
         onResponse: (response, handler) {
-          DebugService.log(
-            '📡 收到响应: ${response.statusCode}',
-            category: DebugCategory.tools,
-            subCategory: QuarkConfig.logSubCategory,
+          LogManager().network(
+            '夸克云盘响应: ${response.statusCode}',
+            className: 'QuarkBaseService',
+            methodName: 'onResponse',
+            data: {
+              'statusCode': response.statusCode,
+              'uri': response.requestOptions.uri.toString(),
+              'data': response.data?.toString(),
+            },
           );
           handler.next(response);
         },
         onError: (error, handler) {
-          DebugService.log(
-            '❌ 请求错误: ${error.message}',
-            category: DebugCategory.tools,
-            subCategory: QuarkConfig.logSubCategory,
-          );
+          LogManager().cloudDrive('❌ 请求错误: ${error.message}');
           handler.next(error);
         },
       ),

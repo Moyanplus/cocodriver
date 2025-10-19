@@ -1,4 +1,4 @@
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../../models/cloud_drive_models.dart';
 import '../../base/cloud_drive_account_service.dart';
 import 'ali_base_service.dart';
@@ -12,11 +12,7 @@ class AliCloudDriveService {
     required CloudDriveAccount account,
   }) async {
     try {
-      DebugService.log(
-        '🔍 开始获取阿里云盘用户信息',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 开始获取阿里云盘用户信息');
 
       final dio = AliBaseService.createDio(account);
       final requestBody = AliConfig.buildUserInfoParams();
@@ -27,11 +23,7 @@ class AliCloudDriveService {
       );
 
       if (!AliBaseService.isHttpSuccess(response.statusCode)) {
-        DebugService.log(
-          '❌ HTTP请求失败: ${response.statusCode}',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ HTTP请求失败: ${response.statusCode}');
         return null;
       }
 
@@ -39,11 +31,7 @@ class AliCloudDriveService {
 
       if (!AliBaseService.isApiSuccess(responseData)) {
         final errorMsg = AliBaseService.getErrorMessage(responseData);
-        DebugService.log(
-          '❌ API调用失败: $errorMsg',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ API调用失败: $errorMsg');
         return null;
       }
 
@@ -62,24 +50,12 @@ class AliCloudDriveService {
         loginState: responseData['status']?.toString() == 'enabled' ? 1 : 0,
       );
 
-      DebugService.log(
-        '✅ 阿里云盘用户信息获取成功: ${userInfo.username}',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('✅ 阿里云盘用户信息获取成功: ${userInfo.username}');
 
       return userInfo;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 获取阿里云盘用户信息异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 获取阿里云盘用户信息异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -91,19 +67,13 @@ class AliCloudDriveService {
     try {
       // 优先使用账号中存储的driveId
       if (account.driveId != null && account.driveId!.isNotEmpty) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '✅ 阿里云盘 - 使用账号中存储的Drive ID: ${account.driveId}',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
         );
         return account.driveId;
       }
 
-      DebugService.log(
-        '🔍 阿里云盘 - 账号中未存储Drive ID，开始获取',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 阿里云盘 - 账号中未存储Drive ID，开始获取');
 
       final dio = AliBaseService.createDio(account);
       final requestBody = AliConfig.buildUserInfoParams();
@@ -114,10 +84,8 @@ class AliCloudDriveService {
       );
 
       if (!AliBaseService.isHttpSuccess(response.statusCode)) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 阿里云盘 - 获取Drive信息HTTP错误: ${response.statusCode}',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
         );
         return null;
       }
@@ -126,11 +94,7 @@ class AliCloudDriveService {
 
       if (!AliBaseService.isApiSuccess(responseData)) {
         final errorMsg = AliBaseService.getErrorMessage(responseData);
-        DebugService.log(
-          '❌ 阿里云盘 - 获取Drive信息API调用失败: $errorMsg',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 阿里云盘 - 获取Drive信息API调用失败: $errorMsg');
         return null;
       }
 
@@ -138,28 +102,16 @@ class AliCloudDriveService {
       final driveId = responseData['resource_drive_id'] as String?;
 
       if (driveId != null) {
-        DebugService.log(
-          '✅ 阿里云盘 - Drive ID获取成功: $driveId',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('✅ 阿里云盘 - Drive ID获取成功: $driveId');
         // 将获取到的driveId保存到账号中
         await CloudDriveAccountService.saveDriveId(account, driveId);
         return driveId;
       } else {
-        DebugService.log(
-          '⚠️ 阿里云盘 - 响应中未找到resource_drive_id字段',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('⚠️ 阿里云盘 - 响应中未找到resource_drive_id字段');
         return null;
       }
     } catch (e) {
-      DebugService.log(
-        '❌ 阿里云盘 - 获取Drive信息异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 阿里云盘 - 获取Drive信息异常: $e');
       return null;
     }
   }
@@ -169,11 +121,7 @@ class AliCloudDriveService {
     required CloudDriveAccount account,
   }) async {
     try {
-      DebugService.log(
-        '📊 阿里云盘 - 获取容量信息',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('📊 阿里云盘 - 获取容量信息');
 
       final dio = AliBaseService.createApiDio(account);
       final response = await dio.post(
@@ -182,21 +130,15 @@ class AliCloudDriveService {
       );
 
       if (!AliBaseService.isHttpSuccess(response.statusCode)) {
-        DebugService.log(
+        LogManager().cloudDrive(
           '❌ 阿里云盘 - 获取容量信息HTTP错误: ${response.statusCode}',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
         );
         return null;
       }
 
       final responseData = AliBaseService.getResponseData(response.data);
       if (responseData == null) {
-        DebugService.log(
-          '❌ 阿里云盘 - 容量信息响应数据为空',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 阿里云盘 - 容量信息响应数据为空');
         return null;
       }
 
@@ -219,19 +161,13 @@ class AliCloudDriveService {
         serverTime: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       );
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '✅ 阿里云盘 - 容量信息获取成功: 总容量=${AliConfig.formatFileSize(totalSize)}, 已用=${AliConfig.formatFileSize(usedSize)}, 可用=${AliConfig.formatFileSize(totalSize - usedSize)}',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
       );
 
       return quotaInfo;
     } catch (e) {
-      DebugService.log(
-        '❌ 阿里云盘 - 获取容量信息异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 阿里云盘 - 获取容量信息异常: $e');
       return null;
     }
   }
@@ -241,11 +177,7 @@ class AliCloudDriveService {
     required CloudDriveAccount account,
   }) async {
     try {
-      DebugService.log(
-        '🔍 开始获取阿里云盘账号详情',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('🔍 开始获取阿里云盘账号详情');
 
       // 并行获取用户信息和容量信息
       final futures = await Future.wait([
@@ -257,11 +189,7 @@ class AliCloudDriveService {
       final quotaInfo = futures[1] as CloudDriveQuotaInfo?;
 
       if (accountInfo == null) {
-        DebugService.log(
-          '❌ 用户信息获取失败',
-          category: DebugCategory.tools,
-          subCategory: AliConfig.logSubCategory,
-        );
+        LogManager().cloudDrive('❌ 用户信息获取失败');
         return null;
       }
 
@@ -278,24 +206,12 @@ class AliCloudDriveService {
             ),
       );
 
-      DebugService.log(
-        '✅ 阿里云盘账号详情获取成功',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('✅ 阿里云盘账号详情获取成功');
 
       return accountDetails;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 获取阿里云盘账号详情异常: $e',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: AliConfig.logSubCategory,
-      );
+      LogManager().cloudDrive('❌ 获取阿里云盘账号详情异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return null;
     }
   }

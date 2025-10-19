@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../models/cloud_drive_models.dart';
 import '../providers/cloud_drive_provider.dart';
 import '../base/cloud_drive_operation_service.dart';
@@ -423,11 +423,7 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
     );
 
     try {
-      DebugService.log(
-        '🔄 开始同步账号详情: ${currentAccount.name}',
-        category: DebugCategory.tools,
-        subCategory: 'account.sync',
-      );
+      LogManager().cloudDrive('🔄 开始同步账号详情: ${currentAccount.name}');
 
       final accountDetails = await CloudDriveOperationService.getAccountDetails(
         account: currentAccount,
@@ -560,7 +556,7 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
       }
     } catch (e) {
       Navigator.pop(context); // 关闭加载对话框
-      DebugService.error('❌ 同步账号详情失败', e);
+      LogManager().error('❌ 同步账号详情失败');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -587,10 +583,8 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
       final newName = details.accountInfo.username;
       final photoUrl = details.accountInfo.photo;
 
-      DebugService.log(
+      LogManager().cloudDrive(
         '🔄 开始更新账号信息: 名称=${newName}, 头像=${photoUrl != null ? '有' : '无'}',
-        category: DebugCategory.tools,
-        subCategory: 'account.update',
       );
 
       // 创建更新后的账号对象
@@ -606,11 +600,7 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
       // 更新Provider状态
       await ref.read(cloudDriveProvider.notifier).updateAccount(updatedAccount);
 
-      DebugService.log(
-        '✅ 账号信息更新成功: ${updatedAccount.name}',
-        category: DebugCategory.tools,
-        subCategory: 'account.update',
-      );
+      LogManager().cloudDrive('✅ 账号信息更新成功: ${updatedAccount.name}');
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -651,11 +641,7 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
 
       // 如果有头像，记录额外的日志
       if (photoUrl != null && photoUrl.isNotEmpty) {
-        DebugService.log(
-          '📸 头像URL已保存: $photoUrl',
-          category: DebugCategory.tools,
-          subCategory: 'account.avatar',
-        );
+        LogManager().cloudDrive('📸 头像URL已保存: $photoUrl');
       }
 
       // 自动刷新页面以显示更新后的信息
@@ -665,7 +651,7 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
         }
       });
     } catch (e) {
-      DebugService.error('❌ 更新账号信息失败', e);
+      LogManager().error('❌ 更新账号信息失败');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -1242,11 +1228,7 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
     if (cookies != null && cookies.isNotEmpty) {
       try {
         Clipboard.setData(ClipboardData(text: cookies));
-        DebugService.log(
-          '🍪 Cookie已复制到剪贴板，长度: ${cookies.length}',
-          category: DebugCategory.tools,
-          subCategory: 'account.cookie',
-        );
+        LogManager().cloudDrive('🍪 Cookie已复制到剪贴板，长度: ${cookies.length}');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Row(
@@ -1261,7 +1243,7 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
           ),
         );
       } catch (e) {
-        DebugService.error('❌ 复制Cookie失败', e);
+        LogManager().error('❌ 复制Cookie失败');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -1276,7 +1258,7 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
         );
       }
     } else {
-      DebugService.log('⚠️ Cookie为空，无法复制');
+      LogManager().cloudDrive('⚠️ Cookie为空，无法复制');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Row(
@@ -1321,6 +1303,9 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
                   : fullParamValue;
         }
         break;
+      case AuthType.qrCode:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
 
     if (paramInfo.isEmpty || fullParamValue.isEmpty) {
@@ -1330,10 +1315,8 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
     try {
       // 复制完整的认证信息到剪贴板
       Clipboard.setData(ClipboardData(text: fullParamValue));
-      DebugService.log(
+      LogManager().cloudDrive(
         '📋 完整$paramInfo已复制到剪贴板 (长度: ${fullParamValue.length})',
-        category: DebugCategory.tools,
-        subCategory: 'account.auth',
       );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1349,7 +1332,7 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
         ),
       );
     } catch (e) {
-      DebugService.error('❌ 复制认证信息失败', e);
+      LogManager().error('❌ 复制认证信息失败');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -1369,10 +1352,8 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
     CloudDriveAccount currentAccount,
   ) async {
     try {
-      DebugService.log(
+      LogManager().cloudDrive(
         '🔍 开始获取账号详情: ${currentAccount.name} (${currentAccount.type.displayName})',
-        category: DebugCategory.tools,
-        subCategory: 'account.details',
       );
 
       final details = await CloudDriveOperationService.getAccountDetails(
@@ -1380,31 +1361,15 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
       );
 
       if (details != null) {
-        DebugService.log(
-          '✅ 账号详情获取成功: ${details.accountInfo.username}',
-          category: DebugCategory.tools,
-          subCategory: 'account.details',
-        );
+        LogManager().cloudDrive('✅ 账号详情获取成功: ${details.accountInfo.username}');
       } else {
-        DebugService.log(
-          '⚠️ 账号详情获取失败: 返回null',
-          category: DebugCategory.tools,
-          subCategory: 'account.details',
-        );
+        LogManager().cloudDrive('⚠️ 账号详情获取失败: 返回null');
       }
 
       return details;
     } catch (e, stackTrace) {
-      DebugService.log(
-        '❌ 获取账号详情异常: $e',
-        category: DebugCategory.tools,
-        subCategory: 'account.details',
-      );
-      DebugService.log(
-        '📄 错误堆栈: $stackTrace',
-        category: DebugCategory.tools,
-        subCategory: 'account.details',
-      );
+      LogManager().cloudDrive('❌ 获取账号详情异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       rethrow;
     }
   }
@@ -1427,6 +1392,9 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
         return 'Cookie认证';
       case AuthType.authorization:
         return 'Token认证';
+      case AuthType.qrCode:
+        return '二维码认证';
+        throw UnimplementedError();
     }
   }
 
@@ -1464,6 +1432,10 @@ class CloudDriveAccountDetailPage extends ConsumerWidget {
                   : tokenStr;
         }
         break;
+      case AuthType.qrCode:
+        paramInfo = '二维码';
+        paramValue = currentAccount.qrCodeToken!;
+        throw UnimplementedError();
     }
 
     if (paramInfo.isEmpty || paramValue.isEmpty) {

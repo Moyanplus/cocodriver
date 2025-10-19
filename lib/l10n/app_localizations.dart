@@ -101,19 +101,19 @@ abstract class AppLocalizations {
   /// 应用标题
   ///
   /// In zh, this message translates to:
-  /// **'Flutter UI模板'**
+  /// **'可可云盘'**
   String get appTitle;
 
   /// 欢迎标题
   ///
   /// In zh, this message translates to:
-  /// **'欢迎使用Flutter UI模板'**
+  /// **'欢迎使用可可云盘'**
   String get welcomeTitle;
 
   /// 欢迎副标题
   ///
   /// In zh, this message translates to:
-  /// **'这是一个基于可可世界设计的UI模板'**
+  /// **'聚合云盘管理，支持百度网盘、阿里云盘、夸克云盘等'**
   String get welcomeSubtitle;
 
   /// 首页标签
@@ -121,12 +121,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'首页'**
   String get home;
-
-  /// 分类标签
-  ///
-  /// In zh, this message translates to:
-  /// **'分类'**
-  String get category;
 
   /// 个人资料标签
   ///
@@ -140,52 +134,52 @@ abstract class AppLocalizations {
   /// **'设置'**
   String get settings;
 
-  /// 主题系统功能卡片标题
+  /// 多云盘支持功能卡片标题
   ///
   /// In zh, this message translates to:
-  /// **'主题系统'**
+  /// **'多云盘支持'**
   String get themeSystem;
 
   /// 主题系统功能卡片描述
   ///
   /// In zh, this message translates to:
-  /// **'多种精美主题'**
+  /// **'支持百度网盘、阿里云盘等'**
   String get themeSystemDesc;
 
-  /// 导航系统功能卡片标题
+  /// 文件管理功能卡片标题
   ///
   /// In zh, this message translates to:
-  /// **'导航系统'**
+  /// **'文件管理'**
   String get navigationSystem;
 
   /// 导航系统功能卡片描述
   ///
   /// In zh, this message translates to:
-  /// **'流畅的页面切换'**
+  /// **'上传、下载、分享文件'**
   String get navigationSystemDesc;
 
-  /// 组件库功能卡片标题
+  /// 批量操作功能卡片标题
   ///
   /// In zh, this message translates to:
-  /// **'组件库'**
+  /// **'批量操作'**
   String get componentLibrary;
 
   /// 组件库功能卡片描述
   ///
   /// In zh, this message translates to:
-  /// **'丰富的UI组件'**
+  /// **'批量上传、下载、移动'**
   String get componentLibraryDesc;
 
-  /// 设置页面功能卡片标题
+  /// 安全存储功能卡片标题
   ///
   /// In zh, this message translates to:
-  /// **'设置页面'**
+  /// **'安全存储'**
   String get settingsPage;
 
   /// 设置页面功能卡片描述
   ///
   /// In zh, this message translates to:
-  /// **'个性化配置'**
+  /// **'加密存储，保护隐私'**
   String get settingsPageDesc;
 
   /// 外观设置分组标题

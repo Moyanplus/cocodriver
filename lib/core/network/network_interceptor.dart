@@ -4,14 +4,41 @@ import 'package:flutter/foundation.dart';
 
 import '../error/error_handler.dart';
 import '../error/exceptions.dart';
+import '../logging/log_manager.dart';
+import '../logging/log_category.dart';
+import '../logging/log_formatter.dart';
 
 /// 网络拦截器
 /// 处理请求和响应的通用逻辑
 class NetworkInterceptor extends Interceptor {
   final ErrorHandler _errorHandler = ErrorHandler();
+  final LogManager _logManager = LogManager();
+  final LogFormatter _logFormatter = LogFormatter();
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    // 记录网络请求日志
+    final requestMessage = _logFormatter.formatNetworkRequest(
+      method: options.method,
+      url: options.uri.toString(),
+      headers: options.headers,
+      data: options.data,
+      queryParameters: options.queryParameters,
+    );
+
+    _logManager.network(
+      requestMessage,
+      className: 'NetworkInterceptor',
+      methodName: 'onRequest',
+      data: {
+        'method': options.method,
+        'url': options.uri.toString(),
+        'headers': options.headers,
+        'data': options.data?.toString(),
+        'queryParameters': options.queryParameters,
+      },
+    );
+
     if (kDebugMode) {
       print('🚀 Request: ${options.method} ${options.uri}');
       print('📤 Headers: ${options.headers}');
@@ -31,6 +58,26 @@ class NetworkInterceptor extends Interceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
+    // 记录网络响应日志
+    final responseMessage = _logFormatter.formatNetworkResponse(
+      statusCode: response.statusCode ?? 0,
+      url: response.requestOptions.uri.toString(),
+      headers: response.headers.map,
+      data: response.data,
+    );
+
+    _logManager.network(
+      responseMessage,
+      className: 'NetworkInterceptor',
+      methodName: 'onResponse',
+      data: {
+        'statusCode': response.statusCode,
+        'url': response.requestOptions.uri.toString(),
+        'headers': response.headers.map,
+        'data': response.data?.toString(),
+      },
+    );
+
     if (kDebugMode) {
       print(
         '✅ Response: ${response.statusCode} ${response.requestOptions.uri}',

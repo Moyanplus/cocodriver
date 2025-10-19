@@ -1,7 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-import '../../../core/services/base/debug_service.dart';
+import '../../../../core/logging/log_manager.dart';
 import '../utils/cloud_drive_ui_utils.dart';
 import '../business/cloud_drive_business_service.dart';
 import '../models/cloud_drive_models.dart';
@@ -251,15 +251,15 @@ class _CloudDriveUploadPageState extends State<CloudDriveUploadPage> {
           _selectedFiles.addAll(result.files);
         });
 
-        DebugService.log('📁 选择了 ${result.files.length} 个文件');
+        LogManager().cloudDrive('📁 选择了 ${result.files.length} 个文件');
         for (final file in result.files) {
-          DebugService.log(
+          LogManager().cloudDrive(
             '📄 文件: ${file.name} (${_formatFileSize(file.size)})',
           );
         }
       }
     } catch (e) {
-      DebugService.error('❌ 选择文件失败', e);
+      LogManager().error('❌ 选择文件失败: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -329,7 +329,7 @@ class _CloudDriveUploadPageState extends State<CloudDriveUploadPage> {
         _showUploadResult(result);
       }
     } catch (e) {
-      DebugService.error('❌ 上传过程异常', e);
+      LogManager().error('❌ 上传过程异常: $e');
       setState(() {
         _isUploading = false;
       });
