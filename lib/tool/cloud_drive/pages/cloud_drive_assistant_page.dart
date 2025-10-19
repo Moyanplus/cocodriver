@@ -11,16 +11,16 @@ import 'cloud_drive_direct_link_page.dart';
 import 'cloud_drive_upload_page.dart';
 
 /// 云盘助手页面 - 重构版本
-class CloudDriveAssistantPageNew extends ConsumerStatefulWidget {
-  const CloudDriveAssistantPageNew({super.key});
+class CloudDriveAssistantPage extends ConsumerStatefulWidget {
+  const CloudDriveAssistantPage({super.key});
 
   @override
-  ConsumerState<CloudDriveAssistantPageNew> createState() =>
-      _CloudDriveAssistantPageNewState();
+  ConsumerState<CloudDriveAssistantPage> createState() =>
+      _CloudDriveAssistantPageState();
 }
 
-class _CloudDriveAssistantPageNewState
-    extends ConsumerState<CloudDriveAssistantPageNew> {
+class _CloudDriveAssistantPageState
+    extends ConsumerState<CloudDriveAssistantPage> {
   @override
   void initState() {
     super.initState();

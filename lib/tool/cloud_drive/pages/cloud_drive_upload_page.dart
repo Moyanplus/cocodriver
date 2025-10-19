@@ -4,15 +4,14 @@ import '../../../../core/logging/log_manager.dart';
 import '../config/cloud_drive_ui_config.dart';
 import '../models/cloud_drive_models.dart';
 import '../widgets/upload/upload.dart';
-import '../business/cloud_drive_business_service.dart';
 
 /// 云盘文件上传页面 - 重构版本
-class CloudDriveUploadPageNew extends StatefulWidget {
+class CloudDriveUploadPage extends StatefulWidget {
   final CloudDriveAccount account;
   final String folderId;
   final String folderName;
 
-  const CloudDriveUploadPageNew({
+  const CloudDriveUploadPage({
     super.key,
     required this.account,
     required this.folderId,
@@ -20,10 +19,10 @@ class CloudDriveUploadPageNew extends StatefulWidget {
   });
 
   @override
-  State<CloudDriveUploadPageNew> createState() => _CloudDriveUploadPageNewState();
+  State<CloudDriveUploadPage> createState() => _CloudDriveUploadPageState();
 }
 
-class _CloudDriveUploadPageNewState extends State<CloudDriveUploadPageNew> {
+class _CloudDriveUploadPageState extends State<CloudDriveUploadPage> {
   List<PlatformFile> _selectedFiles = [];
   bool _isUploading = false;
   double _uploadProgress = 0.0;
@@ -50,25 +49,23 @@ class _CloudDriveUploadPageNewState extends State<CloudDriveUploadPageNew> {
       body: Column(
         children: [
           // 头部信息
-          UploadHeader(
-            account: widget.account,
-            folderName: widget.folderName,
-          ),
-          
+          UploadHeader(account: widget.account, folderName: widget.folderName),
+
           // 主要内容
           Expanded(
-            child: _isUploading
-                ? UploadProgress(
-                    progress: _uploadProgress,
-                    currentFile: _currentUploadingFile,
-                    isUploading: _isUploading,
-                  )
-                : _selectedFiles.isEmpty
+            child:
+                _isUploading
+                    ? UploadProgress(
+                      progress: _uploadProgress,
+                      currentFile: _currentUploadingFile,
+                      isUploading: _isUploading,
+                    )
+                    : _selectedFiles.isEmpty
                     ? FileSelector(onPickFiles: _pickFiles)
                     : FileList(
-                        files: _selectedFiles,
-                        onRemoveFile: _removeFile,
-                      ),
+                      files: _selectedFiles,
+                      onRemoveFile: _removeFile,
+                    ),
           ),
         ],
       ),
@@ -87,7 +84,7 @@ class _CloudDriveUploadPageNewState extends State<CloudDriveUploadPageNew> {
         setState(() {
           _selectedFiles.addAll(result.files);
         });
-        
+
         LogManager().cloudDrive('选择了 ${result.files.length} 个文件');
       }
     } catch (e) {
@@ -134,14 +131,13 @@ class _CloudDriveUploadPageNewState extends State<CloudDriveUploadPageNew> {
       });
 
       _showSuccess('所有文件上传完成');
-      
+
       // 延迟返回上一页
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           Navigator.pop(context);
         }
       });
-
     } catch (e) {
       LogManager().error('上传失败: $e');
       setState(() {
@@ -157,7 +153,7 @@ class _CloudDriveUploadPageNewState extends State<CloudDriveUploadPageNew> {
       // TODO: 实现实际的上传逻辑
       // 这里使用模拟上传
       await Future.delayed(Duration(seconds: 2));
-      
+
       LogManager().cloudDrive('文件上传完成: ${file.name}');
     } catch (e) {
       LogManager().error('文件上传失败: ${file.name}, 错误: $e');
