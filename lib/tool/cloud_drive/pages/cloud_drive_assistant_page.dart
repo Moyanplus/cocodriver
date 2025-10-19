@@ -6,6 +6,8 @@ import '../../../../core/logging/log_manager.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../../../shared/widgets/common/bottom_sheet_widget.dart';
 import '../../../../shared/widgets/common/common_widgets.dart';
+import '../config/cloud_drive_ui_config.dart';
+import '../widgets/common/cloud_drive_common_widgets.dart';
 import 'cloud_drive_account_detail_page.dart';
 import 'cloud_drive_widgets.dart';
 import '../base/cloud_drive_operation_service.dart';
@@ -120,7 +122,7 @@ class _CloudDriveAssistantPageState
                     content: Text(
                       '文件${operationType == 'copy' ? '复制' : '移动'}成功: ${file.name}',
                     ),
-                    backgroundColor: Colors.green,
+                    backgroundColor: CloudDriveUIConfig.successColor,
                     duration: const Duration(seconds: 3),
                   ),
                 );
@@ -132,7 +134,7 @@ class _CloudDriveAssistantPageState
                     content: Text(
                       '文件${operationType == 'copy' ? '复制' : '移动'}失败: ${file.name}',
                     ),
-                    backgroundColor: Colors.red,
+                    backgroundColor: CloudDriveUIConfig.errorColor,
                     duration: const Duration(seconds: 3),
                   ),
                 );
@@ -147,7 +149,7 @@ class _CloudDriveAssistantPageState
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('操作异常: $e'),
-                  backgroundColor: Colors.red,
+                  backgroundColor: CloudDriveUIConfig.errorColor,
                   duration: const Duration(seconds: 3),
                 ),
               );
@@ -160,14 +162,16 @@ class _CloudDriveAssistantPageState
           state.pendingOperationType == 'copy'
               ? Icons.copy
               : Icons.drive_file_move,
-          color: Colors.white,
+          color: CloudDriveUIConfig.backgroundColor,
         ),
         label: Text(
           state.pendingOperationType == 'copy' ? '复制到这里' : '移动到这里',
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: CloudDriveUIConfig.backgroundColor),
         ),
         backgroundColor:
-            state.pendingOperationType == 'copy' ? Colors.blue : Colors.orange,
+            state.pendingOperationType == 'copy'
+                ? CloudDriveUIConfig.infoColor
+                : CloudDriveUIConfig.warningColor,
       );
     }
 
@@ -188,7 +192,7 @@ class _CloudDriveAssistantPageState
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('请先选择云盘账号'),
-          backgroundColor: Colors.orange,
+          backgroundColor: CloudDriveUIConfig.warningColor,
           duration: Duration(seconds: 2),
         ),
       );
@@ -415,7 +419,7 @@ class _CloudDriveAssistantPageState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: Colors.green,
+          backgroundColor: CloudDriveUIConfig.successColor,
           duration: const Duration(seconds: 2),
         ),
       );
@@ -485,7 +489,7 @@ class _CloudDriveAssistantPageState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('账号添加成功: $accountName'),
-          backgroundColor: Colors.green,
+          backgroundColor: CloudDriveUIConfig.successColor,
           duration: const Duration(seconds: 3),
         ),
       );

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/logging/log_manager.dart';
 import '../utils/cloud_drive_ui_utils.dart';
+import '../config/cloud_drive_ui_config.dart';
+import '../widgets/common/cloud_drive_common_widgets.dart';
 import '../business/cloud_drive_business_service.dart';
 import '../models/cloud_drive_models.dart';
 
@@ -39,7 +41,10 @@ class _CloudDriveUploadPageState extends State<CloudDriveUploadPage> {
         if (_selectedFiles.isNotEmpty && !_isUploading)
           TextButton(
             onPressed: _startUpload,
-            child: const Text('开始上传', style: TextStyle(color: Colors.white)),
+            child: Text(
+              '开始上传',
+              style: TextStyle(color: CloudDriveUIConfig.backgroundColor),
+            ),
           ),
       ],
     ),
@@ -47,7 +52,7 @@ class _CloudDriveUploadPageState extends State<CloudDriveUploadPage> {
       children: [
         // 目标文件夹信息
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: CloudDriveUIConfig.pagePadding,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             border: Border(
@@ -58,7 +63,11 @@ class _CloudDriveUploadPageState extends State<CloudDriveUploadPage> {
           ),
           child: Row(
             children: [
-              Icon(Icons.folder, color: Colors.orange, size: 24),
+              Icon(
+                Icons.folder,
+                color: CloudDriveUIConfig.folderColor,
+                size: CloudDriveUIConfig.iconSize,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -144,7 +153,7 @@ class _CloudDriveUploadPageState extends State<CloudDriveUploadPage> {
       // 文件列表
       Expanded(
         child: ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: CloudDriveUIConfig.pagePadding,
           itemCount: _selectedFiles.length,
           itemBuilder: (context, index) {
             final file = _selectedFiles[index];
@@ -179,7 +188,7 @@ class _CloudDriveUploadPageState extends State<CloudDriveUploadPage> {
 
       // 底部操作按钮
       Container(
-        padding: const EdgeInsets.all(16),
+        padding: CloudDriveUIConfig.pagePadding,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           border: Border(
@@ -348,11 +357,11 @@ class _CloudDriveUploadPageState extends State<CloudDriveUploadPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result.summaryMessage),
-          backgroundColor: Colors.orange,
+          backgroundColor: CloudDriveUIConfig.warningColor,
           duration: const Duration(seconds: 3),
           action: SnackBarAction(
             label: '查看详情',
-            textColor: Colors.white,
+            textColor: CloudDriveUIConfig.backgroundColor,
             onPressed: () => _showDetailedResults(result),
           ),
         ),
@@ -361,11 +370,11 @@ class _CloudDriveUploadPageState extends State<CloudDriveUploadPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result.summaryMessage),
-          backgroundColor: Colors.red,
+          backgroundColor: CloudDriveUIConfig.errorColor,
           duration: const Duration(seconds: 3),
           action: SnackBarAction(
             label: '查看详情',
-            textColor: Colors.white,
+            textColor: CloudDriveUIConfig.backgroundColor,
             onPressed: () => _showDetailedResults(result),
           ),
         ),

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 
 import '../../../../core/logging/log_manager.dart';
 import '../business/cloud_drive_business_service.dart';
+import '../config/cloud_drive_ui_config.dart';
+import '../widgets/common/cloud_drive_common_widgets.dart';
 
 /// 直链解析页面
 class CloudDriveDirectLinkPage extends StatefulWidget {
@@ -120,7 +122,7 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
       foregroundColor: Theme.of(context).colorScheme.onPrimary,
     ),
     body: SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: CloudDriveUIConfig.pagePadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -143,7 +145,7 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
 
   Widget _buildInputSection() => Card(
     child: Padding(
-      padding: const EdgeInsets.all(16),
+      padding: CloudDriveUIConfig.pagePadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -208,7 +210,7 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
 
   Widget _buildLoadingState() => Card(
     child: Padding(
-      padding: const EdgeInsets.all(24),
+      padding: CloudDriveUIConfig.cardPadding,
       child: Column(
         children: [
           const CircularProgressIndicator(),
@@ -229,7 +231,7 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
   Widget _buildErrorState() => Card(
     color: Theme.of(context).colorScheme.errorContainer,
     child: Padding(
-      padding: const EdgeInsets.all(16),
+      padding: CloudDriveUIConfig.pagePadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -260,7 +262,7 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
 
   Widget _buildResultSection() => Card(
     child: Padding(
-      padding: const EdgeInsets.all(16),
+      padding: CloudDriveUIConfig.pagePadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -299,7 +301,7 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
           ),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: CloudDriveUIConfig.inputPadding,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8),
@@ -339,7 +341,7 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
           ),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: CloudDriveUIConfig.inputPadding,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8),
