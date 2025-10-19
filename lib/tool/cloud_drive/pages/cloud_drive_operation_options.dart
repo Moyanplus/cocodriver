@@ -6,13 +6,13 @@ import '../widgets/operation/operation.dart';
 import '../../../../core/logging/log_manager.dart';
 
 /// 云盘操作选项组件 - 重构版本
-class CloudDriveOperationOptionsNew extends ConsumerStatefulWidget {
+class CloudDriveOperationOptions extends ConsumerStatefulWidget {
   final CloudDriveFile file;
   final CloudDriveAccount account;
   final VoidCallback? onClose;
   final Function(String message, bool isSuccess)? onOperationResult;
 
-  const CloudDriveOperationOptionsNew({
+  const CloudDriveOperationOptions({
     super.key,
     required this.file,
     required this.account,
@@ -21,12 +21,12 @@ class CloudDriveOperationOptionsNew extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<CloudDriveOperationOptionsNew> createState() =>
-      _CloudDriveOperationOptionsNewState();
+  ConsumerState<CloudDriveOperationOptions> createState() =>
+      _CloudDriveOperationOptionsState();
 }
 
-class _CloudDriveOperationOptionsNewState
-    extends ConsumerState<CloudDriveOperationOptionsNew> {
+class _CloudDriveOperationOptionsState
+    extends ConsumerState<CloudDriveOperationOptions> {
   bool _isLoading = false;
   String? _loadingMessage;
 

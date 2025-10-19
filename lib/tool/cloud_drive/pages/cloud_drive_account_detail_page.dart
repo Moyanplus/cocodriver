@@ -7,18 +7,18 @@ import '../widgets/account/account.dart';
 import '../../../../core/logging/log_manager.dart';
 
 /// 云盘账号详情页面 - 重构版本
-class CloudDriveAccountDetailPageNew extends ConsumerStatefulWidget {
+class CloudDriveAccountDetailPage extends ConsumerStatefulWidget {
   final CloudDriveAccount account;
 
-  const CloudDriveAccountDetailPageNew({super.key, required this.account});
+  const CloudDriveAccountDetailPage({super.key, required this.account});
 
   @override
-  ConsumerState<CloudDriveAccountDetailPageNew> createState() =>
-      _CloudDriveAccountDetailPageNewState();
+  ConsumerState<CloudDriveAccountDetailPage> createState() =>
+      _CloudDriveAccountDetailPageState();
 }
 
-class _CloudDriveAccountDetailPageNewState
-    extends ConsumerState<CloudDriveAccountDetailPageNew> {
+class _CloudDriveAccountDetailPageState
+    extends ConsumerState<CloudDriveAccountDetailPage> {
   CloudDriveAccountDetails? _accountDetails;
   bool _isLoading = false;
   String? _error;

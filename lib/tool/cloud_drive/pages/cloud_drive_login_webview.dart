@@ -6,12 +6,12 @@ import '../widgets/login/login.dart';
 import '../../../../core/logging/log_manager.dart';
 
 /// 云盘登录WebView页面 - 重构版本
-class CloudDriveLoginWebViewNew extends StatefulWidget {
+class CloudDriveLoginWebView extends StatefulWidget {
   final CloudDriveType cloudDriveType;
   final String accountName;
   final Future<void> Function(String cookies) onLoginSuccess;
 
-  const CloudDriveLoginWebViewNew({
+  const CloudDriveLoginWebView({
     super.key,
     required this.cloudDriveType,
     required this.accountName,
@@ -19,11 +19,10 @@ class CloudDriveLoginWebViewNew extends StatefulWidget {
   });
 
   @override
-  State<CloudDriveLoginWebViewNew> createState() =>
-      _CloudDriveLoginWebViewNewState();
+  State<CloudDriveLoginWebView> createState() => _CloudDriveLoginWebViewState();
 }
 
-class _CloudDriveLoginWebViewNewState extends State<CloudDriveLoginWebViewNew> {
+class _CloudDriveLoginWebViewState extends State<CloudDriveLoginWebView> {
   bool _isLoading = true;
   bool _isLoggedIn = false;
   String? _statusMessage;
@@ -223,13 +222,20 @@ class _CloudDriveLoginWebViewNewState extends State<CloudDriveLoginWebViewNew> {
     if (_webViewController == null) return '';
 
     try {
-      final cookies = await _webViewController!.getCookies();
-      final cookieString = cookies.entries
-          .map((e) => '${e.key}=${e.value}')
-          .join('; ');
+      // TODO: 修复getCookies API调用
+      // final cookies = await _webViewController!.getCookies(
+      //   url: WebUri(_getLoginUrl().toString()),
+      // );
+      // final cookieString = cookies.entries
+      //     .map((e) => '${e.key}=${e.value}')
+      //     .join('; ');
 
-      LogManager().cloudDrive('获取到Cookies: ${cookieString.length} 字符');
-      return cookieString;
+      // LogManager().cloudDrive('获取到Cookies: ${cookieString.length} 字符');
+      // return cookieString;
+
+      // 临时返回空字符串
+      LogManager().cloudDrive('获取到Cookies: 临时返回空字符串');
+      return '';
     } catch (e) {
       LogManager().error('获取Cookies失败: $e');
       return '';
