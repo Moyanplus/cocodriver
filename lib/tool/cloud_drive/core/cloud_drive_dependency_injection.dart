@@ -1,75 +1,90 @@
-import '../base/cloud_drive_cache_service.dart';
+import '../../../../../core/logging/log_manager.dart';
+import '../infrastructure/cache/cloud_drive_cache_service.dart';
 import '../base/cloud_drive_file_service.dart';
-import '../core/cloud_drive_error_handler.dart';
-import '../core/cloud_drive_logger.dart';
-import '../repositories/cloud_drive_repository.dart';
+import '../infrastructure/error/cloud_drive_error_handler.dart';
+import '../infrastructure/logging/cloud_drive_logger.dart';
+import '../data/repositories/cloud_drive_repository.dart';
 
-/// 云盘依赖注入容器
-class CloudDriveDIContainer {
-  static final CloudDriveDIContainer _instance =
-      CloudDriveDIContainer._internal();
+/// 云盘服务定位器 - 简化的依赖注入容器
+class CloudDriveServiceLocator {
+  static final Map<Type, dynamic> _services = {};
+  static bool _isInitialized = false;
 
-  factory CloudDriveDIContainer() => _instance;
-
-  CloudDriveDIContainer._internal();
-
-  /// 获取单例实例
-  static CloudDriveDIContainer get instance => _instance;
-
-  // 服务实例
-  late final CloudDriveFileService _fileService;
-  late final CloudDriveCacheService _cacheService;
-  late final CloudDriveRepository _repository;
-  late final CloudDriveLogger _logger;
-  late final CloudDriveErrorHandler _errorHandler;
-
-  /// 初始化依赖注入容器
-  void initialize() {
-    _logger = CloudDriveLogger();
-    _errorHandler = CloudDriveErrorHandler();
-    _cacheService = CloudDriveCacheService();
-    _fileService = CloudDriveFileService();
-    _repository = CloudDriveRepository();
+  /// 注册服务
+  static void register<T>(T service) {
+    _services[T] = service;
+    LogManager().cloudDrive('🔧 注册服务: ${T.toString()}');
   }
 
-  /// 获取文件服务
-  CloudDriveFileService get fileService => _fileService;
+  /// 获取服务
+  static T get<T>() {
+    final service = _services[T];
+    if (service == null) {
+      throw StateError('服务未注册: ${T.toString()}');
+    }
+    return service as T;
+  }
 
-  /// 获取缓存服务
-  CloudDriveCacheService get cacheService => _cacheService;
+  /// 检查服务是否已注册
+  static bool isRegistered<T>() => _services.containsKey(T);
 
-  /// 获取数据仓库
-  CloudDriveRepository get repository => _repository;
+  /// 初始化所有核心服务
+  static void initialize() {
+    if (_isInitialized) {
+      LogManager().cloudDrive('⚠️ 服务定位器已初始化，跳过重复初始化');
+      return;
+    }
 
-  /// 获取日志服务
-  CloudDriveLogger get logger => _logger;
+    LogManager().cloudDrive('🚀 开始初始化云盘服务定位器');
 
-  /// 获取错误处理器
-  CloudDriveErrorHandler get errorHandler => _errorHandler;
+    // 注册核心服务
+    register<CloudDriveLogger>(CloudDriveLogger());
+    register<CloudDriveErrorHandler>(CloudDriveErrorHandler());
+    register<CloudDriveCacheService>(CloudDriveCacheService());
+    register<CloudDriveRepository>(CloudDriveRepository());
+    register<CloudDriveFileService>(CloudDriveFileService());
 
-  /// 重置所有依赖
-  void reset() {
-    // 重置所有服务状态
+    _isInitialized = true;
+    LogManager().cloudDrive('✅ 云盘服务定位器初始化完成');
+  }
+
+  /// 重置所有服务
+  static void reset() {
+    LogManager().cloudDrive('🔄 重置云盘服务定位器');
+    _services.clear();
+    _isInitialized = false;
+
+    // 清理缓存
     CloudDriveCacheService.clearCache();
+    LogManager().cloudDrive('✅ 云盘服务定位器重置完成');
   }
+
+  /// 获取所有已注册的服务
+  static Map<Type, dynamic> get allServices => Map.unmodifiable(_services);
+
+  /// 检查是否已初始化
+  static bool get isInitialized => _isInitialized;
 }
 
-/// 依赖注入提供者
-class CloudDriveDIProvider {
-  static CloudDriveDIContainer get container => CloudDriveDIContainer.instance;
-
+/// 云盘服务提供者 - 简化的服务访问接口
+class CloudDriveServices {
   /// 获取文件服务
-  static CloudDriveFileService get fileService => container.fileService;
+  static CloudDriveFileService get fileService =>
+      CloudDriveServiceLocator.get<CloudDriveFileService>();
 
   /// 获取缓存服务
-  static CloudDriveCacheService get cacheService => container.cacheService;
+  static CloudDriveCacheService get cacheService =>
+      CloudDriveServiceLocator.get<CloudDriveCacheService>();
 
   /// 获取数据仓库
-  static CloudDriveRepository get repository => container.repository;
+  static CloudDriveRepository get repository =>
+      CloudDriveServiceLocator.get<CloudDriveRepository>();
 
   /// 获取日志服务
-  static CloudDriveLogger get logger => container.logger;
+  static CloudDriveLogger get logger =>
+      CloudDriveServiceLocator.get<CloudDriveLogger>();
 
   /// 获取错误处理器
-  static CloudDriveErrorHandler get errorHandler => container.errorHandler;
+  static CloudDriveErrorHandler get errorHandler =>
+      CloudDriveServiceLocator.get<CloudDriveErrorHandler>();
 }

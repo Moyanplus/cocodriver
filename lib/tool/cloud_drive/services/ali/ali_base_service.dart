@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 
-import '../../../../core/logging/log_manager.dart';
-import '../../../../core/logging/log_category.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../../../../core/logging/log_manager.dart';
+import '../../../../../core/logging/log_category.dart';
+import '../../data/models/cloud_drive_entities.dart';
 import 'ali_config.dart';
 
 /// 阿里云盘基础服务

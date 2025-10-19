@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../config/cloud_drive_ui_config.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../data/models/cloud_drive_entities.dart';
 import '../common/cloud_drive_common_widgets.dart';
 
 /// 账号概览卡片组件

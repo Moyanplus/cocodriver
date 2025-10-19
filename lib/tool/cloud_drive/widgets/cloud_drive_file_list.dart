@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/utils/responsive_utils.dart';
-import '../models/cloud_drive_models.dart';
+import '../data/models/cloud_drive_entities.dart';
 import '../providers/cloud_drive_provider.dart';
 import '../pages/cloud_drive_operation_options.dart';
 import 'cloud_drive_file_item.dart';

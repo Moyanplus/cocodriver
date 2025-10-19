@@ -1,5 +1,5 @@
-import '../../../../core/logging/log_manager.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../../../../core/logging/log_manager.dart';
+import '../../data/models/cloud_drive_entities.dart';
 import 'quark_base_service.dart';
 import 'quark_config.dart';
 

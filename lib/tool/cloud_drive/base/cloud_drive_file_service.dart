@@ -1,7 +1,7 @@
-import '../../../../core/logging/log_manager.dart';
+import '../../../../../core/logging/log_manager.dart';
 import '../../download/services/download_config_service.dart';
 import '../../download/services/download_service.dart';
-import '../models/cloud_drive_models.dart';
+import '../data/models/cloud_drive_entities.dart';
 import '../services/lanzou/lanzou_cloud_drive_service.dart';
 import '../services/lanzou/lanzou_direct_link_service.dart';
 import 'cloud_drive_operation_service.dart';
@@ -629,21 +629,5 @@ class CloudDriveFileService {
   ]) {
     final message = details != null ? '$operation: $details' : operation;
     LogManager().cloudDrive('🔍 $message');
-  }
-
-  /// 获取日志子分类
-  static String _getLogSubCategory(CloudDriveType type) {
-    switch (type) {
-      case CloudDriveType.lanzou:
-        return 'cloudDrive.lanzou';
-      case CloudDriveType.baidu:
-        return 'cloudDrive.baidu';
-      case CloudDriveType.pan123:
-        return 'cloudDrive.pan123';
-      case CloudDriveType.ali:
-        return 'cloudDrive.ali';
-      case CloudDriveType.quark:
-        return 'cloudDrive.quark';
-    }
   }
 }

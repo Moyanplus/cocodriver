@@ -1,4 +1,4 @@
-import '../models/cloud_drive_models.dart';
+import '../data/models/cloud_drive_entities.dart';
 
 /// 上传权限验证结果
 class UploadPermissionValidation {

@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import '../models/qr_login_models.dart';
-import '../models/cloud_drive_models.dart';
+// import '../models/qr_login_models.dart'; // 文件不存在，使用cloud_drive_dtos.dart中的定义
+import '../data/models/cloud_drive_entities.dart';
+import '../data/models/cloud_drive_dtos.dart';
 import '../services/base/qr_login_service.dart';
 
 /// 二维码登录页面
@@ -56,7 +57,7 @@ class _QRLoginPageState extends State<QRLoginPage> {
     _loginSubscription = QRLoginManager.startQRLogin(
       widget.cloudDriveType,
     ).listen(
-      (loginInfo) {
+      (QRLoginInfo loginInfo) {
         setState(() {
           _currentLoginInfo = loginInfo;
           _isLoading = false;

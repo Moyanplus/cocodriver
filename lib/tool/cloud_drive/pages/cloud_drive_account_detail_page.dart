@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/cloud_drive_ui_config.dart';
-import '../models/cloud_drive_models.dart';
+import '../data/models/cloud_drive_entities.dart';
+import '../data/models/cloud_drive_dtos.dart';
 import '../providers/cloud_drive_provider.dart';
-import '../widgets/account/account.dart';
+import '../presentation/widgets/account/account.dart';
 import '../../../../core/logging/log_manager.dart';
 
 /// 云盘账号详情页面 - 重构版本

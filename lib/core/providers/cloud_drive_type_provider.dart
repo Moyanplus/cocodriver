@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../tool/cloud_drive/models/cloud_drive_models.dart';
+import '../../tool/cloud_drive/data/models/cloud_drive_entities.dart';
 
 /// 云盘类型状态
 class CloudDriveTypeState {

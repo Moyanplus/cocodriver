@@ -9,7 +9,7 @@ import '../../../core/navigation/navigation_providers.dart';
 import '../../../core/providers/cloud_drive_type_provider.dart';
 import '../../../core/utils/responsive_utils.dart';
 import '../../../core/utils/adaptive_utils.dart';
-import '../../../tool/cloud_drive/models/cloud_drive_models.dart';
+import '../../../tool/cloud_drive/data/models/cloud_drive_entities.dart';
 
 /// 应用侧边栏
 class AppDrawerWidget extends ConsumerStatefulWidget {

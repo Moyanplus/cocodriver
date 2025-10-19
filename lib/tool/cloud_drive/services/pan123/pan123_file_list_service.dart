@@ -1,5 +1,5 @@
-import '../../../../core/logging/log_manager.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../../../../core/logging/log_manager.dart';
+import '../../data/models/cloud_drive_entities.dart';
 import 'pan123_base_service.dart';
 import 'pan123_config.dart';
 

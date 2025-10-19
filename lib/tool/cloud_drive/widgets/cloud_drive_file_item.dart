@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/utils/responsive_utils.dart';
-import '../models/cloud_drive_models.dart';
+import '../data/models/cloud_drive_entities.dart';
 import '../utils/file_type_utils.dart';
 import '../components/cloud_drive_base_widgets.dart';
 

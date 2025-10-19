@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/logging/log_manager.dart';
 import '../config/cloud_drive_ui_config.dart';
-import '../widgets/direct_link/direct_link.dart';
+import '../presentation/widgets/direct_link/direct_link.dart';
 import '../business/cloud_drive_business_service.dart';
 
 /// 直链解析页面 - 重构版本

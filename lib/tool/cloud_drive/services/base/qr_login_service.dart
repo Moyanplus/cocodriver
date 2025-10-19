@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../models/qr_login_models.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../data/models/cloud_drive_dtos.dart';
+import '../../data/models/cloud_drive_entities.dart';
 
 /// 二维码登录服务抽象基类
 /// 每个云盘服务需要实现此接口来提供具体的二维码登录功能

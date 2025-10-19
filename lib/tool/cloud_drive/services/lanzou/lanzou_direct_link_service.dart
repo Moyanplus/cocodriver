@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 
-import '../../../../core/logging/log_manager.dart';
+import '../../../../../core/logging/log_manager.dart';
 import 'lanzou_config.dart';
 
 /// 蓝奏云直链解析服务

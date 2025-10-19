@@ -2,9 +2,10 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
-import '../../../../core/logging/log_manager.dart';
+import '../../../../../core/logging/log_manager.dart';
 import '../../base/cloud_drive_operation_service.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../data/models/cloud_drive_entities.dart';
+import '../../data/models/cloud_drive_dtos.dart';
 import 'baidu_cloud_drive_service.dart';
 import 'baidu_config.dart';
 

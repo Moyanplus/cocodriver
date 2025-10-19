@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/cloud_drive_ui_config.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../data/models/cloud_drive_entities.dart';
 import '../../utils/file_type_utils.dart';
 
 /// 预览区域组件

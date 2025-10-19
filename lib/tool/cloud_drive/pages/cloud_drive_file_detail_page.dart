@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/logging/log_manager.dart';
 import '../config/cloud_drive_ui_config.dart';
-import '../models/cloud_drive_models.dart';
-import '../widgets/file_detail/file_detail.dart';
+import '../data/models/cloud_drive_entities.dart';
+import '../presentation/widgets/file_detail/file_detail.dart';
 import '../base/cloud_drive_file_service.dart';
 
 /// 文件详情页面 - 重构版本

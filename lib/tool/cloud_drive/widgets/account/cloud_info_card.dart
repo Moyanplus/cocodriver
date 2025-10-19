@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../config/cloud_drive_ui_config.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../data/models/cloud_drive_entities.dart';
+import '../../data/models/cloud_drive_dtos.dart';
 import '../common/cloud_drive_common_widgets.dart';
 
 /// 云盘信息卡片组件

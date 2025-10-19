@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../config/cloud_drive_ui_config.dart';
-import '../models/cloud_drive_models.dart';
-import '../widgets/login/login.dart';
+import '../data/models/cloud_drive_entities.dart';
+import '../presentation/widgets/login/login.dart';
 import '../../../../core/logging/log_manager.dart';
 
 /// 云盘登录WebView页面 - 重构版本

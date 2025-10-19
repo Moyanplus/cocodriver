@@ -7,8 +7,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../../core/navigation/navigation_providers.dart';
 import '../../../core/utils/responsive_utils.dart';
 import '../../../shared/widgets/common/app_drawer_widget.dart';
-import '../../../tool/cloud_drive/providers/cloud_drive_provider.dart';
-import '../../../tool/cloud_drive/widgets/add_account_form_widget.dart';
+import '../../../tool/cloud_drive/presentation/providers/cloud_drive_provider.dart';
+import '../../../tool/cloud_drive/presentation/widgets/add_account_form_widget.dart';
 import '../../../shared/widgets/common/bottom_sheet_widget.dart';
 
 /// 主屏幕组件
@@ -91,7 +91,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   onPressed:
                       () =>
                           ref
-                              .read(cloudDriveProvider.notifier)
+                              .read(cloudDriveEventHandlerProvider)
                               .toggleAccountSelector(),
                   tooltip: showSelector ? '隐藏账号选择器' : '显示账号选择器',
                 );
@@ -108,7 +108,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       onPressed:
                           () =>
                               ref
-                                  .read(cloudDriveProvider.notifier)
+                                  .read(cloudDriveEventHandlerProvider)
                                   .clearPendingOperation(),
                       tooltip: '取消操作',
                     )
@@ -120,8 +120,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               icon: const Icon(Icons.refresh),
               onPressed:
                   () => ref
-                      .read(cloudDriveProvider.notifier)
-                      .loadCurrentFolder(forceRefresh: true),
+                      .read(cloudDriveEventHandlerProvider)
+                      .loadFolder(forceRefresh: true),
               tooltip: '刷新',
             ),
             // 设置按钮
@@ -225,7 +225,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       content: AddAccountFormWidget(
         onAccountCreated: (account) async {
           try {
-            await ref.read(cloudDriveProvider.notifier).addAccount(account);
+            await ref.read(cloudDriveEventHandlerProvider).addAccount(account);
             if (context.mounted) {
               Navigator.pop(context);
               _showAccountAddSuccess(account.name);

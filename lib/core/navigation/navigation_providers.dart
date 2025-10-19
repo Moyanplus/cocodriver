@@ -6,7 +6,7 @@ import '../theme/theme_models.dart';
 import '../services/theme_service.dart';
 import '../../features/home/pages/home_page.dart';
 import '../../features/user/pages/user_profile_page.dart';
-import '../../tool/cloud_drive/pages/cloud_drive_assistant_page.dart';
+import '../../tool/cloud_drive/presentation/pages/cloud_drive_assistant_page.dart';
 
 // ==================== 应用Provider包装器 ====================
 /// 应用提供者包装器

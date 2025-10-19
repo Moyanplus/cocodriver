@@ -2,8 +2,8 @@ import 'dart:io'; // Added for File
 
 import 'package:dio/dio.dart';
 
-import '../../../../core/logging/log_manager.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../../../../core/logging/log_manager.dart';
+import '../../data/models/cloud_drive_entities.dart';
 import 'lanzou_base_service.dart';
 import 'lanzou_config.dart';
 import 'lanzou_direct_link_service.dart';

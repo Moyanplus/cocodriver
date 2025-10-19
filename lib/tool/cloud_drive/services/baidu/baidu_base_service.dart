@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import '../../../../core/logging/log_manager.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../../../../core/logging/log_manager.dart';
+import '../../data/models/cloud_drive_entities.dart';
 import 'baidu_config.dart';
 
 /// 百度云盘基础服务

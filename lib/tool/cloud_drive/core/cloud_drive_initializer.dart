@@ -1,5 +1,5 @@
 import 'cloud_drive_dependency_injection.dart';
-import '../../../../core/logging/log_manager.dart';
+import '../../../../../core/logging/log_manager.dart';
 
 /// 云盘模块初始化器
 class CloudDriveInitializer {
@@ -13,7 +13,7 @@ class CloudDriveInitializer {
 
     try {
       // 初始化依赖注入容器
-      CloudDriveDIContainer.instance.initialize();
+      CloudDriveServiceLocator.initialize();
 
       // 标记为已初始化
       _isInitialized = true;
@@ -40,7 +40,7 @@ class CloudDriveInitializer {
   /// 重置初始化状态
   static void reset() {
     if (_isInitialized) {
-      CloudDriveDIContainer.instance.reset();
+      CloudDriveServiceLocator.reset();
       _isInitialized = false;
       LogManager().cloudDrive(
         '云盘模块已重置',

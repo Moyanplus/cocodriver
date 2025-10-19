@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/cloud_drive_ui_config.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../data/models/cloud_drive_entities.dart';
 
 /// 操作区域组件
 class ActionSection extends StatelessWidget {

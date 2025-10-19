@@ -1,5 +1,6 @@
-import '../../../../core/logging/log_manager.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../../../../core/logging/log_manager.dart';
+import '../../data/models/cloud_drive_entities.dart';
+import '../../data/models/cloud_drive_dtos.dart';
 import 'quark_base_service.dart';
 import 'quark_config.dart';
 
@@ -12,10 +13,7 @@ class QuarkFileOperationService {
     required CloudDriveFile file,
     required String targetFolderId,
   }) async {
-    LogManager().cloudDrive(
-      '🔄 夸克云盘 - 移动文件开始: ${file.name}',
-      
-    );
+    LogManager().cloudDrive('🔄 夸克云盘 - 移动文件开始: ${file.name}');
 
     try {
       final dio = await QuarkBaseService.createDioWithAuth(account);
@@ -26,14 +24,8 @@ class QuarkFileOperationService {
       );
 
       final uri = _buildOperationUri('moveFile', queryParams);
-      LogManager().cloudDrive(
-        '🔗 请求URL: $uri',
-        
-      );
-      LogManager().cloudDrive(
-        '📤 请求体: $requestBody',
-        
-      );
+      LogManager().cloudDrive('🔗 请求URL: $uri');
+      LogManager().cloudDrive('📤 请求体: $requestBody');
 
       final response = await dio.postUri(uri, data: requestBody);
 
@@ -54,27 +46,18 @@ class QuarkFileOperationService {
       final isFinished = data['finish'] as bool? ?? false;
 
       if (isFinished) {
-        LogManager().cloudDrive(
-          '✅ 夸克云盘 - 移动文件完成: ${file.name}',
-          
-        );
+        LogManager().cloudDrive('✅ 夸克云盘 - 移动文件完成: ${file.name}');
         return true;
       }
 
       if (taskId != null) {
-        LogManager().cloudDrive(
-          '⏳ 夸克云盘 - 移动文件任务创建: $taskId',
-          
-        );
+        LogManager().cloudDrive('⏳ 夸克云盘 - 移动文件任务创建: $taskId');
         return await _waitForTaskCompletion(account, taskId);
       }
 
       return false;
     } catch (e) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 移动文件失败: $e',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 移动文件失败: $e');
       rethrow;
     }
   }
@@ -84,10 +67,7 @@ class QuarkFileOperationService {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    LogManager().cloudDrive(
-      '🗑️ 夸克云盘 - 删除文件开始: ${file.name}',
-      
-    );
+    LogManager().cloudDrive('🗑️ 夸克云盘 - 删除文件开始: ${file.name}');
 
     try {
       final dio = await QuarkBaseService.createDioWithAuth(account);
@@ -95,14 +75,8 @@ class QuarkFileOperationService {
       final requestBody = QuarkConfig.buildDeleteFileBody(fileIds: [file.id]);
 
       final uri = _buildOperationUri('deleteFile', queryParams);
-      LogManager().cloudDrive(
-        '🔗 请求URL: $uri',
-        
-      );
-      LogManager().cloudDrive(
-        '📤 请求体: $requestBody',
-        
-      );
+      LogManager().cloudDrive('🔗 请求URL: $uri');
+      LogManager().cloudDrive('📤 请求体: $requestBody');
 
       final response = await dio.postUri(uri, data: requestBody);
 
@@ -123,27 +97,18 @@ class QuarkFileOperationService {
       final isFinished = data['finish'] as bool? ?? false;
 
       if (isFinished) {
-        LogManager().cloudDrive(
-          '✅ 夸克云盘 - 删除文件完成: ${file.name}',
-          
-        );
+        LogManager().cloudDrive('✅ 夸克云盘 - 删除文件完成: ${file.name}');
         return true;
       }
 
       if (taskId != null) {
-        LogManager().cloudDrive(
-          '⏳ 夸克云盘 - 删除文件任务创建: $taskId',
-          
-        );
+        LogManager().cloudDrive('⏳ 夸克云盘 - 删除文件任务创建: $taskId');
         return await _waitForTaskCompletion(account, taskId);
       }
 
       return false;
     } catch (e) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 删除文件失败: $e',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 删除文件失败: $e');
       rethrow;
     }
   }
@@ -154,10 +119,7 @@ class QuarkFileOperationService {
     required CloudDriveFile file,
     required String newName,
   }) async {
-    LogManager().cloudDrive(
-      '✏️ 夸克云盘 - 重命名文件开始: ${file.name} -> $newName',
-      
-    );
+    LogManager().cloudDrive('✏️ 夸克云盘 - 重命名文件开始: ${file.name} -> $newName');
 
     try {
       final dio = await QuarkBaseService.createDioWithAuth(account);
@@ -168,14 +130,8 @@ class QuarkFileOperationService {
       );
 
       final uri = _buildOperationUri('renameFile', queryParams);
-      LogManager().cloudDrive(
-        '🔗 请求URL: $uri',
-        
-      );
-      LogManager().cloudDrive(
-        '📤 请求体: $requestBody',
-        
-      );
+      LogManager().cloudDrive('🔗 请求URL: $uri');
+      LogManager().cloudDrive('📤 请求体: $requestBody');
 
       final response = await dio.postUri(uri, data: requestBody);
 
@@ -184,10 +140,7 @@ class QuarkFileOperationService {
       }
 
       final responseData = response.data;
-      LogManager().cloudDrive(
-        '📥 夸克云盘 - 重命名响应: $responseData',
-        
-      );
+      LogManager().cloudDrive('📥 夸克云盘 - 重命名响应: $responseData');
 
       if (!QuarkBaseService.isApiSuccess(
         responseData[QuarkConfig.responseFields['code']],
@@ -196,43 +149,31 @@ class QuarkFileOperationService {
         throw Exception('重命名文件失败: $message');
       }
 
-      LogManager().cloudDrive(
-        '✅ 夸克云盘 - 重命名文件完成: ${file.name} -> $newName',
-        
-      );
+      LogManager().cloudDrive('✅ 夸克云盘 - 重命名文件完成: ${file.name} -> $newName');
       return true;
     } catch (e) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 重命名文件失败: $e',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 重命名文件失败: $e');
       rethrow;
     }
   }
 
   /// 查询任务状态
   static Future<Map<String, dynamic>?> getTaskStatus({
-    required CloudDriveAccount account,
+    required CloudDriveAccount? account,
     required String taskId,
     int retryIndex = 0,
   }) async {
-    LogManager().cloudDrive(
-      '📋 夸克云盘 - 查询任务状态: $taskId',
-      
-    );
+    LogManager().cloudDrive('📋 夸克云盘 - 查询任务状态: $taskId');
 
     try {
-      final dio = await QuarkBaseService.createDioWithAuth(account);
+      final dio = await QuarkBaseService.createDioWithAuth(account!);
       final queryParams = QuarkConfig.buildTaskQueryParams(
         taskId: taskId,
         retryIndex: retryIndex,
       );
 
       final uri = _buildOperationUri('getTask', queryParams);
-      LogManager().cloudDrive(
-        '🔗 请求URL: $uri',
-        
-      );
+      LogManager().cloudDrive('🔗 请求URL: $uri');
 
       final response = await dio.getUri(uri);
 
@@ -250,21 +191,12 @@ class QuarkFileOperationService {
       }
 
       final data = QuarkBaseService.getResponseData(responseData, 'data');
-      LogManager().cloudDrive(
-        '📋 任务状态查询成功: $data',
-        
-      );
+      LogManager().cloudDrive('📋 任务状态查询成功: $data');
 
       return data;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 查询任务状态异常: $e',
-        
-      );
-      LogManager().cloudDrive(
-        '📄 错误堆栈: $stackTrace',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 查询任务状态异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -274,10 +206,7 @@ class QuarkFileOperationService {
     CloudDriveAccount account,
     String taskId,
   ) async {
-    LogManager().cloudDrive(
-      '⏳ 等待任务完成: $taskId',
-      
-    );
+    LogManager().cloudDrive('⏳ 等待任务完成: $taskId');
 
     const maxRetries = 30; // 最多重试30次
     const retryDelay = Duration(seconds: 1); // 每次重试间隔1秒
@@ -296,30 +225,18 @@ class QuarkFileOperationService {
             taskData[QuarkConfig.responseFields['taskStatus']] as int?;
 
         if (status == QuarkConfig.taskStatus['success']) {
-          LogManager().cloudDrive(
-            '✅ 任务执行成功: $taskId',
-            
-          );
+          LogManager().cloudDrive('✅ 任务执行成功: $taskId');
           return true;
         } else if (status == QuarkConfig.taskStatus['failed']) {
-          LogManager().cloudDrive(
-            '❌ 任务执行失败: $taskId',
-            
-          );
+          LogManager().cloudDrive('❌ 任务执行失败: $taskId');
           return false;
         }
 
-        LogManager().cloudDrive(
-          '⏳ 任务仍在进行中: $taskId (状态: $status)',
-          
-        );
+        LogManager().cloudDrive('⏳ 任务仍在进行中: $taskId (状态: $status)');
       }
     }
 
-    LogManager().cloudDrive(
-      '⚠️ 任务轮询超时: $taskId',
-      
-    );
+    LogManager().cloudDrive('⚠️ 任务轮询超时: $taskId');
     return false;
   }
 

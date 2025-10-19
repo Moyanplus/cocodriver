@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/cloud_drive_ui_config.dart';
-import '../models/cloud_drive_models.dart';
-import '../widgets/operation/operation.dart';
+import '../data/models/cloud_drive_entities.dart';
+import '../presentation/widgets/operation/operation.dart';
 import '../../../../core/logging/log_manager.dart';
 
 /// 云盘操作选项组件 - 重构版本

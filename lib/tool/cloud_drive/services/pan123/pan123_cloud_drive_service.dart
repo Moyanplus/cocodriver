@@ -1,4 +1,5 @@
-import '../../models/cloud_drive_models.dart';
+import '../../data/models/cloud_drive_entities.dart';
+import '../../data/models/cloud_drive_dtos.dart';
 import 'pan123_config.dart';
 import 'pan123_download_service.dart';
 import 'pan123_file_list_service.dart';

@@ -1,4 +1,4 @@
-import '../../../../core/logging/log_manager.dart';
+import '../../../../../core/logging/log_manager.dart';
 
 /// 阿里云盘配置
 class AliConfig {

@@ -1,6 +1,7 @@
-import '../../../../core/logging/log_manager.dart';
+import '../../../../../core/logging/log_manager.dart';
 import '../../base/cloud_drive_operation_service.dart';
-import '../../models/cloud_drive_models.dart';
+import '../../data/models/cloud_drive_entities.dart';
+import '../../data/models/cloud_drive_dtos.dart';
 import 'quark_cloud_drive_service.dart';
 import 'quark_config.dart';
 import 'quark_file_list_service.dart';
@@ -13,17 +14,10 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    LogManager().cloudDrive(
-      '🔗 夸克云盘 - 获取下载链接开始',
-      
-    );
-    LogManager().cloudDrive(
-      '📄 文件信息: ${file.name} (ID: ${file.id})',
-      
-    );
+    LogManager().cloudDrive('🔗 夸克云盘 - 获取下载链接开始');
+    LogManager().cloudDrive('📄 文件信息: ${file.name} (ID: ${file.id})');
     LogManager().cloudDrive(
       '👤 账号信息: ${account.name} (${account.type.displayName})',
-      
     );
 
     try {
@@ -46,27 +40,15 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
             downloadUrl.length > 100
                 ? '${downloadUrl.substring(0, 100)}...'
                 : downloadUrl;
-        LogManager().cloudDrive(
-          '✅ 夸克云盘 - 下载链接获取成功: $preview',
-          
-        );
+        LogManager().cloudDrive('✅ 夸克云盘 - 下载链接获取成功: $preview');
       } else {
-        LogManager().cloudDrive(
-          '❌ 夸克云盘 - 下载链接获取失败: 返回null',
-          
-        );
+        LogManager().cloudDrive('❌ 夸克云盘 - 下载链接获取失败: 返回null');
       }
 
       return downloadUrl;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 获取下载链接异常: $e',
-        
-      );
-      LogManager().cloudDrive(
-        '📄 错误堆栈: $stackTrace',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 获取下载链接异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -78,27 +60,15 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String shareUrl,
     required String password,
   }) async {
-    LogManager().cloudDrive(
-      '🚀 夸克云盘 - 获取高速下载链接开始',
-      
-    );
+    LogManager().cloudDrive('🚀 夸克云盘 - 获取高速下载链接开始');
 
     try {
       // 这里需要实现夸克云盘的高速下载链接获取逻辑
-      LogManager().cloudDrive(
-        '⚠️ 夸克云盘 - 高速下载链接功能暂未实现',
-        
-      );
+      LogManager().cloudDrive('⚠️ 夸克云盘 - 高速下载链接功能暂未实现');
       return null;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 获取高速下载链接异常: $e',
-        
-      );
-      LogManager().cloudDrive(
-        '📄 错误堆栈: $stackTrace',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 获取高速下载链接异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -110,14 +80,8 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? password,
     int? expireDays,
   }) async {
-    LogManager().cloudDrive(
-      '🔗 夸克云盘 - 创建分享链接开始',
-      
-    );
-    LogManager().cloudDrive(
-      '📄 文件数量: ${files.length}',
-      
-    );
+    LogManager().cloudDrive('🔗 夸克云盘 - 创建分享链接开始');
+    LogManager().cloudDrive('📄 文件数量: ${files.length}');
 
     try {
       if (files.isEmpty) {
@@ -138,27 +102,15 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
 
       if (result != null) {
         final shareUrl = result['shareUrl']?.toString();
-        LogManager().cloudDrive(
-          '✅ 夸克云盘 - 分享链接创建成功: $shareUrl',
-          
-        );
+        LogManager().cloudDrive('✅ 夸克云盘 - 分享链接创建成功: $shareUrl');
         return shareUrl;
       } else {
-        LogManager().cloudDrive(
-          '❌ 夸克云盘 - 分享链接创建失败: 返回null',
-          
-        );
+        LogManager().cloudDrive('❌ 夸克云盘 - 分享链接创建失败: 返回null');
         return null;
       }
     } catch (e, stackTrace) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 创建分享链接异常: $e',
-        
-      );
-      LogManager().cloudDrive(
-        '📄 错误堆栈: $stackTrace',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 创建分享链接异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -168,14 +120,8 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    LogManager().cloudDrive(
-      '🗑️ 夸克云盘 - 删除文件开始',
-      
-    );
-    LogManager().cloudDrive(
-      '📄 文件信息: ${file.name} (ID: ${file.id})',
-      
-    );
+    LogManager().cloudDrive('🗑️ 夸克云盘 - 删除文件开始');
+    LogManager().cloudDrive('📄 文件信息: ${file.name} (ID: ${file.id})');
 
     try {
       final success = await QuarkFileOperationService.deleteFile(
@@ -184,27 +130,15 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        LogManager().cloudDrive(
-          '✅ 夸克云盘 - 文件删除成功: ${file.name}',
-          
-        );
+        LogManager().cloudDrive('✅ 夸克云盘 - 文件删除成功: ${file.name}');
         return true;
       } else {
-        LogManager().cloudDrive(
-          '❌ 夸克云盘 - 文件删除失败',
-          
-        );
+        LogManager().cloudDrive('❌ 夸克云盘 - 文件删除失败');
         return false;
       }
     } catch (e, stackTrace) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 删除文件异常: $e',
-        
-      );
-      LogManager().cloudDrive(
-        '📄 错误堆栈: $stackTrace',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 删除文件异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -215,18 +149,9 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
     String? targetFolderId,
   }) async {
-    LogManager().cloudDrive(
-      '🚚 夸克云盘 - 移动文件开始',
-      
-    );
-    LogManager().cloudDrive(
-      '📄 文件信息: ${file.name} (ID: ${file.id})',
-      
-    );
-    LogManager().cloudDrive(
-      '📁 目标文件夹ID: $targetFolderId',
-      
-    );
+    LogManager().cloudDrive('🚚 夸克云盘 - 移动文件开始');
+    LogManager().cloudDrive('📄 文件信息: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('📁 目标文件夹ID: $targetFolderId');
 
     try {
       final success = await QuarkFileOperationService.moveFile(
@@ -236,27 +161,15 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        LogManager().cloudDrive(
-          '✅ 夸克云盘 - 文件移动成功: ${file.name}',
-          
-        );
+        LogManager().cloudDrive('✅ 夸克云盘 - 文件移动成功: ${file.name}');
         return true;
       } else {
-        LogManager().cloudDrive(
-          '❌ 夸克云盘 - 文件移动失败',
-          
-        );
+        LogManager().cloudDrive('❌ 夸克云盘 - 文件移动失败');
         return false;
       }
     } catch (e, stackTrace) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 移动文件异常: $e',
-        
-      );
-      LogManager().cloudDrive(
-        '📄 错误堆栈: $stackTrace',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 移动文件异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -267,18 +180,9 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
     required String newName,
   }) async {
-    LogManager().cloudDrive(
-      '✏️ 夸克云盘 - 重命名文件开始',
-      
-    );
-    LogManager().cloudDrive(
-      '📄 文件信息: ${file.name} (ID: ${file.id})',
-      
-    );
-    LogManager().cloudDrive(
-      '🆕 新名称: $newName',
-      
-    );
+    LogManager().cloudDrive('✏️ 夸克云盘 - 重命名文件开始');
+    LogManager().cloudDrive('📄 文件信息: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('🆕 新名称: $newName');
 
     try {
       final result = await QuarkFileOperationService.renameFile(
@@ -288,23 +192,14 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (result) {
-        LogManager().cloudDrive(
-          '✅ 夸克云盘 - 重命名文件成功: ${file.name} -> $newName',
-          
-        );
+        LogManager().cloudDrive('✅ 夸克云盘 - 重命名文件成功: ${file.name} -> $newName');
       } else {
-        LogManager().cloudDrive(
-          '❌ 夸克云盘 - 重命名文件失败: ${file.name} -> $newName',
-          
-        );
+        LogManager().cloudDrive('❌ 夸克云盘 - 重命名文件失败: ${file.name} -> $newName');
       }
 
       return result;
     } catch (e) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 重命名文件异常: $e',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 重命名文件异常: $e');
       return false;
     }
   }
@@ -316,39 +211,18 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String destPath,
     String? newName,
   }) async {
-    LogManager().cloudDrive(
-      '📋 夸克云盘 - 复制文件开始',
-      
-    );
-    LogManager().cloudDrive(
-      '📄 文件信息: ${file.name} (ID: ${file.id})',
-      
-    );
-    LogManager().cloudDrive(
-      '📁 目标路径: $destPath',
-      
-    );
-    LogManager().cloudDrive(
-      '🆕 新名称: $newName',
-      
-    );
+    LogManager().cloudDrive('📋 夸克云盘 - 复制文件开始');
+    LogManager().cloudDrive('📄 文件信息: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('📁 目标路径: $destPath');
+    LogManager().cloudDrive('🆕 新名称: $newName');
 
     try {
       // 这里需要实现夸克云盘的复制文件逻辑
-      LogManager().cloudDrive(
-        '⚠️ 夸克云盘 - 复制文件功能暂未实现',
-        
-      );
+      LogManager().cloudDrive('⚠️ 夸克云盘 - 复制文件功能暂未实现');
       return false;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 复制文件异常: $e',
-        
-      );
-      LogManager().cloudDrive(
-        '📄 错误堆栈: $stackTrace',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 复制文件异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -359,18 +233,9 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String folderName,
     String? parentFolderId,
   }) async {
-    LogManager().cloudDrive(
-      '📁 夸克云盘 - 创建文件夹开始',
-      
-    );
-    LogManager().cloudDrive(
-      '📁 文件夹名称: $folderName',
-      
-    );
-    LogManager().cloudDrive(
-      '📁 父文件夹ID: $parentFolderId',
-      
-    );
+    LogManager().cloudDrive('📁 夸克云盘 - 创建文件夹开始');
+    LogManager().cloudDrive('📁 文件夹名称: $folderName');
+    LogManager().cloudDrive('📁 父文件夹ID: $parentFolderId');
 
     try {
       final result = await QuarkCloudDriveService.createFolder(
@@ -380,30 +245,18 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (result != null && result['success'] == true) {
-        LogManager().cloudDrive(
-          '✅ 夸克云盘 - 文件夹创建成功: $folderName',
-          
-        );
+        LogManager().cloudDrive('✅ 夸克云盘 - 文件夹创建成功: $folderName');
 
         // 直接返回服务层的结果，它已经包含了folder对象
         return result;
       } else {
-        LogManager().cloudDrive(
-          '❌ 夸克云盘 - 文件夹创建失败',
-          
-        );
+        LogManager().cloudDrive('❌ 夸克云盘 - 文件夹创建失败');
 
         return {'success': false, 'message': result?['message'] ?? '文件夹创建失败'};
       }
     } catch (e, stackTrace) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 创建文件夹异常: $e',
-        
-      );
-      LogManager().cloudDrive(
-        '📄 错误堆栈: $stackTrace',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 创建文件夹异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
 
       return {'success': false, 'message': '文件夹创建异常: $e'};
     }
@@ -422,10 +275,7 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
       return fileList;
     } catch (e) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 获取文件列表异常: $e',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 获取文件列表异常: $e');
       return [];
     }
   }
@@ -442,10 +292,7 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   Future<CloudDriveAccountDetails?> getAccountDetails({
     required CloudDriveAccount account,
   }) async {
-    LogManager().cloudDrive(
-      '📋 夸克云盘 - 开始获取账号详情',
-      
-    );
+    LogManager().cloudDrive('📋 夸克云盘 - 开始获取账号详情');
 
     try {
       final accountDetails = await QuarkCloudDriveService.getAccountDetails(
@@ -453,27 +300,15 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (accountDetails != null) {
-        LogManager().cloudDrive(
-          '✅ 夸克云盘 - 账号详情获取成功',
-          
-        );
+        LogManager().cloudDrive('✅ 夸克云盘 - 账号详情获取成功');
         return accountDetails;
       } else {
-        LogManager().cloudDrive(
-          '❌ 夸克云盘 - 账号详情获取失败: 返回null',
-          
-        );
+        LogManager().cloudDrive('❌ 夸克云盘 - 账号详情获取失败: 返回null');
         return null;
       }
     } catch (e, stackTrace) {
-      LogManager().cloudDrive(
-        '❌ 夸克云盘 - 获取账号详情异常: $e',
-        
-      );
-      LogManager().cloudDrive(
-        '📄 错误堆栈: $stackTrace',
-        
-      );
+      LogManager().cloudDrive('❌ 夸克云盘 - 获取账号详情异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
       return null;
     }
   }

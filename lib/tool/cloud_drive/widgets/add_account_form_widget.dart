@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../core/utils/responsive_utils.dart';
-import '../models/cloud_drive_models.dart';
+import '../data/models/cloud_drive_entities.dart';
 import '../models/qr_login_models.dart';
 import '../services/base/qr_login_service.dart';
 import '../pages/cloud_drive_login_webview.dart';
@@ -684,7 +684,7 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
 
     _qrLoginSubscription?.cancel();
     _qrLoginSubscription = QRLoginManager.startQRLogin(selectedType).listen(
-      (loginInfo) {
+      (QRLoginInfo loginInfo) {
         setState(() {
           _currentQRLoginInfo = loginInfo;
           _isGeneratingQR = false;

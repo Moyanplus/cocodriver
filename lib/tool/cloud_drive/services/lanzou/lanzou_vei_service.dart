@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import '../../../../core/logging/log_manager.dart';
+import '../../../../../core/logging/log_manager.dart';
 import 'lanzou_config.dart';
 
 /// 蓝奏云vei参数管理服务

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/widgets/common/bottom_sheet_widget.dart';
 import '../config/cloud_drive_ui_config.dart';
-import '../models/cloud_drive_models.dart';
+import '../data/models/cloud_drive_entities.dart';
 import '../providers/cloud_drive_provider.dart';
 import '../widgets/add_account_form_widget.dart';
-import '../widgets/assistant/assistant.dart';
+import '../presentation/widgets/assistant/assistant.dart';
 import 'cloud_drive_account_detail_page.dart';
 import 'cloud_drive_direct_link_page.dart';
-import 'cloud_drive_upload_page.dart';
+import '../presentation/pages/cloud_drive_upload_page.dart';
 
 /// 云盘助手页面 - 重构版本
 class CloudDriveAssistantPage extends ConsumerStatefulWidget {

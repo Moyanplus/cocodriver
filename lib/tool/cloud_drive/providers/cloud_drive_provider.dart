@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/logging/log_manager.dart';
-import '../models/cloud_drive_models.dart';
+import '../data/models/cloud_drive_entities.dart';
+import '../data/models/cloud_drive_dtos.dart';
 import '../services/baidu/baidu_cloud_drive_service.dart';
 import '../base/cloud_drive_account_service.dart';
-import '../base/cloud_drive_cache_service.dart';
+import '../infrastructure/cache/cloud_drive_cache_service.dart';
 import '../base/cloud_drive_file_service.dart';
 import '../base/cloud_drive_operation_service.dart';
 import '../utils/file_type_utils.dart';
