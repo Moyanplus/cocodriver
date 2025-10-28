@@ -195,6 +195,8 @@ class AliCloudDriveService {
       }
 
       final accountDetails = CloudDriveAccountDetails(
+        id: accountInfo.username,
+        name: accountInfo.username,
         accountInfo: accountInfo,
         quotaInfo:
             quotaInfo ??

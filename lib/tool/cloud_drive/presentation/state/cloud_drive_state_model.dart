@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart'; // 未使用
 import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
-import '../../core/result.dart';
+// import '../../core/result.dart'; // 未使用
 
 /// 云盘状态模型 - 使用 freezed 风格设计
 class CloudDriveState {
   final List<CloudDriveAccount> accounts;
   final CloudDriveAccount? currentAccount;
+  final CloudDriveFile? currentFolder;
   final List<CloudDriveFile> folders;
   final List<CloudDriveFile> files;
   final List<PathInfo> folderPath;
@@ -14,6 +15,7 @@ class CloudDriveState {
   final bool isRefreshing;
   final String? error;
   final bool isBatchMode;
+  final bool isInBatchMode;
   final Set<String> selectedItems;
   final bool isAllSelected;
   final int currentPage;
@@ -29,6 +31,7 @@ class CloudDriveState {
   const CloudDriveState({
     this.accounts = const [],
     this.currentAccount,
+    this.currentFolder,
     this.folders = const [],
     this.files = const [],
     this.folderPath = const [],
@@ -36,6 +39,7 @@ class CloudDriveState {
     this.isRefreshing = false,
     this.error,
     this.isBatchMode = false,
+    this.isInBatchMode = false,
     this.selectedItems = const {},
     this.isAllSelected = false,
     this.currentPage = 1,
@@ -53,6 +57,7 @@ class CloudDriveState {
   CloudDriveState copyWith({
     List<CloudDriveAccount>? accounts,
     CloudDriveAccount? currentAccount,
+    CloudDriveFile? currentFolder,
     List<CloudDriveFile>? folders,
     List<CloudDriveFile>? files,
     List<PathInfo>? folderPath,
@@ -60,6 +65,7 @@ class CloudDriveState {
     bool? isRefreshing,
     String? error,
     bool? isBatchMode,
+    bool? isInBatchMode,
     Set<String>? selectedItems,
     bool? isAllSelected,
     int? currentPage,
@@ -74,6 +80,7 @@ class CloudDriveState {
   }) => CloudDriveState(
     accounts: accounts ?? this.accounts,
     currentAccount: currentAccount ?? this.currentAccount,
+    currentFolder: currentFolder ?? this.currentFolder,
     folders: folders ?? this.folders,
     files: files ?? this.files,
     folderPath: folderPath ?? this.folderPath,
@@ -81,6 +88,7 @@ class CloudDriveState {
     isRefreshing: isRefreshing ?? this.isRefreshing,
     error: error ?? this.error,
     isBatchMode: isBatchMode ?? this.isBatchMode,
+    isInBatchMode: isInBatchMode ?? this.isInBatchMode,
     selectedItems: selectedItems ?? this.selectedItems,
     isAllSelected: isAllSelected ?? this.isAllSelected,
     currentPage: currentPage ?? this.currentPage,
@@ -347,6 +355,16 @@ class UpdateFileInStateEvent extends CloudDriveEvent {
 /// 清除错误事件
 class ClearErrorEvent extends CloudDriveEvent {
   const ClearErrorEvent();
+}
+
+/// 刷新事件
+class RefreshEvent extends CloudDriveEvent {
+  const RefreshEvent();
+}
+
+/// 批量删除事件
+class BatchDeleteEvent extends CloudDriveEvent {
+  const BatchDeleteEvent();
 }
 
 /// 文件列表状态

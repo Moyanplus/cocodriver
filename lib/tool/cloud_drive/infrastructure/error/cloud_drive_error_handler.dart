@@ -177,8 +177,6 @@ class CloudDriveErrorHandler {
   }) => CloudDriveException(
     message,
     CloudDriveErrorType.network,
-    cloudDriveType: cloudDriveType,
-    originalError: originalError,
     operation: operation,
     context: context,
     statusCode: statusCode,
@@ -197,8 +195,6 @@ class CloudDriveErrorHandler {
   }) => CloudDriveException(
     message,
     CloudDriveErrorType.authentication,
-    cloudDriveType: cloudDriveType,
-    originalError: originalError,
     operation: operation,
     context: context,
     statusCode: statusCode,
@@ -217,8 +213,6 @@ class CloudDriveErrorHandler {
   }) => CloudDriveException(
     message,
     CloudDriveErrorType.permission,
-    cloudDriveType: cloudDriveType,
-    originalError: originalError,
     operation: operation,
     context: context,
     statusCode: statusCode,
@@ -237,8 +231,6 @@ class CloudDriveErrorHandler {
   }) => CloudDriveException(
     message,
     CloudDriveErrorType.invalidParameter,
-    cloudDriveType: cloudDriveType,
-    originalError: originalError,
     operation: operation,
     context: context,
     statusCode: statusCode,
@@ -257,8 +249,6 @@ class CloudDriveErrorHandler {
   }) => CloudDriveException(
     message,
     CloudDriveErrorType.fileNotFound,
-    cloudDriveType: cloudDriveType,
-    originalError: originalError,
     operation: operation,
     context: context,
     statusCode: statusCode,
@@ -277,8 +267,6 @@ class CloudDriveErrorHandler {
   }) => CloudDriveException(
     message,
     CloudDriveErrorType.storageFull,
-    cloudDriveType: cloudDriveType,
-    originalError: originalError,
     operation: operation,
     context: context,
     statusCode: statusCode,
@@ -297,8 +285,6 @@ class CloudDriveErrorHandler {
   }) => CloudDriveException(
     message,
     CloudDriveErrorType.operationNotSupported,
-    cloudDriveType: cloudDriveType,
-    originalError: originalError,
     operation: operation,
     context: context,
     statusCode: statusCode,
@@ -317,8 +303,6 @@ class CloudDriveErrorHandler {
   }) => CloudDriveException(
     message,
     CloudDriveErrorType.serverError,
-    cloudDriveType: cloudDriveType,
-    originalError: originalError,
     operation: operation,
     context: context,
     statusCode: statusCode,
@@ -337,8 +321,6 @@ class CloudDriveErrorHandler {
   }) => CloudDriveException(
     message,
     CloudDriveErrorType.clientError,
-    cloudDriveType: cloudDriveType,
-    originalError: originalError,
     operation: operation,
     context: context,
     statusCode: statusCode,
@@ -357,8 +339,6 @@ class CloudDriveErrorHandler {
   }) => CloudDriveException(
     message,
     CloudDriveErrorType.unknown,
-    cloudDriveType: cloudDriveType,
-    originalError: originalError,
     operation: operation,
     context: context,
     statusCode: statusCode,
@@ -400,8 +380,6 @@ class CloudDriveErrorHandler {
     return CloudDriveException(
       message,
       errorType,
-      cloudDriveType: cloudDriveType,
-      originalError: originalError,
       operation: operation,
       context: context,
       statusCode: statusCode,

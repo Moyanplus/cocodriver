@@ -6,7 +6,10 @@ import '../../../l10n/app_localizations.dart';
 import '../../../core/mixins/smart_keep_alive_mixin.dart';
 import '../../../core/utils/responsive_utils.dart';
 
-/// 首页
+/// 首页Widget
+///
+/// 应用程序的首页组件，使用Riverpod进行状态管理
+/// 展示主要功能和内容，支持下拉刷新
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
@@ -14,6 +17,10 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
+/// HomePage的状态管理类
+///
+/// 使用SmartKeepAliveClientMixin实现智能保活
+/// 负责构建首页的UI结构和处理用户交互
 class _HomePageState extends ConsumerState<HomePage>
     with SmartKeepAliveClientMixin {
   @override
@@ -69,126 +76,9 @@ class _HomePageState extends ConsumerState<HomePage>
           ),
         ),
 
-        // 功能卡片
-        SliverPadding(
-          padding: ResponsiveUtils.getResponsivePadding(horizontal: 16),
-          sliver: SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: ResponsiveUtils.getGridColumns(),
-              crossAxisSpacing: ResponsiveUtils.getSpacing(),
-              mainAxisSpacing: ResponsiveUtils.getSpacing(),
-              childAspectRatio: ResponsiveUtils.isMobile ? 1.5 : 1.8,
-            ),
-            delegate: SliverChildListDelegate([
-              _buildFeatureCard(
-                icon: Icons.cloud,
-                title: l10n.themeSystem,
-                subtitle: l10n.themeSystemDesc,
-                color: Colors.blue,
-                l10n: l10n,
-              ),
-              _buildFeatureCard(
-                icon: Icons.folder,
-                title: l10n.navigationSystem,
-                subtitle: l10n.navigationSystemDesc,
-                color: Colors.green,
-                l10n: l10n,
-              ),
-              _buildFeatureCard(
-                icon: Icons.playlist_add_check,
-                title: l10n.componentLibrary,
-                subtitle: l10n.componentLibraryDesc,
-                color: Colors.orange,
-                l10n: l10n,
-              ),
-              _buildFeatureCard(
-                icon: Icons.security,
-                title: l10n.settingsPage,
-                subtitle: l10n.settingsPageDesc,
-                color: Colors.purple,
-                l10n: l10n,
-              ),
-            ]),
-          ),
-        ),
-
         // 底部间距
         SliverToBoxAdapter(child: SizedBox(height: 80.h)),
       ],
-    );
-  }
-
-  Widget _buildFeatureCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required AppLocalizations l10n,
-  }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ResponsiveUtils.getCardRadius()),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(ResponsiveUtils.getCardRadius()),
-        onTap: () {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l10n.clickedFeature(title))));
-        },
-        child: Container(
-          padding: ResponsiveUtils.getResponsivePadding(all: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(
-              ResponsiveUtils.getCardRadius(),
-            ),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                color.withValues(alpha: 0.1),
-                color.withValues(alpha: 0.05),
-              ],
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: ResponsiveUtils.getIconSize(28), color: color),
-              SizedBox(height: 6.h),
-              Flexible(
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: ResponsiveUtils.getResponsiveFontSize(14),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              SizedBox(height: 2.h),
-              Flexible(
-                child: Text(
-                  subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.7),
-                    fontSize: ResponsiveUtils.getResponsiveFontSize(12),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

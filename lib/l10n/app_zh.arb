@@ -20,6 +20,10 @@
   "@profile": {
     "description": "个人资料标签"
   },
+  "files": "文件",
+  "@files": {
+    "description": "文件标签"
+  },
   "settings": "设置",
   "@settings": {
     "description": "设置页面标题"

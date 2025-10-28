@@ -234,8 +234,7 @@ class Pan123FileListService {
       id: id,
       name: name,
       size: int.tryParse(formattedSize) ?? 0,
-      modifiedTime:
-          formattedTime != null ? DateTime.tryParse(formattedTime) : null,
+      modifiedTime: DateTime.tryParse(formattedTime),
       isFolder: isFolder,
       folderId: fileData['ParentFileId']?.toString() ?? '0',
     );

@@ -33,12 +33,12 @@ class WebViewToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 56.h,
+      height: 48.h,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(
           bottom: BorderSide(
-            color: CloudDriveUIConfig.dividerColor.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
           ),
         ),
       ),
@@ -162,8 +162,8 @@ class WebViewToolbar extends StatelessWidget {
     required String tooltip,
   }) {
     return Container(
-      width: 48.w,
-      height: 48.h,
+      width: 40.w,
+      height: 40.h,
       child: IconButton(
         icon: Icon(
           icon,

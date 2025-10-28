@@ -1,5 +1,5 @@
 import '../../../../../core/logging/log_manager.dart';
-import '../../data/models/cloud_drive_entities.dart';
+// import '../../data/models/cloud_drive_entities.dart'; // 未使用
 import '../../data/models/cloud_drive_dtos.dart';
 
 /// 缓存条目 - 增强版本
@@ -191,7 +191,6 @@ class CloudDriveCacheService {
 
   /// 获取缓存统计信息
   static Map<String, dynamic> getCacheStats() {
-    final now = DateTime.now();
     final totalEntries = _cache.length;
     final expiredEntries =
         _cache.values.where((entry) => entry.isExpired(_maxAge)).length;
@@ -219,7 +218,6 @@ class CloudDriveCacheService {
   /// 获取缓存性能指标
   static Map<String, dynamic> getCacheMetrics() {
     final stats = getCacheStats();
-    final totalEntries = stats['totalEntries'] as int;
     final totalAccessCount = stats['totalAccessCount'] as int;
 
     // 计算命中率（需要实现命中统计）
@@ -237,7 +235,6 @@ class CloudDriveCacheService {
 
   /// 清理过期缓存
   static int cleanupExpiredCache() {
-    final now = DateTime.now();
     final expiredKeys = <String>[];
 
     for (final entry in _cache.entries) {
@@ -373,7 +370,12 @@ class CloudDriveCacheService {
     LogManager().cloudDrive('📦 批量缓存: ${cacheData.length} 个条目');
 
     for (final entry in cacheData.entries) {
-      cacheData(entry.key, entry.value, ttl: ttl, metadata: metadata);
+      CloudDriveCacheService.cacheData(
+        entry.key,
+        entry.value,
+        ttl: ttl,
+        metadata: metadata,
+      );
     }
   }
 

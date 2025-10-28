@@ -1,4 +1,4 @@
-import '../../../../../core/logging/log_manager.dart';
+// import '../../../../../core/logging/log_manager.dart'; // 未使用
 import '../data/models/cloud_drive_entities.dart';
 import '../data/models/cloud_drive_dtos.dart';
 import '../base/cloud_drive_operation_service.dart';
@@ -270,7 +270,10 @@ class FileOperationService extends CloudDriveService {
       final accountDetails = await strategy.getAccountDetails(account: account);
 
       if (accountDetails != null) {
-        logSuccess('获取账号详情', details: accountDetails.accountInfo.username);
+        logSuccess(
+          '获取账号详情',
+          details: accountDetails.accountInfo?.username ?? '未知用户',
+        );
       } else {
         logWarning('获取账号详情', '获取失败');
       }

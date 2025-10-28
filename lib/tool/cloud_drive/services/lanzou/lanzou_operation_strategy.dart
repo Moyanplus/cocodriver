@@ -3,7 +3,7 @@ import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import '../../base/cloud_drive_operation_service.dart';
 import 'lanzou_cloud_drive_service.dart';
-import 'lanzou_config.dart';
+// import 'lanzou_config.dart'; // 未使用
 
 /// 蓝奏云操作策略
 class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
@@ -189,9 +189,57 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   @override
   Future<CloudDriveAccountDetails?> getAccountDetails({
     required CloudDriveAccount account,
-  }) {
-    // TODO: 实现蓝奏云账号详情获取
-    return Future.value(null);
+  }) async {
+    try {
+      LogManager().cloudDrive('📋 蓝奏云 - 获取账号详情开始');
+      LogManager().cloudDrive(
+        '👤 蓝奏云 - 账号信息: ${account.name} (${account.type.displayName})',
+      );
+
+      // 从 Cookie 中提取 UID
+      final uid = LanzouCloudDriveService.extractUidFromCookies(
+        account.cookies ?? '',
+      );
+
+      if (uid == null || uid.isEmpty) {
+        LogManager().cloudDrive('❌ 蓝奏云 - 无法从 Cookie 中提取 UID');
+        return null;
+      }
+
+      // 验证 Cookie 有效性
+      final isValid = await LanzouCloudDriveService.validateCookies(
+        account.cookies ?? '',
+        uid,
+      );
+
+      if (!isValid) {
+        LogManager().cloudDrive('❌ 蓝奏云 - Cookie 验证失败');
+        return null;
+      }
+
+      // 蓝奏云没有详细的用户信息 API，使用 UID 作为用户名
+      final accountInfo = CloudDriveAccountInfo(
+        username: 'lanzou_$uid',
+        uk: int.tryParse(uid) ?? 0,
+        isVip: false,
+        isSvip: false,
+        loginState: 1,
+      );
+
+      final accountDetails = CloudDriveAccountDetails(
+        id: account.id,
+        name: account.name,
+        accountInfo: accountInfo,
+        quotaInfo: null, // 蓝奏云没有容量信息 API
+      );
+
+      LogManager().cloudDrive('✅ 蓝奏云 - 账号详情获取成功');
+      return accountDetails;
+    } catch (e, stackTrace) {
+      LogManager().cloudDrive('❌ 蓝奏云 - 获取账号详情异常: $e');
+      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
+      return null;
+    }
   }
 
   @override
@@ -217,8 +265,51 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     String? path,
     String? folderId,
-  }) {
-    // TODO: implement getFileList
-    throw UnimplementedError();
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    try {
+      LogManager().cloudDrive('📁 蓝奏云 - 获取文件列表开始');
+      LogManager().cloudDrive('📁 文件夹ID: ${folderId ?? '-1'}');
+      LogManager().cloudDrive('👤 账号: ${account.name}');
+
+      // 从Cookie中提取UID
+      final uid = LanzouCloudDriveService.extractUidFromCookies(
+        account.cookies ?? '',
+      );
+
+      if (uid == null || uid.isEmpty) {
+        LogManager().cloudDrive('❌ 蓝奏云 - 无法从Cookie中提取UID');
+        return [];
+      }
+
+      LogManager().cloudDrive('✅ 蓝奏云 - UID提取成功: $uid');
+
+      // 获取文件和文件夹
+      final files = await LanzouCloudDriveService.getFiles(
+        cookies: account.cookies ?? '',
+        uid: uid,
+        folderId: folderId ?? '-1',
+      );
+
+      final folders = await LanzouCloudDriveService.getFolders(
+        cookies: account.cookies ?? '',
+        uid: uid,
+        folderId: folderId ?? '-1',
+      );
+
+      // 合并文件和文件夹列表
+      final allItems = [...folders, ...files];
+
+      LogManager().cloudDrive(
+        '✅ 蓝奏云 - 文件列表获取成功: ${files.length}个文件, ${folders.length}个文件夹',
+      );
+
+      return allItems;
+    } catch (e, stackTrace) {
+      LogManager().cloudDrive('❌ 蓝奏云 - 获取文件列表异常: $e');
+      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
+      return [];
+    }
   }
 }

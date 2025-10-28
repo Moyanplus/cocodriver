@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import '../../../../../core/utils/responsive_utils.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../common/cloud_drive_common_widgets.dart';
 
@@ -36,7 +39,10 @@ class _ShareDialogState extends State<ShareDialog> {
     return AlertDialog(
       title: Text(
         '分享文件',
-        style: CloudDriveUIConfig.titleTextStyle,
+        style: TextStyle(
+          fontSize: ResponsiveUtils.getResponsiveFontSize(18.sp),
+          fontWeight: FontWeight.bold,
+        ),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -45,11 +51,13 @@ class _ShareDialogState extends State<ShareDialog> {
           // 文件名
           Text(
             '文件: ${widget.fileName}',
-            style: CloudDriveUIConfig.bodyTextStyle,
+            style: TextStyle(
+              fontSize: ResponsiveUtils.getResponsiveFontSize(14.sp),
+            ),
           ),
-          
-          SizedBox(height: CloudDriveUIConfig.spacingM),
-          
+
+          SizedBox(height: ResponsiveUtils.getSpacing()),
+
           // 密码设置
           CloudDriveCommonWidgets.buildInputField(
             label: '分享密码（可选）',
@@ -57,34 +65,38 @@ class _ShareDialogState extends State<ShareDialog> {
             controller: _passwordController,
             obscureText: false,
           ),
-          
-          SizedBox(height: CloudDriveUIConfig.spacingM),
-          
+
+          SizedBox(height: ResponsiveUtils.getSpacing()),
+
           // 有效期设置
           Text(
             '有效期',
-            style: CloudDriveUIConfig.bodyTextStyle.copyWith(
+            style: TextStyle(
+              fontSize: ResponsiveUtils.getResponsiveFontSize(14.sp),
               fontWeight: FontWeight.w500,
             ),
           ),
-          SizedBox(height: CloudDriveUIConfig.spacingS),
-          
+          SizedBox(height: ResponsiveUtils.getSpacing() * 0.5),
+
           _buildExpireDaysSelector(),
         ],
       ),
       actions: [
         // 取消按钮
         TextButton(
-          onPressed: _isLoading ? null : () {
-            widget.onCancel?.call();
-            Navigator.of(context).pop();
-          },
+          onPressed:
+              _isLoading
+                  ? null
+                  : () {
+                    widget.onCancel?.call();
+                    Navigator.of(context).pop();
+                  },
           child: Text(
             '取消',
             style: TextStyle(color: CloudDriveUIConfig.secondaryTextColor),
           ),
         ),
-        
+
         // 确认按钮
         CloudDriveCommonWidgets.buildButton(
           text: '创建分享',
@@ -107,49 +119,67 @@ class _ShareDialogState extends State<ShareDialog> {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: CloudDriveUIConfig.dividerColor),
-        borderRadius: BorderRadius.circular(CloudDriveUIConfig.inputRadius),
+        borderRadius: BorderRadius.circular(
+          ResponsiveUtils.getCardRadius() * 0.5,
+        ),
       ),
       child: Column(
-        children: options.map((option) {
-          final isSelected = _expireDays == option['value'];
-          return InkWell(
-            onTap: () {
-              setState(() {
-                _expireDays = option['value'] as int;
-              });
-            },
-            child: Container(
-              width: double.infinity,
-              padding: CloudDriveUIConfig.inputPadding,
-              decoration: BoxDecoration(
-                color: isSelected 
-                    ? CloudDriveUIConfig.primaryActionColor.withOpacity(0.1)
-                    : null,
-                borderRadius: BorderRadius.circular(CloudDriveUIConfig.inputRadius),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                    color: isSelected 
-                        ? CloudDriveUIConfig.primaryActionColor
-                        : CloudDriveUIConfig.secondaryTextColor,
-                    size: CloudDriveUIConfig.iconSizeS,
+        children:
+            options.map((option) {
+              final isSelected = _expireDays == option['value'];
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    _expireDays = option['value'] as int;
+                  });
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: ResponsiveUtils.getResponsivePadding(
+                    horizontal: 12.w,
+                    vertical: 12.h,
                   ),
-                  SizedBox(width: CloudDriveUIConfig.spacingS),
-                  Text(
-                    option['label'] as String,
-                    style: CloudDriveUIConfig.bodyTextStyle.copyWith(
-                      color: isSelected 
-                          ? CloudDriveUIConfig.primaryActionColor
-                          : CloudDriveUIConfig.textColor,
+                  decoration: BoxDecoration(
+                    color:
+                        isSelected
+                            ? CloudDriveUIConfig.primaryActionColor.withOpacity(
+                              0.1,
+                            )
+                            : null,
+                    borderRadius: BorderRadius.circular(
+                      ResponsiveUtils.getCardRadius() * 0.5,
                     ),
                   ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isSelected
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_unchecked,
+                        color:
+                            isSelected
+                                ? CloudDriveUIConfig.primaryActionColor
+                                : CloudDriveUIConfig.secondaryTextColor,
+                        size: ResponsiveUtils.getIconSize(18.sp),
+                      ),
+                      SizedBox(width: ResponsiveUtils.getSpacing() * 0.5),
+                      Text(
+                        option['label'] as String,
+                        style: TextStyle(
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(
+                            14.sp,
+                          ),
+                          color:
+                              isSelected
+                                  ? CloudDriveUIConfig.primaryActionColor
+                                  : CloudDriveUIConfig.textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
       ),
     );
   }
@@ -160,12 +190,13 @@ class _ShareDialogState extends State<ShareDialog> {
       _isLoading = true;
     });
 
-    final password = _passwordController.text.trim().isEmpty 
-        ? null 
-        : _passwordController.text.trim();
+    final password =
+        _passwordController.text.trim().isEmpty
+            ? null
+            : _passwordController.text.trim();
 
     widget.onConfirm?.call(password, _expireDays);
-    
+
     // 延迟关闭对话框，让调用者处理结果
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
@@ -191,31 +222,25 @@ class ShareResultDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        '分享创建成功',
-        style: CloudDriveUIConfig.titleTextStyle,
-      ),
+      title: Text('分享创建成功', style: CloudDriveUIConfig.titleTextStyle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 分享链接
-          CloudDriveCommonWidgets.buildInfoRow(
-            label: '分享链接',
-            value: shareUrl,
-          ),
-          
+          CloudDriveCommonWidgets.buildInfoRow(label: '分享链接', value: shareUrl),
+
           SizedBox(height: CloudDriveUIConfig.spacingM),
-          
+
           // 密码
           if (password != null)
             CloudDriveCommonWidgets.buildInfoRow(
               label: '分享密码',
               value: password!,
             ),
-          
+
           SizedBox(height: CloudDriveUIConfig.spacingM),
-          
+
           // 操作按钮
           Row(
             children: [
@@ -226,9 +251,9 @@ class ShareResultDialog extends StatelessWidget {
                   icon: const Icon(Icons.copy),
                 ),
               ),
-              
+
               SizedBox(width: CloudDriveUIConfig.spacingS),
-              
+
               if (password != null)
                 Expanded(
                   child: CloudDriveCommonWidgets.buildSecondaryButton(

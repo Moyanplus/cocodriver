@@ -15,6 +15,8 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     String? path,
     String? folderId,
+    int page = 1,
+    int pageSize = 50,
   }) async {
     try {
       LogManager().cloudDrive(

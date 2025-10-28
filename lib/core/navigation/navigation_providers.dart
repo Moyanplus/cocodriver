@@ -1,16 +1,39 @@
+/// 导航和状态管理提供者
+///
+/// 使用Riverpod管理应用程序的导航状态、主题状态等
+/// 提供全局状态管理和页面导航功能
+///
+/// 主要功能：
+/// - 应用Provider包装器
+/// - 主题状态管理
+/// - 页面导航管理
+/// - 本地化状态管理
+/// - 云盘类型管理
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// 核心模块导入
 import '../theme/theme_models.dart';
 import '../services/theme_service.dart';
+
+// 页面导入
 import '../../features/home/pages/home_page.dart';
 import '../../features/user/pages/user_profile_page.dart';
-import '../../tool/cloud_drive/presentation/pages/cloud_drive_assistant_page.dart';
+import '../../tool/cloud_drive/presentation/pages/cloud_drive_browser_page.dart';
 
 // ==================== 应用Provider包装器 ====================
 /// 应用提供者包装器
+///
+/// 为整个应用程序提供Riverpod的ProviderScope
+/// 确保所有子组件都能访问到Provider状态
 class AppProviders extends StatelessWidget {
+  /// 子组件
   final Widget child;
 
   const AppProviders({required this.child, super.key});
@@ -151,7 +174,7 @@ final currentPageIndexProvider = StateProvider<int>((ref) => 0);
 
 /// 页面列表提供者
 final pagesProvider = Provider<List<Widget>>(
-  (ref) => const [HomePage(), CloudDriveAssistantPage(), UserProfilePage()],
+  (ref) => const [HomePage(), CloudDriveBrowserPage(), UserProfilePage()],
 );
 
 /// 页面导航状态提供者

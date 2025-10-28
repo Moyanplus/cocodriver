@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import '../../../../../core/utils/responsive_utils.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../common/cloud_drive_common_widgets.dart';
 
@@ -21,7 +24,10 @@ class DownloadUrlDialog extends StatelessWidget {
     return AlertDialog(
       title: Text(
         '选择下载链接',
-        style: CloudDriveUIConfig.titleTextStyle,
+        style: TextStyle(
+          fontSize: ResponsiveUtils.getResponsiveFontSize(18.sp),
+          fontWeight: FontWeight.bold,
+        ),
       ),
       content: SizedBox(
         width: double.maxFinite,
@@ -30,18 +36,22 @@ class DownloadUrlDialog extends StatelessWidget {
           children: [
             Text(
               '检测到多个下载链接，请选择一个：',
-              style: CloudDriveUIConfig.bodyTextStyle,
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(14.sp),
+              ),
             ),
-            
-            SizedBox(height: CloudDriveUIConfig.spacingM),
-            
+
+            SizedBox(height: ResponsiveUtils.getSpacing()),
+
             // URL列表
             ...downloadUrls.asMap().entries.map((entry) {
               final index = entry.key;
               final url = entry.value;
-              
+
               return Container(
-                margin: EdgeInsets.only(bottom: CloudDriveUIConfig.spacingS),
+                margin: EdgeInsets.only(
+                  bottom: ResponsiveUtils.getSpacing() * 0.5,
+                ),
                 child: CloudDriveCommonWidgets.buildCard(
                   onTap: () => _handleUrlSelect(context, url),
                   child: Column(
@@ -52,12 +62,15 @@ class DownloadUrlDialog extends StatelessWidget {
                           Icon(
                             Icons.link,
                             color: CloudDriveUIConfig.infoColor,
-                            size: CloudDriveUIConfig.iconSizeS,
+                            size: ResponsiveUtils.getIconSize(18.sp),
                           ),
-                          SizedBox(width: CloudDriveUIConfig.spacingS),
+                          SizedBox(width: ResponsiveUtils.getSpacing() * 0.5),
                           Text(
                             '链接 ${index + 1}',
-                            style: CloudDriveUIConfig.bodyTextStyle.copyWith(
+                            style: TextStyle(
+                              fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                14.sp,
+                              ),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -65,24 +78,35 @@ class DownloadUrlDialog extends StatelessWidget {
                           Icon(
                             Icons.chevron_right,
                             color: CloudDriveUIConfig.secondaryTextColor,
-                            size: CloudDriveUIConfig.iconSizeS,
+                            size: ResponsiveUtils.getIconSize(18.sp),
                           ),
                         ],
                       ),
-                      
-                      SizedBox(height: CloudDriveUIConfig.spacingS),
-                      
+
+                      SizedBox(height: ResponsiveUtils.getSpacing() * 0.5),
+
                       // URL预览
                       Container(
                         width: double.infinity,
-                        padding: CloudDriveUIConfig.inputPadding,
+                        padding: ResponsiveUtils.getResponsivePadding(
+                          horizontal: 12.w,
+                          vertical: 8.h,
+                        ),
                         decoration: BoxDecoration(
-                          color: CloudDriveUIConfig.dividerColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(CloudDriveUIConfig.inputRadius),
+                          color: CloudDriveUIConfig.dividerColor.withOpacity(
+                            0.1,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            ResponsiveUtils.getCardRadius() * 0.5,
+                          ),
                         ),
                         child: Text(
                           _getUrlPreview(url),
-                          style: CloudDriveUIConfig.smallTextStyle,
+                          style: TextStyle(
+                            fontSize: ResponsiveUtils.getResponsiveFontSize(
+                              12.sp,
+                            ),
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -122,7 +146,7 @@ class DownloadUrlDialog extends StatelessWidget {
     if (url.length <= 60) {
       return url;
     }
-    
+
     return '${url.substring(0, 30)}...${url.substring(url.length - 30)}';
   }
 }
@@ -145,10 +169,7 @@ class DownloadProgressDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        '下载中',
-        style: CloudDriveUIConfig.titleTextStyle,
-      ),
+      title: Text('下载中', style: CloudDriveUIConfig.titleTextStyle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -160,18 +181,20 @@ class DownloadProgressDialog extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
           ),
-          
+
           SizedBox(height: CloudDriveUIConfig.spacingM),
-          
+
           // 进度条
           LinearProgressIndicator(
             value: progress,
             backgroundColor: CloudDriveUIConfig.dividerColor,
-            valueColor: AlwaysStoppedAnimation<Color>(CloudDriveUIConfig.successColor),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              CloudDriveUIConfig.successColor,
+            ),
           ),
-          
+
           SizedBox(height: CloudDriveUIConfig.spacingS),
-          
+
           // 进度文本
           Text(
             '${(progress * 100).toStringAsFixed(1)}%',
@@ -179,7 +202,7 @@ class DownloadProgressDialog extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          
+
           // 状态文本
           if (status != null) ...[
             SizedBox(height: CloudDriveUIConfig.spacingXS),
@@ -230,10 +253,7 @@ class DownloadCompleteDialog extends StatelessWidget {
             size: CloudDriveUIConfig.iconSize,
           ),
           SizedBox(width: CloudDriveUIConfig.spacingS),
-          Text(
-            '下载完成',
-            style: CloudDriveUIConfig.titleTextStyle,
-          ),
+          Text('下载完成', style: CloudDriveUIConfig.titleTextStyle),
         ],
       ),
       content: Column(
@@ -247,9 +267,9 @@ class DownloadCompleteDialog extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
           ),
-          
+
           SizedBox(height: CloudDriveUIConfig.spacingM),
-          
+
           // 文件路径
           if (filePath != null) ...[
             CloudDriveCommonWidgets.buildInfoRow(
@@ -271,7 +291,7 @@ class DownloadCompleteDialog extends StatelessWidget {
             style: TextStyle(color: CloudDriveUIConfig.secondaryTextColor),
           ),
         ),
-        
+
         // 打开文件按钮
         if (onOpenFile != null)
           CloudDriveCommonWidgets.buildButton(

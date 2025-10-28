@@ -113,4 +113,14 @@ class BaiduParamService {
     _cacheTimestamps.remove(accountId);
     LogManager().cloudDrive('🧹 百度网盘 - 已清除账号 $accountId 的参数缓存');
   }
+
+  /// 清除参数缓存（别名方法）
+  static void clearParamCache(String accountId) {
+    clearCacheForAccount(accountId);
+  }
+
+  /// 清除所有参数缓存（别名方法）
+  static void clearAllParamCache() {
+    clearCache();
+  }
 }

@@ -25,12 +25,12 @@ class LanzouCloudDriveService {
   }
 
   /// 统一日志记录
-  static void _logInfo(String message, {Map<String, dynamic>? params}) {
+  static void _logInfo(String message) {
     LogManager().cloudDrive(message);
   }
 
   /// 统一成功日志记录
-  static void _logSuccess(String message, {Map<String, dynamic>? details}) {
+  static void _logSuccess(String message) {
     LogManager().cloudDrive('✅ 蓝奏云盘 - $message');
   }
 
@@ -187,11 +187,28 @@ class LanzouCloudDriveService {
 
       final headers = _createHeaders(cookies, uid);
 
-      final responseData = await _executeRequest(
-        account: _createTempAccount(cookies),
-        data: data,
-        headers: headers,
+      // 构建带 uid 参数的 URL
+      final apiUrl = '${LanzouConfig.apiUrl}?uid=$uid';
+
+      final tempAccount = _createTempAccount(cookies);
+      final dio = _createDio(tempAccount);
+
+      final response = await dio.post(
+        apiUrl,
+        data: FormData.fromMap(data),
+        options: Options(
+          headers: headers,
+          followRedirects: LanzouConfig.followRedirects,
+          maxRedirects: LanzouConfig.maxRedirects,
+        ),
       );
+
+      if (response.data is! Map<String, dynamic>) {
+        _logError('响应数据类型异常', '类型: ${response.data.runtimeType}');
+        throw Exception('响应数据格式错误');
+      }
+
+      final responseData = response.data as Map<String, dynamic>;
 
       if (responseData['zt'] == 1) {
         final List<dynamic> fileList = responseData['text'] ?? [];
@@ -259,11 +276,28 @@ class LanzouCloudDriveService {
 
       final headers = _createHeaders(cookies, uid);
 
-      final responseData = await _executeRequest(
-        account: _createTempAccount(cookies),
-        data: data,
-        headers: headers,
+      // 构建带 uid 参数的 URL
+      final apiUrl = '${LanzouConfig.apiUrl}?uid=$uid';
+
+      final tempAccount = _createTempAccount(cookies);
+      final dio = _createDio(tempAccount);
+
+      final response = await dio.post(
+        apiUrl,
+        data: FormData.fromMap(data),
+        options: Options(
+          headers: headers,
+          followRedirects: LanzouConfig.followRedirects,
+          maxRedirects: LanzouConfig.maxRedirects,
+        ),
       );
+
+      if (response.data is! Map<String, dynamic>) {
+        _logError('响应数据类型异常', '类型: ${response.data.runtimeType}');
+        throw Exception('响应数据格式错误');
+      }
+
+      final responseData = response.data as Map<String, dynamic>;
 
       if (responseData['zt'] == 1) {
         final List<dynamic> folderList = responseData['text'] ?? [];
@@ -308,26 +342,44 @@ class LanzouCloudDriveService {
       final data = {
         'task': LanzouConfig.getTaskId('validateCookies'),
         'folder_id': '-1',
-        'pg': '1',
         'vei': LanzouConfig.getVeiParameter(),
       };
 
       final headers = _createHeaders(cookies, uid);
 
-      final responseData = await _executeRequest(
-        account: _createTempAccount(cookies),
-        data: data,
-        headers: headers,
+      // 构建带 uid 参数的 URL
+      final apiUrl = '${LanzouConfig.apiUrl}?uid=$uid';
+      _logInfo('🌐 验证 Cookie URL: $apiUrl');
+
+      final tempAccount = _createTempAccount(cookies);
+      final dio = _createDio(tempAccount);
+
+      final response = await dio.post(
+        apiUrl,
+        data: FormData.fromMap(data),
+        options: Options(
+          headers: headers,
+          followRedirects: LanzouConfig.followRedirects,
+          maxRedirects: LanzouConfig.maxRedirects,
+        ),
       );
 
-      final isValid = responseData['zt'] == 1;
-      _logInfo('🔍 Cookie 验证结果: ${isValid ? '有效' : '无效'}');
+      _logInfo('📡 响应状态码: ${response.statusCode}');
 
-      if (!isValid) {
-        _logError('Cookie 验证失败', responseData['info']);
+      if (response.data is Map<String, dynamic>) {
+        final responseData = response.data as Map<String, dynamic>;
+        final isValid = responseData['zt'] == 1;
+        _logInfo('🔍 Cookie 验证结果: ${isValid ? '有效' : '无效'}');
+
+        if (!isValid) {
+          _logError('Cookie 验证失败', responseData['info']);
+        }
+
+        return isValid;
+      } else {
+        _logError('响应数据类型异常', '类型: ${response.data.runtimeType}');
+        return false;
       }
-
-      return isValid;
     } catch (e) {
       _logError('Cookie 验证异常', e);
       return false;

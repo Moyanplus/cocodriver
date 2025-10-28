@@ -313,6 +313,21 @@ class CloudDriveException implements Exception {
     }
   }
 
+  /// 是否需要重试
+  bool get shouldRetry {
+    switch (type) {
+      case CloudDriveErrorType.network:
+      case CloudDriveErrorType.serverError:
+      case CloudDriveErrorType.rateLimit:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /// 是否需要重新登录
+  bool get requiresReLogin => type == CloudDriveErrorType.authentication;
+
   @override
   String toString() {
     final operationName = operation ?? '未知操作';

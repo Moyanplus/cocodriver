@@ -1,34 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <domain-config cleartextTrafficPermitted="true">
-        <!-- 允许HTTP流量 -->
-        <domain includeSubdomains="true">localhost</domain>
-        <domain includeSubdomains="true">10.0.2.2</domain>
-        <domain includeSubdomains="true">127.0.0.1</domain>
-        <!-- 云盘相关域名 -->
-        <domain includeSubdomains="true">pan.baidu.com</domain>
-        <domain includeSubdomains="true">yun.baidu.com</domain>
-        <domain includeSubdomains="true">aliyundrive.com</domain>
-        <domain includeSubdomains="true">quark.cn</domain>
-        <domain includeSubdomains="true">lanzou.com</domain>
-        <domain includeSubdomains="true">123pan.com</domain>
-    </domain-config>
-    
-    <!-- 基础配置 -->
+    <!-- 基础配置 - 允许所有流量，信任所有证书 -->
     <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
-            <!-- 信任系统证书 -->
             <certificates src="system"/>
-            <!-- 信任用户添加的证书 -->
             <certificates src="user"/>
         </trust-anchors>
     </base-config>
-    
-    <!-- 调试配置 -->
-    <debug-overrides>
-        <trust-anchors>
-            <certificates src="system"/>
-            <certificates src="user"/>
-        </trust-anchors>
-    </debug-overrides>
 </network-security-config>

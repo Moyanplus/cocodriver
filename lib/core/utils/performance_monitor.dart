@@ -1,3 +1,21 @@
+/// 性能监控器
+///
+/// 负责监控应用程序的性能指标，包括帧率、渲染时间等关键性能数据
+/// 提供实时性能监控和性能报告功能
+///
+/// 主要功能：
+/// - 帧率监控和统计
+/// - 渲染时间记录和分析
+/// - 性能报告生成
+/// - 性能警告和优化建议
+///
+/// 使用单例模式，确保全局性能监控状态一致性
+/// 仅在Debug模式下启用，避免影响Release版本性能
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
@@ -6,22 +24,45 @@ import '../logging/log_manager.dart';
 import '../logging/log_category.dart';
 import '../logging/log_formatter.dart';
 
-/// 性能监控器
-/// 监控应用性能指标，包括帧率、渲染时间等
+/// 性能监控器类
+///
+/// 负责监控应用程序的性能指标，包括帧率、渲染时间等关键性能数据
+/// 提供实时性能监控和性能报告功能
+///
+/// 主要功能：
+/// - 帧率监控和统计
+/// - 渲染时间记录和分析
+/// - 性能报告生成
+/// - 性能警告和优化建议
+///
+/// 使用单例模式，确保全局性能监控状态一致性
+/// 仅在Debug模式下启用，避免影响Release版本性能
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
 class PerformanceMonitor {
   static final PerformanceMonitor _instance = PerformanceMonitor._internal();
   factory PerformanceMonitor() => _instance;
   PerformanceMonitor._internal();
 
+  // 日志管理器实例
   final LogManager _logManager = LogManager();
+  // 日志格式化器实例
   final LogFormatter _logFormatter = LogFormatter();
 
+  // 帧时间数据列表
   final List<double> _frameTimes = [];
+  // 渲染时间数据列表
   final List<Duration> _renderTimes = [];
+  // 监控状态标志
   bool _isMonitoring = false;
+  // 帧计数器
   int _frameCount = 0;
+  // 上一帧的时间戳
   DateTime? _lastFrameTime;
-  static const int _maxSamples = 60; // 保留最近60帧的数据
+  // 最大样本数量（保留最近60帧的数据）
+  static const int _maxSamples = 60;
 
   /// 开始性能监控
   void startMonitoring() {

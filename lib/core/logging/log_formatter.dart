@@ -1,17 +1,51 @@
+/// 日志格式化器
+///
+/// 负责日志的格式化、导出和显示功能
+/// 支持多种日志格式和导出方式，提供统一的日志处理接口
+///
+/// 主要功能：
+/// - 日志格式化处理
+/// - 多种导出格式支持
+/// - 日志条目管理
+/// - 性能日志格式化
+/// - 日志显示优化
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'dart:convert';
 
 import 'log_category.dart';
 import 'log_config.dart';
 
 /// 日志条目类
+///
+/// 表示单条日志记录，包含时间戳、日志级别、类名、方法名等信息
+/// 用于日志的存储和格式化处理
 class Log {
+  /// 时间戳
   final String timestamp;
+
+  /// 日志级别
   final LogLevel logLevel;
+
+  /// 类名
   final String className;
+
+  /// 方法名
   final String methodName;
+
+  /// 日志文本内容
   final String text;
+
+  /// 异常信息（可选）
   final dynamic exception;
+
+  /// 堆栈跟踪信息（可选）
   final String? stacktrace;
+
+  /// 附加数据（可选）
   final dynamic data;
 
   Log({

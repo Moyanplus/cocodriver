@@ -1,17 +1,40 @@
+/// 应用侧边栏组件
+///
+/// 提供应用程序的侧边导航栏功能，包含用户信息、导航菜单、主题切换等
+/// 使用Riverpod进行状态管理，支持响应式布局和多平台适配
+///
+/// 主要功能：
+/// - 用户头像和信息显示
+/// - 导航菜单项
+/// - 主题切换功能
+/// - 云盘类型选择
+/// - 设置页面入口
+/// - 响应式布局适配
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+// 核心模块导入
 import '../../../core/theme/theme_models.dart';
 import '../../../core/navigation/navigation_providers.dart';
 import '../../../core/providers/cloud_drive_type_provider.dart';
 import '../../../core/utils/responsive_utils.dart';
 import '../../../core/utils/adaptive_utils.dart';
+
+// 云盘功能导入
 import '../../../tool/cloud_drive/data/models/cloud_drive_entities.dart';
 
-/// 应用侧边栏
+/// 应用侧边栏Widget
+///
+/// 使用Riverpod进行状态管理，提供侧边导航功能
+/// 包含用户信息、导航菜单、主题切换等核心功能
 class AppDrawerWidget extends ConsumerStatefulWidget {
   const AppDrawerWidget({super.key});
 
@@ -19,6 +42,10 @@ class AppDrawerWidget extends ConsumerStatefulWidget {
   ConsumerState<AppDrawerWidget> createState() => _AppDrawerWidgetState();
 }
 
+/// AppDrawerWidget的状态管理类
+///
+/// 负责监听主题和云盘类型变化，构建侧边栏的UI结构
+/// 包括用户信息区域、导航菜单、主题切换等组件
 class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
   @override
   Widget build(BuildContext context) {

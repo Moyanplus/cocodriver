@@ -1,9 +1,27 @@
+/// 响应式布局工具类
+///
+/// 提供统一的屏幕适配和响应式布局方法
+/// 基于flutter_screenutil实现跨设备屏幕适配
+///
+/// 主要功能：
+/// - 屏幕尺寸获取
+/// - 设备类型检测
+/// - 响应式布局计算
+/// - 屏幕适配工具
+/// - 布局断点管理
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'platform_utils.dart';
 
 /// 响应式布局工具类
+///
 /// 提供统一的屏幕适配和响应式布局方法
+/// 基于flutter_screenutil实现跨设备屏幕适配
 class ResponsiveUtils {
   ResponsiveUtils._();
 
@@ -94,9 +112,9 @@ class ResponsiveUtils {
 
   /// 根据屏幕类型获取按钮高度
   static double getButtonHeight() {
-    if (isMobile) return 48.h;
-    if (isTablet) return 52.h;
-    return 56.h;
+    if (isMobile) return 52.h;
+    if (isTablet) return 56.h;
+    return 60.h;
   }
 
   /// 根据屏幕类型获取卡片圆角

@@ -95,6 +95,12 @@ class QRLoginManager {
         timer,
       ) async {
         try {
+          // 检查 stream 是否已关闭，避免往已关闭的 stream 添加数据
+          if (streamController == null || streamController.isClosed) {
+            timer.cancel();
+            return;
+          }
+
           pollCount++;
 
           // 检查是否超过最大轮询次数
@@ -103,7 +109,9 @@ class QRLoginManager {
               status: QRLoginStatus.expired,
               message: '二维码已过期，请重新生成',
             );
-            streamController?.add(loginInfo);
+            if (!streamController.isClosed) {
+              streamController.add(loginInfo);
+            }
             timer.cancel();
             return;
           }
@@ -114,7 +122,9 @@ class QRLoginManager {
               status: QRLoginStatus.expired,
               message: '二维码已过期',
             );
-            streamController?.add(loginInfo);
+            if (!streamController.isClosed) {
+              streamController.add(loginInfo);
+            }
             timer.cancel();
             return;
           }
@@ -123,7 +133,9 @@ class QRLoginManager {
           final updatedInfo = await service.checkQRStatus(loginInfo.qrId);
           loginInfo = updatedInfo;
 
-          streamController?.add(loginInfo);
+          if (!streamController.isClosed) {
+            streamController.add(loginInfo);
+          }
 
           // 如果登录成功或失败，停止轮询
           if (loginInfo.status == QRLoginStatus.success ||
@@ -144,6 +156,8 @@ class QRLoginManager {
             info.status == QRLoginStatus.failed ||
             info.status == QRLoginStatus.cancelled ||
             info.status == QRLoginStatus.expired) {
+          // 立即取消 Timer，避免继续往已关闭的 stream 添加数据
+          timer?.cancel();
           break;
         }
       }

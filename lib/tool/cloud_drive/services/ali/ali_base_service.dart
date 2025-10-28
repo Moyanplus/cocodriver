@@ -9,6 +9,11 @@ import 'ali_config.dart';
 /// 提供通用的Dio配置和响应处理功能
 abstract class AliBaseService {
   /// 创建配置好的Dio实例
+  ///
+  /// 为阿里云盘账号创建配置好的Dio实例
+  ///
+  /// [account] 阿里云盘账号信息
+  /// 返回配置好的Dio实例
   static Dio createDio(CloudDriveAccount account) {
     // 记录云盘服务初始化日志
     LogManager().cloudDrive(
@@ -35,7 +40,12 @@ abstract class AliBaseService {
     return dio;
   }
 
-  /// 创建用于API调用的Dio实例（使用api.aliyundrive.com）
+  /// 创建用于API调用的Dio实例
+  ///
+  /// 创建使用api.aliyundrive.com的Dio实例，用于API调用
+  ///
+  /// [account] 阿里云盘账号信息
+  /// 返回配置好的API Dio实例
   static Dio createApiDio(CloudDriveAccount account) {
     final dio = Dio(
       BaseOptions(
@@ -51,6 +61,11 @@ abstract class AliBaseService {
   }
 
   /// 构建请求头
+  ///
+  /// 为阿里云盘账号构建HTTP请求头
+  ///
+  /// [account] 阿里云盘账号信息
+  /// 返回请求头映射
   static Map<String, String> _buildHeaders(CloudDriveAccount account) {
     final headers = Map<String, String>.from(AliConfig.defaultHeaders);
 
@@ -64,6 +79,10 @@ abstract class AliBaseService {
   }
 
   /// 添加拦截器
+  ///
+  /// 为Dio实例添加请求、响应和错误拦截器
+  ///
+  /// [dio] Dio实例
   static void _addInterceptors(Dio dio) {
     dio.interceptors.add(
       InterceptorsWrapper(
@@ -114,17 +133,37 @@ abstract class AliBaseService {
   }
 
   /// 检查HTTP响应是否成功
+  ///
+  /// 检查HTTP状态码是否表示成功
+  ///
+  /// [statusCode] HTTP状态码
+  /// 返回是否成功
   static bool isHttpSuccess(int? statusCode) =>
       statusCode != null && statusCode >= 200 && statusCode < 300;
 
   /// 检查API响应是否成功
+  ///
+  /// 检查阿里云盘API响应是否成功
+  ///
+  /// [response] API响应数据
+  /// 返回是否成功
   static bool isApiSuccess(Map<String, dynamic> response) =>
       AliConfig.isResponseSuccess(response);
 
   /// 获取响应数据
+  ///
+  /// 从API响应中提取数据部分
+  ///
+  /// [response] API响应数据
+  /// 返回响应数据
   static dynamic getResponseData(Map<String, dynamic> response) => response;
 
   /// 获取错误信息
+  ///
+  /// 从API响应中提取错误信息
+  ///
+  /// [response] API响应数据
+  /// 返回错误信息字符串
   static String getErrorMessage(Map<String, dynamic> response) =>
       AliConfig.getErrorMessage(response);
 }

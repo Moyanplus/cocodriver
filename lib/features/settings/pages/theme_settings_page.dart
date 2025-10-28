@@ -1,15 +1,35 @@
+/// 主题设置页面Widget
+///
+/// 提供应用程序主题管理功能，包括主题切换、主题预览等
+/// 使用Riverpod进行状态管理，支持多种主题类型的切换
+///
+/// 主要功能：
+/// - 主题列表展示
+/// - 主题切换功能
+/// - 主题预览
+/// - 付费主题标识
+/// - 响应式布局
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+// 核心模块导入
 import '../../../core/theme/theme_models.dart';
 import '../../../core/navigation/navigation_providers.dart';
 import '../../../core/services/theme_service.dart';
 import '../../../core/utils/responsive_utils.dart';
 import '../../../core/utils/adaptive_utils.dart';
 
-/// 主题设置页面
+/// 主题设置页面Widget
+///
+/// 提供应用程序主题管理功能，包括主题切换、主题预览等
+/// 使用Riverpod进行状态管理，支持多种主题类型的切换
 class ThemeSettingsPage extends ConsumerStatefulWidget {
   const ThemeSettingsPage({super.key});
 
@@ -17,6 +37,10 @@ class ThemeSettingsPage extends ConsumerStatefulWidget {
   ConsumerState<ThemeSettingsPage> createState() => _ThemeSettingsPageState();
 }
 
+/// ThemeSettingsPage的状态管理类
+///
+/// 负责监听主题变化，构建主题设置页面的UI结构
+/// 包括主题列表、主题切换、主题预览等功能
 class _ThemeSettingsPageState extends ConsumerState<ThemeSettingsPage> {
   @override
   Widget build(BuildContext context) {

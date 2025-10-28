@@ -24,6 +24,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profile => '我的';
 
   @override
+  String get files => '文件';
+
+  @override
   String get settings => '设置';
 
   @override

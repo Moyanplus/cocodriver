@@ -836,6 +836,8 @@ class QuarkCloudDriveService {
       );
 
       final accountDetails = CloudDriveAccountDetails(
+        id: updatedAccountInfo.username,
+        name: updatedAccountInfo.username,
         accountInfo: updatedAccountInfo,
         quotaInfo: quotaInfo,
       );

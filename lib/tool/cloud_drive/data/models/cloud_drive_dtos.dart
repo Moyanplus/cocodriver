@@ -1,9 +1,31 @@
-import 'package:flutter/material.dart';
-import 'cloud_drive_entities.dart';
+/// 云盘数据传输对象(DTO)模型
+///
+/// 定义云盘功能中使用的各种数据传输对象
+/// 包括路径信息、账号信息、文件信息等核心数据结构
+///
+/// 主要功能：
+/// - 路径信息管理
+/// - 云盘账号信息
+/// - 文件操作数据
+/// - 网络请求响应
+/// - 数据传输封装
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
 
+import 'package:flutter/material.dart';
+
+// import 'cloud_drive_entities.dart'; // 未使用
 /// 路径信息模型
+///
+/// 表示云盘中的路径信息，包含路径ID和名称
+/// 用于文件导航和路径管理
 class PathInfo {
+  /// 路径唯一标识符
   final String id;
+
+  /// 路径显示名称
   final String name;
 
   const PathInfo({required this.id, required this.name});
@@ -24,9 +46,17 @@ class PathInfo {
 }
 
 /// 云盘账号信息模型
+///
+/// 表示云盘账号的基本信息，包括用户名、手机号、头像等
+/// 用于账号管理和用户信息展示
 class CloudDriveAccountInfo {
+  /// 用户名
   final String username;
+
+  /// 手机号（可选）
   final String? phone;
+
+  /// 头像URL（可选）
   final String? photo;
   final int uk; // 用户唯一标识
   final bool isVip;
@@ -139,20 +169,7 @@ class CloudDriveQuotaInfo {
       'CloudDriveQuotaInfo{total: $formattedTotal, used: $formattedUsed, available: $formattedAvailable, usage: ${usagePercentage.toStringAsFixed(1)}%}';
 }
 
-/// 云盘账号详情模型
-class CloudDriveAccountDetails {
-  final CloudDriveAccountInfo accountInfo;
-  final CloudDriveQuotaInfo quotaInfo;
-
-  const CloudDriveAccountDetails({
-    required this.accountInfo,
-    required this.quotaInfo,
-  });
-
-  @override
-  String toString() =>
-      'CloudDriveAccountDetails{accountInfo: $accountInfo, quotaInfo: $quotaInfo}';
-}
+// CloudDriveAccountDetails moved to cloud_drive_entities.dart
 
 /// 下载配置模型
 class DownloadConfig {

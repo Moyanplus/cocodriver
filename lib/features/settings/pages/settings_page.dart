@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../l10n/app_localizations.dart';
 
 import '../../../core/utils/responsive_utils.dart';
 import '../../../core/utils/adaptive_utils.dart';
 import 'language_settings_page.dart';
 
-/// 设置页面
+/// 设置页面Widget
+///
+/// 应用程序的设置界面组件，使用Riverpod进行状态管理
+/// 提供各种配置选项和设置功能
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
 
@@ -22,10 +25,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(l10n.settings),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        elevation: 0,
       ),
       body: _buildPageContent(l10n),
     );
@@ -181,35 +186,68 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(
-              icon,
-              color: Theme.of(context).colorScheme.primary,
-              size: ResponsiveUtils.getIconSize(20),
-            ),
-            SizedBox(width: 8.w),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: ResponsiveUtils.getResponsiveFontSize(16),
+        Padding(
+          padding: EdgeInsets.only(left: 4.w, bottom: 12.h),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: Theme.of(context).colorScheme.primary,
+                size: ResponsiveUtils.getIconSize(20),
               ),
-            ),
-          ],
+              SizedBox(width: 8.w),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(16),
+                ),
+              ),
+            ],
+          ),
         ),
-        SizedBox(height: 12.h),
         Card(
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
               ResponsiveUtils.getCardRadius(),
             ),
+            side: BorderSide(
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: 0.5),
+              width: 1,
+            ),
           ),
-          child: Column(children: children),
+          child: Column(children: _buildChildrenWithDividers(children)),
         ),
       ],
     );
+  }
+
+  /// 在子组件之间添加分隔线
+  List<Widget> _buildChildrenWithDividers(List<Widget> children) {
+    if (children.isEmpty) return children;
+
+    final result = <Widget>[];
+    for (int i = 0; i < children.length; i++) {
+      result.add(children[i]);
+      // 如果不是最后一个元素，添加分隔线
+      if (i < children.length - 1) {
+        result.add(
+          Divider(
+            height: 1,
+            thickness: 1,
+            indent: 56.w, // 对齐icon后面的内容
+            color: Theme.of(
+              context,
+            ).colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
+        );
+      }
+    }
+    return result;
   }
 
   Widget _buildSettingsTile({
@@ -219,30 +257,49 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     required VoidCallback onTap,
     Widget? trailing,
   }) {
-    return AdaptiveUtils.adaptiveListTile(
-      leading: CircleAvatar(
-        radius: ResponsiveUtils.getIconSize(16),
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.primary.withValues(alpha: 0.1),
-        child: Icon(
-          icon,
-          color: Theme.of(context).colorScheme.primary,
-          size: ResponsiveUtils.getIconSize(16),
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: AdaptiveUtils.adaptiveListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        leading: Container(
+          width: 40.w,
+          height: 40.h,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Icon(
+            icon,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+            size: ResponsiveUtils.getIconSize(20),
+          ),
         ),
+        title: Text(
+          title,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            fontSize: ResponsiveUtils.getResponsiveFontSize(15),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: Padding(
+          padding: EdgeInsets.only(top: 4.h),
+          child: Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontSize: ResponsiveUtils.getResponsiveFontSize(13),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        trailing:
+            trailing ??
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: ResponsiveUtils.getIconSize(16),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+        onTap: onTap,
       ),
-      title: Text(
-        title,
-        style: TextStyle(fontSize: ResponsiveUtils.getResponsiveFontSize(14)),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(fontSize: ResponsiveUtils.getResponsiveFontSize(12)),
-      ),
-      trailing:
-          trailing ??
-          Icon(Icons.arrow_forward_ios, size: ResponsiveUtils.getIconSize(16)),
-      onTap: onTap,
     );
   }
 

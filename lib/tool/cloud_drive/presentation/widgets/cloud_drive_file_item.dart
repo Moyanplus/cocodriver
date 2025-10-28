@@ -33,8 +33,8 @@ class CloudDriveFileItem extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: EdgeInsets.symmetric(
-          vertical: 2.h,
-          horizontal: ResponsiveUtils.getSpacing() * 0.67,
+          vertical: 1.h,
+          horizontal: ResponsiveUtils.getSpacing() * 0.5,
         ),
         child: Card(
           margin: EdgeInsets.zero,
@@ -54,16 +54,16 @@ class CloudDriveFileItem extends StatelessWidget {
                     : BorderSide.none,
           ),
           child: Container(
-            height: ResponsiveUtils.getResponsiveHeight(80.h),
+            height: ResponsiveUtils.getResponsiveHeight(60.h),
             padding: ResponsiveUtils.getResponsivePadding(
-              horizontal: 8.w,
-              vertical: 4.h,
+              horizontal: 6.w,
+              vertical: 3.h,
             ),
             child: Row(
               children: [
                 // 文件/文件夹图标
                 Container(
-                  padding: ResponsiveUtils.getResponsivePadding(all: 3.w),
+                  padding: ResponsiveUtils.getResponsivePadding(all: 2.w),
                   decoration: BoxDecoration(
                     color:
                         isFolder
@@ -83,10 +83,10 @@ class CloudDriveFileItem extends StatelessWidget {
                         isFolder
                             ? Colors.orange
                             : FileTypeUtils.getFileTypeColor(file.name),
-                    size: ResponsiveUtils.getIconSize(22.sp),
+                    size: ResponsiveUtils.getIconSize(20.sp),
                   ),
                 ),
-                SizedBox(width: ResponsiveUtils.getSpacing() * 0.75),
+                SizedBox(width: ResponsiveUtils.getSpacing() * 0.5),
                 // 文本内容
                 Expanded(
                   child: Column(
@@ -105,7 +105,7 @@ class CloudDriveFileItem extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(height: ResponsiveUtils.getSpacing() * 0.25),
+                      SizedBox(height: ResponsiveUtils.getSpacing() * 0.15),
                       // 显示文件大小和修改时间
                       Text(
                         isFolder

@@ -1,20 +1,46 @@
+/// 内存管理器
+///
+/// 负责监控和管理应用程序的内存使用情况
+/// 提供内存监控、清理、统计等功能
+///
+/// 主要功能：
+/// - 定期检查内存使用情况
+/// - 内存使用过高时自动清理
+/// - 提供内存统计信息
+/// - 支持内存回调通知
+///
+/// 使用单例模式，确保全局只有一个实例
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-/// 内存管理器
-/// 负责监控和管理应用内存使用情况
+/// 内存管理器类
 class MemoryManager {
+  // 单例模式实现
   static final MemoryManager _instance = MemoryManager._internal();
   factory MemoryManager() => _instance;
   MemoryManager._internal();
 
+  // 内存检查定时器
   Timer? _memoryCheckTimer;
+
+  // 内存回调函数列表
   final List<void Function(int memoryUsage, bool isHigh)> _callbacks = [];
+
+  // 上次内存使用量
   int _lastMemoryUsage = 0;
-  static const int _memoryCheckInterval = 30000; // 30秒检查一次
-  static const int _memoryThreshold = 100 * 1024 * 1024; // 100MB阈值
+
+  // 内存检查间隔（30秒）
+  static const int _memoryCheckInterval = 30000;
+
+  // 内存阈值（100MB）
+  static const int _memoryThreshold = 100 * 1024 * 1024;
 
   /// 开始内存监控
   void startMonitoring() {

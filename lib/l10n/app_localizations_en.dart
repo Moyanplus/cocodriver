@@ -25,6 +25,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profile => 'Profile';
 
   @override
+  String get files => 'Files';
+
+  @override
   String get settings => 'Settings';
 
   @override

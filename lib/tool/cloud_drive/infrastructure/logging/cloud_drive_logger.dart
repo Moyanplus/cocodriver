@@ -21,14 +21,20 @@ class CloudDriveLogConfig {
   final bool enableLogging;
   final CloudDriveLogLevel minLevel;
   final bool enablePerformanceLogging;
+  final bool enableRequestLogging;
+  final bool enableResponseLogging;
   final bool enableErrorLogging;
+  final bool enableCacheLogging;
   final int maxLogEntries;
 
   const CloudDriveLogConfig({
     this.enableLogging = true,
     this.minLevel = CloudDriveLogLevel.info,
     this.enablePerformanceLogging = false,
+    this.enableRequestLogging = true,
+    this.enableResponseLogging = true,
     this.enableErrorLogging = true,
+    this.enableCacheLogging = false,
     this.maxLogEntries = 500,
   });
 
@@ -40,7 +46,10 @@ class CloudDriveLogConfig {
     enableLogging: true,
     minLevel: CloudDriveLogLevel.debug,
     enablePerformanceLogging: true,
+    enableRequestLogging: true,
+    enableResponseLogging: true,
     enableErrorLogging: true,
+    enableCacheLogging: true,
     maxLogEntries: 1000,
   );
 
@@ -49,7 +58,10 @@ class CloudDriveLogConfig {
     enableLogging: true,
     minLevel: CloudDriveLogLevel.warning,
     enablePerformanceLogging: false,
+    enableRequestLogging: false,
+    enableResponseLogging: false,
     enableErrorLogging: true,
+    enableCacheLogging: false,
     maxLogEntries: 100,
   );
 }

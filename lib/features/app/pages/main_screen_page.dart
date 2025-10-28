@@ -1,17 +1,43 @@
+/// 主屏幕页面
+///
+/// 应用程序的主界面，包含底部导航栏和侧边抽屉
+/// 负责管理页面导航、云盘功能集成等核心功能
+///
+/// 主要功能：
+/// - 底部导航栏管理
+/// - 侧边抽屉导航
+/// - 云盘功能集成
+/// - 响应式布局适配
+/// - 多语言支持
+///
+/// 使用Riverpod进行状态管理，确保页面状态一致性
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../l10n/app_localizations.dart';
 
+// 核心模块导入
 import '../../../core/navigation/navigation_providers.dart';
 import '../../../core/utils/responsive_utils.dart';
+
+// 共享组件导入
 import '../../../shared/widgets/common/app_drawer_widget.dart';
-import '../../../tool/cloud_drive/presentation/providers/cloud_drive_provider.dart';
-import '../../../tool/cloud_drive/presentation/widgets/add_account_form_widget.dart';
 import '../../../shared/widgets/common/bottom_sheet_widget.dart';
 
-/// 主屏幕组件
+// 云盘功能导入
+import '../../../tool/cloud_drive/presentation/providers/cloud_drive_provider.dart';
+import '../../../tool/cloud_drive/presentation/widgets/add_account_form_widget.dart';
+
+/// 主屏幕Widget
+///
+/// 应用程序的主界面组件，使用Riverpod进行状态管理
+/// 包含底部导航栏、侧边抽屉和页面内容区域
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
@@ -19,22 +45,33 @@ class MainScreen extends ConsumerStatefulWidget {
   ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
+/// MainScreen的状态管理类
+///
+/// 负责监听导航状态变化，构建主界面的UI结构
+/// 包括底部导航栏、侧边抽屉和页面内容的渲染
 class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   Widget build(BuildContext context) {
+    // 监听页面导航状态
     final pageNavigationState = ref.watch(pageNavigationStateProvider);
     final currentIndex = pageNavigationState.currentIndex;
     final pageController = pageNavigationState.pageController;
+
+    // 获取页面列表和导航提供者
     final pages = ref.watch(pagesProvider);
     final pageNavigation = ref.watch(pageNavigationProvider);
+
+    // 获取本地化文本
     final l10n = AppLocalizations.of(context);
     if (l10n == null) {
+      // 如果本地化未加载完成，显示加载指示器
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
-      drawer: const AppDrawerWidget(),
+      drawer: const AppDrawerWidget(), // 侧边抽屉
       body: _buildBodyWithSliverAppBar(
+        // 主体内容区域
         pageController,
         pages,
         currentIndex,
@@ -42,11 +79,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         l10n,
       ),
       bottomNavigationBar: _buildBottomNavigationBar(
+        // 底部导航栏
         currentIndex,
         pageNavigation,
         l10n,
       ),
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: false, // 避免键盘弹出时调整布局
     );
   }
 
@@ -64,7 +102,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         title: Text(l10n.appTitle),
-        toolbarHeight: ResponsiveUtils.getNavigationBarHeight(context),
+        toolbarHeight: ResponsiveUtils.getNavigationBarHeight(context) * 0.8,
         floating: true,
         pinned: false,
         snap: false,
@@ -188,31 +226,64 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     PageNavigation pageNavigation,
     AppLocalizations l10n,
   ) => SafeArea(
-    bottom: false,
+    bottom: false, // iOS优化：底部不需要额外的安全区域
     child: Container(
-      height: 92.h,
-      padding: EdgeInsets.only(bottom: 0),
-      child: NavigationBar(
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) => pageNavigation.switchToPage(index),
-        height: ResponsiveUtils.getButtonHeight(),
-        destinations: [
-          NavigationDestination(
-            icon: Icon(PhosphorIcons.house(), size: 24.w),
-            selectedIcon: Icon(PhosphorIcons.house(), size: 24.w),
-            label: l10n.home,
-          ),
-          NavigationDestination(
-            icon: Icon(PhosphorIcons.cloud(), size: 24.w),
-            selectedIcon: Icon(PhosphorIcons.cloud(), size: 24.w),
-            label: '云盘助手',
-          ),
-          NavigationDestination(
-            icon: Icon(PhosphorIcons.user(), size: 24.w),
-            selectedIcon: Icon(PhosphorIcons.user(), size: 24.w),
-            label: l10n.profile,
-          ),
-        ],
+      // 动态计算高度：按钮高度 + 底部安全区域高度（iOS上是Home Indicator的高度）
+      height:
+          ResponsiveUtils.getButtonHeight() + ResponsiveUtils.bottomBarHeight,
+      // 让导航栏在垂直方向居中显示，避免太靠上
+      alignment: Alignment.center,
+      child: NavigationBarTheme(
+        data: NavigationBarThemeData(
+          // 调整图标和标签之间的间距
+          iconTheme: WidgetStateProperty.all(IconThemeData(size: 25.w)),
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            return TextStyle(
+              fontSize: 12.sp,
+              height: 0.5, // 减小行高，让标签更靠近图标
+            );
+          }),
+        ),
+        child: NavigationBar(
+          selectedIndex: currentIndex,
+          onDestinationSelected: (index) => pageNavigation.switchToPage(index),
+          height: ResponsiveUtils.getButtonHeight(),
+          destinations: [
+            NavigationDestination(
+              icon: Padding(
+                padding: EdgeInsets.only(bottom: 0.h), // 减小图标底部间距
+                child: Icon(PhosphorIcons.house(), size: 25.w),
+              ),
+              selectedIcon: Padding(
+                padding: EdgeInsets.only(bottom: 0.h),
+                child: Icon(PhosphorIcons.house(), size: 25.w),
+              ),
+              label: l10n.home,
+            ),
+            NavigationDestination(
+              icon: Padding(
+                padding: EdgeInsets.only(bottom: 0.h),
+                child: Icon(PhosphorIcons.cloud(), size: 25.w),
+              ),
+              selectedIcon: Padding(
+                padding: EdgeInsets.only(bottom: 0.h),
+                child: Icon(PhosphorIcons.cloud(), size: 25.w),
+              ),
+              label: l10n.files,
+            ),
+            NavigationDestination(
+              icon: Padding(
+                padding: EdgeInsets.only(bottom: 0.h),
+                child: Icon(PhosphorIcons.user(), size: 25.w),
+              ),
+              selectedIcon: Padding(
+                padding: EdgeInsets.only(bottom: 0.h),
+                child: Icon(PhosphorIcons.user(), size: 25.w),
+              ),
+              label: l10n.profile,
+            ),
+          ],
+        ),
       ),
     ),
   );

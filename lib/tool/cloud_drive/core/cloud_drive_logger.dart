@@ -136,8 +136,6 @@ class CloudDriveLogger {
   }) {
     if (!_shouldLog(level)) return;
 
-    final subCategory = 'cloudDrive.${cloudDriveType.name}';
-
     switch (level) {
       case CloudDriveLogLevel.debug:
         LogManager().cloudDrive(
@@ -186,8 +184,6 @@ class CloudDriveLogger {
   }) {
     if (!_config.enableErrorLogging) return;
 
-    final subCategory = 'cloudDrive.${cloudDriveType.name}';
-
     LogManager().cloudDrive(
       '❌ $operation 失败 - ${cloudDriveType.displayName}: $error',
     );
@@ -218,8 +214,6 @@ class CloudDriveLogger {
     String? details,
     Map<String, dynamic>? result,
   }) {
-    final subCategory = 'cloudDrive.${cloudDriveType.name}';
-
     LogManager().cloudDrive(
       '✅ $operation 成功 - ${cloudDriveType.displayName}${details != null ? ': $details' : ''}',
     );

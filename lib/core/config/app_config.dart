@@ -1,7 +1,10 @@
+/// 应用程序配置和常量类
+///
+/// 使用静态常量定义所有配置项，确保全局一致性
+/// 所有配置项都应该是不可变的常量
+
 import 'package:flutter/material.dart';
 
-/// 应用配置和常量
-/// 统一管理所有应用配置、常量、UI配置等
 class AppConfig {
   // ==================== 应用信息 ====================
   static const String appName = 'Flutter UI模板';

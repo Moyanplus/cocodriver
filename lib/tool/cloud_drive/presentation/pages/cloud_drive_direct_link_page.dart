@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../../../../core/logging/log_manager.dart';
+import '../../../../../core/utils/responsive_utils.dart';
 import '../../config/cloud_drive_ui_config.dart';
 import '../widgets/direct_link/direct_link.dart';
-import '../../business/services/cloud_drive_business_service.dart';
+// import '../../business/services/cloud_drive_business_service.dart'; // 未使用
 
 /// 直链解析页面 - 重构版本
 class CloudDriveDirectLinkPage extends StatefulWidget {
@@ -54,7 +57,7 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
             ),
 
             // 底部间距
-            SizedBox(height: CloudDriveUIConfig.spacingXL),
+            SizedBox(height: ResponsiveUtils.getSpacing() * 2),
           ],
         ),
       ),

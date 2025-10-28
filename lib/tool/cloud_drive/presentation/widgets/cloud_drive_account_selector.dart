@@ -5,8 +5,30 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/utils/responsive_utils.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../providers/cloud_drive_provider.dart';
+import 'account/account_detail_bottom_sheet.dart';
 
 /// 云盘账号选择器组件
+///
+/// 该组件用于显示和管理云盘账号列表，提供以下功能：
+/// 1. 以水平滚动列表形式展示所有已添加的云盘账号
+/// 2. 支持账号切换功能，点击账号卡片可切换当前活动账号
+/// 3. 显示账号的基本信息：头像/图标、名称、云盘类型、登录状态
+/// 4. 提供账号详情查看功能，点击信息图标可打开账号详情底部弹窗
+/// 5. 支持长按账号卡片触发自定义操作（通过 onAccountTap 回调）
+///
+/// 调用关系：
+/// - 被 CloudDrivePage 页面调用，作为云盘主界面的顶部账号选择区域
+/// - 使用 CloudDriveProvider 管理账号状态和切换逻辑
+/// - 调用 CloudInfoCard 组件显示账号详细信息
+///
+/// 示例：
+/// ```dart
+/// CloudDriveAccountSelector(
+///   onAccountTap: (account) {
+///     // 处理账号长按事件
+///   },
+/// )
+/// ```
 class CloudDriveAccountSelector extends ConsumerWidget {
   final Function(CloudDriveAccount)? onAccountTap;
 
@@ -22,7 +44,11 @@ class CloudDriveAccountSelector extends ConsumerWidget {
     }
 
     return Container(
-      padding: ResponsiveUtils.getResponsivePadding(all: 16.w),
+      // 【优化】减小 padding，从 16.w 改为 12.w，让布局更紧凑
+      padding: ResponsiveUtils.getResponsivePadding(
+        horizontal: 12.w,
+        vertical: 8.h,
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         border: Border(
@@ -32,39 +58,17 @@ class CloudDriveAccountSelector extends ConsumerWidget {
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '选择账号',
-                style: TextStyle(
-                  fontSize: ResponsiveUtils.getResponsiveFontSize(16.sp),
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.close,
-                  size: ResponsiveUtils.getIconSize(24.sp),
-                ),
-                onPressed:
-                    () =>
-                        ref
-                            .read(cloudDriveProvider.notifier)
-                            .toggleAccountSelector(),
-                tooltip: '关闭',
-              ),
-            ],
-          ),
-          SizedBox(height: ResponsiveUtils.getSpacing()),
           if (state.accounts.isNotEmpty) ...[
             SizedBox(
-              height: ResponsiveUtils.getResponsiveHeight(100.h),
+              // 【优化】减小高度，从 100.h 改为 85.h，让账号卡片更紧凑
+              height: ResponsiveUtils.getResponsiveHeight(85.h),
+              width: double.infinity,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                shrinkWrap: true,
+                physics: const ClampingScrollPhysics(),
                 itemCount: state.accounts.length,
                 itemBuilder: (context, index) {
                   final account = state.accounts[index];
@@ -115,18 +119,63 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                 width: ResponsiveUtils.getSpacing() * 0.5,
                               ),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
+                                child: Row(
                                   children: [
-                                    Text(
-                                      account.name,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize:
-                                            ResponsiveUtils.getResponsiveFontSize(
-                                              12.sp,
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            account.name,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize:
+                                                  ResponsiveUtils.getResponsiveFontSize(
+                                                    12.sp,
+                                                  ),
+                                              color:
+                                                  isSelected
+                                                      ? Theme.of(context)
+                                                          .colorScheme
+                                                          .onPrimaryContainer
+                                                      : Theme.of(
+                                                        context,
+                                                      ).colorScheme.onSurface,
                                             ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                          Text(
+                                            account.type.displayName,
+                                            style: TextStyle(
+                                              fontSize:
+                                                  ResponsiveUtils.getResponsiveFontSize(
+                                                    10.sp,
+                                                  ),
+                                              color:
+                                                  isSelected
+                                                      ? Theme.of(context)
+                                                          .colorScheme
+                                                          .onPrimaryContainer
+                                                          .withOpacity(0.7)
+                                                      : Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.info_outline,
+                                        size: ResponsiveUtils.getIconSize(
+                                          16.sp,
+                                        ),
                                         color:
                                             isSelected
                                                 ? Theme.of(
@@ -134,30 +183,35 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                                 ).colorScheme.onPrimaryContainer
                                                 : Theme.of(
                                                   context,
-                                                ).colorScheme.onSurface,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                    Text(
-                                      account.type.displayName,
-                                      style: TextStyle(
-                                        fontSize:
-                                            ResponsiveUtils.getResponsiveFontSize(
-                                              10.sp,
-                                            ),
-                                        color:
-                                            isSelected
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimaryContainer
-                                                    .withOpacity(0.7)
-                                                : Theme.of(
-                                                  context,
                                                 ).colorScheme.onSurfaceVariant,
                                       ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      visualDensity: VisualDensity.compact,
+                                      onPressed: () {
+                                        // 显示账号详情底部弹窗
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          builder:
+                                              (
+                                                context,
+                                              ) => DraggableScrollableSheet(
+                                                initialChildSize: 0.7,
+                                                minChildSize: 0.5,
+                                                maxChildSize: 0.95,
+                                                builder:
+                                                    (
+                                                      context,
+                                                      scrollController,
+                                                    ) =>
+                                                        AccountDetailBottomSheet(
+                                                          account: account,
+                                                        ),
+                                              ),
+                                        );
+                                      },
                                     ),
                                   ],
                                 ),
@@ -187,6 +241,34 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                 },
               ),
             ),
+          ] else ...[
+            // 无账号提示
+            SizedBox(
+              // 【优化】与有账号时的高度保持一致
+              height: ResponsiveUtils.getResponsiveHeight(85.h),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.account_circle_outlined,
+                      size: ResponsiveUtils.getIconSize(32.sp),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      '暂无云盘账号',
+                      style: TextStyle(
+                        fontSize: ResponsiveUtils.getResponsiveFontSize(12.sp),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ],
       ),
@@ -194,6 +276,19 @@ class CloudDriveAccountSelector extends ConsumerWidget {
   }
 
   /// 构建账号图标
+  ///
+  /// 根据账号信息构建显示头像或云盘类型图标：
+  /// 1. 如果账号有头像URL（[account.avatarUrl]不为空），则：
+  ///    - 显示圆形头像
+  ///    - 在右下角添加云盘类型的小图标徽章
+  ///    - 徽章使用云盘对应的颜色和图标
+  /// 2. 如果账号没有头像，则：
+  ///    - 只显示对应云盘类型的图标
+  ///    - 使用云盘对应的颜色
+  ///
+  /// 参数：
+  /// - [context]: 构建上下文，用于获取主题数据
+  /// - [account]: 云盘账号信息，包含头像URL、云盘类型等数据
   Widget _buildAccountIcon(BuildContext context, CloudDriveAccount account) {
     if (account.avatarUrl != null && account.avatarUrl!.isNotEmpty) {
       // 如果有头像，显示头像并在右下角添加云盘类型小图标

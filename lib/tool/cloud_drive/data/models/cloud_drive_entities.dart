@@ -1,16 +1,38 @@
 import 'package:flutter/material.dart';
 import 'cloud_drive_configs.dart';
+import 'cloud_drive_dtos.dart';
 
 /// 认证方式枚举
 enum AuthType {
   /// Cookie认证
   cookie,
 
-  /// Authorization Bearer Token认证
-  authorization,
+  /// WebView网页登录认证
+  web,
 
   /// 二维码扫码认证
   qrCode,
+}
+
+/// 文件分类枚举
+enum FileCategory {
+  /// 图片
+  image,
+
+  /// 视频
+  video,
+
+  /// 音频
+  audio,
+
+  /// 文档
+  document,
+
+  /// 压缩包
+  archive,
+
+  /// 其他
+  other,
 }
 
 /// 云盘类型枚举
@@ -96,9 +118,9 @@ extension CloudDriveTypeExtension on CloudDriveType {
   AuthType get authType {
     switch (this) {
       case CloudDriveType.ali:
-        return AuthType.authorization;
-      case CloudDriveType.baidu:
       case CloudDriveType.lanzou:
+        return AuthType.web;
+      case CloudDriveType.baidu:
       case CloudDriveType.pan123:
       case CloudDriveType.quark:
         return AuthType.cookie;
@@ -109,11 +131,11 @@ extension CloudDriveTypeExtension on CloudDriveType {
   List<AuthType> get supportedAuthTypes {
     switch (this) {
       case CloudDriveType.ali:
-        return [AuthType.authorization, AuthType.qrCode];
+        return [AuthType.web, AuthType.qrCode];
       case CloudDriveType.baidu:
         return [AuthType.cookie, AuthType.qrCode];
       case CloudDriveType.lanzou:
-        return [AuthType.cookie];
+        return [AuthType.web, AuthType.cookie];
       case CloudDriveType.pan123:
         return [AuthType.cookie, AuthType.qrCode];
       case CloudDriveType.quark:
@@ -201,33 +223,40 @@ class CloudDriveAccount {
   });
 
   /// 检查是否已登录
+  ///
+  /// 根据实际保存的认证信息来判断，而不是依赖 type.authType
+  /// 只要有任何一种认证信息存在，就认为已登录
   bool get isLoggedIn {
-    switch (type.authType) {
-      case AuthType.cookie:
-        return cookies != null && cookies!.isNotEmpty;
-      case AuthType.authorization:
-        return authorizationToken != null && authorizationToken!.isNotEmpty;
-      case AuthType.qrCode:
-        return qrCodeToken != null && qrCodeToken!.isNotEmpty;
+    return (cookies != null && cookies!.isNotEmpty) ||
+        (authorizationToken != null && authorizationToken!.isNotEmpty) ||
+        (qrCodeToken != null && qrCodeToken!.isNotEmpty);
+  }
+
+  /// 获取实际使用的认证方式
+  AuthType? get actualAuthType {
+    if (cookies != null && cookies!.isNotEmpty) {
+      return AuthType.cookie;
+    } else if (authorizationToken != null && authorizationToken!.isNotEmpty) {
+      return AuthType.web;
+    } else if (qrCodeToken != null && qrCodeToken!.isNotEmpty) {
+      return AuthType.qrCode;
     }
+    return null;
   }
 
   /// 获取认证头信息
+  ///
+  /// 根据实际保存的认证信息返回对应的请求头
   Map<String, String> get authHeaders {
-    switch (type.authType) {
-      case AuthType.cookie:
-        return cookies != null && cookies!.isNotEmpty
-            ? {'Cookie': cookies!}
-            : {};
-      case AuthType.authorization:
-        return authorizationToken != null && authorizationToken!.isNotEmpty
-            ? {'Authorization': 'Bearer $authorizationToken'}
-            : {};
-      case AuthType.qrCode:
-        return qrCodeToken != null && qrCodeToken!.isNotEmpty
-            ? {'Authorization': 'Bearer $qrCodeToken'}
-            : {};
+    // 优先使用实际的认证信息
+    if (cookies != null && cookies!.isNotEmpty) {
+      return {'Cookie': cookies!};
+    } else if (authorizationToken != null && authorizationToken!.isNotEmpty) {
+      return {'Authorization': 'Bearer $authorizationToken'};
+    } else if (qrCodeToken != null && qrCodeToken!.isNotEmpty) {
+      return {'Authorization': 'Bearer $qrCodeToken'};
     }
+    return {};
   }
 
   /// 从JSON创建实例
@@ -272,6 +301,9 @@ class CloudDriveAccount {
   };
 
   /// 复制并更新
+  ///
+  /// 使用命名参数来更新账号信息
+  /// 注意：为了支持清空字段（设置为null），需要显式传递 null 值
   CloudDriveAccount copyWith({
     String? id,
     String? name,
@@ -283,13 +315,19 @@ class CloudDriveAccount {
     String? driveId,
     DateTime? createdAt,
     DateTime? lastLoginAt,
+    bool clearCookies = false,
+    bool clearAuthorizationToken = false,
+    bool clearQrCodeToken = false,
   }) => CloudDriveAccount(
     id: id ?? this.id,
     name: name ?? this.name,
     type: type ?? this.type,
-    cookies: cookies ?? this.cookies,
-    authorizationToken: authorizationToken ?? this.authorizationToken,
-    qrCodeToken: qrCodeToken ?? this.qrCodeToken,
+    cookies: clearCookies ? null : (cookies ?? this.cookies),
+    authorizationToken:
+        clearAuthorizationToken
+            ? null
+            : (authorizationToken ?? this.authorizationToken),
+    qrCodeToken: clearQrCodeToken ? null : (qrCodeToken ?? this.qrCodeToken),
     avatarUrl: avatarUrl ?? this.avatarUrl,
     driveId: driveId ?? this.driveId,
     createdAt: createdAt ?? this.createdAt,
@@ -318,9 +356,11 @@ class CloudDriveFile {
   final int? size;
   final DateTime? modifiedTime;
   final String? folderId;
+  final String? path;
   final String? downloadUrl;
   final String? thumbnailUrl;
   final Map<String, dynamic>? metadata;
+  final FileCategory? category;
 
   const CloudDriveFile({
     required this.id,
@@ -329,10 +369,15 @@ class CloudDriveFile {
     this.size,
     this.modifiedTime,
     this.folderId,
+    this.path,
     this.downloadUrl,
     this.thumbnailUrl,
     this.metadata,
+    this.category,
   });
+
+  /// 是否为目录
+  bool get isDirectory => isFolder;
 
   /// 格式化文件大小
   String get formattedSize {
@@ -407,9 +452,17 @@ class CloudDriveFile {
             ? DateTime.tryParse(json['modifiedTime'].toString())
             : null,
     folderId: json['folderId']?.toString(),
+    path: json['path']?.toString(),
     downloadUrl: json['downloadUrl']?.toString(),
     thumbnailUrl: json['thumbnailUrl']?.toString(),
     metadata: json['metadata'] as Map<String, dynamic>?,
+    category:
+        json['category'] != null
+            ? FileCategory.values.firstWhere(
+              (e) => e.name == json['category']?.toString(),
+              orElse: () => FileCategory.other,
+            )
+            : null,
   );
 
   /// 转换为JSON
@@ -420,9 +473,11 @@ class CloudDriveFile {
     'size': size,
     'modifiedTime': modifiedTime?.toIso8601String(),
     'folderId': folderId,
+    'path': path,
     'downloadUrl': downloadUrl,
     'thumbnailUrl': thumbnailUrl,
     'metadata': metadata,
+    'category': category?.name,
   };
 
   /// 复制并更新
@@ -433,9 +488,11 @@ class CloudDriveFile {
     int? size,
     DateTime? modifiedTime,
     String? folderId,
+    String? path,
     String? downloadUrl,
     String? thumbnailUrl,
     Map<String, dynamic>? metadata,
+    FileCategory? category,
   }) => CloudDriveFile(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -443,9 +500,11 @@ class CloudDriveFile {
     size: size ?? this.size,
     modifiedTime: modifiedTime ?? this.modifiedTime,
     folderId: folderId ?? this.folderId,
+    path: path ?? this.path,
     downloadUrl: downloadUrl ?? this.downloadUrl,
     thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
     metadata: metadata ?? this.metadata,
+    category: category ?? this.category,
   );
 
   @override
@@ -461,4 +520,35 @@ class CloudDriveFile {
   @override
   String toString() =>
       'CloudDriveFile{id: $id, name: $name, isFolder: $isFolder}';
+}
+
+/// 云盘账号详情
+class CloudDriveAccountDetails {
+  final String id;
+  final String name;
+  final String? avatarUrl;
+  final int? totalSpace;
+  final int? usedSpace;
+  final int? freeSpace;
+  final DateTime? lastLoginAt;
+  final bool isValid;
+  final CloudDriveAccountInfo? accountInfo;
+  final CloudDriveQuotaInfo? quotaInfo;
+
+  const CloudDriveAccountDetails({
+    required this.id,
+    required this.name,
+    this.avatarUrl,
+    this.totalSpace,
+    this.usedSpace,
+    this.freeSpace,
+    this.lastLoginAt,
+    this.isValid = true,
+    this.accountInfo,
+    this.quotaInfo,
+  });
+
+  @override
+  String toString() =>
+      'CloudDriveAccountDetails{id: $id, name: $name, isValid: $isValid}';
 }

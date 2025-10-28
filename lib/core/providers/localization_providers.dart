@@ -1,11 +1,32 @@
+/// 本地化状态管理提供者
+///
+/// 使用Riverpod管理应用程序的多语言状态
+/// 提供语言切换和本地化状态管理功能
+///
+/// 主要功能：
+/// - 本地化状态管理
+/// - 语言切换功能
+/// - 支持的语言列表
+/// - 语言设置持久化
+/// - 状态通知机制
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/localization_service.dart';
 
-/// 本地化状态
+/// 本地化状态类
+///
+/// 表示应用程序的本地化状态，包括当前语言和加载状态
 class LocalizationState {
+  /// 当前语言
   final Locale currentLocale;
+
+  /// 是否正在加载
   final bool isLoading;
 
   LocalizationState({required this.currentLocale, this.isLoading = false});

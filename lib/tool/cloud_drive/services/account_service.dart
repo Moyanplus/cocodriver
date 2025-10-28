@@ -1,4 +1,4 @@
-import '../../../../../core/logging/log_manager.dart';
+// import '../../../../../core/logging/log_manager.dart'; // 未使用
 import '../data/models/cloud_drive_entities.dart';
 import '../base/cloud_drive_account_service.dart';
 import '../core/result.dart';
@@ -125,15 +125,21 @@ class AccountService extends CloudDriveService {
       return const Failure('账号未登录');
     }
 
-    // 根据认证方式验证
-    switch (account.type.authType) {
+    // 根据实际的认证方式验证（而不是云盘类型的默认认证方式）
+    final actualAuth = account.actualAuthType;
+    if (actualAuth == null) {
+      logWarning('验证账号登录状态', '无法确定认证方式');
+      return const Failure('无法确定认证方式');
+    }
+
+    switch (actualAuth) {
       case AuthType.cookie:
         if (account.cookies == null || account.cookies!.isEmpty) {
           logWarning('验证账号登录状态', 'Cookie为空');
           return const Failure('Cookie为空');
         }
         break;
-      case AuthType.authorization:
+      case AuthType.web:
         if (account.authorizationToken == null ||
             account.authorizationToken!.isEmpty) {
           logWarning('验证账号登录状态', 'Authorization Token为空');

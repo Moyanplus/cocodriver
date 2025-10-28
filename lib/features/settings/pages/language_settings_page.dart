@@ -1,14 +1,34 @@
+/// 语言设置页面Widget
+///
+/// 提供应用程序语言管理功能，包括语言切换、语言列表展示等
+/// 使用Riverpod进行状态管理，支持多语言切换
+///
+/// 主要功能：
+/// - 支持的语言列表展示
+/// - 当前语言标识
+/// - 语言切换功能
+/// - 语言设置持久化
+/// - 响应式布局
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../l10n/app_localizations.dart';
 
+// 核心模块导入
 import '../../../core/providers/localization_providers.dart';
 import '../../../core/utils/responsive_utils.dart';
 import '../../../core/utils/adaptive_utils.dart';
 
-/// 语言设置页面
+/// 语言设置页面Widget
+///
+/// 提供应用程序语言管理功能，包括语言切换、语言列表展示等
+/// 使用Riverpod进行状态管理，支持多语言切换
 class LanguageSettingsPage extends ConsumerStatefulWidget {
   const LanguageSettingsPage({super.key});
 
@@ -17,6 +37,10 @@ class LanguageSettingsPage extends ConsumerStatefulWidget {
       _LanguageSettingsPageState();
 }
 
+/// LanguageSettingsPage的状态管理类
+///
+/// 负责监听语言变化，构建语言设置页面的UI结构
+/// 包括语言列表、当前语言标识、语言切换等功能
 class _LanguageSettingsPageState extends ConsumerState<LanguageSettingsPage> {
   @override
   Widget build(BuildContext context) {

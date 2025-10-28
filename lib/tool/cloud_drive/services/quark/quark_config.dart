@@ -4,6 +4,8 @@ class QuarkConfig {
   // API 配置
   static const String baseUrl = 'https://drive-pc.quark.cn';
   static const String panUrl = 'https://pan.quark.cn';
+  static const String uopUrl = 'https://uop.quark.cn'; // 用户操作平台URL
+  static const String suUrl = 'https://su.quark.cn'; // 扫码登录URL
 
   // 文件夹配置
   static const String rootFolderId = '0'; // 根目录ID
@@ -29,6 +31,12 @@ class QuarkConfig {
   // Pan URL API 端点 (使用pan.quark.cn域名)
   static const Map<String, String> panApiEndpoints = {
     'getAccountInfo': '/account/info', // 获取个人信息
+  };
+
+  // UOP URL API 端点 (用于二维码登录，使用uop.quark.cn域名)
+  static const Map<String, String> uopApiEndpoints = {
+    'generateQRToken': '/cas/ajax/getTokenForQrcodeLogin', // 生成二维码token
+    'checkQRStatus': '/cas/ajax/getServiceTicketByQrcodeToken', // 查询二维码状态
   };
 
   // 请求头配置
@@ -64,6 +72,22 @@ class QuarkConfig {
     'httpSuccess': 200,
     'apiSuccess': 0,
     'apiFailure': -1,
+    'qrLoginSuccess': 2000000, // 二维码登录成功状态码
+  };
+
+  // 二维码登录配置
+  static const Map<String, dynamic> qrLoginConfig = {
+    'clientId': '532', // 客户端ID
+    'version': '1.2', // API版本
+    'requestId': 'fe1e0586-c493-4504-b2ca-f6b5426197a9', // 固定请求ID
+    'ssbType': 'weblogin', // 登录类型
+    'ucParamStr': '', // UC参数
+    'ucBizStr':
+        'S:custom|OPT:SAREA@0|OPT:IMMERSIVE@1|OPT:BACK_BTN_STYLE@0', // UC业务参数
+    'timeout': 30, // 超时时间(秒)
+    'pollInterval': 2, // 轮询间隔(秒)
+    'maxPollCount': 150, // 最大轮询次数
+    'qrExpireTime': 300, // 二维码过期时间(秒)
   };
 
   // 响应字段名配置
@@ -381,4 +405,91 @@ class QuarkConfig {
     'rename': true, // 已实现
     'createFolder': true, // 已实现
   };
+
+  // ==================== 二维码登录相关方法 ====================
+
+  /// 获取UOP API端点
+  /// 根据操作类型获取对应的UOP API端点
+  static String getUopApiEndpoint(String operation) =>
+      uopApiEndpoints[operation] ?? '';
+
+  /// 构建二维码内容URL
+  /// 根据token生成完整的二维码扫描URL
+  static String buildQRContentUrl(String token) {
+    final clientId = qrLoginConfig['clientId'];
+    final ssbType = qrLoginConfig['ssbType'];
+    final ucParamStr = qrLoginConfig['ucParamStr'];
+    final ucBizStr = qrLoginConfig['ucBizStr'];
+
+    return '$suUrl/4_eMHBJ?token=$token&client_id=$clientId&ssb=$ssbType&uc_param_str=$ucParamStr&uc_biz_str=$ucBizStr';
+  }
+
+  /// 构建二维码状态查询参数
+  /// 用于查询二维码登录状态的请求参数
+  static Map<String, String> buildQRStatusQueryParams(String token) => {
+    'client_id': qrLoginConfig['clientId'] as String,
+    'v': qrLoginConfig['version'] as String,
+    'token': token,
+    'request_id': qrLoginConfig['requestId'] as String,
+  };
+
+  /// 构建账号信息查询参数（用于二维码登录后获取Cookie）
+  /// 用于通过service_ticket获取完整的账号信息和Cookie
+  static Map<String, String> buildQRAccountInfoParams(String serviceTicket) => {
+    'st': serviceTicket,
+    'lw': 'scan',
+  };
+
+  /// 解析Cookie字符串为Map
+  /// 将set-cookie响应头解析为键值对映射
+  static Map<String, String> parseCookieString(String cookieString) {
+    final cookieMap = <String, String>{};
+
+    if (cookieString.isEmpty) {
+      return cookieMap;
+    }
+
+    // 处理多个cookie（分号分隔）
+    for (final cookie in cookieString.split(';')) {
+      final trimmedCookie = cookie.trim();
+      if (trimmedCookie.isEmpty) continue;
+
+      final parts = trimmedCookie.split('=');
+      if (parts.length >= 2) {
+        final name = parts[0].trim();
+        final value = parts.sublist(1).join('=').trim();
+        cookieMap[name] = value;
+      }
+    }
+
+    return cookieMap;
+  }
+
+  /// 从Set-Cookie响应头列表中提取Cookie
+  /// 只提取cookie的键值对部分，过滤掉Path、Expires等属性
+  static String extractCookiesFromHeaders(List<String> setCookieHeaders) {
+    final cookieMap = <String, String>{};
+
+    for (final setCookie in setCookieHeaders) {
+      // 只取分号前的第一部分（cookie键值对）
+      final cookiePart = setCookie.split(';')[0].trim();
+      if (cookiePart.isEmpty) continue;
+
+      final parts = cookiePart.split('=');
+      if (parts.length >= 2) {
+        final name = parts[0].trim();
+        final value = parts.sublist(1).join('=').trim();
+        cookieMap[name] = value;
+      }
+    }
+
+    // 构建cookie字符串
+    return cookieMap.entries.map((e) => '${e.key}=${e.value}').join('; ');
+  }
+
+  /// 验证二维码登录响应状态
+  /// 检查响应状态码是否表示登录成功
+  static bool isQRLoginSuccess(int? statusCode) {
+    return statusCode == responseStatus['qrLoginSuccess'];
+  }
 }

@@ -5,30 +5,55 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/utils/responsive_utils.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../providers/cloud_drive_provider.dart';
-import '../pages/cloud_drive_operation_options.dart';
+import 'sheets/file_operation_bottom_sheet.dart';
 import 'cloud_drive_file_item.dart';
+import '../../../../shared/widgets/common/bottom_sheet_widget.dart';
 
+/// ========================================
 /// 云盘文件列表组件
+/// ========================================
+/// 功能：显示云盘文件和文件夹列表
+///
+/// 特性：
+///   1. 支持下拉刷新
+///   2. 支持滚动懒加载（距离底部200px时自动加载更多）
+///   3. 支持批量选择模式
+///   4. 支持外部传入 ScrollController
+///   5. 零 padding 布局，紧贴路径导航器
+///
+/// 显示内容：
+///   - 文件夹（可点击进入）
+///   - 文件（点击显示操作选项）
+///   - 空状态提示
+///   - 加载更多指示器
+/// ========================================
 class CloudDriveFileList extends ConsumerStatefulWidget {
-  const CloudDriveFileList({super.key});
+  final ScrollController? scrollController;
+
+  const CloudDriveFileList({super.key, this.scrollController});
 
   @override
   ConsumerState<CloudDriveFileList> createState() => _CloudDriveFileListState();
 }
 
 class _CloudDriveFileListState extends ConsumerState<CloudDriveFileList> {
-  final ScrollController _scrollController = ScrollController();
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
+    // 使用外部传入的 ScrollController，如果没有则创建新的
+    _scrollController = widget.scrollController ?? ScrollController();
     // 监听滚动事件，实现懒加载
     _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    // 只有当 ScrollController 是内部创建的时候才dispose
+    if (widget.scrollController == null) {
+      _scrollController.dispose();
+    }
     super.dispose();
   }
 
@@ -60,10 +85,12 @@ class _CloudDriveFileListState extends ConsumerState<CloudDriveFileList> {
         onRefresh: () async {
           await ref
               .read(cloudDriveProvider.notifier)
-              .loadCurrentFolder(forceRefresh: true);
+              .loadFolder(forceRefresh: true);
         },
         child: ListView.builder(
           controller: _scrollController,
+          // 【重要】移除 ListView 默认的顶部和底部 padding，让列表紧贴路径导航器
+          padding: EdgeInsets.zero,
           itemCount: state.allItems.length + (state.isLoadingMore ? 1 : 0),
           itemBuilder: (context, index) {
             if (index >= state.allItems.length) {
@@ -121,24 +148,25 @@ class _CloudDriveFileListState extends ConsumerState<CloudDriveFileList> {
     // 保存父组件的context引用
     final parentContext = context;
 
-    showModalBottomSheet(
+    BottomSheetWidget.showWithTitle(
       context: context,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      builder:
-          (context) => CloudDriveOperationOptions(
-            file: file,
-            account: account,
-            onOperationResult: (message, isSuccess) {
-              // 使用父组件的context显示SnackBar
-              ScaffoldMessenger.of(parentContext).showSnackBar(
-                SnackBar(
-                  content: Text(message),
-                  backgroundColor: isSuccess ? Colors.green : Colors.red,
-                  duration: const Duration(seconds: 3),
-                ),
-              );
-            },
-          ),
+      title: '文件操作',
+      maxHeight: MediaQuery.of(context).size.height * 0.7,
+      content: FileOperationBottomSheet(
+        file: file,
+        account: account,
+        onClose: () => Navigator.pop(context),
+        onOperationResult: (message, isSuccess) {
+          // 使用父组件的context显示SnackBar
+          ScaffoldMessenger.of(parentContext).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: isSuccess ? Colors.green : Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        },
+      ),
     );
   }
 }

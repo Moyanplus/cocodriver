@@ -267,6 +267,8 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     String? path,
     String? folderId,
+    int page = 1,
+    int pageSize = 50,
   }) async {
     try {
       final fileList = await QuarkFileListService.getFileList(

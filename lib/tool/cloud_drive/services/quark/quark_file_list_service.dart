@@ -127,31 +127,27 @@ class QuarkFileListService {
         if (updateTime is int) {
           updatedAt = DateTime.fromMillisecondsSinceEpoch(updateTime);
         } else if (updateTime is String) {
-          updatedAt = DateTime.tryParse(updateTime);
+          // 尝试解析为时间戳或日期字符串
+          final timestamp = int.tryParse(updateTime);
+          if (timestamp != null) {
+            updatedAt = DateTime.fromMillisecondsSinceEpoch(timestamp);
+          } else {
+            updatedAt = DateTime.tryParse(updateTime);
+          }
         }
       }
 
-      // 格式化文件大小
-      String formattedSize = '0 B';
+      // 解析文件大小（字节数）
+      int? sizeBytes;
       if (!isFolder && size.isNotEmpty && size != '0') {
-        final sizeInt = int.tryParse(size) ?? 0;
-        if (sizeInt > 0) {
-          formattedSize = QuarkConfig.formatFileSize(sizeInt);
-        }
-      }
-
-      // 格式化时间
-      String? formattedTime;
-      if (updatedAt != null) {
-        formattedTime = QuarkConfig.formatDateTime(updatedAt);
+        sizeBytes = int.tryParse(size);
       }
 
       return CloudDriveFile(
         id: fid,
         name: name,
-        size: int.tryParse(formattedSize) ?? 0,
-        modifiedTime:
-            formattedTime != null ? DateTime.tryParse(formattedTime) : null,
+        size: sizeBytes,
+        modifiedTime: updatedAt,
         isFolder: isFolder,
         folderId: parentId,
       );

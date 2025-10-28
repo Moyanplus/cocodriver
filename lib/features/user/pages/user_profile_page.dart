@@ -1,14 +1,34 @@
+/// 用户个人资料页面Widget
+///
+/// 提供用户个人资料展示和管理功能
+/// 使用Riverpod进行状态管理，支持页面保活和下拉刷新
+///
+/// 主要功能：
+/// - 用户信息展示
+/// - 个人资料管理
+/// - 主题切换功能
+/// - 页面保活机制
+/// - 下拉刷新支持
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+// 核心模块导入
 import '../../../core/theme/theme_models.dart';
 import '../../../core/navigation/navigation_providers.dart';
 import '../../../core/services/theme_service.dart';
 import '../../../core/utils/responsive_utils.dart';
 import '../../../core/utils/adaptive_utils.dart';
 
-/// 用户页面
+/// 用户个人资料页面Widget
+///
+/// 提供用户个人资料展示和管理功能
+/// 使用Riverpod进行状态管理，支持页面保活和下拉刷新
 class UserProfilePage extends ConsumerStatefulWidget {
   const UserProfilePage({super.key});
 
@@ -16,6 +36,10 @@ class UserProfilePage extends ConsumerStatefulWidget {
   ConsumerState<UserProfilePage> createState() => _UserProfilePageState();
 }
 
+/// UserProfilePage的状态管理类
+///
+/// 使用AutomaticKeepAliveClientMixin实现页面保活
+/// 负责构建用户个人资料页面的UI结构和处理用户交互
 class _UserProfilePageState extends ConsumerState<UserProfilePage>
     with AutomaticKeepAliveClientMixin {
   @override

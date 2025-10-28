@@ -40,7 +40,13 @@ class AuthInfoSection extends StatelessWidget {
     String paramInfo = '';
     String paramValue = '';
 
-    switch (account.type.authType) {
+    // 使用实际的认证方式，而不是云盘类型的默认认证方式
+    final actualAuth = account.actualAuthType;
+    if (actualAuth == null) {
+      return const SizedBox.shrink();
+    }
+
+    switch (actualAuth) {
       case AuthType.cookie:
         if (account.cookies != null) {
           paramInfo = 'Cookie';
@@ -52,7 +58,7 @@ class AuthInfoSection extends StatelessWidget {
                   : cookieStr;
         }
         break;
-      case AuthType.authorization:
+      case AuthType.web:
         if (account.authorizationToken != null) {
           paramInfo = 'Token';
           final tokenStr = account.authorizationToken!;

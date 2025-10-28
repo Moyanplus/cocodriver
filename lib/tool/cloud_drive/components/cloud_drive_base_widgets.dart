@@ -40,22 +40,12 @@ class CloudDriveBaseWidgets {
     }
   }
 
-  /// 时间格式化
+  /// 时间格式化 - 显示完整日期时间（年-月-日 时:分:秒）
   static String formatTime(DateTime? time) {
     if (time == null) return '';
 
-    final now = DateTime.now();
-    final difference = now.difference(time);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays}天前';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}小时前';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}分钟前';
-    } else {
-      return '刚刚';
-    }
+    return '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} '
+        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
   }
 
   /// 加载指示器

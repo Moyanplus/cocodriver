@@ -1,10 +1,42 @@
+/// 通用底部弹窗组件工具类
+///
+/// 提供跨平台的底部弹窗功能，支持iOS和Android的原生样式
+/// 使用AdaptiveUtils实现平台适配，确保在不同平台上有一致的用户体验
+///
+/// 主要功能：
+/// - 跨平台底部弹窗显示
+/// - 自定义标题和内容
+/// - 操作按钮支持
+/// - 滚动控制
+/// - 拖拽和关闭控制
+/// - 高度限制
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/utils/adaptive_utils.dart';
 
-/// 通用底部弹窗组件
+/// 通用底部弹窗组件工具类
+///
+/// 提供跨平台的底部弹窗功能，支持iOS和Android的原生样式
+/// 使用AdaptiveUtils实现平台适配，确保在不同平台上有一致的用户体验
 class BottomSheetWidget {
   /// 显示底部弹窗
+  ///
+  /// [context] 构建上下文
+  /// [title] 弹窗标题（可选）
+  /// [content] 弹窗内容
+  /// [actions] 操作按钮列表（可选）
+  /// [isScrollControlled] 是否支持滚动控制
+  /// [isDismissible] 是否可以通过点击外部关闭
+  /// [enableDrag] 是否支持拖拽关闭
+  /// [maxHeight] 最大高度限制（可选）
+  ///
+  /// 返回泛型结果，如果用户取消则返回null
   static Future<T?> show<T>({
     required BuildContext context,
     String? title,
@@ -20,6 +52,7 @@ class BottomSheetWidget {
       isScrollControlled: isScrollControlled,
       isDismissible: isDismissible,
       enableDrag: enableDrag,
+      maxHeight: maxHeight,
       child: _BottomSheetContent(
         title: title,
         content: content,
@@ -55,6 +88,7 @@ class BottomSheetWidget {
     bool isScrollControlled = true,
     bool isDismissible = true,
     bool enableDrag = true,
+    double? maxHeight,
   }) {
     return show<T>(
       context: context,
@@ -64,6 +98,7 @@ class BottomSheetWidget {
       isScrollControlled: isScrollControlled,
       isDismissible: isDismissible,
       enableDrag: enableDrag,
+      maxHeight: maxHeight,
     );
   }
 }
@@ -119,7 +154,7 @@ class _BottomSheetContent extends StatelessWidget {
     return Container(
       width: 40,
       height: 4,
-      margin: const EdgeInsets.only(top: 8, bottom: 16),
+      margin: const EdgeInsets.only(top: 8, bottom: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.3),
         borderRadius: BorderRadius.circular(2),
@@ -131,14 +166,25 @@ class _BottomSheetContent extends StatelessWidget {
   Widget _buildTitle(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(
-        title!,
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
-        textAlign: TextAlign.center,
+      padding: EdgeInsets.only(left: 32.w, right: 16.w, top: 0.h, bottom: 8.h),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title!,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.close, size: 20.w),
+            onPressed: () => Navigator.of(context).pop(),
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+          ),
+        ],
       ),
     );
   }

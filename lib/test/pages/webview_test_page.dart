@@ -1,3 +1,20 @@
+/// WebView测试页面
+///
+/// 用于测试flutter_inappwebview插件的各种功能
+/// 仅在Debug模式下可用，用于开发和调试WebView相关功能
+///
+/// 主要功能：
+/// - WebView基本功能测试
+/// - 页面加载状态监控
+/// - Cookie和本地存储管理
+/// - JavaScript交互测试
+/// - 用户代理设置
+/// - 页面导航控制
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,11 +24,23 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/logging/log_manager.dart';
 
-/// WebView测试页面
+/// WebView测试页面Widget
+///
 /// 用于测试flutter_inappwebview插件的各种功能
+/// 仅在Debug模式下可用，用于开发和调试WebView相关功能
+///
+/// 主要功能：
+/// - WebView基本功能测试
+/// - 页面加载状态监控
+/// - Cookie和本地存储管理
+/// - JavaScript交互测试
+/// - 用户代理设置
+/// - 页面导航控制
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
 class WebViewTestPage extends StatefulWidget {
-  const WebViewTestPage({super.key});
-
   @override
   State<WebViewTestPage> createState() => _WebViewTestPageState();
 }

@@ -6,14 +6,96 @@ import '../services/lanzou/lanzou_cloud_drive_service.dart';
 import '../services/lanzou/lanzou_direct_link_service.dart';
 import 'cloud_drive_operation_service.dart';
 
-/// 云盘文件管理服务
-/// 统一管理不同云盘的文件操作，基于策略模式实现
+/// 云盘文件管理服务 (Cloud Drive File Management Service)
+///
+/// 该服务是云盘系统的核心组件之一，负责统一管理各种云盘平台的文件操作。
+/// 采用策略模式设计，支持多个云盘平台的无缝集成和统一操作接口。
+///
+/// 核心功能：
+/// 1. 文件操作管理
+///    - 文件上传和下载
+///    - 文件移动和复制
+///    - 文件删除和重命名
+///    - 文件夹创建和管理
+///
+/// 2. 批量操作支持
+///    - 批量文件下载
+///    - 批量文件移动
+///    - 批量文件删除
+///    - 操作进度跟踪
+///
+/// 3. 高速传输支持
+///    - 多线程下载
+///    - 断点续传
+///    - 传输速度优化
+///    - 带宽控制
+///
+/// 4. 文件管理功能
+///    - 文件列表获取
+///    - 文件搜索
+///    - 文件分类
+///    - 文件预览
+///
+/// 5. 错误处理和恢复
+///    - 传输错误处理
+///    - 自动重试机制
+///    - 错误恢复策略
+///    - 日志记录
+///
+/// 技术特点：
+/// - 策略模式实现
+/// - 异步操作支持
+/// - 进度监控
+/// - 性能优化
+///
+/// 支持的云盘平台：
+/// - 百度网盘
+/// - 阿里云盘
+/// - 夸克网盘
+/// - 蓝奏云
+/// - 123云盘
+///
+/// 使用方式：
+/// ```dart
+/// // 获取文件列表
+/// final files = await CloudDriveFileService.getFileList(
+///   account: account,
+///   folderId: "root"
+/// );
+///
+/// // 下载文件
+/// final success = await CloudDriveFileService.downloadFile(
+///   account: account,
+///   file: file
+/// );
+/// ```
+///
+/// 性能优化：
+/// - 文件缓存机制
+/// - 请求合并处理
+/// - 智能重试策略
+/// - 资源池管理
+///
+/// 安全特性：
+/// - 传输加密
+/// - 文件完整性校验
+/// - 访问权限控制
+/// - 安全传输协议
+///
+/// @author Flutter开发团队
+/// @version 1.0.0
+/// @since 2024年
+/// @see CloudDriveBaseService
+/// @see CloudDriveOperationService
+/// @see CloudDriveAccountService
 class CloudDriveFileService {
   /// 获取文件列表（根据云盘类型）
   static Future<Map<String, List<CloudDriveFile>>> getFileList({
     required CloudDriveAccount account,
     String? folderId,
     int page = 1,
+    int pageSize = 50,
+    bool forceRefresh = false,
   }) async {
     try {
       _logOperation('获取文件列表', account);
@@ -28,6 +110,8 @@ class CloudDriveFileService {
       final fileList = await strategy.getFileList(
         account: account,
         folderId: _normalizeRootFolder(folderId, account),
+        page: page,
+        pageSize: pageSize,
       );
 
       // 分离文件和文件夹
@@ -432,15 +516,21 @@ class CloudDriveFileService {
       return false;
     }
 
-    // 根据认证方式验证
-    switch (account.type.authType) {
+    // 根据实际的认证方式验证（而不是云盘类型的默认认证方式）
+    final actualAuth = account.actualAuthType;
+    if (actualAuth == null) {
+      _logWarning('账号验证', account, '无法确定认证方式');
+      return false;
+    }
+
+    switch (actualAuth) {
       case AuthType.cookie:
         if (account.cookies == null || account.cookies!.isEmpty) {
           _logWarning('账号验证', account, 'Cookie为空');
           return false;
         }
         break;
-      case AuthType.authorization:
+      case AuthType.web:
         if (account.authorizationToken == null ||
             account.authorizationToken!.isEmpty) {
           _logWarning('账号验证', account, 'Authorization Token为空');
@@ -448,8 +538,11 @@ class CloudDriveFileService {
         }
         break;
       case AuthType.qrCode:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        if (account.qrCodeToken == null || account.qrCodeToken!.isEmpty) {
+          _logWarning('账号验证', account, 'QR Code Token为空');
+          return false;
+        }
+        break;
     }
 
     _logDebug('账号验证完成', account, '状态有效');

@@ -378,6 +378,8 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     String? path,
     String? folderId,
+    int page = 1,
+    int pageSize = 50,
   }) {
     // TODO: implement getFileList
     throw UnimplementedError();

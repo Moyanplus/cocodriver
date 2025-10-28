@@ -34,12 +34,15 @@ class LogManager {
       _logFile = File('${logDirectory.path}/app_logs.txt');
 
       // 配置Logger
+      // iOS 上禁用颜色，避免 ANSI 控制符显示混乱
+      final useColors = !Platform.isIOS;
+
       _logger = Logger(
         printer: PrettyPrinter(
           methodCount: 2,
           errorMethodCount: 8,
           lineLength: 120,
-          colors: true,
+          colors: useColors,
           printEmojis: true,
           dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
         ),

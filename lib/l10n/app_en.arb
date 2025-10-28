@@ -20,6 +20,10 @@
   "@profile": {
     "description": "Profile tab"
   },
+  "files": "Files",
+  "@files": {
+    "description": "Files tab"
+  },
   "settings": "Settings",
   "@settings": {
     "description": "Settings page title"

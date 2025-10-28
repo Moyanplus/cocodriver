@@ -1,8 +1,21 @@
+/// 通用组件工具类
+/// 
+/// 提供应用程序中常用的UI组件和工具方法
+/// 包括加载指示器、错误状态、空状态等通用组件
+/// 
+/// 主要功能：
+/// - 加载指示器组件
+/// - 错误状态组件
+/// - 空状态组件
+/// - 确认对话框
+/// - 其他通用UI组件
+/// 
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'package:flutter/material.dart';
 import 'bottom_sheet_widget.dart';
-
-/// 通用组件
-class CommonWidgets {
   /// 构建加载指示器
   static Widget buildLoadingIndicator({String? message}) {
     return Center(

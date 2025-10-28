@@ -1,10 +1,28 @@
+/// 自适应UI工具类
+///
+/// 提供平台特定的UI组件和样式，实现跨平台的一致性体验
+/// 根据平台类型自动选择合适的UI组件和样式
+///
+/// 主要功能：
+/// - 平台特定按钮组件
+/// - 自适应对话框
+/// - 平台特定样式
+/// - 跨平台UI适配
+/// - 响应式布局支持
+///
+/// 作者: Flutter开发团队
+/// 版本: 1.0.0
+/// 创建时间: 2024年
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'platform_utils.dart';
 import 'responsive_utils.dart';
 
 /// 自适应UI工具类
-/// 提供平台特定的UI组件和样式
+///
+/// 提供平台特定的UI组件和样式，实现跨平台的一致性体验
+/// 根据平台类型自动选择合适的UI组件和样式
 class AdaptiveUtils {
   AdaptiveUtils._();
 
@@ -179,30 +197,51 @@ class AdaptiveUtils {
     bool isScrollControlled = false,
     bool isDismissible = true,
     bool enableDrag = true,
+    double? maxHeight,
   }) {
     if (PlatformUtils.isIOS) {
       return showCupertinoModalPopup<T>(
         context: context,
         builder:
-            (context) => Container(
-              height: isScrollControlled ? null : 300,
-              decoration: const BoxDecoration(
-                color: CupertinoColors.systemBackground,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            (context) => Material(
+              type: MaterialType.transparency,
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight:
+                      maxHeight ?? MediaQuery.of(context).size.height * 0.7,
+                ),
+                decoration: const BoxDecoration(
+                  color: CupertinoColors.systemBackground,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
+                  child: child,
+                ),
               ),
-              child: child,
             ),
       );
     } else {
       return showModalBottomSheet<T>(
         context: context,
-        isScrollControlled: isScrollControlled,
+        isScrollControlled: true,
         isDismissible: isDismissible,
         enableDrag: enableDrag,
+        constraints: BoxConstraints(
+          maxHeight: maxHeight ?? MediaQuery.of(context).size.height * 0.7,
+        ),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
-        builder: (context) => child,
+        builder:
+            (context) => Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: child,
+            ),
       );
     }
   }
@@ -330,6 +369,7 @@ class AdaptiveUtils {
     Widget? trailing,
     VoidCallback? onTap,
     bool enabled = true,
+    EdgeInsetsGeometry? contentPadding,
   }) {
     if (PlatformUtils.isIOS) {
       return CupertinoListTile(
@@ -338,6 +378,7 @@ class AdaptiveUtils {
         leading: leading,
         trailing: trailing,
         onTap: enabled ? onTap : null,
+        padding: contentPadding,
       );
     } else {
       return ListTile(
@@ -347,6 +388,7 @@ class AdaptiveUtils {
         trailing: trailing,
         onTap: enabled ? onTap : null,
         enabled: enabled,
+        contentPadding: contentPadding,
       );
     }
   }

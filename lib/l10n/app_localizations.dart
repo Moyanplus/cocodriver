@@ -128,6 +128,12 @@ abstract class AppLocalizations {
   /// **'我的'**
   String get profile;
 
+  /// 文件标签
+  ///
+  /// In zh, this message translates to:
+  /// **'文件'**
+  String get files;
+
   /// 设置页面标题
   ///
   /// In zh, this message translates to:

@@ -188,58 +188,42 @@ class LoginDetectionConfig {
 class CookieProcessingConfig {
   final bool enableProcessing;
   final bool useInterceptedCookies;
-  final bool extractSpecificCookies;
-  final List<String> priorityCookieNames;
   final List<String> requiredCookies;
   final List<String> excludedDomains;
 
   const CookieProcessingConfig({
     this.enableProcessing = true,
     this.useInterceptedCookies = true,
-    this.extractSpecificCookies = true,
-    this.priorityCookieNames = const [],
-    this.requiredCookies = const [],
-    this.excludedDomains = const [],
+    required this.requiredCookies,
+    this.excludedDomains = const ['google.com', 'facebook.com'],
   });
 
-  /// 默认Cookie处理配置
+  /// 默认Cookie处理配置（百度网盘）
   static const CookieProcessingConfig defaultConfig = CookieProcessingConfig(
     enableProcessing: true,
     useInterceptedCookies: true,
-    extractSpecificCookies: true,
-    priorityCookieNames: ['BDUSS', 'STOKEN', 'PCS_TOKEN'],
     requiredCookies: ['BDUSS', 'STOKEN', 'PCS_TOKEN'],
-    excludedDomains: ['google.com', 'facebook.com'],
   );
 
   /// 123云盘Cookie处理配置
   static const CookieProcessingConfig pan123Config = CookieProcessingConfig(
     enableProcessing: true,
     useInterceptedCookies: true,
-    extractSpecificCookies: true,
-    priorityCookieNames: ['ctoken', 'b-user-id', '__uid'],
-    requiredCookies: ['ctoken', 'b-user-id'],
-    excludedDomains: ['google.com', 'facebook.com'],
+    requiredCookies: ['ctoken', 'b-user-id', '__uid'],
   );
 
   /// 蓝奏云Cookie处理配置
   static const CookieProcessingConfig lanzouConfig = CookieProcessingConfig(
     enableProcessing: true,
     useInterceptedCookies: true,
-    extractSpecificCookies: true,
-    priorityCookieNames: ['ylogin', 'phpdisk_info'],
-    requiredCookies: ['ylogin'],
-    excludedDomains: ['google.com', 'facebook.com'],
+    requiredCookies: ['ylogin', 'phpdisk_info'],
   );
 
   /// 夸克云盘Cookie处理配置
   static const CookieProcessingConfig quarkConfig = CookieProcessingConfig(
     enableProcessing: true,
     useInterceptedCookies: true,
-    extractSpecificCookies: true,
-    priorityCookieNames: ['__puus'],
-    requiredCookies: ['__puus'],
-    excludedDomains: ['google.com', 'facebook.com'],
+    requiredCookies: ['__puus', 'QKUID', 'QK_UID'],
   );
 }
 
@@ -296,6 +280,83 @@ class RequestInterceptConfig {
         skipInterceptForAuthTypes: ['authorization'],
         interceptPatterns: ['*://*.baidu.com/*', '*://*.aliyundrive.com/*'],
       );
+}
+
+/// 云盘统一配置
+class CloudDriveConfig {
+  final String name;
+  final String baseUrl;
+  final TokenConfig? tokenConfig;
+  final LoginDetectionConfig loginDetectionConfig;
+  final CookieProcessingConfig cookieProcessingConfig;
+  final PostLoginConfig postLoginConfig;
+  final RequestInterceptConfig requestInterceptConfig;
+
+  const CloudDriveConfig({
+    required this.name,
+    required this.baseUrl,
+    this.tokenConfig,
+    required this.loginDetectionConfig,
+    required this.cookieProcessingConfig,
+    required this.postLoginConfig,
+    required this.requestInterceptConfig,
+  });
+
+  /// 百度网盘配置
+  static const CloudDriveConfig baidu = CloudDriveConfig(
+    name: '百度网盘',
+    baseUrl: 'https://pan.baidu.com',
+    tokenConfig: TokenConfig.baiduDriveConfig,
+    loginDetectionConfig: LoginDetectionConfig.baiduConfig,
+    cookieProcessingConfig: CookieProcessingConfig.defaultConfig,
+    postLoginConfig: PostLoginConfig.defaultConfig,
+    requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
+  );
+
+  /// 阿里云盘配置
+  static const CloudDriveConfig aliyun = CloudDriveConfig(
+    name: '阿里云盘',
+    baseUrl: 'https://www.aliyundrive.com',
+    tokenConfig: TokenConfig.aliDriveConfig,
+    loginDetectionConfig: LoginDetectionConfig.aliConfig,
+    cookieProcessingConfig: CookieProcessingConfig(
+      enableProcessing: true,
+      useInterceptedCookies: true,
+      requiredCookies: ['access_token', 'refresh_token'],
+    ),
+    postLoginConfig: PostLoginConfig.defaultConfig,
+    requestInterceptConfig: RequestInterceptConfig.tokenBasedConfig,
+  );
+
+  /// 蓝奏云配置
+  static const CloudDriveConfig lanzou = CloudDriveConfig(
+    name: '蓝奏云',
+    baseUrl: 'https://pc.woozooo.com',
+    loginDetectionConfig: LoginDetectionConfig.lanzouConfig,
+    cookieProcessingConfig: CookieProcessingConfig.lanzouConfig,
+    postLoginConfig: PostLoginConfig.defaultConfig,
+    requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
+  );
+
+  /// 夸克云盘配置
+  static const CloudDriveConfig quark = CloudDriveConfig(
+    name: '夸克云盘',
+    baseUrl: 'https://pan.quark.cn',
+    loginDetectionConfig: LoginDetectionConfig.quarkConfig,
+    cookieProcessingConfig: CookieProcessingConfig.quarkConfig,
+    postLoginConfig: PostLoginConfig.defaultConfig,
+    requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
+  );
+
+  /// 123云盘配置
+  static const CloudDriveConfig pan123 = CloudDriveConfig(
+    name: '123云盘',
+    baseUrl: 'https://www.123pan.com',
+    loginDetectionConfig: LoginDetectionConfig.pan123Config,
+    cookieProcessingConfig: CookieProcessingConfig.pan123Config,
+    postLoginConfig: PostLoginConfig.defaultConfig,
+    requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
+  );
 }
 
 /// 云盘WebView配置
