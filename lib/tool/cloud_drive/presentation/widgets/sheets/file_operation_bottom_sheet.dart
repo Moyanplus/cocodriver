@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../../base/cloud_drive_file_service.dart';
 import '../operation/operation.dart';
+import '../file_detail/file_detail.dart';
 import '../../../../../../core/logging/log_manager.dart';
 
-/// 文件操作底部弹窗内容组件
+/// 文件操作和详情底部弹窗
 ///
-/// 用于在底部弹窗中显示文件操作选项
-/// 包括：下载、分享、重命名、移动、删除等操作
+/// 整合了文件操作和详情查看功能
+/// - 默认显示：快速操作按钮
+/// - 可切换到：详细信息视图
 class FileOperationBottomSheet extends ConsumerStatefulWidget {
   final CloudDriveFile file;
   final CloudDriveAccount account;
@@ -32,36 +36,157 @@ class _FileOperationBottomSheetState
     extends ConsumerState<FileOperationBottomSheet> {
   bool _isLoading = false;
   String? _loadingMessage;
+  bool _showDetailView = false; // 是否显示详情视图
+  Map<String, dynamic>? _fileDetail;
 
   @override
   Widget build(BuildContext context) {
-    return _isLoading
-        ? _buildLoadingState()
-        : Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 文件信息显示
-            FileInfoDisplay(file: widget.file, onTap: _showFileDetail),
+    if (_isLoading) {
+      return _buildLoadingState();
+    }
 
-            SizedBox(height: CloudDriveUIConfig.spacingM),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 顶部标题栏（带切换按钮）
+        _buildHeader(),
 
-            // 操作按钮
-            OperationButtons(
-              file: widget.file,
-              account: widget.account,
-              isLoading: _isLoading,
-              loadingMessage: _loadingMessage,
-              onDownload: _downloadFile,
-              onHighSpeedDownload: _highSpeedDownload,
-              onShare: _shareFile,
-              onCopy: _copyFile,
-              onRename: _renameFile,
-              onMove: _moveFile,
-              onDelete: _deleteFile,
-              onFileDetail: _showFileDetail,
+        // 主要内容区域
+        if (_showDetailView)
+          _buildDetailView()
+        else
+          _buildOperationView(),
+      ],
+    );
+  }
+
+  /// 构建顶部标题栏
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: CloudDriveUIConfig.spacingM,
+        vertical: CloudDriveUIConfig.spacingS,
+      ),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          // 返回按钮（仅在详情视图显示）
+          if (_showDetailView)
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                setState(() {
+                  _showDetailView = false;
+                });
+              },
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
             ),
-          ],
-        );
+          if (_showDetailView) SizedBox(width: CloudDriveUIConfig.spacingS),
+
+          // 标题
+          Expanded(
+            child: Text(
+              _showDetailView ? '文件详情' : '文件操作',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          // 切换按钮
+          if (!_showDetailView)
+            TextButton.icon(
+              onPressed: _showFileDetail,
+              icon: const Icon(Icons.info_outline, size: 18),
+              label: const Text('详情'),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                  horizontal: CloudDriveUIConfig.spacingS,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建操作视图
+  Widget _buildOperationView() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 文件信息显示
+        FileInfoDisplay(
+          file: widget.file,
+          onTap: _showFileDetail,
+        ),
+
+        SizedBox(height: CloudDriveUIConfig.spacingM),
+
+        // 操作按钮
+        OperationButtons(
+          file: widget.file,
+          account: widget.account,
+          isLoading: _isLoading,
+          loadingMessage: _loadingMessage,
+          onDownload: _downloadFile,
+          onHighSpeedDownload: _highSpeedDownload,
+          onShare: _shareFile,
+          onCopy: _copyFile,
+          onRename: _renameFile,
+          onMove: _moveFile,
+          onDelete: _deleteFile,
+          onFileDetail: _showFileDetail,
+        ),
+
+        SizedBox(height: CloudDriveUIConfig.spacingM),
+      ],
+    );
+  }
+
+  /// 构建详情视图
+  Widget _buildDetailView() {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 文件信息区域
+          FileInfoSection(
+            file: widget.file,
+            fileDetail: _fileDetail,
+          ),
+
+          // 预览区域（如果适用）
+          if (_shouldShowPreview())
+            PreviewSection(
+              file: widget.file,
+              fileDetail: _fileDetail,
+            ),
+
+          // 操作区域
+          ActionSection(
+            file: widget.file,
+            account: widget.account,
+            onDownload: _downloadFile,
+            onShare: _shareFile,
+            onRename: _renameFile,
+            onDelete: _deleteFile,
+          ),
+
+          // 底部间距
+          SizedBox(height: CloudDriveUIConfig.spacingL),
+        ],
+      ),
+    );
   }
 
   /// 构建加载状态
@@ -82,10 +207,62 @@ class _FileOperationBottomSheetState
     );
   }
 
+  /// 是否应该显示预览
+  bool _shouldShowPreview() {
+    final ext = widget.file.name.split('.').last.toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'pdf'].contains(ext);
+  }
+
   /// 显示文件详情
   void _showFileDetail() {
-    // TODO: 实现文件详情显示
-    LogManager().cloudDrive('显示文件详情: ${widget.file.name}');
+    setState(() {
+      _showDetailView = true;
+    });
+    _loadFileDetail();
+  }
+
+  /// 加载文件详情
+  Future<void> _loadFileDetail() async {
+    if (_fileDetail != null) return; // 已加载过
+
+    try {
+      setState(() {
+        _isLoading = true;
+        _loadingMessage = '正在加载文件详情...';
+      });
+
+      LogManager().cloudDrive('📄 开始加载文件详情: ${widget.file.name}');
+
+      final detail = await CloudDriveFileService.getFileDetail(
+        account: widget.account,
+        fileId: widget.file.id,
+      );
+
+      if (mounted) {
+        setState(() {
+          _fileDetail = detail;
+          _isLoading = false;
+          _loadingMessage = null;
+        });
+
+        LogManager().cloudDrive('✅ 文件详情加载成功');
+      }
+    } catch (e) {
+      LogManager().error('❌ 加载文件详情失败: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _loadingMessage = null;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('加载文件详情失败: $e'),
+            backgroundColor: CloudDriveUIConfig.errorColor,
+          ),
+        );
+      }
+    }
   }
 
   /// 下载文件
@@ -97,6 +274,7 @@ class _FileOperationBottomSheetState
 
     // TODO: 实现下载逻辑
     Future.delayed(Duration(seconds: 2), () {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _loadingMessage = null;
@@ -115,6 +293,7 @@ class _FileOperationBottomSheetState
 
     // TODO: 实现高速下载逻辑
     Future.delayed(Duration(seconds: 2), () {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _loadingMessage = null;
@@ -149,6 +328,7 @@ class _FileOperationBottomSheetState
 
     // TODO: 实现分享逻辑
     Future.delayed(Duration(seconds: 2), () {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _loadingMessage = null;
@@ -176,6 +356,7 @@ class _FileOperationBottomSheetState
 
     // TODO: 实现复制逻辑
     Future.delayed(Duration(seconds: 2), () {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _loadingMessage = null;
@@ -210,6 +391,7 @@ class _FileOperationBottomSheetState
 
     // TODO: 实现重命名逻辑
     Future.delayed(Duration(seconds: 2), () {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _loadingMessage = null;
@@ -228,6 +410,7 @@ class _FileOperationBottomSheetState
 
     // TODO: 实现移动逻辑
     Future.delayed(Duration(seconds: 2), () {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _loadingMessage = null;
@@ -274,6 +457,7 @@ class _FileOperationBottomSheetState
 
     // TODO: 实现删除逻辑
     Future.delayed(Duration(seconds: 2), () {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _loadingMessage = null;
