@@ -1,13 +1,11 @@
 import 'package:dio/dio.dart';
 
-import '../../../../../core/logging/log_manager.dart';
-import '../../data/models/cloud_drive_entities.dart';
-// import '../../data/models/cloud_drive_dtos.dart'; // 未使用
+import '../../../data/models/cloud_drive_entities.dart';
 import 'quark_auth_service.dart';
 import 'quark_config.dart';
+import '../utils/quark_logger.dart';
 
-/// 夸克云盘基础服务类
-/// 提供通用的dio实例创建和请求拦截器
+/// 夸克云盘基础服务 - Dio实例创建、请求拦截、响应验证
 abstract class QuarkBaseService {
   /// 创建dio实例（使用原始认证头）
   static Dio createDio(CloudDriveAccount account) {
@@ -26,13 +24,9 @@ abstract class QuarkBaseService {
 
   /// 创建带有刷新认证的dio实例
   static Future<Dio> createDioWithAuth(CloudDriveAccount account) async {
-    LogManager().cloudDrive('🔧 QuarkBaseService - 开始创建带认证的Dio实例');
-    LogManager().cloudDrive('👤 账号ID: ${account.id}');
-
+    // 【简化】移除冗余日志，只在出错时打印
     try {
-      LogManager().cloudDrive('🔄 调用 QuarkAuthService.buildAuthHeaders...');
       final authHeaders = await QuarkAuthService.buildAuthHeaders(account);
-      LogManager().cloudDrive('✅ 获取认证头成功，键数量: ${authHeaders.length}');
 
       final dio = Dio(
         BaseOptions(
@@ -44,10 +38,9 @@ abstract class QuarkBaseService {
       );
 
       _addInterceptors(dio);
-      LogManager().cloudDrive('✅ Dio实例创建完成');
       return dio;
     } catch (e) {
-      LogManager().cloudDrive('❌ 创建Dio实例失败: $e');
+      QuarkLogger.debug('创建Dio实例失败: $e');
       rethrow;
     }
   }
@@ -58,31 +51,19 @@ abstract class QuarkBaseService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          LogManager().network(
-            '夸克云盘请求: ${options.method} ${options.uri}',
-            className: 'QuarkBaseService',
-            methodName: 'onRequest',
-            data: {
-              'method': options.method,
-              'uri': options.uri.toString(),
-              'headers': options.headers,
-              'data': options.data?.toString(),
-            },
-          );
+          QuarkLogger.network(options.method, url: options.uri.toString());
           handler.next(options);
         },
         onResponse: (response, handler) {
-          LogManager().cloudDrive('📡 收到响应: ${response.statusCode}');
-          LogManager().cloudDrive(
-            '📄 响应内容长度: ${response.data?.toString().length ?? 0}',
-          );
+          QuarkLogger.debug('收到响应: ${response.statusCode}');
+          QuarkLogger.debug('响应内容长度: ${response.data?.toString().length ?? 0}');
           handler.next(response);
         },
         onError: (error, handler) {
-          LogManager().cloudDrive('❌ 请求错误: ${error.message}');
+          QuarkLogger.debug('请求错误: ${error.message}');
           if (error.response != null) {
-            LogManager().cloudDrive(
-              '📄 错误响应: ${error.response?.statusCode} - ${error.response?.data}',
+            QuarkLogger.debug(
+              '错误响应: ${error.response?.statusCode} - ${error.response?.data}',
             );
           }
           handler.next(error);
@@ -106,24 +87,15 @@ abstract class QuarkBaseService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          LogManager().cloudDrive('📡 发送请求: ${options.method} ${options.uri}');
+          QuarkLogger.debug('发送请求: ${options.method} ${options.uri}');
           handler.next(options);
         },
         onResponse: (response, handler) {
-          LogManager().network(
-            '夸克云盘响应: ${response.statusCode}',
-            className: 'QuarkBaseService',
-            methodName: 'onResponse',
-            data: {
-              'statusCode': response.statusCode,
-              'uri': response.requestOptions.uri.toString(),
-              'data': response.data?.toString(),
-            },
-          );
+          QuarkLogger.debug('收到响应: ${response.statusCode}');
           handler.next(response);
         },
         onError: (error, handler) {
-          LogManager().cloudDrive('❌ 请求错误: ${error.message}');
+          QuarkLogger.debug('请求错误: ${error.message}');
           handler.next(error);
         },
       ),

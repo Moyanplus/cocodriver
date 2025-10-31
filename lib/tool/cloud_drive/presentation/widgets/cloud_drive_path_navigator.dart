@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/utils/responsive_utils.dart';
-import '../../data/models/cloud_drive_entities.dart';
 import '../providers/cloud_drive_provider.dart';
 
 /// ========================================
@@ -14,7 +13,7 @@ import '../providers/cloud_drive_provider.dart';
 /// 【位置】CloudDriveAssistantPage -> _buildMainContent -> Column 的第一个子组件
 ///
 /// 【显示内容】
-///   1. 根目录状态：显示 "📁 根目录"
+///   1. 根目录状态：显示 "根目录"
 ///   2. 子文件夹状态：显示 "返回上级" 按钮 + 完整路径链
 ///
 /// 【工作原理】
@@ -30,7 +29,7 @@ import '../providers/cloud_drive_provider.dart';
 /// 【状态判断】
 ///   - isInSubFolder = folderPath.isNotEmpty
 ///   - true：在子文件夹中，显示"返回上级"按钮
-///   - false：在根目录，显示"📁 根目录"文本
+///   - false：在根目录，显示"根目录"文本
 /// ========================================
 class CloudDrivePathNavigator extends ConsumerWidget {
   const CloudDrivePathNavigator({super.key});
@@ -113,7 +112,7 @@ class CloudDrivePathNavigator extends ConsumerWidget {
                         ),
                       ),
                     )
-                  // 如果在根目录，显示"📁 根目录"文本
+                  // 如果在根目录，显示"根目录"文本
                   else
                     Container(
                       padding: ResponsiveUtils.getResponsivePadding(
@@ -121,7 +120,7 @@ class CloudDrivePathNavigator extends ConsumerWidget {
                         vertical: 4.h,
                       ),
                       child: Text(
-                        '📁 根目录',
+                        '根目录',
                         style: TextStyle(
                           fontSize: ResponsiveUtils.getResponsiveFontSize(
                             12.sp,
@@ -136,12 +135,12 @@ class CloudDrivePathNavigator extends ConsumerWidget {
                   // 【示例】返回上级 > 文档 > 工作文件 > 2024年度
                   // 【数据来源】state.folderPath（由 FolderStateHandler 维护的路径链）
                   //
-                  // 【注意】点击路径中的文件夹会调用 enterFolder()
-                  // 这可能会导致路径不一致的问题，因为：
-                  // - enterFolder() 会将文件夹添加到 folderPath 末尾
-                  // - 但点击中间的路径节点应该直接跳转到该层级，而不是添加到末尾
-                  // 【TODO】未来可能需要实现 navigateToPath() 方法来正确处理面包屑导航点击
+                  // 【面包屑导航逻辑】
+                  // - 点击路径中的某个文件夹时，调用 navigateToPathIndex(index)
+                  // - 这会截断该位置之后的所有路径节点，并跳转到该层级
+                  // - 例如：路径 [A, B, C, D]，点击B（index=1）→ 新路径 [A, B]
                   ...state.folderPath.asMap().entries.map((entry) {
+                    final index = entry.key; // 路径中的索引位置
                     final pathInfo = entry.value; // 路径中的每个文件夹信息
 
                     return Row(
@@ -160,19 +159,12 @@ class CloudDrivePathNavigator extends ConsumerWidget {
                         SizedBox(width: ResponsiveUtils.getSpacing() * 0.67),
 
                         // 可点击的文件夹按钮
-                        // 【当前行为】点击后会调用 enterFolder()，将该文件夹添加到路径末尾
-                        // 【期望行为】应该直接跳转到该层级（截断后面的路径）
+                        // 【功能】点击后跳转到该层级，并截断后面的路径
                         GestureDetector(
                           onTap:
                               () => ref
                                   .read(cloudDriveProvider.notifier)
-                                  .enterFolder(
-                                    CloudDriveFile(
-                                      id: pathInfo.id,
-                                      name: pathInfo.name,
-                                      isFolder: true,
-                                    ),
-                                  ),
+                                  .navigateToPathIndex(index),
                           child: Container(
                             padding: ResponsiveUtils.getResponsivePadding(
                               horizontal: 8.w,

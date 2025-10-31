@@ -13,7 +13,7 @@ class CloudDriveServiceLocator {
   /// 注册服务
   static void register<T>(T service) {
     _services[T] = service;
-    LogManager().cloudDrive('🔧 注册服务: ${T.toString()}');
+    LogManager().cloudDrive('注册服务: ${T.toString()}');
   }
 
   /// 获取服务
@@ -31,11 +31,11 @@ class CloudDriveServiceLocator {
   /// 初始化所有核心服务
   static void initialize() {
     if (_isInitialized) {
-      LogManager().cloudDrive('⚠️ 服务定位器已初始化，跳过重复初始化');
+      LogManager().cloudDrive('服务定位器已初始化，跳过重复初始化');
       return;
     }
 
-    LogManager().cloudDrive('🚀 开始初始化云盘服务定位器');
+    LogManager().cloudDrive('开始初始化云盘服务定位器');
 
     // 注册核心服务
     register<CloudDriveLogger>(CloudDriveLogger());
@@ -45,18 +45,18 @@ class CloudDriveServiceLocator {
     register<CloudDriveFileService>(CloudDriveFileService());
 
     _isInitialized = true;
-    LogManager().cloudDrive('✅ 云盘服务定位器初始化完成');
+    LogManager().cloudDrive('云盘服务定位器初始化完成');
   }
 
   /// 重置所有服务
   static void reset() {
-    LogManager().cloudDrive('🔄 重置云盘服务定位器');
+    LogManager().cloudDrive('重置云盘服务定位器');
     _services.clear();
     _isInitialized = false;
 
     // 清理缓存
     CloudDriveCacheService.clearCache();
-    LogManager().cloudDrive('✅ 云盘服务定位器重置完成');
+    LogManager().cloudDrive('云盘服务定位器重置完成');
   }
 
   /// 获取所有已注册的服务

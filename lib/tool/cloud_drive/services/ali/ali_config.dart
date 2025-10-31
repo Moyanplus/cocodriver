@@ -164,16 +164,16 @@ class AliConfig {
 
   /// 支持的操作状态
   static Map<String, bool> getSupportedOperationsStatus() => {
-    'getFileList': true, // ✅ 已实现
-    'getAccountDetails': true, // ✅ 已实现
-    'createFolder': true, // ✅ 已实现
-    'rename': true, // ✅ 已实现
-    'move': true, // ✅ 已实现 - 使用批量API
-    'copy': false, // ❌ 阿里云盘暂不支持复制
-    'delete': true, // ✅ 已实现 - 使用批量API
-    'download': true, // ✅ 已实现
-    'upload': false, // 🔄 待实现
-    'share': false, // 🔄 待实现
+    'getFileList': true, // 已实现
+    'getAccountDetails': true, // 已实现
+    'createFolder': true, // 已实现
+    'rename': true, // 已实现
+    'move': true, // 已实现 - 使用批量API
+    'copy': false, // 阿里云盘暂不支持复制
+    'delete': true, // 已实现 - 使用批量API
+    'download': true, // 已实现
+    'upload': false, // 待实现
+    'share': false, // 待实现
   };
 
   /// 响应状态映射
@@ -199,7 +199,7 @@ class AliConfig {
       final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
       return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
     } catch (e) {
-      LogManager().cloudDrive('⚠️ 时间戳格式化失败: $e');
+      LogManager().cloudDrive('时间戳格式化失败: $e');
       return '未知时间';
     }
   }

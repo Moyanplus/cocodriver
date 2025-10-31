@@ -9,7 +9,7 @@ class PerformanceMetrics {
   PerformanceMetrics._internal();
 
   final Map<String, List<PerformanceMetric>> _metrics = {};
-  final StreamController<PerformanceMetric> _metricController = 
+  final StreamController<PerformanceMetric> _metricController =
       StreamController<PerformanceMetric>.broadcast();
 
   /// 获取指标流
@@ -75,10 +75,7 @@ class PerformanceMetrics {
       operation: operation,
       category: 'file_operation',
       duration: duration,
-      metadata: {
-        'file_name': fileName,
-        'file_size': fileSize,
-      },
+      metadata: {'file_name': fileName, 'file_size': fileSize},
       error: error,
     );
   }
@@ -129,9 +126,11 @@ class PerformanceMetrics {
       duration: duration,
       metadata: {
         'bytes_transferred': bytesTransferred,
-        'speed_mbps': bytesTransferred != null 
-            ? (bytesTransferred / duration.inMilliseconds * 8 / 1000).toStringAsFixed(2)
-            : null,
+        'speed_mbps':
+            bytesTransferred != null
+                ? (bytesTransferred / duration.inMilliseconds * 8 / 1000)
+                    .toStringAsFixed(2)
+                : null,
       },
       error: error,
     );
@@ -161,7 +160,8 @@ class PerformanceMetrics {
       category: category,
       totalOperations: metrics.length,
       averageDuration: Duration(
-        milliseconds: (durations.reduce((a, b) => a + b) / durations.length).round(),
+        milliseconds:
+            (durations.reduce((a, b) => a + b) / durations.length).round(),
       ),
       minDuration: Duration(milliseconds: durations.first),
       maxDuration: Duration(milliseconds: durations.last),
@@ -175,7 +175,8 @@ class PerformanceMetrics {
   Future<SystemPerformanceInfo> getSystemPerformance() async {
     try {
       final processInfo = ProcessInfo.currentRss;
-      final totalMemory = Platform.numberOfProcessors * 1024 * 1024 * 1024; // 估算
+      final totalMemory =
+          Platform.numberOfProcessors * 1024 * 1024 * 1024; // 估算
 
       return SystemPerformanceInfo(
         memoryUsage: processInfo,
@@ -208,14 +209,14 @@ class PerformanceMetrics {
   }
 
   void _logMetric(PerformanceMetric metric) {
-    final status = metric.error != null ? '❌' : '✅';
+    final status = metric.error != null ? 'ERROR' : 'OK';
     final duration = '${metric.duration.inMilliseconds}ms';
-    print('📊 $status ${metric.category}/${metric.operation}: $duration');
-    
+    print('$status ${metric.category}/${metric.operation}: $duration');
+
     if (metric.error != null) {
       print('   Error: ${metric.error}');
     }
-    
+
     if (metric.metadata.isNotEmpty) {
       print('   Metadata: ${metric.metadata}');
     }
@@ -229,11 +230,7 @@ class PerformanceMetrics {
 
   Future<DiskUsage> _getDiskUsage() async {
     // 简化的磁盘使用率计算
-    return DiskUsage(
-      used: 0,
-      total: 0,
-      free: 0,
-    );
+    return DiskUsage(used: 0, total: 0, free: 0);
   }
 
   Future<NetworkStats> _getNetworkStats() async {
@@ -365,7 +362,7 @@ class SystemPerformanceInfo {
     );
   }
 
-  double get memoryUsagePercentage => 
+  double get memoryUsagePercentage =>
       totalMemory > 0 ? (memoryUsage / totalMemory * 100) : 0.0;
 
   Map<String, dynamic> toJson() => {

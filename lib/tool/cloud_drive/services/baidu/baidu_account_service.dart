@@ -177,11 +177,11 @@ class BaiduAccountService {
 
   /// 统一成功日志记录
   static void _logSuccess(String message) {
-    LogManager().cloudDrive('✅ 百度网盘账号 - $message');
+    LogManager().cloudDrive('百度网盘账号 - $message');
   }
 
   /// 统一错误日志记录
   static void _logError(String message, dynamic error) {
-    LogManager().cloudDrive('❌ 百度网盘账号 - $message: $error');
+    LogManager().cloudDrive('百度网盘账号 - $message: $error');
   }
 }

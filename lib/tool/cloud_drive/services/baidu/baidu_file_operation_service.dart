@@ -15,14 +15,14 @@ class BaiduFileOperationService {
     required String newFileName,
   }) async {
     try {
-      LogManager().cloudDrive('✏️ 百度网盘 - 开始重命名文件');
+      LogManager().cloudDrive('百度网盘 - 开始重命名文件');
       LogManager().cloudDrive(
-        '📋 百度网盘 - 请求参数: filePath=$filePath, newFileName=$newFileName',
+        '百度网盘 - 请求参数: filePath=$filePath, newFileName=$newFileName',
       );
 
       // 验证账号登录状态
       if (!account.isLoggedIn) {
-        LogManager().cloudDrive('❌ 百度网盘 - 账号未登录，请先登录');
+        LogManager().cloudDrive('百度网盘 - 账号未登录，请先登录');
         return false;
       }
 
@@ -31,7 +31,7 @@ class BaiduFileOperationService {
       final bdstoken = baiduParams['bdstoken']?.toString();
 
       if (bdstoken == null) {
-        LogManager().cloudDrive('❌ 百度网盘 - 无法获取bdstoken');
+        LogManager().cloudDrive('百度网盘 - 无法获取bdstoken');
         return false;
       }
 
@@ -58,16 +58,16 @@ class BaiduFileOperationService {
         queryParameters: urlParams.map((k, v) => MapEntry(k, v.toString())),
       );
 
-      LogManager().cloudDrive('🌐 百度网盘 - 请求URL: $uri');
+      LogManager().cloudDrive('百度网盘 - 请求URL: $uri');
       LogManager().cloudDrive(
-        '📤 百度网盘 - 请求体: ${requestBodyMap.entries.map((e) => '${e.key}=${e.value}').join('&')}',
+        '百度网盘 - 请求体: ${requestBodyMap.entries.map((e) => '${e.key}=${e.value}').join('&')}',
       );
 
       // 发送请求
       final dio = BaiduBaseService.createDio(account);
       final response = await dio.postUri(uri, data: formData);
 
-      LogManager().cloudDrive('📡 百度网盘 - 响应状态: ${response.statusCode}');
+      LogManager().cloudDrive('百度网盘 - 响应状态: ${response.statusCode}');
 
       final responseData = response.data as Map<String, dynamic>;
 
@@ -77,16 +77,16 @@ class BaiduFileOperationService {
       );
 
       if (processedResponse['errno'] == 0) {
-        LogManager().cloudDrive('✅ 百度网盘 - 文件重命名成功: $filePath -> $newFileName');
+        LogManager().cloudDrive('百度网盘 - 文件重命名成功: $filePath -> $newFileName');
         return true;
       } else {
         LogManager().cloudDrive(
-          '❌ 百度网盘 - 文件重命名失败: errno=${processedResponse['errno']}, errmsg=${processedResponse['errmsg']}',
+          '百度网盘 - 文件重命名失败: errno=${processedResponse['errno']}, errmsg=${processedResponse['errmsg']}',
         );
         return false;
       }
     } catch (e) {
-      LogManager().cloudDrive('❌ 百度网盘 - 重命名文件失败: $e');
+      LogManager().cloudDrive('百度网盘 - 重命名文件失败: $e');
       return false;
     }
   }
@@ -98,14 +98,14 @@ class BaiduFileOperationService {
     required String targetPath,
   }) async {
     try {
-      LogManager().cloudDrive('🚚 百度网盘 - 开始移动文件');
+      LogManager().cloudDrive('百度网盘 - 开始移动文件');
       LogManager().cloudDrive(
-        '📋 百度网盘 - 请求参数: filePath=$filePath, targetPath=$targetPath',
+        '百度网盘 - 请求参数: filePath=$filePath, targetPath=$targetPath',
       );
 
       // 验证账号登录状态
       if (!account.isLoggedIn) {
-        LogManager().cloudDrive('❌ 百度网盘 - 账号未登录，请先登录');
+        LogManager().cloudDrive('百度网盘 - 账号未登录，请先登录');
         return false;
       }
 
@@ -114,7 +114,7 @@ class BaiduFileOperationService {
       final bdstoken = baiduParams['bdstoken']?.toString();
 
       if (bdstoken == null) {
-        LogManager().cloudDrive('❌ 百度网盘 - 无法获取bdstoken');
+        LogManager().cloudDrive('百度网盘 - 无法获取bdstoken');
         return false;
       }
 
@@ -141,16 +141,16 @@ class BaiduFileOperationService {
         queryParameters: urlParams.map((k, v) => MapEntry(k, v.toString())),
       );
 
-      LogManager().cloudDrive('🌐 百度网盘 - 请求URL: $uri');
+      LogManager().cloudDrive('百度网盘 - 请求URL: $uri');
       LogManager().cloudDrive(
-        '📤 百度网盘 - 请求体: ${requestBodyMap.entries.map((e) => '${e.key}=${e.value}').join('&')}',
+        '百度网盘 - 请求体: ${requestBodyMap.entries.map((e) => '${e.key}=${e.value}').join('&')}',
       );
 
       // 发送请求
       final dio = BaiduBaseService.createDio(account);
       final response = await dio.postUri(uri, data: formData);
 
-      LogManager().cloudDrive('📡 百度网盘 - 响应状态: ${response.statusCode}');
+      LogManager().cloudDrive('百度网盘 - 响应状态: ${response.statusCode}');
 
       final responseData = response.data as Map<String, dynamic>;
 
@@ -160,16 +160,16 @@ class BaiduFileOperationService {
       );
 
       if (processedResponse['errno'] == 0) {
-        LogManager().cloudDrive('✅ 百度网盘 - 文件移动成功: $filePath -> $targetPath');
+        LogManager().cloudDrive('百度网盘 - 文件移动成功: $filePath -> $targetPath');
         return true;
       } else {
         LogManager().cloudDrive(
-          '❌ 百度网盘 - 文件移动失败: errno=${processedResponse['errno']}, errmsg=${processedResponse['errmsg']}',
+          '百度网盘 - 文件移动失败: errno=${processedResponse['errno']}, errmsg=${processedResponse['errmsg']}',
         );
         return false;
       }
     } catch (e) {
-      LogManager().cloudDrive('❌ 百度网盘 - 移动文件失败: $e');
+      LogManager().cloudDrive('百度网盘 - 移动文件失败: $e');
       return false;
     }
   }
@@ -181,14 +181,14 @@ class BaiduFileOperationService {
     required String targetPath,
   }) async {
     try {
-      LogManager().cloudDrive('📋 百度网盘 - 开始复制文件');
+      LogManager().cloudDrive('百度网盘 - 开始复制文件');
       LogManager().cloudDrive(
-        '📋 百度网盘 - 请求参数: filePath=$filePath, targetPath=$targetPath',
+        '百度网盘 - 请求参数: filePath=$filePath, targetPath=$targetPath',
       );
 
       // 验证账号登录状态
       if (!account.isLoggedIn) {
-        LogManager().cloudDrive('❌ 百度网盘 - 账号未登录，请先登录');
+        LogManager().cloudDrive('百度网盘 - 账号未登录，请先登录');
         return false;
       }
 
@@ -197,7 +197,7 @@ class BaiduFileOperationService {
       final bdstoken = baiduParams['bdstoken']?.toString();
 
       if (bdstoken == null) {
-        LogManager().cloudDrive('❌ 百度网盘 - 无法获取bdstoken');
+        LogManager().cloudDrive('百度网盘 - 无法获取bdstoken');
         return false;
       }
 
@@ -224,16 +224,16 @@ class BaiduFileOperationService {
         queryParameters: urlParams.map((k, v) => MapEntry(k, v.toString())),
       );
 
-      LogManager().cloudDrive('🌐 百度网盘 - 请求URL: $uri');
+      LogManager().cloudDrive('百度网盘 - 请求URL: $uri');
       LogManager().cloudDrive(
-        '📤 百度网盘 - 请求体: ${requestBodyMap.entries.map((e) => '${e.key}=${e.value}').join('&')}',
+        '百度网盘 - 请求体: ${requestBodyMap.entries.map((e) => '${e.key}=${e.value}').join('&')}',
       );
 
       // 发送请求
       final dio = BaiduBaseService.createDio(account);
       final response = await dio.postUri(uri, data: formData);
 
-      LogManager().cloudDrive('📡 百度网盘 - 响应状态: ${response.statusCode}');
+      LogManager().cloudDrive('百度网盘 - 响应状态: ${response.statusCode}');
 
       final responseData = response.data as Map<String, dynamic>;
 
@@ -243,16 +243,16 @@ class BaiduFileOperationService {
       );
 
       if (processedResponse['errno'] == 0) {
-        LogManager().cloudDrive('✅ 百度网盘 - 文件复制成功: $filePath -> $targetPath');
+        LogManager().cloudDrive('百度网盘 - 文件复制成功: $filePath -> $targetPath');
         return true;
       } else {
         LogManager().cloudDrive(
-          '❌ 百度网盘 - 文件复制失败: errno=${processedResponse['errno']}, errmsg=${processedResponse['errmsg']}',
+          '百度网盘 - 文件复制失败: errno=${processedResponse['errno']}, errmsg=${processedResponse['errmsg']}',
         );
         return false;
       }
     } catch (e) {
-      LogManager().cloudDrive('❌ 百度网盘 - 复制文件失败: $e');
+      LogManager().cloudDrive('百度网盘 - 复制文件失败: $e');
       return false;
     }
   }
@@ -263,12 +263,12 @@ class BaiduFileOperationService {
     required String filePath,
   }) async {
     try {
-      LogManager().cloudDrive('🗑️ 百度网盘 - 开始删除文件');
-      LogManager().cloudDrive('📋 百度网盘 - 请求参数: filePath=$filePath');
+      LogManager().cloudDrive('百度网盘 - 开始删除文件');
+      LogManager().cloudDrive('百度网盘 - 请求参数: filePath=$filePath');
 
       // 验证账号登录状态
       if (!account.isLoggedIn) {
-        LogManager().cloudDrive('❌ 百度网盘 - 账号未登录，请先登录');
+        LogManager().cloudDrive('百度网盘 - 账号未登录，请先登录');
         return false;
       }
 
@@ -277,7 +277,7 @@ class BaiduFileOperationService {
       final bdstoken = baiduParams['bdstoken']?.toString();
 
       if (bdstoken == null) {
-        LogManager().cloudDrive('❌ 百度网盘 - 无法获取bdstoken');
+        LogManager().cloudDrive('百度网盘 - 无法获取bdstoken');
         return false;
       }
 
@@ -303,16 +303,16 @@ class BaiduFileOperationService {
         queryParameters: urlParams.map((k, v) => MapEntry(k, v.toString())),
       );
 
-      LogManager().cloudDrive('🌐 百度网盘 - 请求URL: $uri');
+      LogManager().cloudDrive('百度网盘 - 请求URL: $uri');
       LogManager().cloudDrive(
-        '📤 百度网盘 - 请求体: ${requestBodyMap.entries.map((e) => '${e.key}=${e.value}').join('&')}',
+        '百度网盘 - 请求体: ${requestBodyMap.entries.map((e) => '${e.key}=${e.value}').join('&')}',
       );
 
       // 发送请求
       final dio = BaiduBaseService.createDio(account);
       final response = await dio.postUri(uri, data: formData);
 
-      LogManager().cloudDrive('📡 百度网盘 - 响应状态: ${response.statusCode}');
+      LogManager().cloudDrive('百度网盘 - 响应状态: ${response.statusCode}');
 
       final responseData = response.data as Map<String, dynamic>;
 
@@ -322,16 +322,16 @@ class BaiduFileOperationService {
       );
 
       if (processedResponse['errno'] == 0) {
-        LogManager().cloudDrive('✅ 百度网盘 - 文件删除成功: $filePath');
+        LogManager().cloudDrive('百度网盘 - 文件删除成功: $filePath');
         return true;
       } else {
         LogManager().cloudDrive(
-          '❌ 百度网盘 - 文件删除失败: errno=${processedResponse['errno']}, errmsg=${processedResponse['errmsg']}',
+          '百度网盘 - 文件删除失败: errno=${processedResponse['errno']}, errmsg=${processedResponse['errmsg']}',
         );
         return false;
       }
     } catch (e) {
-      LogManager().cloudDrive('❌ 百度网盘 - 删除文件失败: $e');
+      LogManager().cloudDrive('百度网盘 - 删除文件失败: $e');
       return false;
     }
   }

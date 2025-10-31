@@ -188,7 +188,7 @@ class PerformanceMonitor {
     // 性能警告
     if (avgFrameTime > 16.67) {
       // 60fps = 16.67ms per frame
-      developer.log('⚠️ 性能警告: 平均帧时间超过16.67ms，可能影响流畅度');
+      developer.log('性能警告: 平均帧时间超过16.67ms，可能影响流畅度');
     }
   }
 

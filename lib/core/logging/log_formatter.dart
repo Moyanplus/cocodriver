@@ -16,7 +16,6 @@
 
 import 'dart:convert';
 
-import 'log_category.dart';
 import 'log_config.dart';
 
 /// 日志条目类
@@ -69,8 +68,6 @@ class LogFormatter {
   static final LogFormatter _instance = LogFormatter._internal();
   factory LogFormatter() => _instance;
   LogFormatter._internal();
-
-  final LogConfig _config = LogConfig();
 
   /// 格式化日志为JSON字符串
   String formatToJson(Log log) {
@@ -306,7 +303,7 @@ class LogFormatter {
     Map<String, dynamic>? queryParameters,
   }) {
     final buffer = StringBuffer();
-    buffer.writeln('🌐 网络请求');
+    buffer.writeln('网络请求');
     buffer.writeln('方法: $method');
     buffer.writeln('URL: $url');
 
@@ -334,7 +331,7 @@ class LogFormatter {
     Duration? duration,
   }) {
     final buffer = StringBuffer();
-    buffer.writeln('📡 网络响应');
+    buffer.writeln('网络响应');
     buffer.writeln('状态码: $statusCode');
     buffer.writeln('URL: $url');
 
@@ -363,7 +360,7 @@ class LogFormatter {
     String? error,
   }) {
     final buffer = StringBuffer();
-    buffer.writeln('📁 文件操作');
+    buffer.writeln('文件操作');
     buffer.writeln('操作: $operation');
     buffer.writeln('文件路径: $filePath');
 
@@ -393,7 +390,7 @@ class LogFormatter {
     Map<String, dynamic>? metrics,
   }) {
     final buffer = StringBuffer();
-    buffer.writeln('⚡ 性能监控');
+    buffer.writeln('性能监控');
     buffer.writeln('操作: $operation');
     buffer.writeln('耗时: ${duration.inMilliseconds}ms');
 

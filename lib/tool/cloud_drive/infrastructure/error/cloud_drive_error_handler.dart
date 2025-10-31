@@ -6,22 +6,22 @@ import '../../core/result.dart';
 class CloudDriveErrorHandler {
   /// 处理错误
   static void handleError(CloudDriveException error) {
-    LogManager().cloudDrive('❌ 云盘错误: ${error.message}');
+    LogManager().cloudDrive('云盘错误: ${error.message}');
 
     LogManager().cloudDrive(
-      '📋 错误详情: 类型=${error.type}, 操作=${error.operation ?? '未知'}',
+      '错误详情: 类型=${error.type}, 操作=${error.operation ?? '未知'}',
     );
 
     if (error.statusCode != null) {
-      LogManager().cloudDrive('📊 状态码: ${error.statusCode}');
+      LogManager().cloudDrive('状态码: ${error.statusCode}');
     }
 
     if (error.requestId != null) {
-      LogManager().cloudDrive('🆔 请求ID: ${error.requestId}');
+      LogManager().cloudDrive('请求ID: ${error.requestId}');
     }
 
     if (error.context != null) {
-      LogManager().cloudDrive('📄 上下文: ${error.context}');
+      LogManager().cloudDrive('上下文: ${error.context}');
     }
   }
 
@@ -29,18 +29,18 @@ class CloudDriveErrorHandler {
   static void handleResultError<T>(Result<T> result, String operation) {
     if (result.isFailure) {
       final error = result.errorDetail;
-      LogManager().error('❌ $operation 失败: ${result.error}');
+      LogManager().error('$operation 失败: ${result.error}');
 
       if (error != null) {
-        LogManager().cloudDrive('📋 错误类型: ${error.type}');
-        LogManager().cloudDrive('📋 操作: ${error.operation ?? operation}');
+        LogManager().cloudDrive('错误类型: ${error.type}');
+        LogManager().cloudDrive('操作: ${error.operation ?? operation}');
 
         if (error.statusCode != null) {
-          LogManager().cloudDrive('📊 状态码: ${error.statusCode}');
+          LogManager().cloudDrive('状态码: ${error.statusCode}');
         }
 
         if (error.context != null) {
-          LogManager().cloudDrive('📄 上下文: ${error.context}');
+          LogManager().cloudDrive('上下文: ${error.context}');
         }
       }
     }

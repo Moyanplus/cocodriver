@@ -17,7 +17,7 @@ typedef DownloadCallback =
 /// flutter_downloader 的顶层回调函数 - 运行在后台isolate
 @pragma('vm:entry-point')
 void downloadCallback(String id, int status, int progress) {
-  DebugService.log('📡 收到下载状态更新: ID=$id, 状态=$status, 进度=$progress');
+  DebugService.log('收到下载状态更新: ID=$id, 状态=$status, 进度=$progress');
 
   // 将 status 转换为 DownloadTaskStatus
   // 根据 flutter_downloader 实际状态定义：
@@ -26,38 +26,38 @@ void downloadCallback(String id, int status, int progress) {
   switch (status) {
     case 0:
       taskStatus = 0; // DownloadTaskStatus.undefined
-      DebugService.log('🔄 状态0 -> undefined');
+      DebugService.log('状态0 -> undefined');
       break;
     case 1:
       taskStatus = 1; // DownloadTaskStatus.enqueued
-      DebugService.log('🔄 状态1 -> enqueued');
+      DebugService.log('状态1 -> enqueued');
       break;
     case 2:
       taskStatus = 2; // DownloadTaskStatus.running
-      DebugService.log('🔄 状态2 -> running');
+      DebugService.log('状态2 -> running');
       break;
     case 3:
       taskStatus = 3; // DownloadTaskStatus.complete
-      DebugService.log('🔄 状态3 -> complete');
+      DebugService.log('状态3 -> complete');
       break;
     case 4:
       taskStatus = 4; // DownloadTaskStatus.failed
-      DebugService.log('🔄 状态4 -> failed');
+      DebugService.log('状态4 -> failed');
       break;
     case 5:
       taskStatus = 5; // DownloadTaskStatus.canceled
-      DebugService.log('🔄 状态5 -> canceled');
+      DebugService.log('状态5 -> canceled');
       break;
     case 6:
       taskStatus = 6; // DownloadTaskStatus.paused
-      DebugService.log('🔄 状态6 -> paused');
+      DebugService.log('状态6 -> paused');
       break;
     default:
       taskStatus = 0; // DownloadTaskStatus.undefined
-      DebugService.log('🔄 状态$status -> undefined (默认) - 未知状态');
+      DebugService.log('状态$status -> undefined (默认) - 未知状态');
   }
 
-  DebugService.log('🔄 状态转换: $status -> $taskStatus');
+  DebugService.log('状态转换: $status -> $taskStatus');
 
   // 通过IsolateNameServer发送消息到主isolate
   // 添加重试机制，确保能找到主isolate的SendPort
@@ -69,7 +69,7 @@ void downloadCallback(String id, int status, int progress) {
     send = IsolateNameServer.lookupPortByName('downloader_send_port');
     if (send == null) {
       retryCount++;
-      DebugService.log('🔄 尝试查找SendPort，第$retryCount次重试...');
+      DebugService.log('尝试查找SendPort，第$retryCount次重试...');
       // 简单的延迟，不使用Future.delayed
       for (int i = 0; i < 1000000; i++) {
         // 简单的循环延迟
@@ -79,9 +79,9 @@ void downloadCallback(String id, int status, int progress) {
 
   if (send != null) {
     send.send([id, taskStatus, progress]);
-    DebugService.log('📤 消息已发送到主isolate');
+    DebugService.log('消息已发送到主isolate');
   } else {
-    DebugService.error('❌ 找不到主isolate的SendPort，已重试$maxRetries次', null);
+    DebugService.error('找不到主isolate的SendPort，已重试$maxRetries次', null);
   }
 }
 
@@ -89,18 +89,18 @@ void downloadCallback(String id, int status, int progress) {
 ///
 /// TODO: 功能完善清单
 /// ===================
-/// ✅ 已实现的功能:
+/// 已实现的功能:
 /// - 下载位置设置 (downloadDirectory)
 /// - 显示下载通知 (showNotification)
 /// - 下载完成后自动打开 (openFileFromNotification)
 /// - 自定义请求头 (customHeaders) - 新增支持
 ///
-/// ⚠️ 部分实现的功能:
+/// 部分实现的功能:
 /// - 自动重试 (autoRetry, retryCount, retryDelay) - 配置已保存但重试逻辑需要完善
 /// - 下载超时 (downloadTimeout) - 需要确认 flutter_downloader 是否支持
 /// - 速度限制 (enableSpeedLimit, speedLimit) - 需要确认 flutter_downloader 是否支持速度限制
 ///
-/// ❌ 未实现的功能:
+/// 未实现的功能:
 /// - 仅WiFi下载 (downloadOnWifiOnly) - 需要添加网络类型检查逻辑
 /// - 移动网络下载 (downloadOnMobileNetwork) - 需要添加网络类型检查逻辑
 /// - 最大并发下载数 (maxConcurrentDownloads) - flutter_downloader 有自己的并发控制机制
@@ -137,11 +137,11 @@ class DownloadService {
     try {
       // 避免重复初始化
       if (_isInitialized) {
-        DebugService.log('🔄 下载监听器已经初始化，跳过重复初始化');
+        DebugService.log('下载监听器已经初始化，跳过重复初始化');
         return;
       }
 
-      DebugService.log('🔄 开始初始化下载监听器');
+      DebugService.log('开始初始化下载监听器');
 
       // 创建ReceivePort并注册到IsolateNameServer
       _receivePort = ReceivePort();
@@ -150,16 +150,16 @@ class DownloadService {
         'downloader_send_port',
       );
 
-      DebugService.log('📡 IsolateNameServer注册完成，端口名称: downloader_send_port');
+      DebugService.log('IsolateNameServer注册完成，端口名称: downloader_send_port');
 
       // 验证注册是否成功
       final registeredPort = IsolateNameServer.lookupPortByName(
         'downloader_send_port',
       );
       if (registeredPort != null) {
-        DebugService.log('✅ IsolateNameServer注册验证成功');
+        DebugService.log('IsolateNameServer注册验证成功');
       } else {
-        DebugService.error('❌ IsolateNameServer注册验证失败', null);
+        DebugService.error('IsolateNameServer注册验证失败', null);
       }
 
       // 监听来自后台isolate的消息
@@ -169,7 +169,7 @@ class DownloadService {
           final statusIndex = data[1] as int;
           final progress = data[2] as int;
 
-          DebugService.log('🔍 收到状态索引: $statusIndex');
+          DebugService.log('收到状态索引: $statusIndex');
 
           // 转换状态索引为DownloadTaskStatus
           DownloadTaskStatus status;
@@ -199,8 +199,8 @@ class DownloadService {
               status = DownloadTaskStatus.undefined;
           }
 
-          DebugService.log('📥 收到主isolate消息: $taskId, $status, $progress%');
-          DebugService.log('🔍 状态索引 $statusIndex 转换为 $status');
+          DebugService.log('收到主isolate消息: $taskId, $status, $progress%');
+          DebugService.log('状态索引 $statusIndex 转换为 $status');
 
           // 通知所有注册的回调
           _notifyCallbacks(taskId, status, progress);
@@ -210,12 +210,12 @@ class DownloadService {
       // 注册 flutter_downloader 的回调（使用顶层函数）
       FlutterDownloader.registerCallback(downloadCallback);
 
-      DebugService.log('🔄 下载监听器注册完成，当前回调数量: ${_callbacks.length}');
+      DebugService.log('下载监听器注册完成，当前回调数量: ${_callbacks.length}');
 
       _isInitialized = true;
-      DebugService.success('✅ 下载监听器初始化完成');
+      DebugService.success('下载监听器初始化完成');
     } catch (e) {
-      DebugService.error('❌ 初始化下载监听器失败', e);
+      DebugService.error('初始化下载监听器失败', e);
     }
   }
 
@@ -224,19 +224,19 @@ class DownloadService {
     // 检查回调是否已经存在
     if (!_callbacks.contains(callback)) {
       _callbacks.add(callback);
-      DebugService.log('📝 注册下载状态回调，当前回调数量: ${_callbacks.length}');
-      DebugService.log('📝 回调函数地址: ${callback.hashCode}');
+      DebugService.log('注册下载状态回调，当前回调数量: ${_callbacks.length}');
+      DebugService.log('回调函数地址: ${callback.hashCode}');
     } else {
-      DebugService.log('📝 回调已存在，跳过注册，当前回调数量: ${_callbacks.length}');
+      DebugService.log('回调已存在，跳过注册，当前回调数量: ${_callbacks.length}');
     }
   }
 
   /// 移除下载状态回调
   void unregisterCallback(DownloadCallback callback) {
     final removed = _callbacks.remove(callback);
-    DebugService.log('📝 移除下载状态回调，当前回调数量: ${_callbacks.length}');
-    DebugService.log('📝 回调函数地址: ${callback.hashCode}');
-    DebugService.log('📝 是否成功移除: $removed');
+    DebugService.log('移除下载状态回调，当前回调数量: ${_callbacks.length}');
+    DebugService.log('回调函数地址: ${callback.hashCode}');
+    DebugService.log('是否成功移除: $removed');
   }
 
   /// 通知所有回调
@@ -249,15 +249,15 @@ class DownloadService {
 
     // 如果回调列表为空，记录警告
     if (_callbacks.isEmpty) {
-      DebugService.error('⚠️ 警告：回调列表为空，可能回调被意外清空', null);
+      DebugService.error('警告：回调列表为空，可能回调被意外清空', null);
     }
 
     for (final callback in _callbacks) {
       try {
         callback(taskId, status, progress);
-        DebugService.log('✅ 回调执行成功');
+        DebugService.log('回调执行成功');
       } catch (e) {
-        DebugService.error('❌ 回调执行失败', e);
+        DebugService.error('回调执行失败', e);
       }
     }
   }
@@ -270,18 +270,18 @@ class DownloadService {
       _receivePort = null;
     }
     _callbacks.clear();
-    DebugService.log('🗑️ DownloadService已销毁');
+    DebugService.log('DownloadService已销毁');
   }
 
   /// 加载所有下载任务
   Future<List<DownloadTask>?> loadTasks() async {
     try {
-      DebugService.log('🔄 开始加载下载任务');
+      DebugService.log('开始加载下载任务');
       final tasks = await FlutterDownloader.loadTasks();
-      DebugService.log('📊 加载到 ${tasks?.length ?? 0} 个下载任务');
+      DebugService.log('加载到 ${tasks?.length ?? 0} 个下载任务');
       return tasks;
     } catch (e) {
-      DebugService.error('❌ 加载下载任务失败', e);
+      DebugService.error('加载下载任务失败', e);
       return null;
     }
   }
@@ -294,15 +294,12 @@ class DownloadService {
     required bool showNotification,
     required bool openFileFromNotification,
     required bool isExternalStorage,
-    Map<String, String>? customHeaders, // TODO: 新增 - 支持自定义请求头
+    Map<String, String>? customHeaders,
+    String? thumbnailUrl, // 文件缩略图URL
   }) async {
     try {
-      DebugService.log('🚀 开始创建下载任务');
-      DebugService.log('🔗 URL: $url');
-      DebugService.log('📄 文件名: $fileName');
-      DebugService.log('📁 下载目录: $downloadDir');
-      DebugService.log('📁 是否外部存储: $isExternalStorage');
-      DebugService.log('📋 自定义请求头: ${customHeaders?.length ?? 0} 个');
+      // 【简化】只打印关键信息
+      DebugService.log('创建下载: ${fileName ?? "未知文件"}');
 
       // 确保目录存在
       await _ensureDirectoryExists(downloadDir);
@@ -321,21 +318,12 @@ class DownloadService {
       // 如果提供了自定义请求头，合并到默认请求头中
       if (customHeaders != null && customHeaders.isNotEmpty) {
         headers.addAll(customHeaders);
-        DebugService.log('📋 合并自定义请求头: ${customHeaders.keys.join(', ')}');
       }
-
-      DebugService.log('📋 最终请求头: ${headers.keys.join(', ')}');
 
       // 处理外部存储的目录路径 - 简化处理
       String finalSavedDir = downloadDir;
       bool finalSaveInPublicStorage = isExternalStorage;
       String finalProcessedFileName = processedFileName ?? '';
-
-      DebugService.log('📁 路径处理:');
-      DebugService.log('  - 配置目录: $downloadDir');
-      DebugService.log('  - 保存目录: $finalSavedDir');
-      DebugService.log('  - 文件名: $finalProcessedFileName');
-      DebugService.log('  - 是否外部存储: $finalSaveInPublicStorage');
 
       final taskId = await FlutterDownloader.enqueue(
         url: url,
@@ -347,10 +335,18 @@ class DownloadService {
         headers: headers, // 添加请求头支持续传
       );
 
-      DebugService.success('✅ 下载任务创建成功: $taskId');
+      // 如果有缩略图URL，保存到任务配置中
+      if (taskId != null && thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
+        final config = await loadTaskConfig(taskId);
+        config['thumbnailUrl'] = thumbnailUrl;
+        await saveTaskConfig(taskId, config);
+        DebugService.log('已保存缩略图URL: ${thumbnailUrl.length}字符');
+      }
+
+      DebugService.success('下载任务已创建: $taskId');
       return taskId;
     } catch (e) {
-      DebugService.error('❌ 创建下载任务失败', e);
+      DebugService.error('创建下载任务失败', e);
       return null;
     }
   }
@@ -358,7 +354,7 @@ class DownloadService {
   /// 暂停下载任务
   Future<bool> pauseTask(String taskId) async {
     try {
-      DebugService.log('⏸️ 暂停任务: $taskId');
+      DebugService.log('暂停任务: $taskId');
 
       // 先检查任务状态
       final tasks = await FlutterDownloader.loadTasks();
@@ -368,48 +364,48 @@ class DownloadService {
       );
 
       if (task == null) {
-        DebugService.error('❌ 任务不存在: $taskId', null);
+        DebugService.error('任务不存在: $taskId', null);
         return false;
       }
 
-      DebugService.log('🔍 当前任务状态: ${task.status}, 进度: ${task.progress}%');
+      DebugService.log('当前任务状态: ${task.status}, 进度: ${task.progress}%');
 
       // 如果任务已经完成，无需暂停
       if (task.status == DownloadTaskStatus.complete) {
-        DebugService.log('⚠️ 任务已完成，无需暂停');
+        DebugService.log('任务已完成，无需暂停');
         return true;
       }
 
       // 如果任务已经失败，无法暂停
       if (task.status == DownloadTaskStatus.failed) {
-        DebugService.log('⚠️ 任务失败，无法暂停');
+        DebugService.log('任务失败，无法暂停');
         return false;
       }
 
       // 如果任务已经暂停，无需重复暂停
       if (task.status == DownloadTaskStatus.paused) {
-        DebugService.log('⚠️ 任务已经暂停，无需重复操作');
+        DebugService.log('任务已经暂停，无需重复操作');
         return true;
       }
 
       // 如果任务已经取消，无法暂停
       if (task.status == DownloadTaskStatus.canceled) {
-        DebugService.log('⚠️ 任务已经取消，无法暂停');
+        DebugService.log('任务已经取消，无法暂停');
         return false;
       }
 
       // 只有运行中的任务才能暂停
       if (task.status != DownloadTaskStatus.running) {
-        DebugService.log('⚠️ 任务状态为 ${task.status}，无法暂停');
+        DebugService.log('任务状态为 ${task.status}，无法暂停');
         return false;
       }
 
-      DebugService.log('🔄 尝试暂停运行中的任务...');
-      DebugService.log('📊 暂停前进度: ${task.progress}%');
+      DebugService.log('尝试暂停运行中的任务...');
+      DebugService.log('暂停前进度: ${task.progress}%');
 
       // 尝试暂停任务
       await FlutterDownloader.pause(taskId: taskId);
-      DebugService.success('✅ 暂停命令已发送');
+      DebugService.success('暂停命令已发送');
 
       // 等待一小段时间检查暂停是否成功
       await Future.delayed(const Duration(milliseconds: 1000));
@@ -423,40 +419,40 @@ class DownloadService {
 
       if (updatedTask != null) {
         DebugService.log(
-          '🔍 暂停后任务状态: ${updatedTask.status}, 进度: ${updatedTask.progress}%',
+          '暂停后任务状态: ${updatedTask.status}, 进度: ${updatedTask.progress}%',
         );
 
         if (updatedTask.status == DownloadTaskStatus.paused) {
-          DebugService.success('✅ 任务暂停成功');
+          DebugService.success('任务暂停成功');
           return true;
         } else if (updatedTask.status == DownloadTaskStatus.canceled) {
-          DebugService.error('❌ 暂停操作意外取消了任务', null);
-          DebugService.log('🔍 可能的原因：服务器不支持Range请求或文件已损坏');
+          DebugService.error('暂停操作意外取消了任务', null);
+          DebugService.log('可能的原因：服务器不支持Range请求或文件已损坏');
           return false;
         } else if (updatedTask.status == DownloadTaskStatus.failed) {
-          DebugService.error('❌ 暂停操作导致任务失败', null);
+          DebugService.error('暂停操作导致任务失败', null);
           return false;
         } else if (updatedTask.status == DownloadTaskStatus.running) {
-          DebugService.log('⚠️ 暂停操作后任务仍在运行，可能服务器不支持暂停');
+          DebugService.log('暂停操作后任务仍在运行，可能服务器不支持暂停');
           return true; // 即使没暂停成功，也认为操作成功
         } else {
-          DebugService.log('⚠️ 暂停操作后任务状态为 ${updatedTask.status}');
+          DebugService.log('暂停操作后任务状态为 ${updatedTask.status}');
           return true;
         }
       } else {
-        DebugService.error('❌ 暂停后找不到任务，可能已被删除', null);
+        DebugService.error('暂停后找不到任务，可能已被删除', null);
         return false;
       }
     } catch (e) {
-      DebugService.error('❌ 暂停任务失败', e);
+      DebugService.error('暂停任务失败', e);
 
       // 检查错误信息
       final errorMessage = e.toString().toLowerCase();
       if (errorMessage.contains('canceled') ||
           errorMessage.contains('cancelled')) {
-        DebugService.error('❌ 暂停操作意外取消了任务', null);
+        DebugService.error('暂停操作意外取消了任务', null);
       } else if (errorMessage.contains('not found')) {
-        DebugService.error('❌ 任务不存在或已被删除', null);
+        DebugService.error('任务不存在或已被删除', null);
       }
 
       return false;
@@ -466,7 +462,7 @@ class DownloadService {
   /// 检查任务是否可以恢复
   Future<bool> canResumeTask(String taskId) async {
     try {
-      DebugService.log('🔍 检查任务是否可以恢复: $taskId');
+      DebugService.log('检查任务是否可以恢复: $taskId');
 
       final tasks = await FlutterDownloader.loadTasks();
       final task = tasks?.firstWhere(
@@ -475,27 +471,27 @@ class DownloadService {
       );
 
       if (task == null) {
-        DebugService.log('❌ 任务不存在: $taskId');
+        DebugService.log('任务不存在: $taskId');
         return false;
       }
 
       // 只有暂停状态的任务才有可能恢复
       if (task.status == DownloadTaskStatus.paused) {
-        DebugService.log('✅ 任务状态为暂停，理论上可以恢复');
+        DebugService.log('任务状态为暂停，理论上可以恢复');
         return true;
       }
 
       // 失败的任务通常需要重新创建
       if (task.status == DownloadTaskStatus.failed) {
-        DebugService.log('⚠️ 任务状态为失败，通常需要重新创建');
+        DebugService.log('任务状态为失败，通常需要重新创建');
         return false;
       }
 
       // 其他状态的任务
-      DebugService.log('⚠️ 任务状态为 ${task.status}，恢复可能性未知');
+      DebugService.log('任务状态为 ${task.status}，恢复可能性未知');
       return false;
     } catch (e) {
-      DebugService.error('❌ 检查任务恢复状态失败', e);
+      DebugService.error('检查任务恢复状态失败', e);
       return false;
     }
   }
@@ -503,7 +499,7 @@ class DownloadService {
   /// 恢复下载任务
   Future<bool> resumeTask(String taskId) async {
     try {
-      DebugService.log('▶️ 恢复任务: $taskId');
+      DebugService.log('恢复任务: $taskId');
 
       // 先检查任务状态
       final tasks = await FlutterDownloader.loadTasks();
@@ -513,27 +509,27 @@ class DownloadService {
       );
 
       if (task == null) {
-        DebugService.error('❌ 任务不存在: $taskId', null);
+        DebugService.error('任务不存在: $taskId', null);
         return false;
       }
 
-      DebugService.log('🔍 当前任务状态: ${task.status}, 进度: ${task.progress}%');
+      DebugService.log('当前任务状态: ${task.status}, 进度: ${task.progress}%');
 
       // 如果任务已经完成，无需恢复
       if (task.status == DownloadTaskStatus.complete) {
-        DebugService.log('⚠️ 任务已完成，无需恢复');
+        DebugService.log('任务已完成，无需恢复');
         return true;
       }
 
       // 如果任务正在运行，无需恢复
       if (task.status == DownloadTaskStatus.running) {
-        DebugService.log('⚠️ 任务正在运行，无需恢复');
+        DebugService.log('任务正在运行，无需恢复');
         return true;
       }
 
       // 如果任务已取消，无法恢复
       if (task.status == DownloadTaskStatus.canceled) {
-        DebugService.log('⚠️ 任务已取消，无法恢复');
+        DebugService.log('任务已取消，无法恢复');
         return false;
       }
 
@@ -541,13 +537,13 @@ class DownloadService {
       if (task.status == DownloadTaskStatus.paused ||
           task.status == DownloadTaskStatus.failed) {
         DebugService.log(
-          '🔄 尝试恢复${task.status == DownloadTaskStatus.failed ? "失败" : "暂停"}的任务',
+          '尝试恢复${task.status == DownloadTaskStatus.failed ? "失败" : "暂停"}的任务',
         );
 
         try {
           // 尝试恢复任务
           await FlutterDownloader.resume(taskId: taskId);
-          DebugService.success('✅ 恢复命令已发送');
+          DebugService.success('恢复命令已发送');
 
           // 等待一小段时间检查是否真的恢复了
           await Future.delayed(const Duration(milliseconds: 1000));
@@ -561,28 +557,28 @@ class DownloadService {
 
           if (updatedTask != null) {
             DebugService.log(
-              '🔍 恢复后任务状态: ${updatedTask.status}, 进度: ${updatedTask.progress}%',
+              '恢复后任务状态: ${updatedTask.status}, 进度: ${updatedTask.progress}%',
             );
 
             if (updatedTask.status == DownloadTaskStatus.running) {
-              DebugService.success('✅ 任务恢复成功，正在继续下载');
+              DebugService.success('任务恢复成功，正在继续下载');
               return true;
             } else if (updatedTask.status == DownloadTaskStatus.paused) {
-              DebugService.log('⚠️ 恢复后任务仍为暂停状态，可能服务器不支持续传或部分数据丢失');
+              DebugService.log('恢复后任务仍为暂停状态，可能服务器不支持续传或部分数据丢失');
               return false;
             } else if (updatedTask.status == DownloadTaskStatus.failed) {
-              DebugService.log('⚠️ 恢复后任务失败，可能需要重新下载');
+              DebugService.log('恢复后任务失败，可能需要重新下载');
               return false;
             } else {
-              DebugService.log('⚠️ 恢复后任务状态为 ${updatedTask.status}');
+              DebugService.log('恢复后任务状态为 ${updatedTask.status}');
               return false;
             }
           } else {
-            DebugService.error('❌ 恢复后找不到任务，可能已被删除', null);
+            DebugService.error('恢复后找不到任务，可能已被删除', null);
             return false;
           }
         } catch (resumeError) {
-          DebugService.error('❌ 恢复任务失败', resumeError);
+          DebugService.error('恢复任务失败', resumeError);
 
           // 检查错误信息
           final errorMessage = resumeError.toString().toLowerCase();
@@ -590,7 +586,7 @@ class DownloadService {
               errorMessage.contains('cannot be resumed') ||
               errorMessage.contains('range not supported') ||
               errorMessage.contains('not found partial downloaded data')) {
-            DebugService.log('⚠️ 部分下载数据丢失或服务器不支持续传，需要重新下载');
+            DebugService.log('部分下载数据丢失或服务器不支持续传，需要重新下载');
           }
 
           return false;
@@ -598,17 +594,17 @@ class DownloadService {
       }
 
       // 其他状态的任务
-      DebugService.log('⚠️ 任务状态为 ${task.status}，尝试直接恢复');
+      DebugService.log('任务状态为 ${task.status}，尝试直接恢复');
       try {
         await FlutterDownloader.resume(taskId: taskId);
-        DebugService.success('✅ 恢复命令已发送');
+        DebugService.success('恢复命令已发送');
         return true;
       } catch (e) {
-        DebugService.error('❌ 直接恢复失败', e);
+        DebugService.error('直接恢复失败', e);
         return false;
       }
     } catch (e) {
-      DebugService.error('❌ 恢复任务失败', e);
+      DebugService.error('恢复任务失败', e);
       return false;
     }
   }
@@ -616,92 +612,92 @@ class DownloadService {
   /// 删除下载任务
   Future<bool> removeTask(String taskId) async {
     try {
-      DebugService.log('🗑️ 删除任务: $taskId');
+      DebugService.log('删除任务: $taskId');
       await FlutterDownloader.remove(taskId: taskId);
-      DebugService.success('✅ 删除命令已发送');
+      DebugService.success('删除命令已发送');
       return true;
     } catch (e) {
-      DebugService.error('❌ 删除任务失败', e);
+      DebugService.error('删除任务失败', e);
       return false;
     }
   }
 
   /// 获取有效的下载目录
   Future<String> getValidDownloadDirectory(String preferredDir) async {
-    DebugService.log('🔍 开始验证下载目录: $preferredDir');
+    DebugService.log('开始验证下载目录: $preferredDir');
 
     // 检查存储权限
     final storageStatus = await Permission.storage.status;
     final manageStorageStatus = await Permission.manageExternalStorage.status;
 
-    DebugService.log('📱 存储权限状态: $storageStatus');
-    DebugService.log('📱 管理外部存储权限状态: $manageStorageStatus');
+    DebugService.log('存储权限状态: $storageStatus');
+    DebugService.log('管理外部存储权限状态: $manageStorageStatus');
 
     // 优先尝试使用外部存储目录
     if (preferredDir.startsWith('/storage/emulated/0/')) {
-      DebugService.log('📁 检测到外部存储路径，开始验证...');
+      DebugService.log('检测到外部存储路径，开始验证...');
       try {
         await _ensureDirectoryExists(preferredDir);
         await _testWritePermission(preferredDir);
-        DebugService.success('✅ 外部存储目录可用: $preferredDir');
+        DebugService.success('外部存储目录可用: $preferredDir');
         return preferredDir;
       } catch (e) {
-        DebugService.error('❌ 外部存储目录不可用，错误: $e', null);
-        DebugService.log('⚠️ 将切换到内部存储目录');
+        DebugService.error('外部存储目录不可用，错误: $e', null);
+        DebugService.log('将切换到内部存储目录');
       }
     }
 
     // 如果外部存储权限不足或不可用，使用应用内部存储
     if (storageStatus.isDenied || storageStatus.isPermanentlyDenied) {
-      DebugService.log('⚠️ 外部存储权限不足，切换到内部存储');
+      DebugService.log('外部存储权限不足，切换到内部存储');
       final appDir = await getApplicationDocumentsDirectory();
       final internalDir = '${appDir.path}/downloads';
-      DebugService.log('📁 权限不足，使用应用内部存储: $internalDir');
+      DebugService.log('权限不足，使用应用内部存储: $internalDir');
       await _ensureDirectoryExists(internalDir);
       return internalDir;
     }
 
     // 如果已经是内部存储路径，确保目录存在
-    DebugService.log('📁 使用内部存储路径: $preferredDir');
+    DebugService.log('使用内部存储路径: $preferredDir');
     await _ensureDirectoryExists(preferredDir);
     return preferredDir;
   }
 
   /// 请求存储权限
   Future<bool> requestStoragePermissions() async {
-    DebugService.log('🔐 开始检查存储权限');
+    DebugService.log('开始检查存储权限');
 
     try {
       // 检查存储权限状态
       var status = await Permission.storage.status;
-      DebugService.log('📱 存储权限状态: $status');
+      DebugService.log('存储权限状态: $status');
 
       if (status.isDenied) {
-        DebugService.log('⚠️ 存储权限被拒绝，正在请求...');
+        DebugService.log('存储权限被拒绝，正在请求...');
         status = await Permission.storage.request();
-        DebugService.log('📱 请求存储权限结果: $status');
+        DebugService.log('请求存储权限结果: $status');
       }
 
       if (status.isPermanentlyDenied) {
-        DebugService.error('❌ 存储权限被永久拒绝', null);
+        DebugService.error('存储权限被永久拒绝', null);
         return false;
       }
 
       // 对于 Android 11+，还需要请求管理外部存储权限
       final manageStorageStatus = await Permission.manageExternalStorage.status;
-      DebugService.log('📱 管理外部存储权限状态: $manageStorageStatus');
+      DebugService.log('管理外部存储权限状态: $manageStorageStatus');
 
       if (manageStorageStatus.isDenied) {
-        DebugService.log('⚠️ 管理外部存储权限被拒绝，正在请求...');
+        DebugService.log('管理外部存储权限被拒绝，正在请求...');
         await Permission.manageExternalStorage.request();
         final newStatus = await Permission.manageExternalStorage.status;
-        DebugService.log('📱 请求管理外部存储权限结果: $newStatus');
+        DebugService.log('请求管理外部存储权限结果: $newStatus');
       }
 
-      DebugService.success('✅ 权限检查完成');
+      DebugService.success('权限检查完成');
       return true;
     } catch (e) {
-      DebugService.error('❌ 权限请求失败', e);
+      DebugService.error('权限请求失败', e);
       return false;
     }
   }
@@ -725,9 +721,9 @@ class DownloadService {
       };
 
       await prefs.setString(configKey, jsonEncode(configJson));
-      DebugService.log('💾 保存任务配置: $taskId');
+      DebugService.log('保存任务配置: $taskId');
     } catch (e) {
-      DebugService.error('❌ 保存任务配置失败', e);
+      DebugService.error('保存任务配置失败', e);
     }
   }
 
@@ -749,56 +745,66 @@ class DownloadService {
       final configJson = jsonDecode(configJsonString) as Map<String, dynamic>;
       return configJson;
     } catch (e) {
-      DebugService.error('❌ 加载任务配置失败', e);
+      DebugService.error('加载任务配置失败', e);
       return _getDefaultConfig();
     }
   }
 
   /// 获取默认配置
   Map<String, dynamic> _getDefaultConfig() => {
-    'autoRetry': true, // ⚠️ 部分实现 - 配置已保存但重试逻辑需要完善
-    'retryCount': 3, // ⚠️ 部分实现 - 配置已保存但重试逻辑需要完善
-    'retryDelay': 5, // ⚠️ 部分实现 - 配置已保存但重试逻辑需要完善
+    'autoRetry': true, // 部分实现 - 配置已保存但重试逻辑需要完善
+    'retryCount': 3, // 部分实现 - 配置已保存但重试逻辑需要完善
+    'retryDelay': 5, // 部分实现 - 配置已保存但重试逻辑需要完善
     'enableResume': true, // TODO: 未实现 - flutter_downloader 自动处理续传
-    'downloadTimeout': 30, // ⚠️ 部分实现 - 需要确认 flutter_downloader 是否支持
-    'enableSpeedLimit': false, // ⚠️ 部分实现 - 需要确认 flutter_downloader 是否支持速度限制
-    'speedLimit': 1024 * 1024, // ⚠️ 部分实现 - 需要确认 flutter_downloader 是否支持速度限制
+    'downloadTimeout': 30, // 部分实现 - 需要确认 flutter_downloader 是否支持
+    'enableSpeedLimit': false, // 部分实现 - 需要确认 flutter_downloader 是否支持速度限制
+    'speedLimit': 1024 * 1024, // 部分实现 - 需要确认 flutter_downloader 是否支持速度限制
   };
+
+  /// 获取任务的缩略图URL
+  Future<String?> getTaskThumbnailUrl(String taskId) async {
+    try {
+      final config = await loadTaskConfig(taskId);
+      return config['thumbnailUrl'] as String?;
+    } catch (e) {
+      DebugService.error('获取任务缩略图URL失败', e);
+      return null;
+    }
+  }
 
   /// 确保目录存在
   Future<void> _ensureDirectoryExists(String dirPath) async {
-    DebugService.log('📁 检查目录是否存在: $dirPath');
+    DebugService.log('检查目录是否存在: $dirPath');
 
     try {
       final dir = Directory(dirPath);
       if (!await dir.exists()) {
-        DebugService.log('📁 目录不存在，正在创建: $dirPath');
+        DebugService.log('目录不存在，正在创建: $dirPath');
         await dir.create(recursive: true);
-        DebugService.log('✅ 目录创建完成: $dirPath');
+        DebugService.log('目录创建完成: $dirPath');
       } else {
-        DebugService.log('✅ 目录已存在: $dirPath');
+        DebugService.log('目录已存在: $dirPath');
       }
 
       // 验证目录是否真的存在
       if (!await dir.exists()) {
-        DebugService.error('❌ 目录创建失败: $dirPath', null);
+        DebugService.error('目录创建失败: $dirPath', null);
         throw Exception('目录创建失败: $dirPath');
       }
 
-      DebugService.success('✅ 目录确认存在: $dirPath');
+      DebugService.success('目录确认存在: $dirPath');
     } catch (e) {
-      DebugService.error('❌ 目录创建失败: $dirPath', e);
+      DebugService.error('目录创建失败: $dirPath', e);
       throw Exception('无法创建或访问目录: $dirPath');
     }
   }
 
   /// 测试写入权限
   Future<void> _testWritePermission(String dirPath) async {
-    DebugService.log('📝 测试写入权限: $dirPath');
+    // 【简化】移除日志
     final testFile = File('$dirPath/test_write.tmp');
     await testFile.writeAsString('test');
     await testFile.delete();
-    DebugService.success('✅ 写入权限测试通过');
   }
 
   /// 处理文件名
@@ -807,30 +813,30 @@ class DownloadService {
       return fileName;
     }
 
-    DebugService.log('📄 未指定文件名，从URL提取...');
+    // 【简化】移除日志
     final uri = Uri.parse(url);
     final pathSegments = uri.pathSegments;
 
     if (pathSegments.isNotEmpty) {
       String extractedFileName = pathSegments.last;
-      DebugService.log('📄 从URL提取的文件名: $extractedFileName');
+      DebugService.log('从URL提取的文件名: $extractedFileName');
 
       // 如果文件名仍然包含参数，只取问号前的部分
       if (extractedFileName.contains('?')) {
         extractedFileName = extractedFileName.split('?')[0];
-        DebugService.log('📄 移除URL参数后的文件名: $extractedFileName');
+        DebugService.log('移除URL参数后的文件名: $extractedFileName');
       }
 
       // 如果文件名过长，截断它
       if (extractedFileName.length > 100) {
-        DebugService.log('📄 文件名过长，正在截断...');
+        DebugService.log('文件名过长，正在截断...');
         final extension = extractedFileName.split('.').last;
         final nameWithoutExt = extractedFileName.substring(
           0,
           extractedFileName.lastIndexOf('.'),
         );
         extractedFileName = '${nameWithoutExt.substring(0, 80)}.$extension';
-        DebugService.log('📄 截断后的文件名: $extractedFileName');
+        DebugService.log('截断后的文件名: $extractedFileName');
       }
 
       return extractedFileName;

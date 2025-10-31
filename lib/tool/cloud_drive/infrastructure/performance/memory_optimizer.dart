@@ -24,7 +24,7 @@ class MemoryOptimizer {
       _recordMemoryUsage();
     });
 
-    LogManager().cloudDrive('🔍 开始内存监控');
+    LogManager().cloudDrive('开始内存监控');
   }
 
   /// 停止内存监控
@@ -32,7 +32,7 @@ class MemoryOptimizer {
     _monitoringTimer?.cancel();
     _monitoringTimer = null;
     _isMonitoring = false;
-    LogManager().cloudDrive('⏹️ 停止内存监控');
+    LogManager().cloudDrive('停止内存监控');
   }
 
   /// 获取当前内存使用情况
@@ -71,7 +71,7 @@ class MemoryOptimizer {
       LogManager().cloudDrive('🚨 内存压力严重，执行强制垃圾回收');
       await _forceGarbageCollection();
     } else if (pressure == MemoryPressureLevel.high) {
-      LogManager().cloudDrive('⚠️ 内存压力较高，执行垃圾回收');
+      LogManager().cloudDrive('内存压力较高，执行垃圾回收');
       await _forceGarbageCollection();
     }
 
@@ -91,7 +91,7 @@ class MemoryOptimizer {
     }
 
     final fileSize = await file.length();
-    LogManager().cloudDrive('📁 开始处理大文件: ${_formatFileSize(fileSize)}');
+    LogManager().cloudDrive('开始处理大文件: ${_formatFileSize(fileSize)}');
 
     // 检查内存压力
     final pressure = checkMemoryPressure();
@@ -99,7 +99,7 @@ class MemoryOptimizer {
       LogManager().cloudDrive('🚨 内存压力严重，调整缓冲区大小');
       bufferSize = 32 * 1024; // 减少到32KB
     } else if (pressure == MemoryPressureLevel.high) {
-      LogManager().cloudDrive('⚠️ 内存压力较高，调整缓冲区大小');
+      LogManager().cloudDrive('内存压力较高，调整缓冲区大小');
       bufferSize = 48 * 1024; // 减少到48KB
     }
 
@@ -108,10 +108,10 @@ class MemoryOptimizer {
       final stream = file.openRead();
       final result = await processor(stream);
 
-      LogManager().cloudDrive('✅ 大文件处理完成');
+      LogManager().cloudDrive('大文件处理完成');
       return result;
     } catch (e) {
-      LogManager().error('❌ 大文件处理失败: $e');
+      LogManager().error('大文件处理失败: $e');
       rethrow;
     } finally {
       // 处理完成后优化内存
@@ -130,7 +130,7 @@ class MemoryOptimizer {
     }
 
     final fileSize = await file.length();
-    LogManager().cloudDrive('🔄 在隔离中处理大文件: ${_formatFileSize(fileSize)}');
+    LogManager().cloudDrive('在隔离中处理大文件: ${_formatFileSize(fileSize)}');
 
     try {
       // 在隔离中读取文件
@@ -139,10 +139,10 @@ class MemoryOptimizer {
         return processor(bytes);
       });
 
-      LogManager().cloudDrive('✅ 隔离处理完成');
+      LogManager().cloudDrive('隔离处理完成');
       return result;
     } catch (e) {
-      LogManager().error('❌ 隔离处理失败: $e');
+      LogManager().error('隔离处理失败: $e');
       rethrow;
     } finally {
       // 处理完成后优化内存
@@ -195,9 +195,9 @@ class MemoryOptimizer {
         await chunkProcessor(buffer);
       }
 
-      LogManager().cloudDrive('✅ 分块处理完成');
+      LogManager().cloudDrive('分块处理完成');
     } catch (e) {
-      LogManager().error('❌ 分块处理失败: $e');
+      LogManager().error('分块处理失败: $e');
       rethrow;
     } finally {
       await optimizeMemory();

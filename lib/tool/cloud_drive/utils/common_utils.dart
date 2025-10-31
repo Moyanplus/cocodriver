@@ -216,7 +216,7 @@ class CommonUtils {
   /// [context] 上下文信息（可选）
   static void logInfo(String message, {Map<String, dynamic>? context}) {
     if (kDebugMode) {
-      print('ℹ️ $message');
+      print('$message');
       if (context != null && context.isNotEmpty) {
         print('   Context: $context');
       }
@@ -231,7 +231,7 @@ class CommonUtils {
   /// [context] 上下文信息（可选）
   static void logSuccess(String message, {Map<String, dynamic>? context}) {
     if (kDebugMode) {
-      print('✅ $message');
+      print('$message');
       if (context != null && context.isNotEmpty) {
         print('   Context: $context');
       }
@@ -251,7 +251,7 @@ class CommonUtils {
     Map<String, dynamic>? context,
   }) {
     if (kDebugMode) {
-      print('❌ $message');
+      print('$message');
       if (error != null) {
         print('   Error: $error');
       }
@@ -269,7 +269,7 @@ class CommonUtils {
   /// [context] 上下文信息（可选）
   static void logWarning(String message, {Map<String, dynamic>? context}) {
     if (kDebugMode) {
-      print('⚠️ $message');
+      print('$message');
       if (context != null && context.isNotEmpty) {
         print('   Context: $context');
       }
@@ -519,7 +519,7 @@ class CommonUtils {
   /// [options] 请求选项
   static void _logRequest(RequestOptions options) {
     logInfo(
-      '🌐 ${options.method} ${options.uri}',
+      '${options.method} ${options.uri}',
       context: {
         'headers': options.headers,
         'data': options.data?.toString(),
@@ -535,7 +535,7 @@ class CommonUtils {
   /// [response] HTTP响应
   static void _logResponse(Response response) {
     logSuccess(
-      '📡 ${response.requestOptions.method} ${response.requestOptions.uri} - ${response.statusCode}',
+      '${response.requestOptions.method} ${response.requestOptions.uri} - ${response.statusCode}',
       context: {
         'status_message': response.statusMessage,
         'data_size': response.data?.toString().length,
@@ -550,7 +550,7 @@ class CommonUtils {
   /// [error] Dio错误
   static void _logError(DioException error) {
     logError(
-      '💥 ${error.requestOptions.method} ${error.requestOptions.uri}',
+      'FATAL ${error.requestOptions.method} ${error.requestOptions.uri}',
       error: error,
       context: {
         'type': error.type.toString(),

@@ -14,7 +14,7 @@
 /// 创建时间: 2024年
 
 import 'base/qr_login_service.dart';
-import 'quark/quark_qr_login_service.dart';
+import 'quark/services/quark_qr_login_service.dart';
 
 /// 云盘服务注册中心类
 ///
@@ -50,7 +50,7 @@ class CloudDriveServicesRegistry {
   static void _registerQRLoginServices() {
     // 注册夸克网盘二维码登录服务
     QRLoginManager.registerService(QuarkQRLoginService());
-    print('✅ 夸克网盘二维码登录服务已注册');
+    print('夸克网盘二维码登录服务已注册');
   }
 
   /// 检查是否已初始化

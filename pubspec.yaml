@@ -46,6 +46,10 @@ dependencies:
   dio: ^5.4.0
   retrofit: ^4.0.3
   json_annotation: ^4.8.1
+  
+  # 图片缓存
+  cached_network_image: ^3.3.1
+  flutter_cache_manager: ^3.3.1
 
   # 数据存储
   hive: ^2.2.3

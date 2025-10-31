@@ -359,6 +359,8 @@ class CloudDriveFile {
   final String? path;
   final String? downloadUrl;
   final String? thumbnailUrl;
+  final String? bigThumbnailUrl;
+  final String? previewUrl;
   final Map<String, dynamic>? metadata;
   final FileCategory? category;
 
@@ -372,6 +374,8 @@ class CloudDriveFile {
     this.path,
     this.downloadUrl,
     this.thumbnailUrl,
+    this.bigThumbnailUrl,
+    this.previewUrl,
     this.metadata,
     this.category,
   });
@@ -476,6 +480,8 @@ class CloudDriveFile {
     'path': path,
     'downloadUrl': downloadUrl,
     'thumbnailUrl': thumbnailUrl,
+    'bigThumbnailUrl': bigThumbnailUrl,
+    'previewUrl': previewUrl,
     'metadata': metadata,
     'category': category?.name,
   };
@@ -491,6 +497,8 @@ class CloudDriveFile {
     String? path,
     String? downloadUrl,
     String? thumbnailUrl,
+    String? bigThumbnailUrl,
+    String? previewUrl,
     Map<String, dynamic>? metadata,
     FileCategory? category,
   }) => CloudDriveFile(
@@ -503,6 +511,8 @@ class CloudDriveFile {
     path: path ?? this.path,
     downloadUrl: downloadUrl ?? this.downloadUrl,
     thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+    bigThumbnailUrl: bigThumbnailUrl ?? this.bigThumbnailUrl,
+    previewUrl: previewUrl ?? this.previewUrl,
     metadata: metadata ?? this.metadata,
     category: category ?? this.category,
   );

@@ -20,11 +20,22 @@ BaseModel _$BaseModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$BaseModel {
+  /// 唯一标识符
   String get id => throw _privateConstructorUsedError;
+
+  /// 创建时间
   DateTime get createdAt => throw _privateConstructorUsedError;
+
+  /// 更新时间
   DateTime get updatedAt => throw _privateConstructorUsedError;
+
+  /// 是否已删除
   bool get isDeleted => throw _privateConstructorUsedError;
+
+  /// 创建者（可选）
   String? get createdBy => throw _privateConstructorUsedError;
+
+  /// 更新者（可选）
   String? get updatedBy => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -174,17 +185,28 @@ class _$BaseModelImpl implements _BaseModel {
   factory _$BaseModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$BaseModelImplFromJson(json);
 
+  /// 唯一标识符
   @override
   final String id;
+
+  /// 创建时间
   @override
   final DateTime createdAt;
+
+  /// 更新时间
   @override
   final DateTime updatedAt;
+
+  /// 是否已删除
   @override
   @JsonKey()
   final bool isDeleted;
+
+  /// 创建者（可选）
   @override
   final String? createdBy;
+
+  /// 更新者（可选）
   @override
   final String? updatedBy;
 
@@ -243,16 +265,28 @@ abstract class _BaseModel implements BaseModel {
       _$BaseModelImpl.fromJson;
 
   @override
+
+  /// 唯一标识符
   String get id;
   @override
+
+  /// 创建时间
   DateTime get createdAt;
   @override
+
+  /// 更新时间
   DateTime get updatedAt;
   @override
+
+  /// 是否已删除
   bool get isDeleted;
   @override
+
+  /// 创建者（可选）
   String? get createdBy;
   @override
+
+  /// 更新者（可选）
   String? get updatedBy;
   @override
   @JsonKey(ignore: true)
@@ -267,10 +301,19 @@ PaginatedResponse<T> _$PaginatedResponseFromJson<T>(
 
 /// @nodoc
 mixin _$PaginatedResponse<T> {
+  /// 数据列表
   List<T> get data => throw _privateConstructorUsedError;
+
+  /// 当前页码
   int get page => throw _privateConstructorUsedError;
+
+  /// 每页数量
   int get limit => throw _privateConstructorUsedError;
+
+  /// 总数量
   int get total => throw _privateConstructorUsedError;
+
+  /// 总页数
   int get totalPages => throw _privateConstructorUsedError;
   bool get hasNext => throw _privateConstructorUsedError;
   bool get hasPrevious => throw _privateConstructorUsedError;
@@ -440,7 +483,10 @@ class _$PaginatedResponseImpl<T> implements _PaginatedResponse<T> {
           Map<String, dynamic> json, T Function(Object?) fromJsonT) =>
       _$$PaginatedResponseImplFromJson(json, fromJsonT);
 
+  /// 数据列表
   final List<T> _data;
+
+  /// 数据列表
   @override
   List<T> get data {
     if (_data is EqualUnmodifiableListView) return _data;
@@ -448,12 +494,19 @@ class _$PaginatedResponseImpl<T> implements _PaginatedResponse<T> {
     return EqualUnmodifiableListView(_data);
   }
 
+  /// 当前页码
   @override
   final int page;
+
+  /// 每页数量
   @override
   final int limit;
+
+  /// 总数量
   @override
   final int total;
+
+  /// 总页数
   @override
   final int totalPages;
   @override
@@ -525,14 +578,24 @@ abstract class _PaginatedResponse<T> implements PaginatedResponse<T> {
       _$PaginatedResponseImpl<T>.fromJson;
 
   @override
+
+  /// 数据列表
   List<T> get data;
   @override
+
+  /// 当前页码
   int get page;
   @override
+
+  /// 每页数量
   int get limit;
   @override
+
+  /// 总数量
   int get total;
   @override
+
+  /// 总页数
   int get totalPages;
   @override
   bool get hasNext;

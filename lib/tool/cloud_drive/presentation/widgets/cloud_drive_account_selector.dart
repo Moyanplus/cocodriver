@@ -62,8 +62,8 @@ class CloudDriveAccountSelector extends ConsumerWidget {
         children: [
           if (state.accounts.isNotEmpty) ...[
             SizedBox(
-              // 【优化】减小高度，从 100.h 改为 85.h，让账号卡片更紧凑
-              height: ResponsiveUtils.getResponsiveHeight(85.h),
+              // 【优化】调整高度以适应更大的可点击区域
+              height: ResponsiveUtils.getResponsiveHeight(90.h),
               width: double.infinity,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -88,7 +88,7 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                       margin: EdgeInsets.only(
                         right: ResponsiveUtils.getSpacing(),
                       ),
-                      padding: ResponsiveUtils.getResponsivePadding(all: 10.w),
+                      padding: ResponsiveUtils.getResponsivePadding(all: 8.w),
                       decoration: BoxDecoration(
                         color:
                             isSelected
@@ -174,7 +174,7 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                       icon: Icon(
                                         Icons.info_outline,
                                         size: ResponsiveUtils.getIconSize(
-                                          16.sp,
+                                          20.sp,
                                         ),
                                         color:
                                             isSelected
@@ -185,9 +185,12 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                                   context,
                                                 ).colorScheme.onSurfaceVariant,
                                       ),
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      visualDensity: VisualDensity.compact,
+                                      padding: EdgeInsets.all(12.w),
+                                      constraints: BoxConstraints(
+                                        minWidth: 44.w,
+                                        minHeight: 44.h,
+                                      ),
+                                      visualDensity: VisualDensity.standard,
                                       onPressed: () {
                                         // 显示账号详情底部弹窗
                                         showModalBottomSheet(
@@ -218,7 +221,7 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          SizedBox(height: ResponsiveUtils.getSpacing() * 0.25),
+                          SizedBox(height: ResponsiveUtils.getSpacing() * 0.2),
                           Text(
                             account.isLoggedIn ? '已登录' : '未登录',
                             style: TextStyle(

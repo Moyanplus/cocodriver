@@ -421,11 +421,11 @@ class ResultUtils {
     Map<String, dynamic>? context,
   }) {
     if (result.isSuccess) {
-      LogManager().cloudDrive('✅ $operation 成功');
+      LogManager().cloudDrive('$operation 成功');
     } else {
-      LogManager().error('❌ $operation 失败: ${result.error}');
+      LogManager().error('$operation 失败: ${result.error}');
       if (context != null) {
-        LogManager().cloudDrive('📋 上下文: $context');
+        LogManager().cloudDrive('上下文: $context');
       }
     }
   }

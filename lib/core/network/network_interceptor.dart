@@ -40,8 +40,8 @@ class NetworkInterceptor extends Interceptor {
     );
 
     if (kDebugMode) {
-      print('🚀 Request: ${options.method} ${options.uri}');
-      print('📤 Headers: ${options.headers}');
+      print('Request: ${options.method} ${options.uri}');
+      print('Headers: ${options.headers}');
       if (options.data != null) {
         print('📦 Data: ${options.data}');
       }
@@ -80,9 +80,9 @@ class NetworkInterceptor extends Interceptor {
 
     if (kDebugMode) {
       print(
-        '✅ Response: ${response.statusCode} ${response.requestOptions.uri}',
+        'Response: ${response.statusCode} ${response.requestOptions.uri}',
       );
-      print('📥 Data: ${response.data}');
+      print('Data: ${response.data}');
     }
 
     // 检查响应状态
@@ -112,10 +112,10 @@ class NetworkInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (kDebugMode) {
-      print('❌ Error: ${err.type} ${err.requestOptions.uri}');
-      print('💥 Message: ${err.message}');
+      print('Error: ${err.type} ${err.requestOptions.uri}');
+      print('FATAL Message: ${err.message}');
       if (err.response != null) {
-        print('📥 Response: ${err.response?.data}');
+        print('Response: ${err.response?.data}');
       }
     }
 
@@ -178,7 +178,7 @@ class RetryInterceptor extends Interceptor {
 
       if (kDebugMode) {
         print(
-          '🔄 Retrying request (${retryCount + 1}/$maxRetries): ${err.requestOptions.uri}',
+          'Retrying request (${retryCount + 1}/$maxRetries): ${err.requestOptions.uri}',
         );
       }
 
@@ -226,7 +226,7 @@ class LoggingInterceptor extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     if (kDebugMode) {
       print('''
-🚀 REQUEST
+REQUEST
 Method: ${options.method}
 URL: ${options.uri}
 Headers: ${options.headers}
@@ -241,7 +241,7 @@ Query Parameters: ${options.queryParameters}
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     if (kDebugMode) {
       print('''
-✅ RESPONSE
+RESPONSE
 Status Code: ${response.statusCode}
 URL: ${response.requestOptions.uri}
 Headers: ${response.headers}
@@ -255,7 +255,7 @@ Data: ${response.data}
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (kDebugMode) {
       print('''
-❌ ERROR
+ERROR
 Type: ${err.type}
 Message: ${err.message}
 URL: ${err.requestOptions.uri}

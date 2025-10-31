@@ -24,7 +24,7 @@ class PerformanceOptimizer {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    LogManager().cloudDrive('🚀 初始化性能优化器');
+    LogManager().cloudDrive('初始化性能优化器');
 
     // 开始内存监控
     _memoryOptimizer.startMonitoring();
@@ -33,7 +33,7 @@ class PerformanceOptimizer {
     _startPeriodicOptimization();
 
     _isInitialized = true;
-    LogManager().cloudDrive('✅ 性能优化器初始化完成');
+    LogManager().cloudDrive('性能优化器初始化完成');
   }
 
   /// 开始监控操作
@@ -76,7 +76,7 @@ class PerformanceOptimizer {
 
   /// 应用优化建议
   Future<void> applyOptimization(OptimizationSuggestion suggestion) async {
-    LogManager().cloudDrive('🔧 应用优化建议: ${suggestion.title}');
+    LogManager().cloudDrive('应用优化建议: ${suggestion.title}');
 
     try {
       switch (suggestion.type) {
@@ -95,9 +95,9 @@ class PerformanceOptimizer {
       }
 
       suggestion.isApplied = true;
-      LogManager().cloudDrive('✅ 优化建议应用成功: ${suggestion.title}');
+      LogManager().cloudDrive('优化建议应用成功: ${suggestion.title}');
     } catch (e) {
-      LogManager().error('❌ 优化建议应用失败: ${suggestion.title} - $e');
+      LogManager().error('优化建议应用失败: ${suggestion.title} - $e');
     }
   }
 
@@ -151,7 +151,7 @@ class PerformanceOptimizer {
 
   /// 执行定期优化
   Future<void> _performPeriodicOptimization() async {
-    LogManager().cloudDrive('🔄 执行定期性能优化');
+    LogManager().cloudDrive('执行定期性能优化');
 
     try {
       // 分析性能
@@ -167,9 +167,9 @@ class PerformanceOptimizer {
       // 清理旧数据
       _monitor.cleanup();
 
-      LogManager().cloudDrive('✅ 定期性能优化完成');
+      LogManager().cloudDrive('定期性能优化完成');
     } catch (e) {
-      LogManager().error('❌ 定期性能优化失败: $e');
+      LogManager().error('定期性能优化失败: $e');
     }
   }
 
@@ -263,27 +263,27 @@ class PerformanceOptimizer {
 
     if (!exists) {
       _suggestions.add(suggestion);
-      LogManager().cloudDrive('💡 新增优化建议: ${suggestion.title}');
+      LogManager().cloudDrive('新增优化建议: ${suggestion.title}');
     }
   }
 
   /// 优化缓存
   Future<void> _optimizeCache() async {
-    LogManager().cloudDrive('🗄️ 优化缓存策略');
+    LogManager().cloudDrive('优化缓存策略');
     // 这里可以实现具体的缓存优化逻辑
     await Future.delayed(const Duration(milliseconds: 100));
   }
 
   /// 优化网络
   Future<void> _optimizeNetwork() async {
-    LogManager().cloudDrive('🌐 优化网络配置');
+    LogManager().cloudDrive('优化网络配置');
     // 这里可以实现具体的网络优化逻辑
     await Future.delayed(const Duration(milliseconds: 100));
   }
 
   /// 优化并发
   Future<void> _optimizeConcurrency() async {
-    LogManager().cloudDrive('⚡ 优化并发处理');
+    LogManager().cloudDrive('优化并发处理');
     // 这里可以实现具体的并发优化逻辑
     await Future.delayed(const Duration(milliseconds: 100));
   }
@@ -295,7 +295,7 @@ class PerformanceOptimizer {
     _monitor.reset();
     _suggestions.clear();
     _isInitialized = false;
-    LogManager().cloudDrive('🔄 性能优化器已释放');
+    LogManager().cloudDrive('性能优化器已释放');
   }
 }
 

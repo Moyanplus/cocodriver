@@ -171,41 +171,41 @@ class BaiduCloudDriveService {
   static Future<void> testCompleteFunctionality({
     required CloudDriveAccount account,
   }) async {
-    LogManager().cloudDrive('🔍 开始测试百度网盘完整功能...');
+    LogManager().cloudDrive('开始测试百度网盘完整功能...');
 
     try {
       // 测试Cookie验证
-      LogManager().cloudDrive('🔍 测试Cookie验证...');
+      LogManager().cloudDrive('测试Cookie验证...');
       final isValid = await validateCookies(account);
       if (isValid) {
-        LogManager().cloudDrive('✅ Cookie验证成功');
+        LogManager().cloudDrive('Cookie验证成功');
       } else {
-        LogManager().cloudDrive('❌ Cookie验证失败');
+        LogManager().cloudDrive('Cookie验证失败');
         return;
       }
 
       // 测试获取文件列表
-      LogManager().cloudDrive('🔍 测试获取文件列表...');
+      LogManager().cloudDrive('测试获取文件列表...');
       final fileList = await getFileList(account: account);
       LogManager().cloudDrive(
-        '✅ 文件列表获取成功: ${fileList['files']?.length ?? 0}个文件, ${fileList['folders']?.length ?? 0}个文件夹',
+        '文件列表获取成功: ${fileList['files']?.length ?? 0}个文件, ${fileList['folders']?.length ?? 0}个文件夹',
       );
 
       // 测试获取账号详情
-      LogManager().cloudDrive('🔍 测试获取账号详情...');
+      LogManager().cloudDrive('测试获取账号详情...');
       final accountDetails = await getAccountDetails(account: account);
       if (accountDetails != null) {
-        LogManager().cloudDrive('✅ 账号详情获取成功');
+        LogManager().cloudDrive('账号详情获取成功');
         LogManager().cloudDrive(
-          '📊 详细信息: 用户=${accountDetails.accountInfo?.username ?? '未知用户'}, 存储=${accountDetails.quotaInfo?.usagePercentage.toStringAsFixed(1) ?? '0.0'}%',
+          '详细信息: 用户=${accountDetails.accountInfo?.username ?? '未知用户'}, 存储=${accountDetails.quotaInfo?.usagePercentage.toStringAsFixed(1) ?? '0.0'}%',
         );
       } else {
-        LogManager().cloudDrive('❌ 账号详情获取失败');
+        LogManager().cloudDrive('账号详情获取失败');
       }
 
-      LogManager().cloudDrive('✅ 百度网盘完整功能测试完成');
+      LogManager().cloudDrive('百度网盘完整功能测试完成');
     } catch (e) {
-      LogManager().error('❌ 百度网盘功能测试失败: $e');
+      LogManager().error('百度网盘功能测试失败: $e');
     }
   }
 }

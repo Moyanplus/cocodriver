@@ -18,9 +18,9 @@ class LanzouCloudDriveService {
     dynamic error,
     StackTrace? stackTrace,
   ) {
-    LogManager().cloudDrive('❌ 蓝奏云盘 - $operation 失败: $error');
+    LogManager().cloudDrive('蓝奏云盘 - $operation 失败: $error');
     if (stackTrace != null) {
-      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('错误堆栈: $stackTrace');
     }
   }
 
@@ -31,12 +31,12 @@ class LanzouCloudDriveService {
 
   /// 统一成功日志记录
   static void _logSuccess(String message) {
-    LogManager().cloudDrive('✅ 蓝奏云盘 - $message');
+    LogManager().cloudDrive('蓝奏云盘 - $message');
   }
 
   /// 统一错误日志记录
   static void _logError(String message, dynamic error) {
-    LogManager().cloudDrive('❌ 蓝奏云盘 - $message: $error');
+    LogManager().cloudDrive('蓝奏云盘 - $message: $error');
   }
 
   // 创建dio实例 - 使用统一的基础服务
@@ -56,7 +56,7 @@ class LanzouCloudDriveService {
   /// 从 Cookie 中提取 UID
   static String? extractUidFromCookies(String cookies) {
     try {
-      LogManager().cloudDrive('🔍 蓝奏云 - 开始从 Cookie 中提取 UID');
+      LogManager().cloudDrive('蓝奏云 - 开始从 Cookie 中提取 UID');
       LogManager().cloudDrive('🍪 蓝奏云 - 原始 Cookie 长度: ${cookies.length}');
       LogManager().cloudDrive('🍪 蓝奏云 - Cookie 预览: $cookies');
 
@@ -80,22 +80,22 @@ class LanzouCloudDriveService {
       }
 
       final uid = cookieMap['ylogin'];
-      LogManager().cloudDrive('🔍 蓝奏云 - 从 Cookie 中提取到 UID: $uid');
+      LogManager().cloudDrive('蓝奏云 - 从 Cookie 中提取到 UID: $uid');
 
       if (uid == null || uid.isEmpty) {
-        LogManager().cloudDrive('❌ 蓝奏云 - 未找到 ylogin Cookie');
+        LogManager().cloudDrive('蓝奏云 - 未找到 ylogin Cookie');
         LogManager().cloudDrive(
           '🔑 蓝奏云 - 所有 Cookie 键: ${cookieMap.keys.toList()}',
         );
         LogManager().cloudDrive('🍪 蓝奏云 - 所有 Cookie 值: $cookieMap');
       } else {
-        LogManager().cloudDrive('✅ 蓝奏云 - 成功提取 UID: $uid');
+        LogManager().cloudDrive('蓝奏云 - 成功提取 UID: $uid');
       }
 
       return uid;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive('❌ 蓝奏云 - 提取 UID 失败: $e');
-      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('蓝奏云 - 提取 UID 失败: $e');
+      LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -107,9 +107,9 @@ class LanzouCloudDriveService {
     required Map<String, String> headers,
   }) async {
     try {
-      _logInfo('🌐 开始执行 API 请求');
-      _logInfo('🌐 API URL: ${LanzouConfig.apiUrl}');
-      _logInfo('🌐 请求数据: $data');
+      _logInfo('开始执行 API 请求');
+      _logInfo('API URL: ${LanzouConfig.apiUrl}');
+      _logInfo('请求数据: $data');
 
       final dio = _createDio(account);
       final response = await dio.post(
@@ -123,12 +123,12 @@ class LanzouCloudDriveService {
       );
 
       _logSuccess('API 请求成功');
-      _logInfo('📡 响应状态码: ${response.statusCode}');
+      _logInfo('响应状态码: ${response.statusCode}');
 
       if (response.data is Map<String, dynamic>) {
         final responseData = response.data as Map<String, dynamic>;
-        _logInfo('📊 响应数据类型: Map');
-        _logInfo('📊 响应数据键: ${responseData.keys.toList()}');
+        _logInfo('响应数据类型: Map');
+        _logInfo('响应数据键: ${responseData.keys.toList()}');
         return responseData;
       } else {
         _logError('响应数据类型异常', '类型: ${response.data.runtimeType}');
@@ -142,9 +142,9 @@ class LanzouCloudDriveService {
 
   /// 创建请求头
   static Map<String, String> _createHeaders(String cookies, String uid) {
-    LogManager().cloudDrive('🔧 蓝奏云 - 创建请求头');
-    LogManager().cloudDrive('👤 蓝奏云 - UID: $uid');
-    LogManager().cloudDrive('🔧 蓝奏云 - Cookie 长度: ${cookies.length}');
+    LogManager().cloudDrive('蓝奏云 - 创建请求头');
+    LogManager().cloudDrive('蓝奏云 - UID: $uid');
+    LogManager().cloudDrive('蓝奏云 - Cookie 长度: ${cookies.length}');
 
     final headers = Map<String, String>.from(LanzouConfig.defaultHeaders);
     headers['Cookie'] = cookies;
@@ -152,8 +152,8 @@ class LanzouCloudDriveService {
     headers['Origin'] = LanzouConfig.baseUrl;
     headers['X-Requested-With'] = 'XMLHttpRequest';
 
-    LogManager().cloudDrive('🔧 蓝奏云 - 请求头创建完成');
-    LogManager().cloudDrive('🔧 蓝奏云 - 请求头键: ${headers.keys.toList()}');
+    LogManager().cloudDrive('蓝奏云 - 请求头创建完成');
+    LogManager().cloudDrive('蓝奏云 - 请求头键: ${headers.keys.toList()}');
 
     return headers;
   }
@@ -165,7 +165,7 @@ class LanzouCloudDriveService {
     String folderId = '-1',
   }) async {
     try {
-      _logInfo('📁 获取文件列表: 文件夹ID=$folderId');
+      _logInfo('获取文件列表: 文件夹ID=$folderId');
 
       // 初始化vei参数
       final vei = await LanzouVeiService.initializeVeiParameter(
@@ -183,7 +183,7 @@ class LanzouCloudDriveService {
         'vei': LanzouConfig.getVeiParameter(),
       };
 
-      _logInfo('📡 文件请求数据: $data');
+      _logInfo('文件请求数据: $data');
 
       final headers = _createHeaders(cookies, uid);
 
@@ -228,7 +228,7 @@ class LanzouCloudDriveService {
               modifiedTime: time != null ? DateTime.tryParse(time) : null,
               isFolder: false,
             );
-            _logInfo('✅ 文件解析成功: ${cloudFile.name} (ID: ${cloudFile.id})');
+            _logInfo('文件解析成功: ${cloudFile.name} (ID: ${cloudFile.id})');
             files.add(cloudFile);
           } catch (e) {
             _logError('失败的文件数据', file);
@@ -254,7 +254,7 @@ class LanzouCloudDriveService {
     String folderId = '-1',
   }) async {
     try {
-      _logInfo('📁 获取文件夹列表: 文件夹ID=$folderId');
+      _logInfo('获取文件夹列表: 文件夹ID=$folderId');
 
       // 初始化vei参数
       final vei = await LanzouVeiService.initializeVeiParameter(
@@ -272,7 +272,7 @@ class LanzouCloudDriveService {
         'vei': LanzouConfig.getVeiParameter(),
       };
 
-      _logInfo('📡 文件夹请求数据: $data');
+      _logInfo('文件夹请求数据: $data');
 
       final headers = _createHeaders(cookies, uid);
 
@@ -315,7 +315,7 @@ class LanzouCloudDriveService {
               modifiedTime: time != null ? DateTime.tryParse(time) : null,
               isFolder: true,
             );
-            _logInfo('✅ 文件夹解析成功: ${cloudFolder.name} (ID: ${cloudFolder.id})');
+            _logInfo('文件夹解析成功: ${cloudFolder.name} (ID: ${cloudFolder.id})');
             folders.add(cloudFolder);
           } catch (e) {
             _logError('失败的文件夹数据', folder);
@@ -337,7 +337,7 @@ class LanzouCloudDriveService {
   /// 验证 Cookie 有效性
   static Future<bool> validateCookies(String cookies, String uid) async {
     try {
-      _logInfo('🔍 验证 Cookie 有效性');
+      _logInfo('验证 Cookie 有效性');
 
       final data = {
         'task': LanzouConfig.getTaskId('validateCookies'),
@@ -349,7 +349,7 @@ class LanzouCloudDriveService {
 
       // 构建带 uid 参数的 URL
       final apiUrl = '${LanzouConfig.apiUrl}?uid=$uid';
-      _logInfo('🌐 验证 Cookie URL: $apiUrl');
+      _logInfo('验证 Cookie URL: $apiUrl');
 
       final tempAccount = _createTempAccount(cookies);
       final dio = _createDio(tempAccount);
@@ -364,12 +364,12 @@ class LanzouCloudDriveService {
         ),
       );
 
-      _logInfo('📡 响应状态码: ${response.statusCode}');
+      _logInfo('响应状态码: ${response.statusCode}');
 
       if (response.data is Map<String, dynamic>) {
         final responseData = response.data as Map<String, dynamic>;
         final isValid = responseData['zt'] == 1;
-        _logInfo('🔍 Cookie 验证结果: ${isValid ? '有效' : '无效'}');
+        _logInfo('Cookie 验证结果: ${isValid ? '有效' : '无效'}');
 
         if (!isValid) {
           _logError('Cookie 验证失败', responseData['info']);
@@ -393,7 +393,7 @@ class LanzouCloudDriveService {
     required String fileId,
   }) async {
     try {
-      _logInfo('📄 获取文件详情: file_id=$fileId');
+      _logInfo('获取文件详情: file_id=$fileId');
 
       final data = {
         'task': LanzouConfig.getTaskId('getFileDetail'),
@@ -411,7 +411,7 @@ class LanzouCloudDriveService {
       if (responseData['zt'] == 1) {
         final fileInfo = responseData['info'] as Map<String, dynamic>?;
         _logSuccess('成功获取文件详情');
-        _logInfo('📄 文件详情: $fileInfo');
+        _logInfo('文件详情: $fileInfo');
         return fileInfo;
       } else {
         _logError('获取文件详情失败', responseData['info']);
@@ -440,9 +440,9 @@ class LanzouCloudDriveService {
     String folderId = '-1',
   }) async {
     try {
-      _logInfo('📤 开始上传文件: $fileName');
-      _logInfo('📁 目标文件夹: $folderId');
-      _logInfo('📂 文件路径: $filePath');
+      _logInfo('开始上传文件: $fileName');
+      _logInfo('目标文件夹: $folderId');
+      _logInfo('文件路径: $filePath');
 
       // 获取文件信息
       final file = File(filePath);
@@ -454,7 +454,7 @@ class LanzouCloudDriveService {
       final fileExtension = fileName.split('.').last.toLowerCase();
       final mimeType = LanzouConfig.getMimeType(fileExtension);
 
-      _logInfo('📊 文件信息: 大小=${fileSize}字节, 类型=$mimeType');
+      _logInfo('文件信息: 大小=${fileSize}字节, 类型=$mimeType');
 
       // 构建请求头
       if (account.cookies == null || account.cookies!.isEmpty) {
@@ -486,7 +486,7 @@ class LanzouCloudDriveService {
         ),
       });
 
-      _logInfo('🌐 发送上传请求到: ${LanzouConfig.uploadUrl}');
+      _logInfo('发送上传请求到: ${LanzouConfig.uploadUrl}');
 
       // 发送请求
       final response = await _createDio(account).post(
@@ -499,7 +499,7 @@ class LanzouCloudDriveService {
         ),
       );
 
-      _logInfo('📥 上传响应状态: ${response.statusCode}');
+      _logInfo('上传响应状态: ${response.statusCode}');
 
       if (response.statusCode != 200) {
         throw Exception('上传请求失败: ${response.statusCode}');
@@ -539,9 +539,9 @@ class LanzouCloudDriveService {
     String? targetFolderId,
   }) async {
     try {
-      _logInfo('🚚 开始移动文件');
-      _logInfo('📄 文件: ${file.name} (ID: ${file.id})');
-      _logInfo('📁 目标文件夹ID: ${targetFolderId ?? '-1'}');
+      _logInfo('开始移动文件');
+      _logInfo('文件: ${file.name} (ID: ${file.id})');
+      _logInfo('目标文件夹ID: ${targetFolderId ?? '-1'}');
 
       // 从Cookie中提取UID
       final uid = extractUidFromCookies(account.cookies ?? '');
@@ -550,7 +550,7 @@ class LanzouCloudDriveService {
         return false;
       }
 
-      _logInfo('🔍 提取到UID: $uid');
+      _logInfo('提取到UID: $uid');
 
       // 创建请求头
       final headers = _createHeaders(account.cookies ?? '', uid);
@@ -562,7 +562,7 @@ class LanzouCloudDriveService {
         'file_id': file.id, // 要移动的文件ID
       };
 
-      _logInfo('📡 移动文件请求数据: $data');
+      _logInfo('移动文件请求数据: $data');
 
       // 执行请求
       final response = await _executeRequest(
@@ -571,14 +571,14 @@ class LanzouCloudDriveService {
         headers: headers,
       );
 
-      _logInfo('📡 移动文件响应: $response');
+      _logInfo('移动文件响应: $response');
 
       // 检查响应状态
       final zt = response['zt'];
       final info = response['info'];
       final text = response['text'];
 
-      _logInfo('🔍 响应状态: zt=$zt, info=$info, text=$text');
+      _logInfo('响应状态: zt=$zt, info=$info, text=$text');
 
       if (zt == 1) {
         _logSuccess('文件移动成功');

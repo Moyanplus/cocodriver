@@ -14,7 +14,7 @@ class AccountStateHandler {
   /// 从存储中加载所有云盘账号并更新状态
   /// 设置加载状态，处理加载过程中的错误
   Future<void> loadAccounts() async {
-    LogManager().cloudDrive('🔄 加载账号列表');
+    LogManager().cloudDrive('加载账号列表');
 
     try {
       _stateManager.state = _stateManager.state.copyWith(
@@ -30,9 +30,9 @@ class AccountStateHandler {
         error: null,
       );
 
-      LogManager().cloudDrive('✅ 账号列表加载成功: ${accounts.length}个账号');
+      LogManager().cloudDrive('账号列表加载成功: ${accounts.length}个账号');
     } catch (e) {
-      LogManager().error('❌ 加载账号列表失败: $e');
+      LogManager().error('加载账号列表失败: $e');
       _stateManager.state = _stateManager.state.copyWith(
         isLoading: false,
         error: e.toString(),
@@ -47,7 +47,7 @@ class AccountStateHandler {
   ///
   /// [accountIndex] 要切换到的账号索引
   Future<void> switchAccount(int accountIndex) async {
-    LogManager().cloudDrive('🔄 切换账号: $accountIndex');
+    LogManager().cloudDrive('切换账号: $accountIndex');
 
     try {
       if (accountIndex < 0 ||
@@ -70,9 +70,9 @@ class AccountStateHandler {
       // 加载根目录
       await _stateManager.folderHandler.loadFolder(forceRefresh: true);
 
-      LogManager().cloudDrive('✅ 账号切换成功: ${account.name}');
+      LogManager().cloudDrive('账号切换成功: ${account.name}');
     } catch (e) {
-      LogManager().error('❌ 切换账号失败: $e');
+      LogManager().error('切换账号失败: $e');
       _stateManager.state = _stateManager.state.copyWith(error: e.toString());
     }
   }
@@ -83,7 +83,7 @@ class AccountStateHandler {
   ///
   /// [account] 要添加的云盘账号
   Future<void> addAccount(CloudDriveAccount account) async {
-    LogManager().cloudDrive('🔄 添加账号: ${account.name}');
+    LogManager().cloudDrive('添加账号: ${account.name}');
 
     try {
       await CloudDriveAccountService.addAccount(account);
@@ -91,9 +91,9 @@ class AccountStateHandler {
       // 重新加载账号列表
       await loadAccounts();
 
-      LogManager().cloudDrive('✅ 账号添加成功: ${account.name}');
+      LogManager().cloudDrive('账号添加成功: ${account.name}');
     } catch (e) {
-      LogManager().error('❌ 添加账号失败: $e');
+      LogManager().error('添加账号失败: $e');
       _stateManager.state = _stateManager.state.copyWith(error: e.toString());
     }
   }
@@ -105,7 +105,7 @@ class AccountStateHandler {
   ///
   /// [accountId] 要删除的账号ID
   Future<void> deleteAccount(String accountId) async {
-    LogManager().cloudDrive('🔄 删除账号: $accountId');
+    LogManager().cloudDrive('删除账号: $accountId');
 
     try {
       final currentAccount = _stateManager.state.currentAccount;
@@ -136,9 +136,9 @@ class AccountStateHandler {
         }
       }
 
-      LogManager().cloudDrive('✅ 账号删除成功: $accountId');
+      LogManager().cloudDrive('账号删除成功: $accountId');
     } catch (e) {
-      LogManager().error('❌ 删除账号失败: $e');
+      LogManager().error('删除账号失败: $e');
       _stateManager.state = _stateManager.state.copyWith(error: e.toString());
     }
   }
@@ -150,7 +150,7 @@ class AccountStateHandler {
   ///
   /// [account] 要更新的云盘账号
   Future<void> updateAccount(CloudDriveAccount account) async {
-    LogManager().cloudDrive('🔄 更新账号: ${account.name}');
+    LogManager().cloudDrive('更新账号: ${account.name}');
 
     try {
       await CloudDriveAccountService.updateAccount(account);
@@ -165,9 +165,9 @@ class AccountStateHandler {
         );
       }
 
-      LogManager().cloudDrive('✅ 账号更新成功: ${account.name}');
+      LogManager().cloudDrive('账号更新成功: ${account.name}');
     } catch (e) {
-      LogManager().error('❌ 更新账号失败: $e');
+      LogManager().error('更新账号失败: $e');
       _stateManager.state = _stateManager.state.copyWith(error: e.toString());
     }
   }
@@ -182,14 +182,14 @@ class AccountStateHandler {
     if (account == null) return false;
 
     try {
-      LogManager().cloudDrive('🔍 验证账号: ${account.name}');
+      LogManager().cloudDrive('验证账号: ${account.name}');
 
       // 这里可以调用具体的验证逻辑
       // 例如：await CloudDriveOperationService.validateAccount(account);
 
       return true;
     } catch (e) {
-      LogManager().error('❌ 账号验证失败: $e');
+      LogManager().error('账号验证失败: $e');
       return false;
     }
   }
@@ -202,7 +202,7 @@ class AccountStateHandler {
   /// [accountId] 要更新Cookie的账号ID
   /// [newCookies] 新的Cookie字符串
   Future<void> updateAccountCookies(String accountId, String newCookies) async {
-    LogManager().cloudDrive('🔄 更新账号Cookie: $accountId');
+    LogManager().cloudDrive('更新账号Cookie: $accountId');
 
     try {
       final accounts = await CloudDriveAccountService.getAllAccounts();
@@ -228,9 +228,9 @@ class AccountStateHandler {
                 : _stateManager.state.currentAccount,
       );
 
-      LogManager().cloudDrive('✅ 账号Cookie更新成功');
+      LogManager().cloudDrive('账号Cookie更新成功');
     } catch (e) {
-      LogManager().error('❌ 更新账号Cookie失败: $e');
+      LogManager().error('更新账号Cookie失败: $e');
       _stateManager.state = _stateManager.state.copyWith(error: e.toString());
     }
   }
@@ -244,15 +244,15 @@ class AccountStateHandler {
   Future<CloudDriveAccountDetails?> getAccountDetails(
     CloudDriveAccount account,
   ) async {
-    LogManager().cloudDrive('🔄 获取账号详情: ${account.name}');
+    LogManager().cloudDrive('获取账号详情: ${account.name}');
 
     try {
       // final details = await CloudDriveAccountService.getAccountDetails(account);
       final details = null;
-      LogManager().cloudDrive('✅ 账号详情获取成功: ${account.name}');
+      LogManager().cloudDrive('账号详情获取成功: ${account.name}');
       return details;
     } catch (e) {
-      LogManager().error('❌ 获取账号详情失败: ${account.name} - $e');
+      LogManager().error('获取账号详情失败: ${account.name} - $e');
       return null;
     }
   }

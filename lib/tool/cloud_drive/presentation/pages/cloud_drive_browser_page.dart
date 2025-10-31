@@ -132,7 +132,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
       // 【重要】设置为 stretch 让子组件填满宽度
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // 【新增】路径导航器 - 显示当前路径（例如：📁 根目录 或 返回上级 > 文件夹1 > 文件夹2）
+        // 【新增】路径导航器 - 显示当前路径（例如：根目录 或 返回上级 > 文件夹1 > 文件夹2）
         const CloudDrivePathNavigator(),
         // 文件列表 - 使用 Expanded 让它占满剩余空间（紧贴路径导航器，无间隙）
         Expanded(
@@ -249,6 +249,33 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   Widget? _buildFloatingActionButton(dynamic state) {
     if (state.isBatchMode) {
       return null; // 批量模式下不显示悬浮按钮
+    }
+
+    // 如果有待操作文件，显示移动/复制到此处按钮
+    if (state.pendingOperationFile != null &&
+        state.pendingOperationType != null) {
+      final isMove = state.pendingOperationType == 'move';
+      return FloatingActionButton.extended(
+        onPressed: () async {
+          // 执行待操作
+          await ref
+              .read(cloudDriveEventHandlerProvider)
+              .executePendingOperation();
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(isMove ? '文件移动成功' : '文件复制成功'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        },
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+        icon: Icon(isMove ? Icons.drive_file_move : Icons.file_copy),
+        label: Text(isMove ? '移动到此处' : '复制到此处'),
+      );
     }
 
     // 如果正在滚动，显示回到顶部按钮

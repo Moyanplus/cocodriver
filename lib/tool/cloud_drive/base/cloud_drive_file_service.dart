@@ -461,7 +461,7 @@ class CloudDriveFileService {
     String? password,
   }) async {
     try {
-      LogManager().cloudDrive('🔗 开始解析蓝奏云直链: $shareUrl');
+      LogManager().cloudDrive('开始解析蓝奏云直链: $shareUrl');
 
       final result = await LanzouDirectLinkService.parseDirectLink(
         shareUrl: shareUrl,
@@ -469,14 +469,14 @@ class CloudDriveFileService {
       );
 
       if (result != null) {
-        LogManager().cloudDrive('✅ 蓝奏云直链解析成功');
+        LogManager().cloudDrive('蓝奏云直链解析成功');
       } else {
-        LogManager().cloudDrive('❌ 蓝奏云直链解析失败');
+        LogManager().cloudDrive('蓝奏云直链解析失败');
       }
 
       return result;
     } catch (e) {
-      LogManager().error('❌ 解析蓝奏云直链异常');
+      LogManager().error('解析蓝奏云直链异常');
       return null;
     }
   }
@@ -571,15 +571,13 @@ class CloudDriveFileService {
     for (int i = 0; i < files.length; i++) {
       final file = files[i];
       try {
-        LogManager().cloudDrive(
-          '📥 下载文件 ${i + 1}/${files.length}: ${file.name}',
-        );
+        LogManager().cloudDrive('下载文件 ${i + 1}/${files.length}: ${file.name}');
 
         // 获取下载链接
         final downloadUrl = await getDownloadUrl(account: account, file: file);
 
         if (downloadUrl == null) {
-          LogManager().error('❌ 无法获取下载链接: ${file.name}');
+          LogManager().error('无法获取下载链接: ${file.name}');
           failCount++;
           continue;
         }
@@ -596,7 +594,7 @@ class CloudDriveFileService {
               '🔑 阿里云盘 - 批量下载任务使用Authorization认证: ${account.authorizationToken!.length}字符',
             );
           } else {
-            LogManager().cloudDrive('⚠️ 阿里云盘 - 账号缺少Authorization Token');
+            LogManager().cloudDrive('阿里云盘 - 账号缺少Authorization Token');
           }
         } else if (account.type == CloudDriveType.quark) {
           // 夸克云盘使用Cookie认证
@@ -613,7 +611,7 @@ class CloudDriveFileService {
           ...downloadConfig.customHeaders,
         };
 
-        // 创建下载任务
+        // 创建下载任务，并传递缩略图URL
         await downloadService.createDownloadTask(
           url: downloadUrl,
           fileName: file.name,
@@ -622,17 +620,18 @@ class CloudDriveFileService {
           openFileFromNotification: downloadConfig.openFileFromNotification,
           isExternalStorage: false,
           customHeaders: finalHeaders,
+          thumbnailUrl: file.thumbnailUrl, // 传递缩略图URL
         );
 
         successCount++;
-        LogManager().cloudDrive('✅ 文件下载任务创建成功: ${file.name}');
+        LogManager().cloudDrive('文件下载任务创建成功: ${file.name}');
       } catch (e) {
-        LogManager().error('❌ 下载文件失败: ${file.name}');
+        LogManager().error('下载文件失败: ${file.name}');
         failCount++;
       }
     }
 
-    LogManager().cloudDrive('📥 批量下载完成: $successCount 成功, $failCount 失败');
+    LogManager().cloudDrive('批量下载完成: $successCount 成功, $failCount 失败');
   }
 
   // ========== 日志辅助方法 ==========
@@ -721,6 +720,6 @@ class CloudDriveFileService {
     String? details,
   ]) {
     final message = details != null ? '$operation: $details' : operation;
-    LogManager().cloudDrive('🔍 $message');
+    LogManager().cloudDrive('$message');
   }
 }

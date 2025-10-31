@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 
 // 核心模块导入
 import 'core/navigation/navigation_providers.dart';
@@ -35,6 +36,9 @@ import 'test/pages/webview_test_page.dart';
 // 云盘服务注册
 import 'tool/cloud_drive/services/services_registry.dart';
 
+// 下载管理器
+import 'tool/download/pages/download_manager_page.dart';
+
 /// 应用程序主入口函数
 ///
 /// 负责初始化应用程序的核心组件和服务
@@ -43,6 +47,13 @@ void main() async {
   // 确保Flutter绑定系统已初始化
   // 这是使用Flutter异步功能的前提条件
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 初始化下载器插件
+  // 必须在使用下载功能之前初始化
+  await FlutterDownloader.initialize(
+    debug: kDebugMode, // 在调试模式下启用日志
+    ignoreSsl: false, // 不忽略SSL证书验证
+  );
 
   // 初始化依赖注入容器
   // 注册所有需要的服务和依赖
@@ -109,6 +120,8 @@ class _MyAppState extends ConsumerState<MyApp> {
             '/settings': (context) => const SettingsPage(),
             '/settings/theme': (context) => const ThemeSettingsPage(),
             '/settings/language': (context) => const LanguageSettingsPage(),
+            // 下载管理器路由
+            '/download/manager': (context) => const DownloadManagerPage(),
             // 测试页面路由（仅在debug模式可用）
             if (kDebugMode) '/test/webview': (context) => WebViewTestPage(),
           },

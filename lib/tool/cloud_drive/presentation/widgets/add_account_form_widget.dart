@@ -470,9 +470,9 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
       throw Exception('${_selectedType.displayName}不支持二维码登录');
     }
 
-    LogManager().cloudDrive('🔐 开始解析二维码登录认证数据...');
+    LogManager().cloudDrive('开始解析二维码登录认证数据...');
     final cookies = await qrLoginService.parseAuthData(_currentQRLoginInfo!);
-    LogManager().cloudDrive('✅ 二维码登录认证数据解析成功');
+    LogManager().cloudDrive('二维码登录认证数据解析成功');
 
     final account = CloudDriveAccount(
       id: DateTime.now().millisecondsSinceEpoch.toString(),

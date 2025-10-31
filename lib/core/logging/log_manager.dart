@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:logger/logger.dart';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'log_category.dart';
 import 'log_config.dart';
+import 'log_file_manager.dart';
+import 'custom_log_printer.dart';
 
 /// 统一的日志管理器
 /// 提供应用级别的日志记录功能
@@ -15,37 +15,21 @@ class LogManager {
   LogManager._internal();
 
   final LogConfig _config = LogConfig();
+  final LogFileManager _fileManager = LogFileManager();
   bool _isInitialized = false;
   late Logger _logger;
-  late File _logFile;
 
   /// 初始化日志系统
   Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
-      // 创建日志文件
-      final directory = await getApplicationDocumentsDirectory();
-      final logDirectory = Directory('${directory.path}/logs');
-      if (!await logDirectory.exists()) {
-        await logDirectory.create(recursive: true);
-      }
+      // 初始化日志文件管理器
+      await _fileManager.initialize();
 
-      _logFile = File('${logDirectory.path}/app_logs.txt');
-
-      // 配置Logger
-      // iOS 上禁用颜色，避免 ANSI 控制符显示混乱
-      final useColors = !Platform.isIOS;
-
+      // 配置Logger - 使用自定义格式
       _logger = Logger(
-        printer: PrettyPrinter(
-          methodCount: 2,
-          errorMethodCount: 8,
-          lineLength: 120,
-          colors: useColors,
-          printEmojis: true,
-          dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
-        ),
+        printer: CustomLogPrinter(),
         output: _config.isConsoleLoggingEnabled ? ConsoleOutput() : null,
         filter: ProductionFilter(),
       );
@@ -282,10 +266,20 @@ class LogManager {
     LogCategory category,
   ) async {
     try {
-      final timestamp = DateTime.now().toIso8601String();
-      final logEntry =
-          '[$timestamp] [${level.name}] [${category.displayName}] $message\n';
-      await _logFile.writeAsString(logEntry, mode: FileMode.append);
+      // 格式化时间为：月-日 时:分:秒
+      final now = DateTime.now();
+      final timestamp =
+          '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} '
+          '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+
+      // 移除 emoji 和特殊字符，确保纯文本
+      final cleanMessage = _cleanMessage(message);
+
+      // 优化后的日志格式：[月-日 时:分:秒] [分类] 消息
+      final logEntry = '[$timestamp] [${category.displayName}] $cleanMessage\n';
+
+      // 使用 LogFileManager 写入
+      await _fileManager.writeLog(logEntry);
     } catch (e) {
       if (kDebugMode) {
         print('LogManager: 保存日志到文件失败: $e');
@@ -293,14 +287,35 @@ class LogManager {
     }
   }
 
+  /// 清理消息中的特殊字符
+  String _cleanMessage(String message) {
+    // 移除 ANSI 控制符
+    final ansiPattern = RegExp(r'\x1B\[[0-9;]*[a-zA-Z]');
+    var cleaned = message.replaceAll(ansiPattern, '');
+
+    // 移除 emoji 但保留中文字符
+    // 只移除 emoji 表情符号，保留所有文本内容
+    cleaned = cleaned.replaceAll(
+      RegExp(
+        r'[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|'
+        r'[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|'
+        r'[\u{1F900}-\u{1F9FF}]|[\u{1FA70}-\u{1FAFF}]',
+        unicode: true,
+      ),
+      '',
+    );
+
+    return cleaned.trim();
+  }
+
   /// 获取所有日志
   Future<List<String>> getAllLogs() async {
     try {
-      if (await _logFile.exists()) {
-        final content = await _logFile.readAsString();
-        return content.split('\n').where((line) => line.isNotEmpty).toList();
-      }
-      return [];
+      // 使用 LogFileManager 获取所有日志
+      final content = await _fileManager.getAllLogs();
+      if (content.isEmpty) return [];
+
+      return content.split('\n').where((line) => line.isNotEmpty).toList();
     } catch (e) {
       if (kDebugMode) {
         print('LogManager: 获取日志失败: $e');
@@ -327,16 +342,8 @@ class LogManager {
   /// 导出日志
   Future<String?> exportLogs() async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final exportFile = File(
-        '${directory.path}/logs_export_${DateTime.now().millisecondsSinceEpoch}.txt',
-      );
-
-      if (await _logFile.exists()) {
-        await _logFile.copy(exportFile.path);
-        return exportFile.path;
-      }
-      return null;
+      // 使用 LogFileManager 导出
+      return await _fileManager.exportLogs();
     } catch (e) {
       if (kDebugMode) {
         print('LogManager: 导出日志失败: $e');
@@ -348,10 +355,9 @@ class LogManager {
   /// 清理日志
   Future<void> clearLogs() async {
     try {
-      if (await _logFile.exists()) {
-        await _logFile.delete();
-        await _logFile.create();
-      }
+      // 使用 LogFileManager 清理
+      await _fileManager.clearAllLogs();
+
       if (kDebugMode) {
         print('LogManager: 日志清理完成');
       }

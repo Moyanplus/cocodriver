@@ -14,28 +14,29 @@ class PreviewSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final fileTypeInfo = FileTypeUtils.getFileTypeInfo(file.name);
 
-    // 根据文件类型决定是否显示预览
-    if (!_canPreview(file.name)) {
-      return _buildUnsupportedPreview(context, fileTypeInfo);
-    }
-
-    return Container(
-      padding: CloudDriveUIConfig.pagePadding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('预览', style: CloudDriveUIConfig.titleTextStyle),
-          SizedBox(height: CloudDriveUIConfig.spacingM),
-
-          Card(
-            child: Container(
-              width: double.infinity,
-              height: 200,
-              padding: CloudDriveUIConfig.cardPadding,
-              child: _buildPreviewContent(context, fileTypeInfo),
-            ),
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: CloudDriveUIConfig.spacingM,
+        vertical: CloudDriveUIConfig.spacingS,
+      ),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              fileTypeInfo.color.withOpacity(0.05),
+              fileTypeInfo.color.withOpacity(0.02),
+            ],
           ),
-        ],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: fileTypeInfo.color.withOpacity(0.15),
+            width: 1.5,
+          ),
+        ),
+        child: _buildPreviewContent(context, fileTypeInfo),
       ),
     );
   }
@@ -43,39 +44,152 @@ class PreviewSection extends StatelessWidget {
   /// 构建预览内容
   Widget _buildPreviewContent(BuildContext context, FileTypeInfo fileTypeInfo) {
     if (_isImage(file.name)) {
-      return _buildImagePreview();
+      return _buildImagePreview(context, fileTypeInfo);
     } else if (_isText(file.name)) {
-      return _buildTextPreview();
+      return _buildTextPreview(context, fileTypeInfo);
+    } else if (_isVideo(file.name)) {
+      return _buildVideoPreview(context, fileTypeInfo);
     } else {
       return _buildUnsupportedPreview(context, fileTypeInfo);
     }
   }
 
   /// 构建图片预览
-  Widget _buildImagePreview() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.image, size: 64, color: CloudDriveUIConfig.infoColor),
-        SizedBox(height: CloudDriveUIConfig.spacingM),
-        Text('图片预览', style: CloudDriveUIConfig.bodyTextStyle),
-        SizedBox(height: CloudDriveUIConfig.spacingS),
-        Text('点击下载查看完整图片', style: CloudDriveUIConfig.smallTextStyle),
-      ],
+  Widget _buildImagePreview(BuildContext context, FileTypeInfo fileTypeInfo) {
+    return Padding(
+      padding: EdgeInsets.all(CloudDriveUIConfig.spacingL),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 图标容器
+          Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: fileTypeInfo.color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.image_rounded,
+              size: 48,
+              color: fileTypeInfo.color,
+            ),
+          ),
+
+          SizedBox(height: CloudDriveUIConfig.spacingM),
+
+          Text(
+            '图片文件',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: fileTypeInfo.color,
+            ),
+          ),
+
+          SizedBox(height: CloudDriveUIConfig.spacingXS),
+
+          Text(
+            '下载后可查看完整图片',
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   /// 构建文本预览
-  Widget _buildTextPreview() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.text_snippet, size: 64, color: CloudDriveUIConfig.infoColor),
-        SizedBox(height: CloudDriveUIConfig.spacingM),
-        Text('文本预览', style: CloudDriveUIConfig.bodyTextStyle),
-        SizedBox(height: CloudDriveUIConfig.spacingS),
-        Text('点击下载查看完整内容', style: CloudDriveUIConfig.smallTextStyle),
-      ],
+  Widget _buildTextPreview(BuildContext context, FileTypeInfo fileTypeInfo) {
+    return Padding(
+      padding: EdgeInsets.all(CloudDriveUIConfig.spacingL),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: fileTypeInfo.color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.description_rounded,
+              size: 48,
+              color: fileTypeInfo.color,
+            ),
+          ),
+
+          SizedBox(height: CloudDriveUIConfig.spacingM),
+
+          Text(
+            '文本文件',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: fileTypeInfo.color,
+            ),
+          ),
+
+          SizedBox(height: CloudDriveUIConfig.spacingXS),
+
+          Text(
+            '下载后可查看完整内容',
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建视频预览
+  Widget _buildVideoPreview(BuildContext context, FileTypeInfo fileTypeInfo) {
+    return Padding(
+      padding: EdgeInsets.all(CloudDriveUIConfig.spacingL),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: fileTypeInfo.color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.play_circle_outline_rounded,
+              size: 48,
+              color: fileTypeInfo.color,
+            ),
+          ),
+
+          SizedBox(height: CloudDriveUIConfig.spacingM),
+
+          Text(
+            '视频文件',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: fileTypeInfo.color,
+            ),
+          ),
+
+          SizedBox(height: CloudDriveUIConfig.spacingXS),
+
+          Text(
+            '下载后可播放视频',
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -84,46 +198,48 @@ class PreviewSection extends StatelessWidget {
     BuildContext context,
     FileTypeInfo fileTypeInfo,
   ) {
-    return Container(
-      padding: CloudDriveUIConfig.pagePadding,
+    return Padding(
+      padding: EdgeInsets.all(CloudDriveUIConfig.spacingL),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text('预览', style: CloudDriveUIConfig.titleTextStyle),
+          Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: fileTypeInfo.color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              fileTypeInfo.iconData,
+              size: 48,
+              color: fileTypeInfo.color,
+            ),
+          ),
+
           SizedBox(height: CloudDriveUIConfig.spacingM),
 
-          Card(
-            child: Container(
-              width: double.infinity,
-              height: 200,
-              padding: CloudDriveUIConfig.cardPadding,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    fileTypeInfo.iconData,
-                    size: 64,
-                    color: fileTypeInfo.color,
-                  ),
-                  SizedBox(height: CloudDriveUIConfig.spacingM),
-                  Text('不支持预览', style: CloudDriveUIConfig.bodyTextStyle),
-                  SizedBox(height: CloudDriveUIConfig.spacingS),
-                  Text(
-                    '此文件类型不支持在线预览',
-                    style: CloudDriveUIConfig.smallTextStyle,
-                  ),
-                ],
-              ),
+          Text(
+            fileTypeInfo.category,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: fileTypeInfo.color,
+            ),
+          ),
+
+          SizedBox(height: CloudDriveUIConfig.spacingXS),
+
+          Text(
+            '此文件类型暂不支持预览',
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],
       ),
     );
-  }
-
-  /// 判断是否可以预览
-  bool _canPreview(String fileName) {
-    return _isImage(fileName) || _isText(fileName);
   }
 
   /// 判断是否为图片
@@ -136,5 +252,19 @@ class PreviewSection extends StatelessWidget {
   bool _isText(String fileName) {
     final extension = fileName.split('.').last.toLowerCase();
     return ['txt', 'md', 'json', 'xml', 'csv', 'log'].contains(extension);
+  }
+
+  /// 判断是否为视频
+  bool _isVideo(String fileName) {
+    final extension = fileName.split('.').last.toLowerCase();
+    return [
+      'mp4',
+      'avi',
+      'mov',
+      'wmv',
+      'flv',
+      'mkv',
+      'webm',
+    ].contains(extension);
   }
 }

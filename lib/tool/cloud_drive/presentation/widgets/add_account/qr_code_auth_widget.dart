@@ -183,7 +183,7 @@ class _QRCodeAuthWidgetState extends State<QRCodeAuthWidget> {
             SizedBox(width: 8.w),
             Expanded(
               child: Text(
-                '✅ 扫码成功，请点击底部"添加账号"',
+                '扫码成功，请点击底部"添加账号"',
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: Colors.green,

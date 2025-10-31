@@ -23,10 +23,10 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    LogManager().cloudDrive('🔗 百度网盘 - 获取下载链接开始');
-    LogManager().cloudDrive('📄 百度网盘 - 文件信息: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('百度网盘 - 获取下载链接开始');
+    LogManager().cloudDrive('百度网盘 - 文件信息: ${file.name} (ID: ${file.id})');
     LogManager().cloudDrive(
-      '👤 百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
+      '百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
     );
 
     try {
@@ -40,14 +40,14 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
             downloadUrl.length > 50
                 ? '${downloadUrl.substring(0, 50)}...'
                 : downloadUrl;
-        LogManager().cloudDrive('✅ 百度网盘 - 下载链接获取成功: $preview');
+        LogManager().cloudDrive('百度网盘 - 下载链接获取成功: $preview');
       } else {
-        LogManager().cloudDrive('❌ 百度网盘 - 下载链接获取失败: 返回null');
+        LogManager().cloudDrive('百度网盘 - 下载链接获取失败: 返回null');
       }
 
       return downloadUrl;
     } catch (e) {
-      LogManager().error('❌ 百度网盘 - 获取下载链接异常');
+      LogManager().error('百度网盘 - 获取下载链接异常');
       rethrow;
     }
   }
@@ -69,12 +69,12 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String shareUrl,
     required String password,
   }) async {
-    LogManager().cloudDrive('🚀 百度网盘 - 开始高速下载解析');
-    LogManager().cloudDrive('📄 百度网盘 - 文件信息: ${file.name} (ID: ${file.id})');
-    LogManager().cloudDrive('🔗 百度网盘 - 分享链接: $shareUrl');
+    LogManager().cloudDrive('百度网盘 - 开始高速下载解析');
+    LogManager().cloudDrive('百度网盘 - 文件信息: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('百度网盘 - 分享链接: $shareUrl');
     LogManager().cloudDrive('🔑 百度网盘 - 提取密码: $password');
     LogManager().cloudDrive(
-      '👤 百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
+      '百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
     );
 
     try {
@@ -104,9 +104,9 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       LogManager().cloudDrive(
-        '📡 百度网盘 - 文件列表响应状态码: ${fileListResponse.statusCode}',
+        '百度网盘 - 文件列表响应状态码: ${fileListResponse.statusCode}',
       );
-      LogManager().cloudDrive('📡 百度网盘 - 文件列表响应内容: ${fileListResponse.data}');
+      LogManager().cloudDrive('百度网盘 - 文件列表响应内容: ${fileListResponse.data}');
 
       if (fileListResponse.statusCode != 200) {
         throw Exception('获取文件列表失败，状态码: ${fileListResponse.statusCode}');
@@ -134,7 +134,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       LogManager().cloudDrive(
-        '✅ 百度网盘 - 找到匹配文件: ${targetFile['server_filename']}',
+        '百度网盘 - 找到匹配文件: ${targetFile['server_filename']}',
       );
 
       // 第二步：获取下载链接
@@ -169,9 +169,9 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       LogManager().cloudDrive(
-        '📡 百度网盘 - 下载链接响应状态码: ${downloadResponse.statusCode}',
+        '百度网盘 - 下载链接响应状态码: ${downloadResponse.statusCode}',
       );
-      LogManager().cloudDrive('📡 百度网盘 - 下载链接响应内容: ${downloadResponse.data}');
+      LogManager().cloudDrive('百度网盘 - 下载链接响应内容: ${downloadResponse.data}');
 
       if (downloadResponse.statusCode != 200) {
         throw Exception('获取下载链接失败，状态码: ${downloadResponse.statusCode}');
@@ -191,11 +191,11 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       }
 
       LogManager().cloudDrive(
-        '✅ 百度网盘 - 高速下载链接获取成功，共 ${downloadUrls.length} 个链接',
+        '百度网盘 - 高速下载链接获取成功，共 ${downloadUrls.length} 个链接',
       );
       return downloadUrls;
     } catch (e) {
-      LogManager().error('❌ 百度网盘 - 高速下载解析失败');
+      LogManager().error('百度网盘 - 高速下载解析失败');
       rethrow;
     }
   }
@@ -242,17 +242,17 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? password,
     int? expireDays,
   }) async {
-    LogManager().cloudDrive('🔗 百度网盘 - 生成分享链接开始');
-    LogManager().cloudDrive('📄 百度网盘 - 文件数量: ${files.length}');
+    LogManager().cloudDrive('百度网盘 - 生成分享链接开始');
+    LogManager().cloudDrive('百度网盘 - 文件数量: ${files.length}');
     LogManager().cloudDrive('🔑 百度网盘 - 提取码: ${password ?? '无'}');
-    LogManager().cloudDrive('⏰ 百度网盘 - 有效期: ${expireDays ?? 1}天');
+    LogManager().cloudDrive('百度网盘 - 有效期: ${expireDays ?? 1}天');
     LogManager().cloudDrive(
-      '👤 百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
+      '百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
     );
 
     try {
       final fileIds = files.map((f) => f.id).toList();
-      LogManager().cloudDrive('📋 百度网盘 - 文件ID列表: $fileIds');
+      LogManager().cloudDrive('百度网盘 - 文件ID列表: $fileIds');
 
       final shareLink = await BaiduCloudDriveService.createShareLink(
         account: account,
@@ -266,14 +266,14 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
             shareLink.length > 50
                 ? '${shareLink.substring(0, 50)}...'
                 : shareLink;
-        LogManager().cloudDrive('✅ 百度网盘 - 分享链接生成成功: $preview');
+        LogManager().cloudDrive('百度网盘 - 分享链接生成成功: $preview');
       } else {
-        LogManager().cloudDrive('❌ 百度网盘 - 分享链接生成失败: 返回null');
+        LogManager().cloudDrive('百度网盘 - 分享链接生成失败: 返回null');
       }
 
       return shareLink;
     } catch (e) {
-      LogManager().error('❌ 百度网盘 - 生成分享链接异常');
+      LogManager().error('百度网盘 - 生成分享链接异常');
       rethrow;
     }
   }
@@ -292,11 +292,11 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
     String? targetFolderId,
   }) async {
-    LogManager().cloudDrive('🔗 百度网盘 - 移动文件开始');
-    LogManager().cloudDrive('📄 百度网盘 - 文件信息: ${file.name} (ID: ${file.id})');
-    LogManager().cloudDrive('📁 百度网盘 - 目标文件夹ID: ${targetFolderId ?? '根目录'}');
+    LogManager().cloudDrive('百度网盘 - 移动文件开始');
+    LogManager().cloudDrive('百度网盘 - 文件信息: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('百度网盘 - 目标文件夹ID: ${targetFolderId ?? '根目录'}');
     LogManager().cloudDrive(
-      '👤 百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
+      '百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
     );
 
     try {
@@ -310,7 +310,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         filePath = file.folderId ?? file.id;
       }
 
-      LogManager().cloudDrive('📁 百度网盘 - 文件路径: $filePath');
+      LogManager().cloudDrive('百度网盘 - 文件路径: $filePath');
 
       final success = await BaiduCloudDriveService.moveFile(
         account: account,
@@ -319,14 +319,14 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        LogManager().cloudDrive('✅ 百度网盘 - 文件移动成功');
+        LogManager().cloudDrive('百度网盘 - 文件移动成功');
       } else {
-        LogManager().cloudDrive('❌ 百度网盘 - 文件移动失败');
+        LogManager().cloudDrive('百度网盘 - 文件移动失败');
       }
 
       return success;
     } catch (e) {
-      LogManager().error('❌ 百度网盘 - 移动文件异常');
+      LogManager().error('百度网盘 - 移动文件异常');
       rethrow;
     }
   }
@@ -343,10 +343,10 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    LogManager().cloudDrive('🔗 百度网盘 - 删除文件开始');
-    LogManager().cloudDrive('📄 百度网盘 - 文件信息: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('百度网盘 - 删除文件开始');
+    LogManager().cloudDrive('百度网盘 - 文件信息: ${file.name} (ID: ${file.id})');
     LogManager().cloudDrive(
-      '👤 百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
+      '百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
     );
 
     try {
@@ -356,14 +356,14 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        LogManager().cloudDrive('✅ 百度网盘 - 文件删除成功');
+        LogManager().cloudDrive('百度网盘 - 文件删除成功');
       } else {
-        LogManager().cloudDrive('❌ 百度网盘 - 文件删除失败');
+        LogManager().cloudDrive('百度网盘 - 文件删除失败');
       }
 
       return success;
     } catch (e) {
-      LogManager().error('❌ 百度网盘 - 删除文件异常');
+      LogManager().error('百度网盘 - 删除文件异常');
       rethrow;
     }
   }
@@ -382,11 +382,11 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
     required String newName,
   }) async {
-    LogManager().cloudDrive('🔗 百度网盘 - 重命名文件开始');
-    LogManager().cloudDrive('📄 百度网盘 - 文件信息: ${file.name} (ID: ${file.id})');
-    LogManager().cloudDrive('🔄 百度网盘 - 新文件名: $newName');
+    LogManager().cloudDrive('百度网盘 - 重命名文件开始');
+    LogManager().cloudDrive('百度网盘 - 文件信息: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('百度网盘 - 新文件名: $newName');
     LogManager().cloudDrive(
-      '👤 百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
+      '百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
     );
 
     try {
@@ -397,14 +397,14 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        LogManager().cloudDrive('✅ 百度网盘 - 文件重命名成功');
+        LogManager().cloudDrive('百度网盘 - 文件重命名成功');
       } else {
-        LogManager().cloudDrive('❌ 百度网盘 - 文件重命名失败');
+        LogManager().cloudDrive('百度网盘 - 文件重命名失败');
       }
 
       return success;
     } catch (e) {
-      LogManager().error('❌ 百度网盘 - 重命名文件异常');
+      LogManager().error('百度网盘 - 重命名文件异常');
       rethrow;
     }
   }
@@ -416,7 +416,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   /// 返回操作类型和是否支持的映射
   @override
   Map<String, bool> getSupportedOperations() {
-    LogManager().cloudDrive('🔧 百度网盘 - 获取支持的操作');
+    LogManager().cloudDrive('百度网盘 - 获取支持的操作');
     final operations = {
       'download': true,
       'share': true,
@@ -428,7 +428,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       'rename': true,
       'createFolder': true, // 已实现
     };
-    LogManager().cloudDrive('📋 百度网盘 - 支持的操作: $operations');
+    LogManager().cloudDrive('百度网盘 - 支持的操作: $operations');
     return operations;
   }
 
@@ -439,7 +439,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   /// 返回UI配置映射
   @override
   Map<String, dynamic> getOperationUIConfig() {
-    LogManager().cloudDrive('🎨 百度网盘 - 获取UI配置');
+    LogManager().cloudDrive('百度网盘 - 获取UI配置');
     final config = {
       'share_password_hint': '提取码（必填，默认0000）',
       'share_expire_options': [
@@ -449,7 +449,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         {'label': '永久', 'value': 0},
       ],
     };
-    LogManager().cloudDrive('📋 百度网盘 - UI配置: $config');
+    LogManager().cloudDrive('百度网盘 - UI配置: $config');
     return config;
   }
 
@@ -469,11 +469,11 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String destPath,
     String? newName,
   }) async {
-    LogManager().cloudDrive('🔗 百度网盘 - 复制文件开始');
-    LogManager().cloudDrive('📄 百度网盘 - 文件信息: ${file.name} (ID: ${file.id})');
-    LogManager().cloudDrive('📁 百度网盘 - 目标路径: $destPath');
+    LogManager().cloudDrive('百度网盘 - 复制文件开始');
+    LogManager().cloudDrive('百度网盘 - 文件信息: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('百度网盘 - 目标路径: $destPath');
     LogManager().cloudDrive(
-      '👤 百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
+      '百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
     );
 
     try {
@@ -484,14 +484,14 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        LogManager().cloudDrive('✅ 百度网盘 - 文件复制成功');
+        LogManager().cloudDrive('百度网盘 - 文件复制成功');
       } else {
-        LogManager().cloudDrive('❌ 百度网盘 - 文件复制失败');
+        LogManager().cloudDrive('百度网盘 - 文件复制失败');
       }
 
       return success;
     } catch (e) {
-      LogManager().error('❌ 百度网盘 - 复制文件异常');
+      LogManager().error('百度网盘 - 复制文件异常');
       rethrow;
     }
   }
@@ -510,9 +510,9 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String folderName,
     String? parentFolderId,
   }) async {
-    LogManager().cloudDrive('📁 百度网盘 - 创建文件夹开始');
-    LogManager().cloudDrive('📁 百度网盘 - 文件夹名称: $folderName');
-    LogManager().cloudDrive('📁 百度网盘 - 父文件夹ID: $parentFolderId');
+    LogManager().cloudDrive('百度网盘 - 创建文件夹开始');
+    LogManager().cloudDrive('百度网盘 - 文件夹名称: $folderName');
+    LogManager().cloudDrive('百度网盘 - 父文件夹ID: $parentFolderId');
 
     try {
       final success = await BaiduCloudDriveService.createFolder(
@@ -522,16 +522,16 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        LogManager().cloudDrive('✅ 百度网盘 - 文件夹创建成功: $folderName');
+        LogManager().cloudDrive('百度网盘 - 文件夹创建成功: $folderName');
 
         return {'success': true, 'message': '文件夹创建成功'};
       } else {
-        LogManager().cloudDrive('❌ 百度网盘 - 文件夹创建失败');
+        LogManager().cloudDrive('百度网盘 - 文件夹创建失败');
 
         return {'success': false, 'message': '文件夹创建失败'};
       }
     } catch (e) {
-      LogManager().error('❌ 百度网盘 - 创建文件夹异常');
+      LogManager().error('百度网盘 - 创建文件夹异常');
 
       return {'success': false, 'message': '文件夹创建异常: $e'};
     }
@@ -547,9 +547,9 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   Future<CloudDriveAccountDetails?> getAccountDetails({
     required CloudDriveAccount account,
   }) async {
-    LogManager().cloudDrive('📋 百度网盘 - 获取账号详情开始');
+    LogManager().cloudDrive('百度网盘 - 获取账号详情开始');
     LogManager().cloudDrive(
-      '👤 百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
+      '百度网盘 - 账号信息: ${account.name} (${account.type.displayName})',
     );
 
     try {
@@ -558,23 +558,23 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (accountDetails != null) {
-        LogManager().cloudDrive('✅ 百度网盘 - 账号详情获取成功');
+        LogManager().cloudDrive('百度网盘 - 账号详情获取成功');
         LogManager().cloudDrive(
-          '📊 用户名: ${accountDetails.accountInfo?.username ?? '未知用户'}',
+          '用户名: ${accountDetails.accountInfo?.username ?? '未知用户'}',
         );
         LogManager().cloudDrive(
-          '📊 会员状态: ${accountDetails.accountInfo?.vipStatusDescription ?? '未知状态'}',
+          '会员状态: ${accountDetails.accountInfo?.vipStatusDescription ?? '未知状态'}',
         );
         LogManager().cloudDrive(
-          '📊 存储使用情况: ${accountDetails.quotaInfo?.formattedUsed ?? '0B'} / ${accountDetails.quotaInfo?.formattedTotal ?? '0B'} (${accountDetails.quotaInfo?.usagePercentage.toStringAsFixed(1) ?? '0.0'}%)',
+          '存储使用情况: ${accountDetails.quotaInfo?.formattedUsed ?? '0B'} / ${accountDetails.quotaInfo?.formattedTotal ?? '0B'} (${accountDetails.quotaInfo?.usagePercentage.toStringAsFixed(1) ?? '0.0'}%)',
         );
       } else {
-        LogManager().cloudDrive('❌ 百度网盘 - 账号详情获取失败: 返回null');
+        LogManager().cloudDrive('百度网盘 - 账号详情获取失败: 返回null');
       }
 
       return accountDetails;
     } catch (e) {
-      LogManager().error('❌ 百度网盘 - 获取账号详情异常');
+      LogManager().error('百度网盘 - 获取账号详情异常');
       return null;
     }
   }
@@ -606,9 +606,9 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     CloudDriveFile file,
     String targetPath,
   ) {
-    LogManager().cloudDrive('🔄 百度网盘 - 更新文件路径为目标目录');
-    LogManager().cloudDrive('📄 原文件: ${file.name} (ID: ${file.id})');
-    LogManager().cloudDrive('📁 目标路径: $targetPath');
+    LogManager().cloudDrive('百度网盘 - 更新文件路径为目标目录');
+    LogManager().cloudDrive('原文件: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('目标路径: $targetPath');
 
     if (file.isFolder) {
       // 文件夹：id是完整路径
@@ -618,7 +618,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
               : '$targetPath/${file.name}';
       final updatedFile = file.copyWith(id: newId, folderId: targetPath);
 
-      LogManager().cloudDrive('📁 文件夹路径更新: ${file.id} -> ${updatedFile.id}');
+      LogManager().cloudDrive('文件夹路径更新: ${file.id} -> ${updatedFile.id}');
 
       return updatedFile;
     } else {
@@ -626,7 +626,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       final updatedFile = file.copyWith(folderId: targetPath);
 
       LogManager().cloudDrive(
-        '📄 文件路径更新: folderId ${file.folderId} -> ${updatedFile.folderId}',
+        '文件路径更新: folderId ${file.folderId} -> ${updatedFile.folderId}',
       );
 
       return updatedFile;
@@ -653,7 +653,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }) async {
     try {
       LogManager().cloudDrive(
-        '📁 百度网盘 - 获取文件列表: path=$path, folderId=$folderId',
+        '百度网盘 - 获取文件列表: path=$path, folderId=$folderId',
       );
 
       // 使用百度网盘服务获取文件列表
@@ -669,11 +669,11 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       allFiles.addAll(result['folders'] ?? []);
       allFiles.addAll(result['files'] ?? []);
 
-      LogManager().cloudDrive('✅ 百度网盘 - 文件列表获取完成: ${allFiles.length} 个文件');
+      LogManager().cloudDrive('百度网盘 - 文件列表获取完成: ${allFiles.length} 个文件');
 
       return allFiles;
     } catch (e) {
-      LogManager().cloudDrive('❌ 百度网盘 - 获取文件列表异常: $e');
+      LogManager().cloudDrive('百度网盘 - 获取文件列表异常: $e');
       return [];
     }
   }

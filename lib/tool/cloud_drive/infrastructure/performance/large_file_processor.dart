@@ -46,7 +46,7 @@ class LargeFileProcessor {
 
       final fileSize = await file.length();
       LogManager().cloudDrive(
-        '🚀 开始分块上传大文件: $fileName (${_formatFileSize(fileSize)})',
+        '开始分块上传大文件: $fileName (${_formatFileSize(fileSize)})',
       );
 
       // 获取上传会话
@@ -89,10 +89,10 @@ class LargeFileProcessor {
         return completeResult;
       }
 
-      LogManager().cloudDrive('✅ 大文件上传完成: $fileName');
+      LogManager().cloudDrive('大文件上传完成: $fileName');
       return Success(completeResult.data!);
     } catch (e) {
-      LogManager().error('❌ 大文件上传失败: $e');
+      LogManager().error('大文件上传失败: $e');
       return Failure('上传失败: $e');
     }
   }
@@ -107,7 +107,7 @@ class LargeFileProcessor {
     CancelToken? cancelToken,
   }) async {
     try {
-      LogManager().cloudDrive('🚀 开始分块下载大文件: $fileName');
+      LogManager().cloudDrive('开始分块下载大文件: $fileName');
 
       // 获取文件大小
       final sizeResult = await _getFileSize(downloadUrl, account);
@@ -116,7 +116,7 @@ class LargeFileProcessor {
       }
 
       final fileSize = sizeResult.data!;
-      LogManager().cloudDrive('📊 文件大小: ${_formatFileSize(fileSize)}');
+      LogManager().cloudDrive('文件大小: ${_formatFileSize(fileSize)}');
 
       // 创建目标文件
       final file = File(savePath);
@@ -137,10 +137,10 @@ class LargeFileProcessor {
         return Failure(downloadResult.error ?? '下载失败');
       }
 
-      LogManager().cloudDrive('✅ 大文件下载完成: $fileName');
+      LogManager().cloudDrive('大文件下载完成: $fileName');
       return Success(savePath);
     } catch (e) {
-      LogManager().error('❌ 大文件下载失败: $e');
+      LogManager().error('大文件下载失败: $e');
       return Failure('下载失败: $e');
     }
   }
@@ -260,7 +260,7 @@ class LargeFileProcessor {
         );
 
         if (response.statusCode == 200) {
-          LogManager().cloudDrive('✅ 分块 $chunkIndex 上传成功');
+          LogManager().cloudDrive('分块 $chunkIndex 上传成功');
           return;
         } else {
           throw Exception('分块上传失败: ${response.statusCode}');
@@ -270,7 +270,7 @@ class LargeFileProcessor {
           rethrow;
         }
         LogManager().cloudDrive(
-          '⚠️ 分块 $chunkIndex 上传失败，重试中... (${attempt + 1}/$retryAttempts)',
+          '分块 $chunkIndex 上传失败，重试中... (${attempt + 1}/$retryAttempts)',
         );
         await Future.delayed(retryDelay);
       }
@@ -407,7 +407,7 @@ class LargeFileProcessor {
           await raf.writeFrom(chunkData);
           await raf.close();
 
-          LogManager().cloudDrive('✅ 分块 $chunkIndex 下载成功');
+          LogManager().cloudDrive('分块 $chunkIndex 下载成功');
           return;
         } else {
           throw Exception('分块下载失败: ${response.statusCode}');
@@ -417,7 +417,7 @@ class LargeFileProcessor {
           rethrow;
         }
         LogManager().cloudDrive(
-          '⚠️ 分块 $chunkIndex 下载失败，重试中... (${attempt + 1}/$retryAttempts)',
+          '分块 $chunkIndex 下载失败，重试中... (${attempt + 1}/$retryAttempts)',
         );
         await Future.delayed(retryDelay);
       }

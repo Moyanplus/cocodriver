@@ -121,15 +121,15 @@ class DownloadService extends CloudDriveService {
     // 暂时只记录日志
     for (int i = 0; i < files.length; i++) {
       final file = files[i];
-      LogManager().cloudDrive('📥 下载文件 ${i + 1}/${files.length}: ${file.name}');
+      LogManager().cloudDrive('下载文件 ${i + 1}/${files.length}: ${file.name}');
 
       // 获取下载链接
       final result = await getDownloadUrl(account: account, file: file);
       if (result.isSuccess && result.data != null) {
-        LogManager().cloudDrive('✅ 文件下载链接获取成功: ${file.name}');
+        LogManager().cloudDrive('文件下载链接获取成功: ${file.name}');
         // TODO: 创建下载任务
       } else {
-        LogManager().error('❌ 无法获取下载链接: ${file.name}');
+        LogManager().error('无法获取下载链接: ${file.name}');
       }
     }
   }

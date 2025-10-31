@@ -7,7 +7,6 @@ import '../../data/models/cloud_drive_entities.dart';
 import '../providers/cloud_drive_provider.dart';
 import 'sheets/file_operation_bottom_sheet.dart';
 import 'cloud_drive_file_item.dart';
-import '../../../../shared/widgets/common/bottom_sheet_widget.dart';
 
 /// ========================================
 /// 云盘文件列表组件
@@ -106,6 +105,7 @@ class _CloudDriveFileListState extends ConsumerState<CloudDriveFileList> {
 
             return CloudDriveFileItem(
               file: item,
+              account: state.currentAccount!,
               isFolder: isFolder,
               isSelected: state.selectedItems.contains(item.id),
               isBatchMode: state.isBatchMode,
@@ -148,25 +148,32 @@ class _CloudDriveFileListState extends ConsumerState<CloudDriveFileList> {
     // 保存父组件的context引用
     final parentContext = context;
 
-    BottomSheetWidget.showWithTitle(
+    showModalBottomSheet(
       context: context,
-      title: '文件操作',
-      maxHeight: MediaQuery.of(context).size.height * 0.7,
-      content: FileOperationBottomSheet(
-        file: file,
-        account: account,
-        onClose: () => Navigator.pop(context),
-        onOperationResult: (message, isSuccess) {
-          // 使用父组件的context显示SnackBar
-          ScaffoldMessenger.of(parentContext).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              backgroundColor: isSuccess ? Colors.green : Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        },
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.5,
+            maxChildSize: 0.9,
+            builder:
+                (context, scrollController) => FileOperationBottomSheet(
+                  file: file,
+                  account: account,
+                  onClose: () => Navigator.pop(context),
+                  onOperationResult: (message, isSuccess) {
+                    // 使用父组件的context显示SnackBar
+                    ScaffoldMessenger.of(parentContext).showSnackBar(
+                      SnackBar(
+                        content: Text(message),
+                        backgroundColor: isSuccess ? Colors.green : Colors.red,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                  },
+                ),
+          ),
     );
   }
 }

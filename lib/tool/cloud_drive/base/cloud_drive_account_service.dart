@@ -348,7 +348,7 @@ class CloudDriveAccountService {
     String driveId,
   ) async {
     try {
-      LogManager().cloudDrive('💾 保存账号driveId: ${account.name} -> $driveId');
+      LogManager().cloudDrive('保存账号driveId: ${account.name} -> $driveId');
 
       // 创建更新后的账号对象
       final updatedAccount = account.copyWith(driveId: driveId);
@@ -356,9 +356,9 @@ class CloudDriveAccountService {
       // 更新账号
       await updateAccount(updatedAccount);
 
-      LogManager().cloudDrive('✅ 账号driveId保存成功: ${account.name}');
+      LogManager().cloudDrive('账号driveId保存成功: ${account.name}');
     } catch (e) {
-      LogManager().error('❌ 保存账号driveId失败');
+      LogManager().error('保存账号driveId失败');
       rethrow;
     }
   }

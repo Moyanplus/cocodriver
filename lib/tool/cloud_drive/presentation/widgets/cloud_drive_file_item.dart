@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/utils/responsive_utils.dart';
+import '../../../../../core/logging/log_manager.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../../utils/file_type_utils.dart';
 import '../ui/cloud_drive_base_widgets.dart';
+import 'authenticated_network_image.dart';
 
 /// 云盘文件项组件
 class CloudDriveFileItem extends StatelessWidget {
   final CloudDriveFile file;
+  final CloudDriveAccount account;
   final bool isFolder;
   final bool isSelected;
   final bool isBatchMode;
@@ -18,6 +21,7 @@ class CloudDriveFileItem extends StatelessWidget {
   const CloudDriveFileItem({
     super.key,
     required this.file,
+    required this.account,
     required this.isFolder,
     required this.isSelected,
     required this.isBatchMode,
@@ -27,6 +31,15 @@ class CloudDriveFileItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 打印文件数据，查看thumbnailUrl
+    LogManager().cloudDrive(
+      '文件项数据: name=${file.name}, '
+      'isFolder=$isFolder, '
+      'thumbnailUrl=${file.thumbnailUrl}, '
+      'size=${file.size}, '
+      'id=${file.id}',
+    );
+
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
@@ -54,38 +67,15 @@ class CloudDriveFileItem extends StatelessWidget {
                     : BorderSide.none,
           ),
           child: Container(
-            height: ResponsiveUtils.getResponsiveHeight(60.h),
+            height: ResponsiveUtils.getResponsiveHeight(42.h),
             padding: ResponsiveUtils.getResponsivePadding(
               horizontal: 6.w,
-              vertical: 3.h,
+              vertical: 2.h,
             ),
             child: Row(
               children: [
-                // 文件/文件夹图标
-                Container(
-                  padding: ResponsiveUtils.getResponsivePadding(all: 2.w),
-                  decoration: BoxDecoration(
-                    color:
-                        isFolder
-                            ? Colors.orange.withValues(alpha: 0.1)
-                            : FileTypeUtils.getFileTypeColor(
-                              file.name,
-                            ).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(
-                      ResponsiveUtils.getCardRadius() * 0.5,
-                    ),
-                  ),
-                  child: Icon(
-                    isFolder
-                        ? Icons.folder
-                        : FileTypeUtils.getFileTypeIcon(file.name),
-                    color:
-                        isFolder
-                            ? Colors.orange
-                            : FileTypeUtils.getFileTypeColor(file.name),
-                    size: ResponsiveUtils.getIconSize(20.sp),
-                  ),
-                ),
+                // 文件/文件夹图标或预览图
+                _buildFileIcon(context),
                 SizedBox(width: ResponsiveUtils.getSpacing() * 0.5),
                 // 文本内容
                 Expanded(
@@ -128,6 +118,95 @@ class CloudDriveFileItem extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// 构建文件图标或预览图
+  Widget _buildFileIcon(BuildContext context) {
+    final iconPadding = ResponsiveUtils.getResponsivePadding(all: 7.w);
+
+    // 文件夹始终显示图标
+    if (isFolder) {
+      return Container(
+        padding: iconPadding,
+        decoration: BoxDecoration(
+          color: Colors.orange.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(
+            ResponsiveUtils.getCardRadius() * 0.5,
+          ),
+        ),
+        child: Icon(
+          Icons.folder,
+          color: Colors.orange,
+          size: ResponsiveUtils.getIconSize(20.sp),
+        ),
+      );
+    }
+
+    // 文件有预览图时显示图片
+    if (file.thumbnailUrl != null && file.thumbnailUrl!.isNotEmpty) {
+      LogManager().cloudDrive(
+        '[${file.name}] 准备加载缩略图: ${file.thumbnailUrl}',
+      );
+
+      // 缩略图直接占满容器，不需要padding和背景色
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(
+          ResponsiveUtils.getCardRadius() * 0.5,
+        ),
+        child: SizedBox(
+          width: ResponsiveUtils.getIconSize(20.sp) + iconPadding.horizontal,
+          height: ResponsiveUtils.getIconSize(20.sp) + iconPadding.vertical,
+          child: AuthenticatedNetworkImage(
+            imageUrl: file.thumbnailUrl!,
+            account: account,
+            fit: BoxFit.cover,
+            placeholderBuilder:
+                () => Container(
+                  padding: iconPadding,
+                  decoration: BoxDecoration(
+                    color: FileTypeUtils.getFileTypeColor(
+                      file.name,
+                    ).withValues(alpha: 0.1),
+                  ),
+                  child: _buildDefaultIcon(),
+                ),
+            errorBuilder:
+                () => Container(
+                  padding: iconPadding,
+                  decoration: BoxDecoration(
+                    color: FileTypeUtils.getFileTypeColor(
+                      file.name,
+                    ).withValues(alpha: 0.1),
+                  ),
+                  child: _buildDefaultIcon(),
+                ),
+          ),
+        ),
+      );
+    }
+
+    LogManager().cloudDrive('[${file.name}] 没有缩略图，使用默认图标');
+
+    // 没有预览图时显示默认图标
+    return Container(
+      padding: iconPadding,
+      decoration: BoxDecoration(
+        color: FileTypeUtils.getFileTypeColor(file.name).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(
+          ResponsiveUtils.getCardRadius() * 0.5,
+        ),
+      ),
+      child: _buildDefaultIcon(),
+    );
+  }
+
+  /// 构建默认文件图标
+  Widget _buildDefaultIcon() {
+    return Icon(
+      FileTypeUtils.getFileTypeIcon(file.name),
+      color: FileTypeUtils.getFileTypeColor(file.name),
+      size: ResponsiveUtils.getIconSize(20.sp),
     );
   }
 

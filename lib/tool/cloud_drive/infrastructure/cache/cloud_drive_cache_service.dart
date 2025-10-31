@@ -77,7 +77,7 @@ class CloudDriveCacheService {
   /// 设置缓存策略
   static void setCacheStrategy(CacheStrategy strategy) {
     _strategy = strategy;
-    LogManager().cloudDrive('🔧 设置缓存策略: $strategy');
+    LogManager().cloudDrive('设置缓存策略: $strategy');
   }
 
   /// 缓存数据
@@ -102,7 +102,7 @@ class CloudDriveCacheService {
     _lastAccess[cacheKey] = now;
 
     LogManager().cloudDrive(
-      '💾 缓存数据: $cacheKey',
+      '缓存数据: $cacheKey',
       className: 'CloudDriveCacheService',
       methodName: 'cacheData',
       data: {
@@ -122,7 +122,7 @@ class CloudDriveCacheService {
     final entry = _cache[cacheKey];
     if (entry == null) {
       LogManager().cloudDrive(
-        '❌ 缓存未命中: $cacheKey',
+        '缓存未命中: $cacheKey',
         className: 'CloudDriveCacheService',
         methodName: 'getCachedData',
         data: {'cacheKey': cacheKey},
@@ -133,7 +133,7 @@ class CloudDriveCacheService {
     // 检查是否过期
     if (entry.isExpired(maxAge)) {
       LogManager().cloudDrive(
-        '⏰ 缓存已过期: $cacheKey',
+        '缓存已过期: $cacheKey',
         className: 'CloudDriveCacheService',
         methodName: 'getCachedData',
         data: {
@@ -154,7 +154,7 @@ class CloudDriveCacheService {
     _lastAccess[cacheKey] = DateTime.now();
 
     LogManager().cloudDrive(
-      '✅ 缓存命中: $cacheKey',
+      '缓存命中: $cacheKey',
       className: 'CloudDriveCacheService',
       methodName: 'getCachedData',
       data: {
@@ -255,11 +255,11 @@ class CloudDriveCacheService {
 
   /// 预热缓存
   static void warmupCache(List<String> cacheKeys) {
-    LogManager().cloudDrive('🔥 预热缓存: ${cacheKeys.length} 个键');
+    LogManager().cloudDrive('预热缓存: ${cacheKeys.length} 个键');
 
     for (final key in cacheKeys) {
       // 这里可以预加载数据
-      LogManager().cloudDrive('🔥 预热缓存键: $key');
+      LogManager().cloudDrive('预热缓存键: $key');
     }
   }
 
@@ -267,7 +267,7 @@ class CloudDriveCacheService {
   static void _enforceCacheSizeLimit() {
     if (_cache.length <= _maxCacheSize) return;
 
-    LogManager().cloudDrive('⚠️ 缓存大小超限，开始清理');
+    LogManager().cloudDrive('缓存大小超限，开始清理');
 
     final entriesToRemove = _cache.length - _maxCacheSize;
     final keysToRemove = _selectKeysToRemove(entriesToRemove);

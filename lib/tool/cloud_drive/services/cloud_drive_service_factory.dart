@@ -43,7 +43,7 @@ class CloudDriveServiceFactory {
     _accountService = AccountService(_type);
     _cacheService = CacheService(_type);
 
-    LogManager().cloudDrive('🔧 初始化服务: ${_type.displayName}');
+    LogManager().cloudDrive('初始化服务: ${_type.displayName}');
   }
 
   /// 获取文件操作服务
@@ -70,7 +70,7 @@ class CloudDriveServiceFactory {
   ///
   /// 清除所有服务工厂实例，释放资源
   static void resetAll() {
-    LogManager().cloudDrive('🔄 重置所有服务工厂');
+    LogManager().cloudDrive('重置所有服务工厂');
     _instances.clear();
   }
 }
@@ -93,10 +93,10 @@ abstract class CloudDriveService {
   /// [operation] 操作名称
   /// [params] 操作参数（可选）
   void logOperation(String operation, {Map<String, dynamic>? params}) {
-    LogManager().cloudDrive('🔧 $serviceName - $operation');
+    LogManager().cloudDrive('$serviceName - $operation');
     if (params != null) {
       for (final entry in params.entries) {
-        LogManager().cloudDrive('📋 ${entry.key}: ${entry.value}');
+        LogManager().cloudDrive('${entry.key}: ${entry.value}');
       }
     }
   }
@@ -109,7 +109,7 @@ abstract class CloudDriveService {
   /// [details] 详细信息（可选）
   void logSuccess(String operation, {String? details}) {
     final message = details != null ? '$operation: $details' : operation;
-    LogManager().cloudDrive('✅ $serviceName - $message');
+    LogManager().cloudDrive('$serviceName - $message');
   }
 
   /// 记录错误日志
@@ -119,7 +119,7 @@ abstract class CloudDriveService {
   /// [operation] 操作名称
   /// [error] 错误信息
   void logError(String operation, dynamic error) {
-    LogManager().error('❌ $serviceName - $operation 失败: $error');
+    LogManager().error('$serviceName - $operation 失败: $error');
   }
 
   /// 记录警告日志
@@ -129,6 +129,6 @@ abstract class CloudDriveService {
   /// [operation] 操作名称
   /// [message] 警告消息
   void logWarning(String operation, String message) {
-    LogManager().warning('⚠️ $serviceName - $operation: $message');
+    LogManager().warning('$serviceName - $operation: $message');
   }
 }

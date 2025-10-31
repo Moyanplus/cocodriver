@@ -22,12 +22,12 @@ class BaiduParamService {
     if (_paramCache.containsKey(cacheKey)) {
       final cacheTime = _cacheTimestamps[cacheKey];
       if (cacheTime != null && now.difference(cacheTime) < _cacheExpiry) {
-        LogManager().cloudDrive('✅ 百度网盘 - 使用缓存的参数: ${_paramCache[cacheKey]}');
+        LogManager().cloudDrive('百度网盘 - 使用缓存的参数: ${_paramCache[cacheKey]}');
         return _paramCache[cacheKey]!;
       }
     }
 
-    LogManager().cloudDrive('🔄 百度网盘 - 获取参数');
+    LogManager().cloudDrive('百度网盘 - 获取参数');
 
     try {
       // 使用配置中的API端点
@@ -42,21 +42,21 @@ class BaiduParamService {
         'web': '1',
       };
 
-      LogManager().cloudDrive('🌐 百度网盘 - 请求参数: $url');
-      LogManager().cloudDrive('📋 百度网盘 - 查询参数: $queryParams');
+      LogManager().cloudDrive('百度网盘 - 请求参数: $url');
+      LogManager().cloudDrive('百度网盘 - 查询参数: $queryParams');
 
       final dio = BaiduBaseService.createDio(account);
       final response = await dio.get(url, queryParameters: queryParams);
 
-      LogManager().cloudDrive('📡 百度网盘 - 参数请求响应状态码: ${response.statusCode}');
-      LogManager().cloudDrive('📄 百度网盘 - 参数请求响应体: ${response.data}');
+      LogManager().cloudDrive('百度网盘 - 参数请求响应状态码: ${response.statusCode}');
+      LogManager().cloudDrive('百度网盘 - 参数请求响应体: ${response.data}');
 
       if (response.statusCode != 200) {
         throw Exception('参数请求失败: ${response.statusCode}');
       }
 
       final data = response.data;
-      LogManager().cloudDrive('📋 百度网盘 - 参数响应数据: $data');
+      LogManager().cloudDrive('百度网盘 - 参数响应数据: $data');
 
       if (data['errno'] != 0) {
         final errorMsg = BaiduConfig.getErrorMessage(data['errno']);
@@ -72,12 +72,12 @@ class BaiduParamService {
       _paramCache[cacheKey] = result;
       _cacheTimestamps[cacheKey] = now;
 
-      LogManager().cloudDrive('✅ 百度网盘 - 参数获取成功: $result');
+      LogManager().cloudDrive('百度网盘 - 参数获取成功: $result');
 
       return result;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive('❌ 百度网盘 - 获取参数失败: $e');
-      LogManager().cloudDrive('📄 百度网盘 - 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('百度网盘 - 获取参数失败: $e');
+      LogManager().cloudDrive('百度网盘 - 错误堆栈: $stackTrace');
       rethrow;
     }
   }

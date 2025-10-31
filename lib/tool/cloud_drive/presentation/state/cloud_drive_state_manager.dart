@@ -49,7 +49,7 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
   ///
   /// [event] 要处理的云盘事件（如 GoBackEvent、EnterFolderEvent 等）
   Future<void> handleEvent(CloudDriveEvent event) async {
-    LogManager().cloudDrive('🎯 处理事件: ${event.runtimeType}');
+    LogManager().cloudDrive('处理事件: ${event.runtimeType}');
 
     try {
       switch (event) {
@@ -112,7 +112,7 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
           _updateFileInState(event.fileId, event.newName);
       }
     } catch (e) {
-      LogManager().error('❌ 处理事件失败: ${event.runtimeType} - $e');
+      LogManager().error('处理事件失败: ${event.runtimeType} - $e');
       state = state.copyWith(error: e.toString());
     }
   }
@@ -149,7 +149,7 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
   /// 将状态重置为初始状态，清除所有数据
   /// 记录重置操作的日志
   void reset() {
-    LogManager().cloudDrive('🔄 重置状态管理器');
+    LogManager().cloudDrive('重置状态管理器');
     state = const CloudDriveState();
   }
 
@@ -228,6 +228,15 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
   /// 从当前文件夹返回到上级文件夹
   Future<void> goBack() async {
     await folderHandler.goBack();
+  }
+
+  /// 跳转到路径中的指定位置
+  ///
+  /// 点击面包屑导航中的某个节点时调用
+  ///
+  /// [pathIndex] 路径链中的索引位置（从0开始）
+  Future<void> navigateToPathIndex(int pathIndex) async {
+    await folderHandler.navigateToPathIndex(pathIndex);
   }
 
   /// 切换项目选择状态
@@ -348,8 +357,67 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
   ///
   /// 返回操作是否成功执行
   Future<bool> executePendingOperation() async {
-    // TODO: 实现待处理操作逻辑
-    return true;
+    final pendingFile = state.pendingOperationFile;
+    final operationType = state.pendingOperationType;
+    final currentAccount = state.currentAccount;
+    final currentFolderId = state.currentFolder?.id;
+
+    if (pendingFile == null ||
+        operationType == null ||
+        currentAccount == null) {
+      LogManager().error('执行待操作失败: 缺少必要参数');
+      _clearPendingOperation();
+      return false;
+    }
+
+    try {
+      if (operationType == 'move') {
+        // 执行移动操作
+        LogManager().cloudDrive(
+          '执行移动操作: ${pendingFile.name} -> $currentFolderId',
+        );
+        final success = await folderHandler.moveFile(
+          account: currentAccount,
+          file: pendingFile,
+          targetFolderId: currentFolderId,
+        );
+
+        if (success) {
+          // 移动成功后，延迟200ms再刷新列表（确保服务器端操作完成）
+          await Future.delayed(const Duration(milliseconds: 200));
+          await folderHandler.loadFolder(forceRefresh: true);
+        }
+
+        _clearPendingOperation();
+        return success;
+      } else if (operationType == 'copy') {
+        // 执行复制操作
+        LogManager().cloudDrive(
+          '执行复制操作: ${pendingFile.name} -> $currentFolderId',
+        );
+        final success = await folderHandler.copyFile(
+          account: currentAccount,
+          file: pendingFile,
+          targetFolderId: currentFolderId,
+        );
+
+        if (success) {
+          // 复制成功后，延迟200ms再刷新列表（确保服务器端操作完成）
+          await Future.delayed(const Duration(milliseconds: 200));
+          await folderHandler.loadFolder(forceRefresh: true);
+        }
+
+        _clearPendingOperation();
+        return success;
+      }
+
+      _clearPendingOperation();
+      return false;
+    } catch (e) {
+      LogManager().error('执行待操作失败: $e');
+      _clearPendingOperation();
+      return false;
+    }
   }
 
   /// 切换账号选择器显示状态
@@ -376,9 +444,29 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
   ///
   /// 清除当前设置的待处理操作
   void _clearPendingOperation() {
-    state = state.copyWith(
-      pendingOperationFile: null,
-      pendingOperationType: null,
+    state = CloudDriveState(
+      accounts: state.accounts,
+      currentAccount: state.currentAccount,
+      currentFolder: state.currentFolder,
+      folders: state.folders,
+      files: state.files,
+      folderPath: state.folderPath,
+      isLoading: state.isLoading,
+      isRefreshing: state.isRefreshing,
+      error: state.error,
+      isBatchMode: state.isBatchMode,
+      isInBatchMode: state.isInBatchMode,
+      selectedItems: state.selectedItems,
+      isAllSelected: state.isAllSelected,
+      currentPage: state.currentPage,
+      hasMoreData: state.hasMoreData,
+      isLoadingMore: state.isLoadingMore,
+      isFromCache: state.isFromCache,
+      lastRefreshTime: state.lastRefreshTime,
+      showAccountSelector: state.showAccountSelector,
+      pendingOperationFile: null, // 清空待操作文件
+      pendingOperationType: null, // 清空待操作类型
+      showFloatingActionButton: state.showFloatingActionButton,
     );
   }
 
@@ -441,7 +529,7 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
     try {
       return await accountHandler.getAccountDetails(account);
     } catch (e) {
-      LogManager().error('❌ 获取账号详情失败: ${account.name} - $e');
+      LogManager().error('获取账号详情失败: ${account.name} - $e');
       return null;
     }
   }

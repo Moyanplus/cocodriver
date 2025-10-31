@@ -5,7 +5,8 @@ import '../services/ali/ali_operation_strategy.dart';
 import '../services/baidu/baidu_operation_strategy.dart';
 import '../services/lanzou/lanzou_operation_strategy.dart';
 import '../services/pan123/pan123_operation_strategy.dart';
-import '../services/quark/quark_operation_strategy.dart';
+import '../services/quark/strategy/quark_operation_strategy.dart';
+import 'cloud_drive_file_service.dart';
 
 /// 云盘操作服务 (Cloud Drive Operation Service)
 ///
@@ -267,9 +268,7 @@ class CloudDriveOperationService {
       password: password,
     );
 
-    LogManager().cloudDrive(
-      '✅ 云盘操作服务 - 高速下载完成: ${result != null ? '成功' : '失败'}',
-    );
+    LogManager().cloudDrive('云盘操作服务 - 高速下载完成: ${result != null ? '成功' : '失败'}');
     return result;
   }
 
@@ -280,12 +279,12 @@ class CloudDriveOperationService {
     String? password,
     int? expireDays,
   }) async {
-    LogManager().cloudDrive('🔗 云盘操作服务 - 生成分享链接');
-    LogManager().cloudDrive('📄 文件数量: ${files.length}');
+    LogManager().cloudDrive('云盘操作服务 - 生成分享链接');
+    LogManager().cloudDrive('文件数量: ${files.length}');
     LogManager().cloudDrive('🔑 提取码: ${password ?? '无'}');
-    LogManager().cloudDrive('⏰ 有效期: ${expireDays ?? 1}天');
+    LogManager().cloudDrive('有效期: ${expireDays ?? 1}天');
     LogManager().cloudDrive(
-      '👤 账号: ${account.name} (${account.type.displayName})',
+      '账号: ${account.name} (${account.type.displayName})',
     );
 
     final strategy = getStrategy(account.type);
@@ -297,7 +296,7 @@ class CloudDriveOperationService {
     );
 
     LogManager().cloudDrive(
-      '✅ 云盘操作服务 - 分享链接生成完成: ${result != null ? '成功' : '失败'}',
+      '云盘操作服务 - 分享链接生成完成: ${result != null ? '成功' : '失败'}',
     );
     return result;
   }
@@ -308,11 +307,11 @@ class CloudDriveOperationService {
     required CloudDriveFile file,
     String? targetFolderId,
   }) async {
-    LogManager().cloudDrive('🔗 云盘操作服务 - 移动文件');
-    LogManager().cloudDrive('📄 文件: ${file.name} (ID: ${file.id})');
-    LogManager().cloudDrive('📁 目标文件夹ID: $targetFolderId');
+    LogManager().cloudDrive('云盘操作服务 - 移动文件');
+    LogManager().cloudDrive('文件: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('目标文件夹ID: $targetFolderId');
     LogManager().cloudDrive(
-      '👤 账号: ${account.name} (${account.type.displayName})',
+      '账号: ${account.name} (${account.type.displayName})',
     );
 
     final strategy = getStrategy(account.type);
@@ -322,7 +321,7 @@ class CloudDriveOperationService {
       targetFolderId: targetFolderId,
     );
 
-    LogManager().cloudDrive('✅ 云盘操作服务 - 文件移动完成: $result');
+    LogManager().cloudDrive('云盘操作服务 - 文件移动完成: $result');
     return result;
   }
 
@@ -331,16 +330,16 @@ class CloudDriveOperationService {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    LogManager().cloudDrive('🔗 云盘操作服务 - 删除文件');
-    LogManager().cloudDrive('📄 文件: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('云盘操作服务 - 删除文件');
+    LogManager().cloudDrive('文件: ${file.name} (ID: ${file.id})');
     LogManager().cloudDrive(
-      '👤 账号: ${account.name} (${account.type.displayName})',
+      '账号: ${account.name} (${account.type.displayName})',
     );
 
     final strategy = getStrategy(account.type);
     final result = await strategy.deleteFile(account: account, file: file);
 
-    LogManager().cloudDrive('✅ 云盘操作服务 - 文件删除完成: $result');
+    LogManager().cloudDrive('云盘操作服务 - 文件删除完成: $result');
     return result;
   }
 
@@ -350,11 +349,11 @@ class CloudDriveOperationService {
     required CloudDriveFile file,
     required String newName,
   }) async {
-    LogManager().cloudDrive('🔗 云盘操作服务 - 重命名文件');
-    LogManager().cloudDrive('📄 文件: ${file.name} (ID: ${file.id})');
-    LogManager().cloudDrive('🔄 新文件名: $newName');
+    LogManager().cloudDrive('云盘操作服务 - 重命名文件');
+    LogManager().cloudDrive('文件: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('新文件名: $newName');
     LogManager().cloudDrive(
-      '👤 账号: ${account.name} (${account.type.displayName})',
+      '账号: ${account.name} (${account.type.displayName})',
     );
 
     final strategy = getStrategy(account.type);
@@ -364,7 +363,7 @@ class CloudDriveOperationService {
       newName: newName,
     );
 
-    LogManager().cloudDrive('✅ 云盘操作服务 - 文件重命名完成: $result');
+    LogManager().cloudDrive('云盘操作服务 - 文件重命名完成: $result');
     return result;
   }
 
@@ -375,11 +374,11 @@ class CloudDriveOperationService {
     required String destPath,
     String? newName,
   }) async {
-    LogManager().cloudDrive('🔗 云盘操作服务 - 复制文件');
-    LogManager().cloudDrive('📄 文件: ${file.name} (ID: ${file.id})');
-    LogManager().cloudDrive('📁 目标路径: $destPath');
+    LogManager().cloudDrive('云盘操作服务 - 复制文件');
+    LogManager().cloudDrive('文件: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('目标路径: $destPath');
     LogManager().cloudDrive(
-      '👤 账号: ${account.name} (${account.type.displayName})',
+      '账号: ${account.name} (${account.type.displayName})',
     );
 
     final strategy = getStrategy(account.type);
@@ -390,7 +389,7 @@ class CloudDriveOperationService {
       newName: newName,
     );
 
-    LogManager().cloudDrive('✅ 云盘操作服务 - 文件复制完成: $result');
+    LogManager().cloudDrive('云盘操作服务 - 文件复制完成: $result');
     return result;
   }
 
@@ -400,11 +399,11 @@ class CloudDriveOperationService {
     required String folderName,
     String? parentFolderId,
   }) async {
-    LogManager().cloudDrive('🔗 云盘操作服务 - 创建文件夹');
-    LogManager().cloudDrive('📁 文件夹名称: $folderName');
-    LogManager().cloudDrive('📁 父文件夹ID: $parentFolderId');
+    LogManager().cloudDrive('云盘操作服务 - 创建文件夹');
+    LogManager().cloudDrive('文件夹名称: $folderName');
+    LogManager().cloudDrive('父文件夹ID: $parentFolderId');
     LogManager().cloudDrive(
-      '👤 账号: ${account.name} (${account.type.displayName})',
+      '账号: ${account.name} (${account.type.displayName})',
     );
 
     final strategy = getStrategy(account.type);
@@ -415,7 +414,7 @@ class CloudDriveOperationService {
     );
 
     LogManager().cloudDrive(
-      '✅ 云盘操作服务 - 文件夹创建完成: ${result != null ? '成功' : '失败'}',
+      '云盘操作服务 - 文件夹创建完成: ${result != null ? '成功' : '失败'}',
     );
     return result;
   }
@@ -425,29 +424,29 @@ class CloudDriveOperationService {
     CloudDriveAccount account,
     String operation,
   ) {
-    LogManager().cloudDrive('🔧 云盘操作服务 - 检查操作支持: $operation');
+    LogManager().cloudDrive('云盘操作服务 - 检查操作支持: $operation');
     LogManager().cloudDrive(
-      '👤 账号: ${account.name} (${account.type.displayName})',
+      '账号: ${account.name} (${account.type.displayName})',
     );
 
     final strategy = getStrategy(account.type);
     final supported = strategy.getSupportedOperations()[operation] ?? false;
 
-    LogManager().cloudDrive('✅ 云盘操作服务 - 操作支持检查: $operation = $supported');
+    LogManager().cloudDrive('云盘操作服务 - 操作支持检查: $operation = $supported');
     return supported;
   }
 
   /// 获取UI配置
   static Map<String, dynamic> getUIConfig(CloudDriveAccount account) {
-    LogManager().cloudDrive('🎨 云盘操作服务 - 获取UI配置');
+    LogManager().cloudDrive('云盘操作服务 - 获取UI配置');
     LogManager().cloudDrive(
-      '👤 账号: ${account.name} (${account.type.displayName})',
+      '账号: ${account.name} (${account.type.displayName})',
     );
 
     final strategy = getStrategy(account.type);
     final config = strategy.getOperationUIConfig();
 
-    LogManager().cloudDrive('✅ 云盘操作服务 - UI配置获取完成: ${config.keys}');
+    LogManager().cloudDrive('云盘操作服务 - UI配置获取完成: ${config.keys}');
     return config;
   }
 
@@ -467,16 +466,16 @@ class CloudDriveOperationService {
     required CloudDriveType cloudDriveType,
     required List<PathInfo> folderPath,
   }) {
-    LogManager().cloudDrive('🔧 云盘操作服务 - 转换路径为目标文件夹ID');
-    LogManager().cloudDrive('📁 云盘类型: ${cloudDriveType.displayName}');
+    LogManager().cloudDrive('云盘操作服务 - 转换路径为目标文件夹ID');
+    LogManager().cloudDrive('云盘类型: ${cloudDriveType.displayName}');
     LogManager().cloudDrive(
-      '📂 路径信息: ${folderPath.map((p) => '${p.name}(${p.id})').join(' -> ')}',
+      '路径信息: ${folderPath.map((p) => '${p.name}(${p.id})').join(' -> ')}',
     );
 
     final strategy = getStrategy(cloudDriveType);
     final result = strategy.convertPathToTargetFolderId(folderPath);
 
-    LogManager().cloudDrive('✅ 云盘操作服务 - 路径转换完成: $result');
+    LogManager().cloudDrive('云盘操作服务 - 路径转换完成: $result');
     return result;
   }
 
@@ -490,52 +489,50 @@ class CloudDriveOperationService {
     required CloudDriveFile file,
     required String targetPath,
   }) {
-    LogManager().cloudDrive('🔧 云盘操作服务 - 更新文件路径为目标目录');
+    LogManager().cloudDrive('云盘操作服务 - 更新文件路径为目标目录');
     LogManager().cloudDrive(
-      '📄 文件: ${file.name} (${file.isFolder ? '文件夹' : '文件'})',
+      '文件: ${file.name} (${file.isFolder ? '文件夹' : '文件'})',
     );
-    LogManager().cloudDrive('📁 目标路径: $targetPath');
-    LogManager().cloudDrive('👤 云盘类型: ${cloudDriveType.displayName}');
+    LogManager().cloudDrive('目标路径: $targetPath');
+    LogManager().cloudDrive('云盘类型: ${cloudDriveType.displayName}');
 
     final strategy = getStrategy(cloudDriveType);
     final result = strategy.updateFilePathForTargetDirectory(file, targetPath);
 
-    LogManager().cloudDrive('✅ 云盘操作服务 - 文件路径更新完成');
-    LogManager().cloudDrive('🔄 原路径: ${file.id} -> 新路径: ${result.id}');
+    LogManager().cloudDrive('云盘操作服务 - 文件路径更新完成');
+    LogManager().cloudDrive('原路径: ${file.id} -> 新路径: ${result.id}');
     LogManager().cloudDrive(
-      '📁 原文件夹ID: ${file.folderId} -> 新文件夹ID: ${result.folderId}',
+      '原文件夹ID: ${file.folderId} -> 新文件夹ID: ${result.folderId}',
     );
 
     return result;
   }
 
   /// 下载文件
+  ///
+  /// 委托给 [CloudDriveFileService.batchDownloadFiles] 处理
+  /// 保持接口一致性，避免代码重复
   static Future<bool> downloadFile({
     required CloudDriveAccount account,
     required CloudDriveFile file,
     String? savePath,
   }) async {
     try {
-      LogManager().cloudDrive('📥 云盘操作服务 - 开始下载文件');
-      LogManager().cloudDrive('📄 文件: ${file.name}');
-      LogManager().cloudDrive('👤 账号: ${account.name}');
+      LogManager().cloudDrive('云盘操作服务 - 开始下载文件: ${file.name}');
 
-      final strategy = getStrategy(account.type);
-      final downloadUrl = await strategy.getDownloadUrl(
+      // 委托给 CloudDriveFileService 处理批量下载
+      // 这样可以复用统一的下载逻辑，避免代码重复
+      await CloudDriveFileService.batchDownloadFiles(
         account: account,
-        file: file,
+        files: [file],
+        folders: [],
       );
 
-      if (downloadUrl == null) {
-        LogManager().cloudDrive('❌ 云盘操作服务 - 获取下载链接失败');
-        return false;
-      }
-
-      // 这里应该调用下载服务，但为了简化，我们只返回成功
-      LogManager().cloudDrive('✅ 云盘操作服务 - 文件下载完成');
+      LogManager().cloudDrive('云盘操作服务 - 下载任务创建成功: ${file.name}');
       return true;
-    } catch (e) {
-      LogManager().error('❌ 云盘操作服务 - 文件下载失败: $e');
+    } catch (e, stackTrace) {
+      LogManager().error('云盘操作服务 - 文件下载失败: $e');
+      LogManager().error('错误堆栈: $stackTrace');
       return false;
     }
   }

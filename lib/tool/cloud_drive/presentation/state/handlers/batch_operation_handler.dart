@@ -16,7 +16,7 @@ class BatchOperationHandler {
   ///
   /// [itemId] 开始批量选择的项目ID
   void enterBatchMode(String itemId) {
-    LogManager().cloudDrive('🔄 进入批量模式: $itemId');
+    LogManager().cloudDrive('进入批量模式: $itemId');
 
     _stateManager.state = _stateManager.state.copyWith(
       isInBatchMode: true,
@@ -24,14 +24,14 @@ class BatchOperationHandler {
       error: null,
     );
 
-    LogManager().cloudDrive('✅ 进入批量模式成功');
+    LogManager().cloudDrive('进入批量模式成功');
   }
 
   /// 退出批量操作模式
   ///
   /// 退出批量选择模式，清除所有选择状态
   void exitBatchMode() {
-    LogManager().cloudDrive('🔄 退出批量模式');
+    LogManager().cloudDrive('退出批量模式');
 
     _stateManager.state = _stateManager.state.copyWith(
       isInBatchMode: false,
@@ -39,7 +39,7 @@ class BatchOperationHandler {
       error: null,
     );
 
-    LogManager().cloudDrive('✅ 退出批量模式成功');
+    LogManager().cloudDrive('退出批量模式成功');
   }
 
   /// 切换项目选择状态
@@ -48,7 +48,7 @@ class BatchOperationHandler {
   ///
   /// [itemId] 要切换选择状态的项目ID
   void toggleSelection(String itemId) {
-    LogManager().cloudDrive('🔄 切换选择状态: $itemId');
+    LogManager().cloudDrive('切换选择状态: $itemId');
 
     final selectedItems = Set<String>.from(_stateManager.state.selectedItems);
     if (selectedItems.contains(itemId)) {
@@ -63,7 +63,7 @@ class BatchOperationHandler {
     );
 
     LogManager().cloudDrive(
-      '✅ 选择状态切换成功: $itemId -> ${selectedItems.contains(itemId)}',
+      '选择状态切换成功: $itemId -> ${selectedItems.contains(itemId)}',
     );
   }
 
@@ -72,7 +72,7 @@ class BatchOperationHandler {
   /// 切换所有项目的选中/未选中状态
   /// 如果全部选中则取消全选，否则全选所有项目
   void toggleSelectAll() {
-    LogManager().cloudDrive('🔄 切换全选状态');
+    LogManager().cloudDrive('切换全选状态');
 
     final allItems = <String>[];
     allItems.addAll(_stateManager.state.files.map((f) => f.id));
@@ -96,7 +96,7 @@ class BatchOperationHandler {
       error: null,
     );
 
-    LogManager().cloudDrive('✅ 全选状态切换成功: ${!allSelected}');
+    LogManager().cloudDrive('全选状态切换成功: ${!allSelected}');
   }
 
   /// 批量下载选中文件
@@ -106,7 +106,7 @@ class BatchOperationHandler {
   Future<void> batchDownload() async {
     final account = _stateManager.state.currentAccount;
     if (account == null) {
-      LogManager().cloudDrive('⚠️ 没有当前账号，无法批量下载');
+      LogManager().cloudDrive('没有当前账号，无法批量下载');
       return;
     }
 
@@ -114,11 +114,11 @@ class BatchOperationHandler {
     final selectedIds = selectedItems.toList();
 
     if (selectedIds.isEmpty) {
-      LogManager().cloudDrive('⚠️ 没有选中任何项目');
+      LogManager().cloudDrive('没有选中任何项目');
       return;
     }
 
-    LogManager().cloudDrive('🔄 开始批量下载: ${selectedIds.length}个项目');
+    LogManager().cloudDrive('开始批量下载: ${selectedIds.length}个项目');
 
     try {
       _stateManager.state = _stateManager.state.copyWith(
@@ -142,9 +142,9 @@ class BatchOperationHandler {
             account: account,
             file: file,
           );
-          LogManager().cloudDrive('✅ 下载成功: ${file.name}');
+          LogManager().cloudDrive('下载成功: ${file.name}');
         } catch (e) {
-          LogManager().error('❌ 下载失败: ${file.name} - $e');
+          LogManager().error('下载失败: ${file.name} - $e');
         }
       }
 
@@ -153,9 +153,9 @@ class BatchOperationHandler {
         error: null,
       );
 
-      LogManager().cloudDrive('✅ 批量下载完成');
+      LogManager().cloudDrive('批量下载完成');
     } catch (e) {
-      LogManager().error('❌ 批量下载失败: $e');
+      LogManager().error('批量下载失败: $e');
       _stateManager.state = _stateManager.state.copyWith(
         isLoading: false,
         error: e.toString(),
@@ -170,7 +170,7 @@ class BatchOperationHandler {
   Future<void> batchShare() async {
     final account = _stateManager.state.currentAccount;
     if (account == null) {
-      LogManager().cloudDrive('⚠️ 没有当前账号，无法批量分享');
+      LogManager().cloudDrive('没有当前账号，无法批量分享');
       return;
     }
 
@@ -178,11 +178,11 @@ class BatchOperationHandler {
     final selectedIds = selectedItems.toList();
 
     if (selectedIds.isEmpty) {
-      LogManager().cloudDrive('⚠️ 没有选中任何项目');
+      LogManager().cloudDrive('没有选中任何项目');
       return;
     }
 
-    LogManager().cloudDrive('🔄 开始批量分享: ${selectedIds.length}个项目');
+    LogManager().cloudDrive('开始批量分享: ${selectedIds.length}个项目');
 
     try {
       _stateManager.state = _stateManager.state.copyWith(
@@ -205,9 +205,9 @@ class BatchOperationHandler {
           account: account,
           files: selectedFiles,
         );
-        LogManager().cloudDrive('✅ 批量分享成功: ${selectedFiles.length}个文件');
+        LogManager().cloudDrive('批量分享成功: ${selectedFiles.length}个文件');
       } catch (e) {
-        LogManager().error('❌ 批量分享失败: $e');
+        LogManager().error('批量分享失败: $e');
       }
 
       _stateManager.state = _stateManager.state.copyWith(
@@ -215,9 +215,9 @@ class BatchOperationHandler {
         error: null,
       );
 
-      LogManager().cloudDrive('✅ 批量分享完成');
+      LogManager().cloudDrive('批量分享完成');
     } catch (e) {
-      LogManager().error('❌ 批量分享失败: $e');
+      LogManager().error('批量分享失败: $e');
       _stateManager.state = _stateManager.state.copyWith(
         isLoading: false,
         error: e.toString(),
@@ -232,7 +232,7 @@ class BatchOperationHandler {
   Future<void> batchDelete() async {
     final account = _stateManager.state.currentAccount;
     if (account == null) {
-      LogManager().cloudDrive('⚠️ 没有当前账号，无法批量删除');
+      LogManager().cloudDrive('没有当前账号，无法批量删除');
       return;
     }
 
@@ -240,11 +240,11 @@ class BatchOperationHandler {
     final selectedIds = selectedItems.toList();
 
     if (selectedIds.isEmpty) {
-      LogManager().cloudDrive('⚠️ 没有选中任何项目');
+      LogManager().cloudDrive('没有选中任何项目');
       return;
     }
 
-    LogManager().cloudDrive('🔄 开始批量删除: ${selectedIds.length}个项目');
+    LogManager().cloudDrive('开始批量删除: ${selectedIds.length}个项目');
 
     try {
       _stateManager.state = _stateManager.state.copyWith(
@@ -268,9 +268,9 @@ class BatchOperationHandler {
             account: account,
             file: file,
           );
-          LogManager().cloudDrive('✅ 删除成功: ${file.name}');
+          LogManager().cloudDrive('删除成功: ${file.name}');
         } catch (e) {
-          LogManager().error('❌ 删除失败: ${file.name} - $e');
+          LogManager().error('删除失败: ${file.name} - $e');
         }
       }
 
@@ -284,9 +284,9 @@ class BatchOperationHandler {
         error: null,
       );
 
-      LogManager().cloudDrive('✅ 批量删除完成');
+      LogManager().cloudDrive('批量删除完成');
     } catch (e) {
-      LogManager().error('❌ 批量删除失败: $e');
+      LogManager().error('批量删除失败: $e');
       _stateManager.state = _stateManager.state.copyWith(
         isLoading: false,
         error: e.toString(),

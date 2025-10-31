@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
-import '../../../../../core/logging/log_manager.dart';
-import '../../data/models/cloud_drive_entities.dart';
-import '../../data/models/cloud_drive_dtos.dart';
-import '../base/qr_login_service.dart';
-import 'quark_base_service.dart';
-import 'quark_config.dart';
+import '../../../data/models/cloud_drive_entities.dart';
+import '../../../data/models/cloud_drive_dtos.dart';
+import '../../base/qr_login_service.dart';
+import '../core/quark_base_service.dart';
+import '../core/quark_config.dart';
+import '../utils/quark_logger.dart';
 
 /// 夸克网盘二维码登录服务
 class QuarkQRLoginService extends QRLoginService {
@@ -27,7 +27,7 @@ class QuarkQRLoginService extends QRLoginService {
 
   @override
   Future<QRLoginInfo> generateQRCode() async {
-    LogManager().cloudDrive('🔄 夸克网盘 - 开始生成二维码');
+    QuarkLogger.info('夸克网盘 - 开始生成二维码');
 
     try {
       final dio = Dio(
@@ -39,8 +39,8 @@ class QuarkQRLoginService extends QRLoginService {
         ),
       );
 
-      LogManager().cloudDrive(
-        '🔗 生成二维码URL: ${QuarkConfig.uopUrl}${config.generateEndpoint}',
+      QuarkLogger.info(
+        '生成二维码URL: ${QuarkConfig.uopUrl}${config.generateEndpoint}',
       );
 
       final response = await dio.get(
@@ -57,7 +57,7 @@ class QuarkQRLoginService extends QRLoginService {
       }
 
       final responseData = response.data;
-      LogManager().cloudDrive('📡 生成二维码响应: $responseData');
+      QuarkLogger.info('生成二维码响应: $responseData');
 
       // 解析响应数据
       if (responseData is! Map<String, dynamic>) {
@@ -104,20 +104,20 @@ class QuarkQRLoginService extends QRLoginService {
         message: '请使用夸克网盘APP扫描二维码',
       );
 
-      LogManager().cloudDrive('✅ 夸克网盘 - 二维码生成成功');
-      LogManager().cloudDrive('📱 二维码Token: $token');
-      LogManager().cloudDrive('⏰ 过期时间: $expiresAt');
+      QuarkLogger.info('夸克网盘 - 二维码生成成功');
+      QuarkLogger.info('二维码Token: $token');
+      QuarkLogger.info('过期时间: $expiresAt');
 
       return loginInfo;
     } catch (e) {
-      LogManager().cloudDrive('❌ 夸克网盘 - 生成二维码失败: $e');
+      QuarkLogger.info('夸克网盘 - 生成二维码失败: $e');
       rethrow;
     }
   }
 
   @override
   Future<QRLoginInfo> checkQRStatus(String qrId) async {
-    LogManager().cloudDrive('🔍 夸克网盘 - 查询二维码状态: $qrId');
+    QuarkLogger.info('夸克网盘 - 查询二维码状态: $qrId');
 
     try {
       final dio = Dio(
@@ -137,7 +137,7 @@ class QuarkQRLoginService extends QRLoginService {
         queryParameters: requestData.map((k, v) => MapEntry(k, v.toString())),
       );
 
-      LogManager().cloudDrive('🔗 查询状态URL: $uri');
+      QuarkLogger.info('查询状态URL: $uri');
 
       final response = await dio.getUri(
         uri,
@@ -153,7 +153,7 @@ class QuarkQRLoginService extends QRLoginService {
       }
 
       final responseData = response.data;
-      LogManager().cloudDrive('📡 查询状态响应: $responseData');
+      QuarkLogger.info('查询状态响应: $responseData');
 
       // 保持二维码内容URL
       final qrContent = QuarkConfig.buildQRContentUrl(qrId);
@@ -171,7 +171,7 @@ class QuarkQRLoginService extends QRLoginService {
             final members = data['members'] as Map<String, dynamic>?;
             if (members != null) {
               serviceTicket = members['service_ticket'] as String?;
-              LogManager().cloudDrive('🎫 提取到service_ticket: $serviceTicket');
+              QuarkLogger.info('🎫 提取到service_ticket: $serviceTicket');
             }
           }
 
@@ -183,7 +183,7 @@ class QuarkQRLoginService extends QRLoginService {
             loginToken: serviceTicket ?? qrId, // 优先使用service_ticket
           );
 
-          LogManager().cloudDrive('📊 夸克网盘 - 登录成功');
+          QuarkLogger.info('夸克网盘 - 登录成功');
           return loginInfo;
         } else if (responseData.isEmpty) {
           // 空响应也表示登录成功
@@ -195,7 +195,7 @@ class QuarkQRLoginService extends QRLoginService {
             loginToken: qrId,
           );
 
-          LogManager().cloudDrive('📊 夸克网盘 - 登录成功（空响应）');
+          QuarkLogger.info('夸克网盘 - 登录成功（空响应）');
           return loginInfo;
         } else {
           // 其他状态码表示还在等待或失败
@@ -208,7 +208,7 @@ class QuarkQRLoginService extends QRLoginService {
             message: message,
           );
 
-          LogManager().cloudDrive('📊 夸克网盘 - 状态查询结果: $message');
+          QuarkLogger.info('夸克网盘 - 状态查询结果: $message');
           return loginInfo;
         }
       } else {
@@ -221,26 +221,26 @@ class QuarkQRLoginService extends QRLoginService {
           loginToken: qrId,
         );
 
-        LogManager().cloudDrive('📊 夸克网盘 - 登录成功（非Map响应）');
+        QuarkLogger.info('夸克网盘 - 登录成功（非Map响应）');
         return loginInfo;
       }
     } catch (e) {
-      LogManager().cloudDrive('❌ 夸克网盘 - 查询状态失败: $e');
+      QuarkLogger.info('夸克网盘 - 查询状态失败: $e');
       rethrow;
     }
   }
 
   @override
   Future<void> cancelQRLogin(String qrId) async {
-    LogManager().cloudDrive('🚫 夸克网盘 - 取消二维码登录: $qrId');
+    QuarkLogger.info('🚫 夸克网盘 - 取消二维码登录: $qrId');
     // 夸克网盘二维码登录取消操作不需要特殊处理
     // 只需要记录日志即可
-    LogManager().cloudDrive('✅ 夸克网盘 - 取消登录操作完成');
+    QuarkLogger.info('夸克网盘 - 取消登录操作完成');
   }
 
   @override
   Future<String> parseAuthData(QRLoginInfo loginInfo) async {
-    LogManager().cloudDrive('🔐 夸克网盘 - 解析认证数据');
+    QuarkLogger.info('夸克网盘 - 解析认证数据');
 
     if (loginInfo.loginToken == null || loginInfo.loginToken!.isEmpty) {
       throw Exception('登录token为空');
@@ -270,7 +270,7 @@ class QuarkQRLoginService extends QRLoginService {
         queryParameters: requestData.map((k, v) => MapEntry(k, v.toString())),
       );
 
-      LogManager().cloudDrive('🔗 获取账号信息URL: $uri');
+      QuarkLogger.info('获取账号信息URL: $uri');
 
       final response = await dio.getUri(
         uri,
@@ -286,7 +286,7 @@ class QuarkQRLoginService extends QRLoginService {
       }
 
       final responseData = response.data;
-      LogManager().cloudDrive('📡 获取账号信息响应: $responseData');
+      QuarkLogger.info('获取账号信息响应: $responseData');
 
       // 从响应头中提取Cookie
       final setCookieHeaders = response.headers['set-cookie'];
@@ -304,19 +304,22 @@ class QuarkQRLoginService extends QRLoginService {
       }
 
       // 验证是否包含关键的__pus cookie
-      if (!cookieString.contains('__pus=')) {
-        LogManager().cloudDrive('⚠️ 警告：Cookie中未找到__pus字段');
+      final pusKey = QuarkConfig.cookieConfig['pusKey']!;
+      if (!cookieString.contains('$pusKey=')) {
+        QuarkLogger.info('警告：Cookie中未找到$pusKey字段');
       }
 
-      LogManager().cloudDrive('✅ 夸克网盘 - 认证数据解析成功');
-      LogManager().cloudDrive('🍪 Cookie长度: ${cookieString.length}');
-      LogManager().cloudDrive(
-        '🍪 Cookie前100字符: ${cookieString.substring(0, cookieString.length > 100 ? 100 : cookieString.length)}',
+      QuarkLogger.info('夸克网盘 - 认证数据解析成功');
+      QuarkLogger.info('🍪 Cookie长度: ${cookieString.length}');
+      final previewLength =
+          QuarkConfig.performanceConfig['cookiePreviewLength'] as int;
+      QuarkLogger.info(
+        '🍪 Cookie前$previewLength字符: ${cookieString.substring(0, cookieString.length > previewLength ? previewLength : cookieString.length)}',
       );
 
       return cookieString;
     } catch (e) {
-      LogManager().cloudDrive('❌ 夸克网盘 - 解析认证数据失败: $e');
+      QuarkLogger.info('夸克网盘 - 解析认证数据失败: $e');
       rethrow;
     }
   }

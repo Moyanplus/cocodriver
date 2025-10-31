@@ -139,27 +139,27 @@ class CloudDriveLogger {
     switch (level) {
       case CloudDriveLogLevel.debug:
         LogManager().cloudDrive(
-          '🔍 $operation - ${cloudDriveType.displayName}',
+          '$operation - ${cloudDriveType.displayName}',
         );
         break;
       case CloudDriveLogLevel.info:
         LogManager().cloudDrive(
-          '🔧 $operation - ${cloudDriveType.displayName}',
+          '$operation - ${cloudDriveType.displayName}',
         );
         break;
       case CloudDriveLogLevel.warning:
         LogManager().cloudDrive(
-          '⚠️ $operation - ${cloudDriveType.displayName}',
+          '$operation - ${cloudDriveType.displayName}',
         );
         break;
       case CloudDriveLogLevel.error:
-        LogManager().cloudDrive('❌ $operation - ${cloudDriveType.displayName}');
+        LogManager().cloudDrive('$operation - ${cloudDriveType.displayName}');
         break;
     }
 
     if (params != null) {
       for (final entry in params.entries) {
-        LogManager().cloudDrive('📋 ${entry.key}: ${entry.value}');
+        LogManager().cloudDrive('${entry.key}: ${entry.value}');
       }
     }
 
@@ -185,12 +185,12 @@ class CloudDriveLogger {
     if (!_config.enableErrorLogging) return;
 
     LogManager().cloudDrive(
-      '❌ $operation 失败 - ${cloudDriveType.displayName}: $error',
+      '$operation 失败 - ${cloudDriveType.displayName}: $error',
     );
 
     if (context != null) {
       for (final entry in context.entries) {
-        LogManager().cloudDrive('📋 ${entry.key}: ${entry.value}');
+        LogManager().cloudDrive('${entry.key}: ${entry.value}');
       }
     }
 
@@ -215,12 +215,12 @@ class CloudDriveLogger {
     Map<String, dynamic>? result,
   }) {
     LogManager().cloudDrive(
-      '✅ $operation 成功 - ${cloudDriveType.displayName}${details != null ? ': $details' : ''}',
+      '$operation 成功 - ${cloudDriveType.displayName}${details != null ? ': $details' : ''}',
     );
 
     if (result != null) {
       for (final entry in result.entries) {
-        LogManager().cloudDrive('📊 ${entry.key}: ${entry.value}');
+        LogManager().cloudDrive('${entry.key}: ${entry.value}');
       }
     }
 

@@ -49,6 +49,10 @@ class CloudDriveEventHandler {
   /// 返回上级
   Future<void> goBack() => _stateManager.handleEvent(const GoBackEvent());
 
+  /// 跳转到路径中的指定位置
+  Future<void> navigateToPathIndex(int pathIndex) =>
+      _stateManager.navigateToPathIndex(pathIndex);
+
   /// 进入批量模式
   void enterBatchMode(String itemId) =>
       _stateManager.handleEvent(EnterBatchModeEvent(itemId));

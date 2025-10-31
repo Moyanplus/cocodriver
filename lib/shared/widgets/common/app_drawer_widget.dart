@@ -287,6 +287,17 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
+        // 下载管理
+        _buildMenuItem(
+          context,
+          icon: PhosphorIcons.downloadSimple(),
+          title: '下载管理',
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.of(context).pushNamed('/download/manager');
+          },
+        ),
+
         // 主题管理
         _buildMenuItem(
           context,

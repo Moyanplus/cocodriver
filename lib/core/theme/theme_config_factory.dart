@@ -185,16 +185,27 @@ class ThemeConfigFactory {
 
   /// 创建应用栏主题
   static AppBarTheme _createAppBarTheme(ColorScheme colorScheme) {
+    // 根据主题亮度选择合适的颜色
+    final bool isDark = colorScheme.brightness == Brightness.dark;
+    final Color foregroundColor =
+        isDark ? colorScheme.onSurface : colorScheme.onSurface;
+
     return AppBarTheme(
+      backgroundColor: colorScheme.surface,
+      foregroundColor: foregroundColor,
+      elevation: 0,
+      scrolledUnderElevation: 3,
+      iconTheme: IconThemeData(color: foregroundColor),
+      actionsIconTheme: IconThemeData(color: foregroundColor),
       titleTextStyle: _createTextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        color: colorScheme.onPrimary,
+        color: foregroundColor,
       ),
       toolbarTextStyle: _createTextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w500,
-        color: colorScheme.onPrimary,
+        color: foregroundColor,
       ),
     );
   }

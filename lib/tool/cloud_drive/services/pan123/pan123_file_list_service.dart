@@ -11,9 +11,9 @@ class Pan123FileListService {
     dynamic error,
     StackTrace? stackTrace,
   ) {
-    LogManager().cloudDrive('❌ 123云盘 - $operation 失败: $error');
+    LogManager().cloudDrive('123云盘 - $operation 失败: $error');
     if (stackTrace != null) {
-      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('错误堆栈: $stackTrace');
     }
   }
 
@@ -24,12 +24,12 @@ class Pan123FileListService {
 
   /// 统一成功日志记录
   static void _logSuccess(String message, {Map<String, dynamic>? details}) {
-    LogManager().cloudDrive('✅ 123云盘 - $message');
+    LogManager().cloudDrive('123云盘 - $message');
   }
 
   /// 统一错误日志记录
   static void _logError(String message, dynamic error) {
-    LogManager().cloudDrive('❌ 123云盘 - $message: $error');
+    LogManager().cloudDrive('123云盘 - $message: $error');
   }
 
   /// 获取文件列表
@@ -44,9 +44,9 @@ class Pan123FileListService {
   }) async {
     try {
       _logInfo('�� 123云盘 - 获取文件列表开始', params: {'parentId': parentId});
-      _logInfo('📁 123云盘 - 父文件夹ID: $parentId', params: {'parentId': parentId});
+      _logInfo('123云盘 - 父文件夹ID: $parentId', params: {'parentId': parentId});
       _logInfo(
-        '📄 123云盘 - 页码: $page, 每页数量: $limit',
+        '123云盘 - 页码: $page, 每页数量: $limit',
         params: {'page': page, 'limit': limit},
       );
 
@@ -69,29 +69,29 @@ class Pan123FileListService {
       );
 
       _logInfo(
-        '🌐 123云盘 - 请求URL: ${url.toString()}',
+        '123云盘 - 请求URL: ${url.toString()}',
         params: {'url': url.toString()},
       );
-      _logInfo('📋 123云盘 - 查询参数: $params', params: {'params': params});
+      _logInfo('123云盘 - 查询参数: $params', params: {'params': params});
 
       // 发送GET请求，将参数作为查询参数
       final uri = url.replace(
         queryParameters: params.map((k, v) => MapEntry(k, v.toString())),
       );
 
-      _logInfo('🔗 123云盘 - 完整请求URL: $uri', params: {'uri': uri.toString()});
+      _logInfo('123云盘 - 完整请求URL: $uri', params: {'uri': uri.toString()});
 
       final response = await dio.get(uri.toString());
 
       _logInfo(
-        '📡 123云盘 - 响应状态: ${response.statusCode}',
+        '123云盘 - 响应状态: ${response.statusCode}',
         params: {'statusCode': response.statusCode},
       );
 
       final responseData = response.data as Map<String, dynamic>;
 
       _logInfo(
-        '📄 123云盘 - 原始响应数据: $responseData',
+        '123云盘 - 原始响应数据: $responseData',
         params: {'responseData': responseData},
       );
 
@@ -100,7 +100,7 @@ class Pan123FileListService {
       final message = responseData['message'] as String?;
 
       if (code != 200) {
-        _logError('❌ 123云盘 - API返回错误: $message (code: $code)', message);
+        _logError('123云盘 - API返回错误: $message (code: $code)', message);
 
         // 特殊处理cookie验证失败
         if (code == 401 && message?.contains('cookie token is empty') == true) {
@@ -121,7 +121,7 @@ class Pan123FileListService {
       // 检查响应数据结构
       final data = processedResponse['data'];
       if (data == null) {
-        _logInfo('⚠️ 123云盘 - 响应中没有data字段', params: {'data': data});
+        _logInfo('123云盘 - 响应中没有data字段', params: {'data': data});
         return files;
       }
 
@@ -142,7 +142,7 @@ class Pan123FileListService {
       }
 
       _logInfo(
-        '📄 123云盘 - 解析到的文件列表数量: ${fileList.length}',
+        '123云盘 - 解析到的文件列表数量: ${fileList.length}',
         params: {'fileListLength': fileList.length},
       );
 
@@ -152,7 +152,7 @@ class Pan123FileListService {
         final len = data['Len'] as int?;
         if (total != null || len != null) {
           _logInfo(
-            '📊 123云盘 - API返回统计: Total=$total, Len=$len',
+            '123云盘 - API返回统计: Total=$total, Len=$len',
             params: {'total': total, 'len': len},
           );
         }
@@ -166,16 +166,16 @@ class Pan123FileListService {
           files.add(file);
 
           _logInfo(
-            '✅ 123云盘 - 解析文件成功: ${file.name} (ID: ${file.id})',
+            '123云盘 - 解析文件成功: ${file.name} (ID: ${file.id})',
             params: {'fileName': file.name, 'fileId': file.id},
           );
         } catch (e) {
-          _logError('❌ 123云盘 - 解析文件失败: $fileData, 错误: $e', e);
+          _logError('123云盘 - 解析文件失败: $fileData, 错误: $e', e);
         }
       }
 
       _logSuccess(
-        '✅ 123云盘 - 成功获取 ${files.length} 个文件',
+        '123云盘 - 成功获取 ${files.length} 个文件',
         details: {'fileCount': files.length},
       );
 
@@ -188,7 +188,7 @@ class Pan123FileListService {
 
   /// 解析文件数据
   static CloudDriveFile _parseFileData(Map<String, dynamic> fileData) {
-    _logInfo('🔍 123云盘 - 解析文件数据: $fileData', params: {'fileData': fileData});
+    _logInfo('123云盘 - 解析文件数据: $fileData', params: {'fileData': fileData});
 
     // 根据实际API响应格式解析字段
     final id = fileData['FileId']?.toString() ?? '';
@@ -199,7 +199,7 @@ class Pan123FileListService {
     final updateAt = fileData['UpdateAt']?.toString() ?? '';
 
     _logInfo(
-      '📋 123云盘 - 解析结果: ID=$id, Name=$name, Size=$size, Type=$type, IsFolder=$isFolder',
+      '123云盘 - 解析结果: ID=$id, Name=$name, Size=$size, Type=$type, IsFolder=$isFolder',
       params: {
         'id': id,
         'name': name,
@@ -225,7 +225,7 @@ class Pan123FileListService {
         final dateTime = DateTime.parse(updateAt);
         formattedTime = Pan123Config.formatDateTime(dateTime);
       } catch (e) {
-        _logError('⚠️ 123云盘 - 时间解析失败: $updateAt, 错误: $e', e);
+        _logError('123云盘 - 时间解析失败: $updateAt, 错误: $e', e);
         formattedTime = updateAt;
       }
     }
@@ -240,7 +240,7 @@ class Pan123FileListService {
     );
 
     _logInfo(
-      '✅ 123云盘 - 文件解析完成: ${file.name} (${file.isFolder ? '文件夹' : '文件'})',
+      '123云盘 - 文件解析完成: ${file.name} (${file.isFolder ? '文件夹' : '文件'})',
       params: {'fileName': file.name, 'isFolder': file.isFolder},
     );
 

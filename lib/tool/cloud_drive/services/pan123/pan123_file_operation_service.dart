@@ -12,9 +12,9 @@ class Pan123FileOperationService {
     dynamic error,
     StackTrace? stackTrace,
   ) {
-    LogManager().cloudDrive('❌ 123云盘 - $operation 失败: $error');
+    LogManager().cloudDrive('123云盘 - $operation 失败: $error');
     if (stackTrace != null) {
-      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('错误堆栈: $stackTrace');
     }
   }
 
@@ -25,12 +25,12 @@ class Pan123FileOperationService {
 
   /// 统一成功日志记录
   static void _logSuccess(String message, {Map<String, dynamic>? details}) {
-    LogManager().cloudDrive('✅ 123云盘 - $message');
+    LogManager().cloudDrive('123云盘 - $message');
   }
 
   /// 统一错误日志记录
   static void _logError(String message, dynamic error) {
-    LogManager().cloudDrive('❌ 123云盘 - $message: $error');
+    LogManager().cloudDrive('123云盘 - $message: $error');
   }
 
   /// 重命名文件
@@ -41,7 +41,7 @@ class Pan123FileOperationService {
   }) async {
     try {
       _logInfo(
-        '✏️ 123云盘 - 开始重命名文件',
+        '123云盘 - 开始重命名文件',
         params: {'fileId': fileId, 'newFileName': newFileName},
       );
 
@@ -68,7 +68,7 @@ class Pan123FileOperationService {
       };
 
       _logInfo(
-        '🌐 123云盘 - 请求URL: ${url.toString()}',
+        '123云盘 - 请求URL: ${url.toString()}',
         params: {'url': url.toString()},
       );
 
@@ -77,7 +77,7 @@ class Pan123FileOperationService {
       final response = await dio.post(url.toString(), data: params);
 
       _logInfo(
-        '📡 123云盘 - 响应状态: ${response.statusCode}',
+        '123云盘 - 响应状态: ${response.statusCode}',
         params: {'statusCode': response.statusCode},
       );
 
@@ -111,14 +111,14 @@ class Pan123FileOperationService {
     required String targetParentFileId,
   }) async {
     try {
-      LogManager().cloudDrive('🚚 123云盘 - 开始移动文件');
+      LogManager().cloudDrive('123云盘 - 开始移动文件');
       LogManager().cloudDrive(
-        '📋 123云盘 - 请求参数: fileId=$fileId, targetParentFileId=$targetParentFileId',
+        '123云盘 - 请求参数: fileId=$fileId, targetParentFileId=$targetParentFileId',
       );
 
       // 验证账号登录状态
       if (!account.isLoggedIn) {
-        LogManager().cloudDrive('❌ 123云盘 - 账号未登录，请先登录');
+        LogManager().cloudDrive('123云盘 - 账号未登录，请先登录');
         return false;
       }
 
@@ -150,13 +150,13 @@ class Pan123FileOperationService {
         'RequestSource': null,
       };
 
-      LogManager().cloudDrive('🌐 123云盘 - 请求URL: $url');
+      LogManager().cloudDrive('123云盘 - 请求URL: $url');
 
       // 发送请求
       final dio = Pan123BaseService.createDio(account);
       final response = await dio.post(url.toString(), data: params);
 
-      LogManager().cloudDrive('📡 123云盘 - 响应状态: ${response.statusCode}');
+      LogManager().cloudDrive('123云盘 - 响应状态: ${response.statusCode}');
 
       final responseData = response.data as Map<String, dynamic>;
 
@@ -167,15 +167,15 @@ class Pan123FileOperationService {
 
       if (processedResponse['code'] == 0) {
         LogManager().cloudDrive(
-          '✅ 123云盘 - 文件移动成功: $fileId -> $targetParentFileId',
+          '123云盘 - 文件移动成功: $fileId -> $targetParentFileId',
         );
         return true;
       } else {
-        LogManager().cloudDrive('❌ 123云盘 - 文件移动失败');
+        LogManager().cloudDrive('123云盘 - 文件移动失败');
         return false;
       }
     } catch (e) {
-      LogManager().cloudDrive('❌ 123云盘 - 移动文件失败: $e');
+      LogManager().cloudDrive('123云盘 - 移动文件失败: $e');
       return false;
     }
   }
@@ -192,14 +192,14 @@ class Pan123FileOperationService {
     String? parentFileId,
   }) async {
     try {
-      LogManager().cloudDrive('📋 123云盘 - 开始复制文件');
+      LogManager().cloudDrive('123云盘 - 开始复制文件');
       LogManager().cloudDrive(
-        '📋 123云盘 - 请求参数: fileId=$fileId, targetFileId=$targetFileId',
+        '123云盘 - 请求参数: fileId=$fileId, targetFileId=$targetFileId',
       );
 
       // 验证账号登录状态
       if (!account.isLoggedIn) {
-        LogManager().cloudDrive('❌ 123云盘 - 账号未登录，请先登录');
+        LogManager().cloudDrive('123云盘 - 账号未登录，请先登录');
         return false;
       }
 
@@ -224,13 +224,13 @@ class Pan123FileOperationService {
         'targetFileId': int.tryParse(targetFileId) ?? 0,
       };
 
-      LogManager().cloudDrive('🌐 123云盘 - 请求URL: $url');
+      LogManager().cloudDrive('123云盘 - 请求URL: $url');
 
       // 发送请求
       final dio = Pan123BaseService.createDio(account);
       final response = await dio.post(url.toString(), data: params);
 
-      LogManager().cloudDrive('📡 123云盘 - 响应状态: ${response.statusCode}');
+      LogManager().cloudDrive('123云盘 - 响应状态: ${response.statusCode}');
 
       final responseData = response.data as Map<String, dynamic>;
 
@@ -240,14 +240,14 @@ class Pan123FileOperationService {
       );
 
       if (processedResponse['code'] == 0) {
-        LogManager().cloudDrive('✅ 123云盘 - 文件复制成功: $fileId -> $targetFileId');
+        LogManager().cloudDrive('123云盘 - 文件复制成功: $fileId -> $targetFileId');
         return true;
       } else {
-        LogManager().cloudDrive('❌ 123云盘 - 文件复制失败');
+        LogManager().cloudDrive('123云盘 - 文件复制失败');
         return false;
       }
     } catch (e) {
-      LogManager().cloudDrive('❌ 123云盘 - 复制文件失败: $e');
+      LogManager().cloudDrive('123云盘 - 复制文件失败: $e');
       return false;
     }
   }
@@ -264,14 +264,14 @@ class Pan123FileOperationService {
     String? parentFileId,
   }) async {
     try {
-      LogManager().cloudDrive('🗑️ 123云盘 - 开始删除文件');
+      LogManager().cloudDrive('123云盘 - 开始删除文件');
       LogManager().cloudDrive(
-        '📋 123云盘 - 请求参数: fileId=$fileId, fileName=$fileName',
+        '123云盘 - 请求参数: fileId=$fileId, fileName=$fileName',
       );
 
       // 验证账号登录状态
       if (!account.isLoggedIn) {
-        LogManager().cloudDrive('❌ 123云盘 - 账号未登录，请先登录');
+        LogManager().cloudDrive('123云盘 - 账号未登录，请先登录');
         return false;
       }
 
@@ -331,13 +331,13 @@ class Pan123FileOperationService {
         'safeBox': false,
       };
 
-      LogManager().cloudDrive('🌐 123云盘 - 请求URL: $url');
+      LogManager().cloudDrive('123云盘 - 请求URL: $url');
 
       // 发送请求
       final dio = Pan123BaseService.createDio(account);
       final response = await dio.post(url.toString(), data: params);
 
-      LogManager().cloudDrive('📡 123云盘 - 响应状态: ${response.statusCode}');
+      LogManager().cloudDrive('123云盘 - 响应状态: ${response.statusCode}');
 
       final responseData = response.data as Map<String, dynamic>;
 
@@ -347,14 +347,14 @@ class Pan123FileOperationService {
       );
 
       if (processedResponse['code'] == 0) {
-        LogManager().cloudDrive('✅ 123云盘 - 文件删除成功: $fileId');
+        LogManager().cloudDrive('123云盘 - 文件删除成功: $fileId');
         return true;
       } else {
-        LogManager().cloudDrive('❌ 123云盘 - 文件删除失败');
+        LogManager().cloudDrive('123云盘 - 文件删除失败');
         return false;
       }
     } catch (e) {
-      LogManager().cloudDrive('❌ 123云盘 - 删除文件失败: $e');
+      LogManager().cloudDrive('123云盘 - 删除文件失败: $e');
       return false;
     }
   }

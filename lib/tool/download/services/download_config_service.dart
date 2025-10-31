@@ -8,20 +8,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// 下载配置模型
 class DownloadConfig {
-  final String downloadDirectory; // ✅ 已实现并使用
+  final String downloadDirectory; // 已实现并使用
   final int maxConcurrentDownloads; // TODO: 未实现 - flutter_downloader 有自己的并发控制机制
   final bool downloadOnWifiOnly; // TODO: 未实现 - 需要添加网络类型检查逻辑
   final bool downloadOnMobileNetwork; // TODO: 未实现 - 需要添加网络类型检查逻辑
-  final bool showNotification; // ✅ 已实现并使用
-  final bool openFileFromNotification; // ✅ 已实现并使用
-  final bool autoRetry; // ⚠️ 部分实现 - 配置已保存但重试逻辑需要完善
-  final int retryCount; // ⚠️ 部分实现 - 配置已保存但重试逻辑需要完善
-  final int retryDelay; // ⚠️ 部分实现 - 配置已保存但重试逻辑需要完善
+  final bool showNotification; // 已实现并使用
+  final bool openFileFromNotification; // 已实现并使用
+  final bool autoRetry; // 部分实现 - 配置已保存但重试逻辑需要完善
+  final int retryCount; // 部分实现 - 配置已保存但重试逻辑需要完善
+  final int retryDelay; // 部分实现 - 配置已保存但重试逻辑需要完善
   final bool enableResume; // TODO: 未实现 - flutter_downloader 自动处理续传
-  final int downloadTimeout; // ⚠️ 部分实现 - 需要确认 flutter_downloader 是否支持
-  final bool enableSpeedLimit; // ⚠️ 部分实现 - 需要确认 flutter_downloader 是否支持速度限制
-  final int speedLimit; // ⚠️ 部分实现 - 需要确认 flutter_downloader 是否支持速度限制
-  final Map<String, String> customHeaders; // ✅ 新增 - 支持自定义请求头
+  final int downloadTimeout; // 部分实现 - 需要确认 flutter_downloader 是否支持
+  final bool enableSpeedLimit; // 部分实现 - 需要确认 flutter_downloader 是否支持速度限制
+  final int speedLimit; // 部分实现 - 需要确认 flutter_downloader 是否支持速度限制
+  final Map<String, String> customHeaders; // 新增 - 支持自定义请求头
 
   DownloadConfig({
     required this.downloadDirectory,
@@ -77,7 +77,7 @@ class DownloadConfig {
           (key, value) => MapEntry(key.toString(), value.toString()),
         );
       } catch (e) {
-        DebugService.error('❌ 解析自定义请求头失败: $e', null);
+        DebugService.error('解析自定义请求头失败: $e', null);
         return const {};
       }
     }
@@ -150,8 +150,7 @@ class DownloadConfigService {
   /// 加载配置
   Future<DownloadConfig> loadConfig() async {
     try {
-      DebugService.log('📋 开始加载下载配置');
-
+      // 【简化】移除加载日志
       final prefs = await SharedPreferences.getInstance();
 
       // 获取保存的下载目录，如果没有保存过则使用默认目录
@@ -161,10 +160,8 @@ class DownloadConfigService {
       if (savedDirectory == null || savedDirectory.isEmpty) {
         // 如果没有保存过目录，使用默认目录
         downloadDirectory = await _initializeDefaultDirectory();
-        DebugService.log('📁 使用默认下载目录: $downloadDirectory');
       } else {
         downloadDirectory = savedDirectory;
-        DebugService.log('📁 使用保存的下载目录: $downloadDirectory');
       }
 
       final config = DownloadConfig(
@@ -186,10 +183,10 @@ class DownloadConfigService {
         customHeaders: _parseCustomHeaders(prefs.getString('custom_headers')),
       );
 
-      DebugService.success('✅ 配置加载完成');
+      DebugService.success('配置加载完成');
       return config;
     } catch (e) {
-      DebugService.error('❌ 加载配置失败', e);
+      DebugService.error('加载配置失败', e);
       return await _getDefaultConfig();
     }
   }
@@ -197,7 +194,7 @@ class DownloadConfigService {
   /// 保存配置
   Future<bool> saveConfig(DownloadConfig config) async {
     try {
-      DebugService.log('💾 开始保存下载配置');
+      DebugService.log('开始保存下载配置');
 
       final prefs = await SharedPreferences.getInstance();
       final json = config.toJson();
@@ -233,17 +230,17 @@ class DownloadConfigService {
         jsonEncode(config.customHeaders), // 直接使用 config.customHeaders
       );
 
-      DebugService.success('✅ 配置保存完成');
+      DebugService.success('配置保存完成');
       return true;
     } catch (e) {
-      DebugService.error('❌ 保存配置失败', e);
+      DebugService.error('保存配置失败', e);
       return false;
     }
   }
 
   /// 获取默认配置
   Future<DownloadConfig> _getDefaultConfig() async {
-    DebugService.log('📋 使用默认配置');
+    // 【简化】移除日志
     final defaultDirectory = await _initializeDefaultDirectory();
 
     return DownloadConfig(
@@ -274,7 +271,7 @@ class DownloadConfigService {
         (key, value) => MapEntry(key.toString(), value.toString()),
       );
     } catch (e) {
-      DebugService.error('❌ 解析自定义请求头失败: $e', null);
+      DebugService.error('解析自定义请求头失败: $e', null);
       return const {};
     }
   }
@@ -297,10 +294,10 @@ class DownloadConfigService {
         await testFile.writeAsString('test');
         await testFile.delete();
 
-        DebugService.log('✅ 外部存储目录可用: $defaultDir');
+        // 【简化】只在出错时打印
         return defaultDir;
       } catch (e) {
-        DebugService.log('⚠️ 外部存储不可用，使用内部存储');
+        // 外部存储不可用，静默切换到内部存储
       }
 
       // 如果外部存储不可用，使用应用内部存储
@@ -312,10 +309,9 @@ class DownloadConfigService {
         await dir.create(recursive: true);
       }
 
-      DebugService.log('✅ 使用内部存储目录: $internalDir');
       return internalDir;
     } catch (e) {
-      DebugService.error('❌ 初始化默认目录失败', e);
+      DebugService.error('初始化默认目录失败', e);
       return '/storage/emulated/0/Download/coco';
     }
   }
@@ -341,7 +337,7 @@ class DownloadConfigService {
   /// 获取有效的保存路径（供其他功能使用）
   static Future<String> getValidSavePath() async {
     try {
-      DebugService.log('🔍 获取有效的保存路径');
+      DebugService.log('获取有效的保存路径');
 
       // 获取下载配置
       final configService = DownloadConfigService();
@@ -353,10 +349,10 @@ class DownloadConfigService {
         config.downloadDirectory,
       );
 
-      DebugService.log('✅ 有效保存路径: $validPath');
+      DebugService.log('有效保存路径: $validPath');
       return validPath;
     } catch (e) {
-      DebugService.error('❌ 获取保存路径失败', e);
+      DebugService.error('获取保存路径失败', e);
       // 回退到应用文档目录
       final appDir = await getApplicationDocumentsDirectory();
       return '${appDir.path}/downloads';

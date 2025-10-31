@@ -17,7 +17,7 @@ class PerformanceMonitor {
     Map<String, dynamic>? metadata,
   }) {
     final timer = PerformanceTimer._(operationName, metadata);
-    LogManager().cloudDrive('⏱️ 开始监控操作: $operationName');
+    LogManager().cloudDrive('开始监控操作: $operationName');
     return timer;
   }
 
@@ -41,7 +41,7 @@ class PerformanceMonitor {
     );
 
     LogManager().cloudDrive(
-      '✅ 操作完成: $operationName (${duration.inMilliseconds}ms)',
+      '操作完成: $operationName (${duration.inMilliseconds}ms)',
     );
   }
 
@@ -60,7 +60,7 @@ class PerformanceMonitor {
       ),
     );
 
-    LogManager().error('❌ 操作失败: $operationName - $error');
+    LogManager().error('操作失败: $operationName - $error');
   }
 
   /// 获取操作指标
@@ -125,7 +125,7 @@ class PerformanceMonitor {
   void reset() {
     _metrics.clear();
     _eventHistory.clear();
-    LogManager().cloudDrive('🔄 性能监控数据已重置');
+    LogManager().cloudDrive('性能监控数据已重置');
   }
 
   /// 更新指标
@@ -311,7 +311,7 @@ class PerformanceReport {
   /// 生成报告摘要
   String get summary {
     final buffer = StringBuffer();
-    buffer.writeln('📊 性能报告摘要');
+    buffer.writeln('性能报告摘要');
     buffer.writeln('总操作数: $totalOperations');
     buffer.writeln('成功操作: $successfulOperations');
     buffer.writeln('失败操作: $failedOperations');

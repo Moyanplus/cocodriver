@@ -109,7 +109,7 @@ class CloudDriveLogger {
   /// 设置日志配置
   static void setConfig(CloudDriveLogConfig config) {
     _config = config;
-    LogManager().cloudDrive('🔧 设置日志配置: ${config.minLevel.name}');
+    LogManager().cloudDrive('设置日志配置: ${config.minLevel.name}');
   }
 
   /// 获取日志配置
@@ -145,7 +145,7 @@ class CloudDriveLogger {
 
     if (params != null && level == CloudDriveLogLevel.debug) {
       for (final entry in params.entries) {
-        LogManager().cloudDrive('📋 ${entry.key}: ${entry.value}');
+        LogManager().cloudDrive('${entry.key}: ${entry.value}');
       }
     }
 
@@ -170,13 +170,11 @@ class CloudDriveLogger {
   }) {
     if (!_config.enableErrorLogging) return;
 
-    LogManager().error(
-      '❌ $operation 失败 - ${cloudDriveType.displayName}: $error',
-    );
+    LogManager().error('$operation 失败 - ${cloudDriveType.displayName}: $error');
 
     if (context != null) {
       for (final entry in context.entries) {
-        LogManager().cloudDrive('📋 ${entry.key}: ${entry.value}');
+        LogManager().cloudDrive('${entry.key}: ${entry.value}');
       }
     }
 
@@ -203,12 +201,12 @@ class CloudDriveLogger {
     if (!_shouldLog(CloudDriveLogLevel.info)) return;
 
     final message =
-        '✅ $operation 成功 - ${cloudDriveType.displayName}${details != null ? ': $details' : ''}';
+        '$operation 成功 - ${cloudDriveType.displayName}${details != null ? ': $details' : ''}';
     LogManager().cloudDrive(message);
 
     if (result != null && _config.minLevel == CloudDriveLogLevel.debug) {
       for (final entry in result.entries) {
-        LogManager().cloudDrive('📊 ${entry.key}: ${entry.value}');
+        LogManager().cloudDrive('${entry.key}: ${entry.value}');
       }
     }
 
@@ -510,13 +508,13 @@ class CloudDriveLogger {
   static String _getEmojiForLevel(CloudDriveLogLevel level) {
     switch (level) {
       case CloudDriveLogLevel.debug:
-        return '🔍';
+        return 'TRACE';
       case CloudDriveLogLevel.info:
-        return '🔧';
+        return 'INFO';
       case CloudDriveLogLevel.warning:
-        return '⚠️';
+        return 'WARN';
       case CloudDriveLogLevel.error:
-        return '❌';
+        return 'ERROR';
     }
   }
 }

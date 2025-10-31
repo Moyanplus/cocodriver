@@ -32,16 +32,16 @@ class LanzouBaseService {
       InterceptorsWrapper(
         onRequest: (options, handler) {
           LogManager().cloudDrive(
-            '📡 蓝奏云盘 - 发送请求: ${options.method} ${options.uri}',
+            '蓝奏云盘 - 发送请求: ${options.method} ${options.uri}',
             
           );
           LogManager().cloudDrive(
-            '📋 蓝奏云盘 - 请求头: ${options.headers}',
+            '蓝奏云盘 - 请求头: ${options.headers}',
             
           );
           if (options.data != null) {
             LogManager().cloudDrive(
-              '📤 蓝奏云盘 - 请求体: ${options.data}',
+              '蓝奏云盘 - 请求体: ${options.data}',
               
             );
           }
@@ -49,23 +49,23 @@ class LanzouBaseService {
         },
         onResponse: (response, handler) {
           LogManager().cloudDrive(
-            '📡 蓝奏云盘 - 收到响应: ${response.statusCode}',
+            '蓝奏云盘 - 收到响应: ${response.statusCode}',
             
           );
           LogManager().cloudDrive(
-            '📄 蓝奏云盘 - 响应数据: ${response.data}',
+            '蓝奏云盘 - 响应数据: ${response.data}',
             
           );
           handler.next(response);
         },
         onError: (error, handler) {
           LogManager().cloudDrive(
-            '❌ 蓝奏云盘 - 请求错误: ${error.message}',
+            '蓝奏云盘 - 请求错误: ${error.message}',
             
           );
           if (error.response != null) {
             LogManager().cloudDrive(
-              '📄 蓝奏云盘 - 错误响应: ${error.response?.data}',
+              '蓝奏云盘 - 错误响应: ${error.response?.data}',
               
             );
           }

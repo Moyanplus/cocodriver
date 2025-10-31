@@ -22,14 +22,14 @@ class LanzouDirectLinkService {
     String? password,
   }) async {
     try {
-      LogManager().cloudDrive('🔗 开始解析蓝奏云直链: $shareUrl');
+      LogManager().cloudDrive('开始解析蓝奏云直链: $shareUrl');
       if (password != null) {
         LogManager().cloudDrive('🔑 使用密码: $password');
       }
 
       // 1. 格式化URL
       final formattedUrl = _formatUrl(shareUrl);
-      LogManager().cloudDrive('🔗 格式化后URL: $formattedUrl');
+      LogManager().cloudDrive('格式化后URL: $formattedUrl');
 
       // 2. 获取页面内容
       final content = await _getPageContent(formattedUrl);
@@ -48,11 +48,11 @@ class LanzouDirectLinkService {
         throw Exception('解析失败');
       }
 
-      LogManager().cloudDrive('📄 文件信息: $fileInfo');
+      LogManager().cloudDrive('文件信息: $fileInfo');
 
       // 5. 判断是否需要密码
       final needsPassword = content.contains('function down_p(){');
-      LogManager().cloudDrive('🔐 是否需要密码: $needsPassword');
+      LogManager().cloudDrive('是否需要密码: $needsPassword');
 
       String apiResponse;
       if (needsPassword) {
@@ -85,19 +85,19 @@ class LanzouDirectLinkService {
         'originalUrl': shareUrl,
       };
     } catch (e) {
-      LogManager().error('❌ 解析直链失败: $e');
+      LogManager().error('解析直链失败: $e');
       return null;
     }
   }
 
   /// 格式化URL
   static String _formatUrl(String url) {
-    LogManager().cloudDrive('🔗 原始URL: $url');
+    LogManager().cloudDrive('原始URL: $url');
 
     // 如果URL已经是完整的分享链接，直接返回
     if (url.contains('lanzou') && !url.contains('/')) {
       // 这种情况可能是域名，需要用户提供完整的分享链接
-      LogManager().cloudDrive('⚠️ URL格式不正确，需要完整的分享链接');
+      LogManager().cloudDrive('URL格式不正确，需要完整的分享链接');
       return url;
     }
 
@@ -106,7 +106,7 @@ class LanzouDirectLinkService {
       final parts = url.split('.com/');
       if (parts.length > 1) {
         final formattedUrl = '${LanzouConfig.lanzoupUrl}/${parts[1]}';
-        LogManager().cloudDrive('🔗 格式化后URL: $formattedUrl');
+        LogManager().cloudDrive('格式化后URL: $formattedUrl');
         return formattedUrl;
       }
     }
@@ -118,19 +118,19 @@ class LanzouDirectLinkService {
       if (path.isNotEmpty && path != '/') {
         final fileId = path.startsWith('/') ? path.substring(1) : path;
         final formattedUrl = '${LanzouConfig.lanzoupUrl}/$fileId';
-        LogManager().cloudDrive('🔗 格式化后URL: $formattedUrl');
+        LogManager().cloudDrive('格式化后URL: $formattedUrl');
         return formattedUrl;
       }
     }
 
-    LogManager().cloudDrive('🔗 无需格式化，使用原URL: $url');
+    LogManager().cloudDrive('无需格式化，使用原URL: $url');
     return url;
   }
 
   /// 获取页面内容
   static Future<String?> _getPageContent(String url) async {
     try {
-      LogManager().cloudDrive('🔗 获取页面内容: $url');
+      LogManager().cloudDrive('获取页面内容: $url');
 
       final response = await _dio.get(
         url,
@@ -143,35 +143,35 @@ class LanzouDirectLinkService {
 
       if (response.statusCode == 200) {
         final content = response.data;
-        LogManager().cloudDrive('📄 页面内容长度: ${content.length}');
+        LogManager().cloudDrive('页面内容长度: ${content.length}');
 
         // 显示页面内容预览
         if (content.length < 1000) {
-          LogManager().cloudDrive('📄 完整页面内容: $content');
+          LogManager().cloudDrive('完整页面内容: $content');
         } else {
-          LogManager().cloudDrive('📄 页面内容预览: ${content.substring(0, 500)}...');
+          LogManager().cloudDrive('页面内容预览: ${content.substring(0, 500)}...');
         }
 
         // 检查页面是否包含关键信息
         LogManager().cloudDrive(
-          '🔍 页面包含 "function down_p()": ${content.contains('function down_p()')}',
+          '页面包含 "function down_p()": ${content.contains('function down_p()')}',
         );
         LogManager().cloudDrive(
-          '🔍 页面包含 "iframe": ${content.contains('iframe')}',
+          '页面包含 "iframe": ${content.contains('iframe')}',
         );
         LogManager().cloudDrive(
-          '🔍 页面包含 "文件取消分享了": ${content.contains('文件取消分享了')}',
+          '页面包含 "文件取消分享了": ${content.contains('文件取消分享了')}',
         );
-        LogManager().cloudDrive('🔍 页面包含 "蓝奏": ${content.contains('蓝奏')}');
-        LogManager().cloudDrive('🔍 页面包含 "分享": ${content.contains('分享')}');
+        LogManager().cloudDrive('页面包含 "蓝奏": ${content.contains('蓝奏')}');
+        LogManager().cloudDrive('页面包含 "分享": ${content.contains('分享')}');
 
         return content;
       } else {
-        LogManager().error('❌ 页面请求失败: ${response.statusCode}');
+        LogManager().error('页面请求失败: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      LogManager().error('❌ 获取页面内容失败: $e');
+      LogManager().error('获取页面内容失败: $e');
       return null;
     }
   }
@@ -205,7 +205,7 @@ class LanzouDirectLinkService {
 
       return {'name': name, 'size': size, 'time': time ?? ''};
     } catch (e) {
-      LogManager().error('❌ 提取文件信息失败: $e');
+      LogManager().error('提取文件信息失败: $e');
       return null;
     }
   }
@@ -237,7 +237,7 @@ class LanzouDirectLinkService {
     String url,
     String password,
   ) async {
-    LogManager().cloudDrive('🔐 处理需要密码的文件');
+    LogManager().cloudDrive('处理需要密码的文件');
 
     // 提取sign参数
     String sign = '';
@@ -259,7 +259,7 @@ class LanzouDirectLinkService {
     final ajaxmMatch = RegExp(r'ajaxm\.php\?file=(\d+)').firstMatch(content);
     final ajaxmPath = ajaxmMatch?.group(0) ?? '';
 
-    LogManager().cloudDrive('🔗 ajaxm路径: $ajaxmPath');
+    LogManager().cloudDrive('ajaxm路径: $ajaxmPath');
 
     // 发送POST请求
     final postData = {
@@ -270,7 +270,7 @@ class LanzouDirectLinkService {
     };
 
     final apiUrl = '${LanzouConfig.lanzouxUrl}/$ajaxmPath';
-    LogManager().cloudDrive('📡 发送POST请求到: $apiUrl');
+    LogManager().cloudDrive('发送POST请求到: $apiUrl');
 
     final response = await _dio.post(
       apiUrl,
@@ -284,7 +284,7 @@ class LanzouDirectLinkService {
       ),
     );
 
-    LogManager().cloudDrive('📡 POST响应: ${response.data}');
+    LogManager().cloudDrive('POST响应: ${response.data}');
     return jsonEncode(response.data);
   }
 
@@ -297,7 +297,7 @@ class LanzouDirectLinkService {
     final iframePath = iframeMatch?.group(1) ?? '';
 
     final iframeUrl = '${LanzouConfig.lanzoupUrl}/$iframePath';
-    LogManager().cloudDrive('🔗 iframe链接: $iframeUrl');
+    LogManager().cloudDrive('iframe链接: $iframeUrl');
 
     // 获取iframe内容
     final iframeResponse = await _dio.get(
@@ -306,7 +306,7 @@ class LanzouDirectLinkService {
     );
 
     final iframeContent = iframeResponse.data;
-    LogManager().cloudDrive('📄 iframe内容长度: ${iframeContent.length}');
+    LogManager().cloudDrive('iframe内容长度: ${iframeContent.length}');
 
     // 提取sign参数
     final signMatch = RegExp(r"wp_sign = '(.*?)'").firstMatch(iframeContent);
@@ -329,7 +329,7 @@ class LanzouDirectLinkService {
       }
     }
 
-    LogManager().cloudDrive('🔗 ajaxm路径: $ajaxmPath');
+    LogManager().cloudDrive('ajaxm路径: $ajaxmPath');
 
     // 发送POST请求
     final postData = {
@@ -340,7 +340,7 @@ class LanzouDirectLinkService {
     };
 
     final apiUrl = '${LanzouConfig.lanzouxUrl}/$ajaxmPath';
-    LogManager().cloudDrive('📡 发送POST请求到: $apiUrl');
+    LogManager().cloudDrive('发送POST请求到: $apiUrl');
 
     final response = await _dio.post(
       apiUrl,
@@ -354,7 +354,7 @@ class LanzouDirectLinkService {
       ),
     );
 
-    LogManager().cloudDrive('📡 POST响应: ${response.data}');
+    LogManager().cloudDrive('POST响应: ${response.data}');
     return jsonEncode(response.data);
   }
 
@@ -372,7 +372,7 @@ class LanzouDirectLinkService {
       }
 
       final downloadLink = '${response['dom']}/file/${response['url']}';
-      LogManager().cloudDrive('🔗 构建下载链接: $downloadLink');
+      LogManager().cloudDrive('构建下载链接: $downloadLink');
 
       // 获取最终直链
       final finalLink = await _getRedirectUrl(downloadLink);
@@ -384,7 +384,7 @@ class LanzouDirectLinkService {
       // 清理链接参数
       return finalLink.replaceAll(RegExp(r'pid=.*?&'), '');
     } catch (e) {
-      LogManager().error('❌ 获取下载链接失败: $e');
+      LogManager().error('获取下载链接失败: $e');
       return null;
     }
   }
@@ -392,7 +392,7 @@ class LanzouDirectLinkService {
   /// 获取重定向URL
   static Future<String> _getRedirectUrl(String url) async {
     try {
-      LogManager().cloudDrive('🔗 获取重定向URL: $url');
+      LogManager().cloudDrive('获取重定向URL: $url');
 
       final response = await _dio.head(
         url,
@@ -405,13 +405,13 @@ class LanzouDirectLinkService {
 
       final redirectUrl = response.headers.value('location');
       if (redirectUrl != null && redirectUrl.isNotEmpty) {
-        LogManager().cloudDrive('🔗 重定向到: $redirectUrl');
+        LogManager().cloudDrive('重定向到: $redirectUrl');
         return redirectUrl;
       }
 
       return '';
     } catch (e) {
-      LogManager().error('❌ 获取重定向URL失败: $e');
+      LogManager().error('获取重定向URL失败: $e');
       return '';
     }
   }

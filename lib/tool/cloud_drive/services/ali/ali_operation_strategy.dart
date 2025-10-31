@@ -20,13 +20,13 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }) async {
     try {
       LogManager().cloudDrive(
-        '📁 阿里云盘 - 获取文件列表: path=$path, folderId=$folderId',
+        '阿里云盘 - 获取文件列表: path=$path, folderId=$folderId',
       );
 
       // 首先获取drive_id
       final driveId = await AliCloudDriveService.getDriveId(account: account);
       if (driveId == null) {
-        LogManager().cloudDrive('❌ 阿里云盘 - 无法获取drive_id，文件列表获取失败');
+        LogManager().cloudDrive('阿里云盘 - 无法获取drive_id，文件列表获取失败');
         return [];
       }
 
@@ -37,11 +37,11 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         parentFileId: folderId ?? 'root',
       );
 
-      LogManager().cloudDrive('✅ 阿里云盘 - 文件列表获取完成: ${files.length} 个文件');
+      LogManager().cloudDrive('阿里云盘 - 文件列表获取完成: ${files.length} 个文件');
 
       return files;
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 获取文件列表异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 获取文件列表异常: $e');
       return [];
     }
   }
@@ -56,7 +56,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
       return result;
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 获取账号详情异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 获取账号详情异常: $e');
       return null;
     }
   }
@@ -69,7 +69,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }) async {
     try {
       LogManager().cloudDrive(
-        '📁 阿里云盘 - 创建文件夹: name=$folderName, parentFolderId=$parentFolderId',
+        '阿里云盘 - 创建文件夹: name=$folderName, parentFolderId=$parentFolderId',
       );
 
       // 使用专门的文件操作服务创建文件夹
@@ -81,7 +81,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
 
       if (createdFolder != null) {
         LogManager().cloudDrive(
-          '✅ 阿里云盘 - 文件夹创建操作完成: ${createdFolder.name} (ID: ${createdFolder.id})',
+          '阿里云盘 - 文件夹创建操作完成: ${createdFolder.name} (ID: ${createdFolder.id})',
         );
 
         // 返回创建成功的文件夹信息
@@ -96,11 +96,11 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
           },
         };
       } else {
-        LogManager().cloudDrive('❌ 阿里云盘 - 文件夹创建操作失败: $folderName');
+        LogManager().cloudDrive('阿里云盘 - 文件夹创建操作失败: $folderName');
         return null;
       }
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 创建文件夹异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 创建文件夹异常: $e');
       return null;
     }
   }
@@ -111,14 +111,14 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
   }) async {
     try {
-      LogManager().cloudDrive('🗑️ 阿里云盘 - 删除文件: ${file.name}');
+      LogManager().cloudDrive('阿里云盘 - 删除文件: ${file.name}');
 
       // TODO: 实现阿里云盘删除文件
       // 这里需要实现具体的API调用逻辑
 
       return false;
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 删除文件异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 删除文件异常: $e');
       return false;
     }
   }
@@ -131,11 +131,11 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }) async {
     try {
       LogManager().cloudDrive(
-        '📋 阿里云盘 - 移动文件: ${file.name} -> $targetFolderId',
+        '阿里云盘 - 移动文件: ${file.name} -> $targetFolderId',
       );
 
       if (targetFolderId == null) {
-        LogManager().cloudDrive('❌ 阿里云盘 - 目标文件夹ID为空，移动失败');
+        LogManager().cloudDrive('阿里云盘 - 目标文件夹ID为空，移动失败');
         return false;
       }
 
@@ -148,17 +148,17 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
 
       if (success) {
         LogManager().cloudDrive(
-          '✅ 阿里云盘 - 文件移动操作完成: ${file.name} -> $targetFolderId',
+          '阿里云盘 - 文件移动操作完成: ${file.name} -> $targetFolderId',
         );
       } else {
         LogManager().cloudDrive(
-          '❌ 阿里云盘 - 文件移动操作失败: ${file.name} -> $targetFolderId',
+          '阿里云盘 - 文件移动操作失败: ${file.name} -> $targetFolderId',
         );
       }
 
       return success;
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 移动文件异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 移动文件异常: $e');
       return false;
     }
   }
@@ -171,14 +171,14 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? newName,
   }) async {
     try {
-      LogManager().cloudDrive('📄 阿里云盘 - 复制文件: ${file.name} -> $destPath');
+      LogManager().cloudDrive('阿里云盘 - 复制文件: ${file.name} -> $destPath');
 
       // 阿里云盘暂不支持复制操作
-      LogManager().cloudDrive('⚠️ 阿里云盘暂不支持复制操作');
+      LogManager().cloudDrive('阿里云盘暂不支持复制操作');
 
       return false;
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 复制文件异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 复制文件异常: $e');
       return false;
     }
   }
@@ -190,7 +190,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String newName,
   }) async {
     try {
-      LogManager().cloudDrive('✏️ 阿里云盘 - 重命名文件: ${file.name} -> $newName');
+      LogManager().cloudDrive('阿里云盘 - 重命名文件: ${file.name} -> $newName');
 
       // 使用专门的文件操作服务进行重命名
       final success = await AliFileOperationService.renameFile(
@@ -200,14 +200,14 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        LogManager().cloudDrive('✅ 阿里云盘 - 文件重命名操作完成: ${file.name} -> $newName');
+        LogManager().cloudDrive('阿里云盘 - 文件重命名操作完成: ${file.name} -> $newName');
       } else {
-        LogManager().cloudDrive('❌ 阿里云盘 - 文件重命名操作失败: ${file.name} -> $newName');
+        LogManager().cloudDrive('阿里云盘 - 文件重命名操作失败: ${file.name} -> $newName');
       }
 
       return success;
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 重命名文件异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 重命名文件异常: $e');
       return false;
     }
   }
@@ -218,7 +218,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
   }) async {
     try {
-      LogManager().cloudDrive('🔗 阿里云盘 - 获取下载链接: ${file.name}');
+      LogManager().cloudDrive('阿里云盘 - 获取下载链接: ${file.name}');
 
       // 使用专门的文件操作服务获取下载链接
       final downloadUrl = await AliFileOperationService.getDownloadUrl(
@@ -227,14 +227,14 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (downloadUrl != null) {
-        LogManager().cloudDrive('✅ 阿里云盘 - 下载链接获取操作完成: ${file.name}');
+        LogManager().cloudDrive('阿里云盘 - 下载链接获取操作完成: ${file.name}');
       } else {
-        LogManager().cloudDrive('❌ 阿里云盘 - 下载链接获取操作失败: ${file.name}');
+        LogManager().cloudDrive('阿里云盘 - 下载链接获取操作失败: ${file.name}');
       }
 
       return downloadUrl;
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 获取下载链接异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 获取下载链接异常: $e');
       return null;
     }
   }
@@ -247,12 +247,12 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String password,
   }) async {
     try {
-      LogManager().cloudDrive('🚀 阿里云盘 - 获取高速下载链接: ${file.name}');
+      LogManager().cloudDrive('阿里云盘 - 获取高速下载链接: ${file.name}');
 
       // TODO: 实现阿里云盘高速下载
       return null;
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 获取高速下载链接异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 获取高速下载链接异常: $e');
       return null;
     }
   }
@@ -265,12 +265,12 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     int? expireDays,
   }) async {
     try {
-      LogManager().cloudDrive('🔗 阿里云盘 - 创建分享链接: ${files.length}个文件');
+      LogManager().cloudDrive('阿里云盘 - 创建分享链接: ${files.length}个文件');
 
       // TODO: 实现阿里云盘分享链接创建
       return null;
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 创建分享链接异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 创建分享链接异常: $e');
       return null;
     }
   }

@@ -41,7 +41,7 @@ enum DebugCategory {
 
 /// 调试服务 - 支持分类控制
 class DebugService {
-  static const String _prefix = '🔍 [DEBUG]';
+  static const String _prefix = '[DEBUG]';
 
   /// 调试开关 - 总开关
   static bool _isDebugEnabled = true;
@@ -160,29 +160,29 @@ class DebugService {
   static String _getCategoryIcon(DebugCategory category) {
     switch (category) {
       case DebugCategory.general:
-        return '🔧';
+        return 'GENERAL';
       case DebugCategory.system:
-        return '⚙️';
+        return 'SYSTEM';
       case DebugCategory.theme:
-        return '🎨';
+        return 'THEME';
       case DebugCategory.user:
-        return '👤';
+        return 'USER';
       case DebugCategory.network:
-        return '🌐';
+        return 'NETWORK';
       case DebugCategory.state:
-        return '⚡';
+        return 'STATE';
       case DebugCategory.performance:
-        return '📊';
+        return 'PERF';
       case DebugCategory.file:
-        return '📁';
+        return 'FILE';
       case DebugCategory.cache:
-        return '💾';
+        return 'CACHE';
       case DebugCategory.navigation:
-        return '🧭';
+        return 'NAV';
       case DebugCategory.tools:
-        return '🛠️';
+        return 'TOOLS';
       case DebugCategory.other:
-        return '📝';
+        return 'OTHER';
     }
   }
 
@@ -272,7 +272,7 @@ class DebugService {
       final errorInfo = error != null ? ' - $error' : '';
       final subCategoryInfo = subCategory != null ? '[$subCategory]' : '';
       print(
-        '$_prefix $icon [$categoryName]$subCategoryInfo [$timestamp] ❌ ERROR: $message$errorInfo',
+        '$_prefix $icon [$categoryName]$subCategoryInfo [$timestamp] ERROR: $message$errorInfo',
       );
     }
   }
@@ -297,7 +297,7 @@ class DebugService {
     if (kDebugMode) {
       final subCategoryInfo = subCategory != null ? '[$subCategory]' : '';
       print(
-        '$_prefix $icon [$categoryName]$subCategoryInfo [$timestamp] ⚠️ WARNING: $message',
+        '$_prefix $icon [$categoryName]$subCategoryInfo [$timestamp] WARNING: $message',
       );
     }
   }
@@ -336,7 +336,7 @@ class DebugService {
       final bodyInfo = body != null ? ' - Body: $body' : '';
       final subCategoryInfo = subCategory != null ? '[$subCategory]' : '';
       print(
-        '$_prefix $icon [$categoryName]$subCategoryInfo [$timestamp] 📤 API REQUEST: $method $url$headerInfo$bodyInfo',
+        '$_prefix $icon [$categoryName]$subCategoryInfo [$timestamp] API REQUEST: $method $url$headerInfo$bodyInfo',
       );
     }
   }
@@ -360,10 +360,10 @@ class DebugService {
     final timestamp = DateTime.now().toString().substring(11, 19);
 
     if (kDebugMode) {
-      final statusIcon = statusCode >= 200 && statusCode < 300 ? '✅' : '❌';
+      final statusIcon = statusCode >= 200 && statusCode < 300 ? 'OK' : 'ERROR';
       final subCategoryInfo = subCategory != null ? '[$subCategory]' : '';
       print(
-        '$_prefix $icon [$categoryName]$subCategoryInfo [$timestamp] 📥 API RESPONSE: $statusIcon $statusCode - Body: ${body.length > 200 ? '${body.substring(0, 200)}...' : body}',
+        '$_prefix $icon [$categoryName]$subCategoryInfo [$timestamp] API RESPONSE: $statusIcon $statusCode - Body: ${body.length > 200 ? '${body.substring(0, 200)}...' : body}',
       );
     }
   }
@@ -388,7 +388,7 @@ class DebugService {
     if (kDebugMode) {
       final subCategoryInfo = subCategory != null ? '[$subCategory]' : '';
       print(
-        '$_prefix $icon [$categoryName]$subCategoryInfo [$timestamp] ✅ SUCCESS: $message',
+        '$_prefix $icon [$categoryName]$subCategoryInfo [$timestamp] SUCCESS: $message',
       );
     }
   }

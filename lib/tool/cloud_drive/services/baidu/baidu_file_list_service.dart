@@ -225,7 +225,7 @@ class BaiduFileListService {
   ///
   /// [message] 日志消息
   static void _logSuccess(String message) {
-    LogManager().cloudDrive('✅ 百度网盘文件列表 - $message');
+    LogManager().cloudDrive('百度网盘文件列表 - $message');
   }
 
   /// 统一错误日志记录
@@ -235,6 +235,6 @@ class BaiduFileListService {
   /// [message] 日志消息
   /// [error] 错误信息
   static void _logError(String message, dynamic error) {
-    LogManager().cloudDrive('❌ 百度网盘文件列表 - $message: $error');
+    LogManager().cloudDrive('百度网盘文件列表 - $message: $error');
   }
 }

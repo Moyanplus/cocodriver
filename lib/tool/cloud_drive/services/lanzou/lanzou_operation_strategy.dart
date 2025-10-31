@@ -12,19 +12,19 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    LogManager().cloudDrive('🔗 蓝奏云 - 获取下载链接开始');
-    LogManager().cloudDrive('📄 蓝奏云 - 文件信息: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('蓝奏云 - 获取下载链接开始');
+    LogManager().cloudDrive('蓝奏云 - 文件信息: ${file.name} (ID: ${file.id})');
     LogManager().cloudDrive(
-      '👤 蓝奏云 - 账号信息: ${account.name} (${account.type.displayName})',
+      '蓝奏云 - 账号信息: ${account.name} (${account.type.displayName})',
     );
 
     try {
       // 蓝奏云暂不支持API下载，返回null
-      LogManager().cloudDrive('⚠️ 蓝奏云 - 暂不支持API下载，需要用户手动操作');
+      LogManager().cloudDrive('蓝奏云 - 暂不支持API下载，需要用户手动操作');
       return null;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive('❌ 蓝奏云 - 获取下载链接异常: $e');
-      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('蓝奏云 - 获取下载链接异常: $e');
+      LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
       rethrow;
     }
   }
@@ -36,9 +36,9 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String shareUrl,
     required String password,
   }) async {
-    LogManager().cloudDrive('🚀 蓝奏云 - 高速下载功能暂不支持');
-    LogManager().cloudDrive('📄 蓝奏云 - 文件: ${file.name}');
-    LogManager().cloudDrive('🔗 蓝奏云 - 分享链接: $shareUrl');
+    LogManager().cloudDrive('蓝奏云 - 高速下载功能暂不支持');
+    LogManager().cloudDrive('蓝奏云 - 文件: ${file.name}');
+    LogManager().cloudDrive('蓝奏云 - 分享链接: $shareUrl');
     return null;
   }
 
@@ -49,18 +49,18 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? password,
     int? expireDays,
   }) async {
-    LogManager().cloudDrive('🔗 蓝奏云 - 创建分享链接开始');
-    LogManager().cloudDrive('📄 蓝奏云 - 文件数量: ${files.length}');
-    LogManager().cloudDrive('🔐 蓝奏云 - 密码: ${password ?? '无'}');
-    LogManager().cloudDrive('⏰ 蓝奏云 - 过期天数: ${expireDays ?? '永久'}');
+    LogManager().cloudDrive('蓝奏云 - 创建分享链接开始');
+    LogManager().cloudDrive('蓝奏云 - 文件数量: ${files.length}');
+    LogManager().cloudDrive('蓝奏云 - 密码: ${password ?? '无'}');
+    LogManager().cloudDrive('蓝奏云 - 过期天数: ${expireDays ?? '永久'}');
 
     try {
       // TODO: 实现蓝奏云分享链接生成
-      LogManager().cloudDrive('⚠️ 蓝奏云 - 分享链接生成功能暂未实现');
+      LogManager().cloudDrive('蓝奏云 - 分享链接生成功能暂未实现');
       return null;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive('❌ 蓝奏云 - 创建分享链接异常: $e');
-      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('蓝奏云 - 创建分享链接异常: $e');
+      LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -71,10 +71,10 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
     String? targetFolderId,
   }) async {
-    LogManager().cloudDrive('🚚 蓝奏云 - 开始移动文件');
-    LogManager().cloudDrive('📄 蓝奏云 - 文件: ${file.name} (ID: ${file.id})');
-    LogManager().cloudDrive('📁 蓝奏云 - 目标文件夹ID: ${targetFolderId ?? '-1'}');
-    LogManager().cloudDrive('👤 蓝奏云 - 账号: ${account.name}');
+    LogManager().cloudDrive('蓝奏云 - 开始移动文件');
+    LogManager().cloudDrive('蓝奏云 - 文件: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('蓝奏云 - 目标文件夹ID: ${targetFolderId ?? '-1'}');
+    LogManager().cloudDrive('蓝奏云 - 账号: ${account.name}');
 
     try {
       // 调用蓝奏云服务的移动文件方法
@@ -85,15 +85,15 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        LogManager().cloudDrive('✅ 蓝奏云 - 文件移动成功');
+        LogManager().cloudDrive('蓝奏云 - 文件移动成功');
       } else {
-        LogManager().cloudDrive('❌ 蓝奏云 - 文件移动失败');
+        LogManager().cloudDrive('蓝奏云 - 文件移动失败');
       }
 
       return success;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive('❌ 蓝奏云 - 移动文件异常: $e');
-      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('蓝奏云 - 移动文件异常: $e');
+      LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -103,16 +103,16 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) async {
-    LogManager().cloudDrive('🗑️ 蓝奏云 - 删除文件开始');
-    LogManager().cloudDrive('📄 蓝奏云 - 文件: ${file.name} (ID: ${file.id})');
+    LogManager().cloudDrive('蓝奏云 - 删除文件开始');
+    LogManager().cloudDrive('蓝奏云 - 文件: ${file.name} (ID: ${file.id})');
 
     try {
       // TODO: 实现蓝奏云文件删除
-      LogManager().cloudDrive('⚠️ 蓝奏云 - 文件删除功能暂未实现');
+      LogManager().cloudDrive('蓝奏云 - 文件删除功能暂未实现');
       return false;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive('❌ 蓝奏云 - 删除文件异常: $e');
-      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('蓝奏云 - 删除文件异常: $e');
+      LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -123,17 +123,17 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveFile file,
     required String newName,
   }) async {
-    LogManager().cloudDrive('✏️ 蓝奏云 - 重命名文件开始');
+    LogManager().cloudDrive('蓝奏云 - 重命名文件开始');
     LogManager().cloudDrive('�� 蓝奏云 - 原文件名: ${file.name} (ID: ${file.id})');
-    LogManager().cloudDrive('📄 蓝奏云 - 新文件名: $newName');
+    LogManager().cloudDrive('蓝奏云 - 新文件名: $newName');
 
     try {
       // TODO: 实现蓝奏云文件重命名
-      LogManager().cloudDrive('⚠️ 蓝奏云 - 文件重命名功能暂未实现');
+      LogManager().cloudDrive('蓝奏云 - 文件重命名功能暂未实现');
       return false;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive('❌ 蓝奏云 - 重命名文件异常: $e');
-      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('蓝奏云 - 重命名文件异常: $e');
+      LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
       return false;
     }
   }
@@ -172,16 +172,16 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String folderName,
     String? parentFolderId,
   }) async {
-    LogManager().cloudDrive('📁 蓝奏云 - 创建文件夹开始');
-    LogManager().cloudDrive('📁 文件夹名称: $folderName');
-    LogManager().cloudDrive('📁 父文件夹ID: $parentFolderId');
+    LogManager().cloudDrive('蓝奏云 - 创建文件夹开始');
+    LogManager().cloudDrive('文件夹名称: $folderName');
+    LogManager().cloudDrive('父文件夹ID: $parentFolderId');
 
     try {
       // TODO: 实现蓝奏云创建文件夹功能
-      LogManager().cloudDrive('⚠️ 蓝奏云 - 创建文件夹功能暂未实现');
+      LogManager().cloudDrive('蓝奏云 - 创建文件夹功能暂未实现');
       return null;
     } catch (e) {
-      LogManager().error('❌ 蓝奏云 - 创建文件夹异常');
+      LogManager().error('蓝奏云 - 创建文件夹异常');
       return null;
     }
   }
@@ -191,9 +191,9 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
   }) async {
     try {
-      LogManager().cloudDrive('📋 蓝奏云 - 获取账号详情开始');
+      LogManager().cloudDrive('蓝奏云 - 获取账号详情开始');
       LogManager().cloudDrive(
-        '👤 蓝奏云 - 账号信息: ${account.name} (${account.type.displayName})',
+        '蓝奏云 - 账号信息: ${account.name} (${account.type.displayName})',
       );
 
       // 从 Cookie 中提取 UID
@@ -202,7 +202,7 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (uid == null || uid.isEmpty) {
-        LogManager().cloudDrive('❌ 蓝奏云 - 无法从 Cookie 中提取 UID');
+        LogManager().cloudDrive('蓝奏云 - 无法从 Cookie 中提取 UID');
         return null;
       }
 
@@ -213,7 +213,7 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (!isValid) {
-        LogManager().cloudDrive('❌ 蓝奏云 - Cookie 验证失败');
+        LogManager().cloudDrive('蓝奏云 - Cookie 验证失败');
         return null;
       }
 
@@ -233,11 +233,11 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         quotaInfo: null, // 蓝奏云没有容量信息 API
       );
 
-      LogManager().cloudDrive('✅ 蓝奏云 - 账号详情获取成功');
+      LogManager().cloudDrive('蓝奏云 - 账号详情获取成功');
       return accountDetails;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive('❌ 蓝奏云 - 获取账号详情异常: $e');
-      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('蓝奏云 - 获取账号详情异常: $e');
+      LogManager().cloudDrive('错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -269,9 +269,9 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     int pageSize = 50,
   }) async {
     try {
-      LogManager().cloudDrive('📁 蓝奏云 - 获取文件列表开始');
-      LogManager().cloudDrive('📁 文件夹ID: ${folderId ?? '-1'}');
-      LogManager().cloudDrive('👤 账号: ${account.name}');
+      LogManager().cloudDrive('蓝奏云 - 获取文件列表开始');
+      LogManager().cloudDrive('文件夹ID: ${folderId ?? '-1'}');
+      LogManager().cloudDrive('账号: ${account.name}');
 
       // 从Cookie中提取UID
       final uid = LanzouCloudDriveService.extractUidFromCookies(
@@ -279,11 +279,11 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (uid == null || uid.isEmpty) {
-        LogManager().cloudDrive('❌ 蓝奏云 - 无法从Cookie中提取UID');
+        LogManager().cloudDrive('蓝奏云 - 无法从Cookie中提取UID');
         return [];
       }
 
-      LogManager().cloudDrive('✅ 蓝奏云 - UID提取成功: $uid');
+      LogManager().cloudDrive('蓝奏云 - UID提取成功: $uid');
 
       // 获取文件和文件夹
       final files = await LanzouCloudDriveService.getFiles(
@@ -302,13 +302,13 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       final allItems = [...folders, ...files];
 
       LogManager().cloudDrive(
-        '✅ 蓝奏云 - 文件列表获取成功: ${files.length}个文件, ${folders.length}个文件夹',
+        '蓝奏云 - 文件列表获取成功: ${files.length}个文件, ${folders.length}个文件夹',
       );
 
       return allItems;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive('❌ 蓝奏云 - 获取文件列表异常: $e');
-      LogManager().cloudDrive('📄 蓝奏云 - 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('蓝奏云 - 获取文件列表异常: $e');
+      LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
       return [];
     }
   }

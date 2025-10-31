@@ -213,7 +213,7 @@ class CacheService extends CloudDriveService {
 
         if (existingCache == null) {
           // 这里可以预加载数据，暂时只记录日志
-          LogManager().cloudDrive('🔥 预热缓存路径: ${path.name}');
+          LogManager().cloudDrive('预热缓存路径: ${path.name}');
         }
       }
 

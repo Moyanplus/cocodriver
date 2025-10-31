@@ -16,7 +16,7 @@ class AliFileListService {
   }) async {
     try {
       LogManager().cloudDrive(
-        '📁 阿里云盘 - 获取文件列表: driveId=$driveId, parentFileId=$parentFileId, limit=$limit',
+        '阿里云盘 - 获取文件列表: driveId=$driveId, parentFileId=$parentFileId, limit=$limit',
       );
 
       final dio = AliBaseService.createApiDio(account);
@@ -35,22 +35,22 @@ class AliFileListService {
         marker: marker,
       );
 
-      LogManager().cloudDrive('🌐 阿里云盘 - 请求URL: $uri');
+      LogManager().cloudDrive('阿里云盘 - 请求URL: $uri');
 
-      LogManager().cloudDrive('📤 阿里云盘 - 请求体: $requestBody');
+      LogManager().cloudDrive('阿里云盘 - 请求体: $requestBody');
 
       final response = await dio.postUri(uri, data: requestBody);
 
       if (!AliBaseService.isHttpSuccess(response.statusCode)) {
         LogManager().cloudDrive(
-          '❌ 阿里云盘 - 获取文件列表HTTP错误: ${response.statusCode}',
+          '阿里云盘 - 获取文件列表HTTP错误: ${response.statusCode}',
         );
         return [];
       }
 
       final responseData = AliBaseService.getResponseData(response.data);
       if (responseData == null) {
-        LogManager().cloudDrive('❌ 阿里云盘 - 文件列表响应数据为空');
+        LogManager().cloudDrive('阿里云盘 - 文件列表响应数据为空');
         return [];
       }
 
@@ -58,7 +58,7 @@ class AliFileListService {
       final nextMarker = responseData['next_marker'] as String?;
 
       LogManager().cloudDrive(
-        '📋 阿里云盘 - 解析到 ${items.length} 个文件项, next_marker: $nextMarker',
+        '阿里云盘 - 解析到 ${items.length} 个文件项, next_marker: $nextMarker',
       );
 
       final files = <CloudDriveFile>[];
@@ -71,11 +71,11 @@ class AliFileListService {
         }
       }
 
-      LogManager().cloudDrive('✅ 阿里云盘 - 文件列表获取成功: ${files.length} 个文件');
+      LogManager().cloudDrive('阿里云盘 - 文件列表获取成功: ${files.length} 个文件');
 
       return files;
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 获取文件列表异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 获取文件列表异常: $e');
       return [];
     }
   }
@@ -88,7 +88,7 @@ class AliFileListService {
 
       if (fileId == null || name == null) {
         LogManager().cloudDrive(
-          '⚠️ 阿里云盘 - 文件数据缺少必要字段: file_id=$fileId, name=$name',
+          '阿里云盘 - 文件数据缺少必要字段: file_id=$fileId, name=$name',
         );
         return null;
       }
@@ -108,7 +108,7 @@ class AliFileListService {
             dateTime.millisecondsSinceEpoch,
           );
         } catch (e) {
-          LogManager().cloudDrive('⚠️ 阿里云盘 - 时间解析失败: $updatedAt, $e');
+          LogManager().cloudDrive('阿里云盘 - 时间解析失败: $updatedAt, $e');
         }
       }
 
@@ -124,7 +124,7 @@ class AliFileListService {
 
       return file;
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 解析文件数据异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 解析文件数据异常: $e');
       return null;
     }
   }

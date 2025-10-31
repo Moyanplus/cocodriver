@@ -92,6 +92,7 @@ class QuarkConfig {
 
   // 响应字段名配置
   static const Map<String, String> responseFields = {
+    // 基础字段
     'success': 'success',
     'code': 'code',
     'status': 'status',
@@ -100,19 +101,52 @@ class QuarkConfig {
     'list': 'list',
     'fid': 'fid',
     'finish': 'finish',
+    // 文件字段
+    'fileName': 'file_name',
+    'name': 'name',
+    'size': 'size',
+    'fileType': 'file_type',
+    'category': 'category',
+    'lUpdatedAt': 'l_updated_at',
+    'updatedAt': 'updated_at',
+    'utime': 'utime',
+    'thumbnail': 'thumbnail',
+    'bigThumbnail': 'big_thumbnail',
+    'previewUrl': 'preview_url',
+    // 分享字段
     'shareUrl': 'share_url',
+    'fidList': 'fid_list',
+    'title': 'title',
+    'urlType': 'url_type',
+    'expiredType': 'expired_type',
+    'passcode': 'passcode',
+    'taskResp': 'task_resp',
+    'shareId': 'share_id',
+    'eventId': 'event_id',
+    // 下载字段
+    'downloadUrl': 'download_url',
+    'fids': 'fids',
+    // 账号字段
     'nickname': 'nickname',
     'avatarUri': 'avatarUri',
     'mobilekps': 'mobilekps',
     'totalCapacity': 'total_capacity',
     'useCapacity': 'use_capacity',
     'memberType': 'member_type',
+    'isVip': 'is_vip',
+    'vipEndTime': 'vip_end_time',
+    'memberLevel': 'member_level',
+    // 任务字段
     'taskId': 'task_id',
     'taskType': 'task_type',
     'taskTitle': 'task_title',
     'taskStatus': 'status',
     'createdAt': 'created_at',
     'affectedFileNum': 'affected_file_num',
+    // 文件夹字段
+    'pdirFid': 'pdir_fid',
+    'dirPath': 'dir_path',
+    'dirInitLock': 'dir_init_lock',
   };
 
   // 会员类型映射
@@ -167,6 +201,49 @@ class QuarkConfig {
   // 分页配置
   static const int defaultPageSize = 50;
   static const int maxPageSize = 100;
+
+  // 性能配置
+  static const Map<String, dynamic> performanceConfig = {
+    // 任务轮询配置
+    'taskMaxRetries': 30, // 任务最大重试次数
+    'taskRetryDelay': 1, // 任务重试间隔(秒)
+    // 认证缓存配置
+    'authHeadersCacheDuration': 5, // 认证头缓存时间(秒)
+    'tokenRefreshThreshold': 1, // token刷新阈值(小时)
+    // 日志输出配置
+    'downloadUrlPreviewLength': 100, // 下载链接预览长度
+    'responseDataTruncateLength': 500, // 响应数据截断长度
+    'cookiePreviewLength': 100, // Cookie预览长度
+  };
+
+  // 文件列表查询配置
+  static const Map<String, String> fileListQueryConfig = {
+    'fetchTotal': '1', // 获取总数
+    'fetchSubDirs': '0', // 不获取子目录信息
+  };
+
+  // Cookie配置
+  static const Map<String, String> cookieConfig = {
+    'puusKey': '__puus', // __puus cookie键名
+    'pusKey': '__pus', // __pus cookie键名
+    'expiresPrefix': 'Expires=', // 过期时间前缀
+    'gmtSuffix': ' GMT', // GMT时区后缀
+  };
+
+  // 默认值配置
+  static const Map<String, dynamic> defaultValues = {
+    // 账号相关
+    'quarkUk': 0, // 夸克云盘没有uk概念，设为0
+    'phoneBindStatus': '已绑定', // 手机绑定状态文本
+    'normalMemberType': '普通会员', // 普通会员类型
+    'vipMemberType': '超级会员', // VIP会员类型
+    'memberLevelPrefix': 'LV', // 会员等级前缀
+    // 文件相关
+    'folderSize': 0, // 文件夹大小固定为0
+    'defaultShareTitle': '分享文件', // 默认分享标题
+    // 响应状态
+    'apiSuccessCode': 'OK', // API成功响应码(字符串)
+  };
 
   // 文件大小单位配置
   static const Map<String, int> sizeUnits = {
@@ -348,6 +425,18 @@ class QuarkConfig {
     'exclude_fids': <String>[],
   };
 
+  /// 构建复制文件请求体
+  /// 用于夸克云盘复制文件API的请求体
+  static Map<String, dynamic> buildCopyFileBody({
+    required String targetFolderId,
+    required List<String> fileIds,
+  }) => {
+    'action_type': actionTypes['copy'],
+    'to_pdir_fid': targetFolderId,
+    'filelist': fileIds,
+    'exclude_fids': <String>[],
+  };
+
   /// 构建删除文件请求体
   /// 用于夸克云盘删除文件API的请求体
   static Map<String, dynamic> buildDeleteFileBody({
@@ -399,7 +488,7 @@ class QuarkConfig {
   /// 返回各个操作是否支持的状态
   static Map<String, bool> getSupportedOperationsStatus() => {
     'download': true, // 已实现
-    'copy': false, // 暂未实现
+    'copy': true, // 已实现
     'move': true, // 已实现
     'delete': true, // 已实现
     'rename': true, // 已实现

@@ -13,7 +13,7 @@ class AliCloudDriveService {
     required CloudDriveAccount account,
   }) async {
     try {
-      LogManager().cloudDrive('🔍 开始获取阿里云盘用户信息');
+      LogManager().cloudDrive('开始获取阿里云盘用户信息');
 
       final dio = AliBaseService.createDio(account);
       final requestBody = AliConfig.buildUserInfoParams();
@@ -24,7 +24,7 @@ class AliCloudDriveService {
       );
 
       if (!AliBaseService.isHttpSuccess(response.statusCode)) {
-        LogManager().cloudDrive('❌ HTTP请求失败: ${response.statusCode}');
+        LogManager().cloudDrive('HTTP请求失败: ${response.statusCode}');
         return null;
       }
 
@@ -32,7 +32,7 @@ class AliCloudDriveService {
 
       if (!AliBaseService.isApiSuccess(responseData)) {
         final errorMsg = AliBaseService.getErrorMessage(responseData);
-        LogManager().cloudDrive('❌ API调用失败: $errorMsg');
+        LogManager().cloudDrive('API调用失败: $errorMsg');
         return null;
       }
 
@@ -51,12 +51,12 @@ class AliCloudDriveService {
         loginState: responseData['status']?.toString() == 'enabled' ? 1 : 0,
       );
 
-      LogManager().cloudDrive('✅ 阿里云盘用户信息获取成功: ${userInfo.username}');
+      LogManager().cloudDrive('阿里云盘用户信息获取成功: ${userInfo.username}');
 
       return userInfo;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive('❌ 获取阿里云盘用户信息异常: $e');
-      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('获取阿里云盘用户信息异常: $e');
+      LogManager().cloudDrive('错误堆栈: $stackTrace');
       return null;
     }
   }
@@ -69,12 +69,12 @@ class AliCloudDriveService {
       // 优先使用账号中存储的driveId
       if (account.driveId != null && account.driveId!.isNotEmpty) {
         LogManager().cloudDrive(
-          '✅ 阿里云盘 - 使用账号中存储的Drive ID: ${account.driveId}',
+          '阿里云盘 - 使用账号中存储的Drive ID: ${account.driveId}',
         );
         return account.driveId;
       }
 
-      LogManager().cloudDrive('🔍 阿里云盘 - 账号中未存储Drive ID，开始获取');
+      LogManager().cloudDrive('阿里云盘 - 账号中未存储Drive ID，开始获取');
 
       final dio = AliBaseService.createDio(account);
       final requestBody = AliConfig.buildUserInfoParams();
@@ -86,7 +86,7 @@ class AliCloudDriveService {
 
       if (!AliBaseService.isHttpSuccess(response.statusCode)) {
         LogManager().cloudDrive(
-          '❌ 阿里云盘 - 获取Drive信息HTTP错误: ${response.statusCode}',
+          '阿里云盘 - 获取Drive信息HTTP错误: ${response.statusCode}',
         );
         return null;
       }
@@ -95,7 +95,7 @@ class AliCloudDriveService {
 
       if (!AliBaseService.isApiSuccess(responseData)) {
         final errorMsg = AliBaseService.getErrorMessage(responseData);
-        LogManager().cloudDrive('❌ 阿里云盘 - 获取Drive信息API调用失败: $errorMsg');
+        LogManager().cloudDrive('阿里云盘 - 获取Drive信息API调用失败: $errorMsg');
         return null;
       }
 
@@ -103,16 +103,16 @@ class AliCloudDriveService {
       final driveId = responseData['resource_drive_id'] as String?;
 
       if (driveId != null) {
-        LogManager().cloudDrive('✅ 阿里云盘 - Drive ID获取成功: $driveId');
+        LogManager().cloudDrive('阿里云盘 - Drive ID获取成功: $driveId');
         // 将获取到的driveId保存到账号中
         await CloudDriveAccountService.saveDriveId(account, driveId);
         return driveId;
       } else {
-        LogManager().cloudDrive('⚠️ 阿里云盘 - 响应中未找到resource_drive_id字段');
+        LogManager().cloudDrive('阿里云盘 - 响应中未找到resource_drive_id字段');
         return null;
       }
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 获取Drive信息异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 获取Drive信息异常: $e');
       return null;
     }
   }
@@ -122,7 +122,7 @@ class AliCloudDriveService {
     required CloudDriveAccount account,
   }) async {
     try {
-      LogManager().cloudDrive('📊 阿里云盘 - 获取容量信息');
+      LogManager().cloudDrive('阿里云盘 - 获取容量信息');
 
       final dio = AliBaseService.createApiDio(account);
       final response = await dio.post(
@@ -132,14 +132,14 @@ class AliCloudDriveService {
 
       if (!AliBaseService.isHttpSuccess(response.statusCode)) {
         LogManager().cloudDrive(
-          '❌ 阿里云盘 - 获取容量信息HTTP错误: ${response.statusCode}',
+          '阿里云盘 - 获取容量信息HTTP错误: ${response.statusCode}',
         );
         return null;
       }
 
       final responseData = AliBaseService.getResponseData(response.data);
       if (responseData == null) {
-        LogManager().cloudDrive('❌ 阿里云盘 - 容量信息响应数据为空');
+        LogManager().cloudDrive('阿里云盘 - 容量信息响应数据为空');
         return null;
       }
 
@@ -163,12 +163,12 @@ class AliCloudDriveService {
       );
 
       LogManager().cloudDrive(
-        '✅ 阿里云盘 - 容量信息获取成功: 总容量=${AliConfig.formatFileSize(totalSize)}, 已用=${AliConfig.formatFileSize(usedSize)}, 可用=${AliConfig.formatFileSize(totalSize - usedSize)}',
+        '阿里云盘 - 容量信息获取成功: 总容量=${AliConfig.formatFileSize(totalSize)}, 已用=${AliConfig.formatFileSize(usedSize)}, 可用=${AliConfig.formatFileSize(totalSize - usedSize)}',
       );
 
       return quotaInfo;
     } catch (e) {
-      LogManager().cloudDrive('❌ 阿里云盘 - 获取容量信息异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 获取容量信息异常: $e');
       return null;
     }
   }
@@ -178,7 +178,7 @@ class AliCloudDriveService {
     required CloudDriveAccount account,
   }) async {
     try {
-      LogManager().cloudDrive('🔍 开始获取阿里云盘账号详情');
+      LogManager().cloudDrive('开始获取阿里云盘账号详情');
 
       // 并行获取用户信息和容量信息
       final futures = await Future.wait([
@@ -190,7 +190,7 @@ class AliCloudDriveService {
       final quotaInfo = futures[1] as CloudDriveQuotaInfo?;
 
       if (accountInfo == null) {
-        LogManager().cloudDrive('❌ 用户信息获取失败');
+        LogManager().cloudDrive('用户信息获取失败');
         return null;
       }
 
@@ -209,12 +209,12 @@ class AliCloudDriveService {
             ),
       );
 
-      LogManager().cloudDrive('✅ 阿里云盘账号详情获取成功');
+      LogManager().cloudDrive('阿里云盘账号详情获取成功');
 
       return accountDetails;
     } catch (e, stackTrace) {
-      LogManager().cloudDrive('❌ 获取阿里云盘账号详情异常: $e');
-      LogManager().cloudDrive('📄 错误堆栈: $stackTrace');
+      LogManager().cloudDrive('获取阿里云盘账号详情异常: $e');
+      LogManager().cloudDrive('错误堆栈: $stackTrace');
       return null;
     }
   }

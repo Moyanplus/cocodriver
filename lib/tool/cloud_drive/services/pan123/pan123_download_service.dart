@@ -12,12 +12,12 @@ class Pan123DownloadService {
     StackTrace? stackTrace,
   ) {
     LogManager().cloudDrive(
-      '❌ 123云盘 - $operation 失败: $error',
+      '123云盘 - $operation 失败: $error',
       
     );
     if (stackTrace != null) {
       LogManager().cloudDrive(
-        '📄 错误堆栈: $stackTrace',
+        '错误堆栈: $stackTrace',
         
       );
     }
@@ -34,7 +34,7 @@ class Pan123DownloadService {
   /// 统一成功日志记录
   static void _logSuccess(String message, {Map<String, dynamic>? details}) {
     LogManager().cloudDrive(
-      '✅ 123云盘 - $message',
+      '123云盘 - $message',
       
     );
   }
@@ -42,7 +42,7 @@ class Pan123DownloadService {
   /// 统一错误日志记录
   static void _logError(String message, dynamic error) {
     LogManager().cloudDrive(
-      '❌ 123云盘 - $message: $error',
+      '123云盘 - $message: $error',
       
     );
   }
@@ -58,11 +58,11 @@ class Pan123DownloadService {
   }) async {
     try {
       _logInfo(
-        '🔗 123云盘 - 获取下载链接开始',
+        '123云盘 - 获取下载链接开始',
         params: {'fileId': fileId, 'fileName': fileName},
       );
       _logInfo(
-        '📄 123云盘 - 文件信息: $fileName (ID: $fileId)',
+        '123云盘 - 文件信息: $fileName (ID: $fileId)',
         params: {'fileId': fileId, 'fileName': fileName},
       );
       _logInfo(
@@ -86,7 +86,7 @@ class Pan123DownloadService {
         params['etag'] = etag;
       }
 
-      _logInfo('📤 123云盘 - 请求参数: $params', params: {'params': params});
+      _logInfo('123云盘 - 请求参数: $params', params: {'params': params});
 
       // 使用配置中的API端点
       final url = Uri.parse(
@@ -94,7 +94,7 @@ class Pan123DownloadService {
       );
 
       _logInfo(
-        '🌐 123云盘 - 请求URL: ${url.toString()}',
+        '123云盘 - 请求URL: ${url.toString()}',
         params: {'url': url.toString()},
       );
 
@@ -102,7 +102,7 @@ class Pan123DownloadService {
       final response = await dio.post(url.toString(), data: params);
 
       _logInfo(
-        '📡 123云盘 - 响应状态: ${response.statusCode}',
+        '123云盘 - 响应状态: ${response.statusCode}',
         params: {'statusCode': response.statusCode},
       );
 
@@ -147,12 +147,12 @@ class Pan123DownloadService {
   }) async {
     try {
       _logInfo(
-        '🚀 123云盘 - 获取高速下载链接开始',
+        '123云盘 - 获取高速下载链接开始',
         params: {'fileName': file.name, 'shareUrl': shareUrl},
       );
 
       // 123云盘暂不支持高速下载，返回null
-      _logInfo('⚠️ 123云盘 - 暂不支持高速下载功能', params: {'reason': '功能未实现'});
+      _logInfo('123云盘 - 暂不支持高速下载功能', params: {'reason': '功能未实现'});
 
       return null;
     } catch (e) {

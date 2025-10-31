@@ -7,6 +7,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../../core/utils/responsive_utils.dart';
 import '../../../core/utils/adaptive_utils.dart';
 import 'language_settings_page.dart';
+import '../../../tool/app_update/app_update.dart';
+import '../../../tool/log_viewer/pages/log_viewer_page.dart';
 
 /// 设置页面Widget
 ///
@@ -128,6 +130,19 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 },
               ),
               _buildSettingsTile(
+                icon: Icons.system_update,
+                title: '检查更新',
+                subtitle: '检查应用是否有新版本',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UpdateDetailPage(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsTile(
                 icon: PhosphorIcons.question(),
                 title: l10n.helpSupport,
                 subtitle: l10n.helpSupportDesc,
@@ -153,6 +168,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             title: l10n.advanced,
             icon: PhosphorIcons.wrench(),
             children: [
+              _buildSettingsTile(
+                icon: PhosphorIcons.fileText(),
+                title: '日志查看器',
+                subtitle: '查看、导出和管理应用日志',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const LogViewerPage(),
+                    ),
+                  );
+                },
+              ),
               _buildSettingsTile(
                 icon: PhosphorIcons.trash(),
                 title: l10n.clearCache,
