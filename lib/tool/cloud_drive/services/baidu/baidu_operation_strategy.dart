@@ -695,4 +695,38 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       return [];
     }
   }
+
+  /// 搜索文件
+  ///
+  /// [account] 百度网盘账号信息
+  /// [keyword] 搜索关键词
+  /// [folderId] 可选，在指定文件夹内搜索
+  /// [page] 页码，默认第1页
+  /// [pageSize] 每页数量，默认50
+  /// [fileType] 可选，文件类型筛选
+  /// 返回符合条件的文件列表
+  @override
+  Future<List<CloudDriveFile>> searchFiles({
+    required CloudDriveAccount account,
+    required String keyword,
+    String? folderId,
+    int page = 1,
+    int pageSize = 50,
+    String? fileType,
+  }) async {
+    LogManager().cloudDrive('百度网盘 - 搜索文件功能暂未实现');
+    return [];
+  }
+
+  /// 刷新鉴权信息
+  ///
+  /// [account] 百度网盘账号信息
+  /// 返回刷新后的账号信息，如果刷新失败返回null
+  @override
+  Future<CloudDriveAccount?> refreshAuth({
+    required CloudDriveAccount account,
+  }) async {
+    LogManager().cloudDrive('百度网盘 - 刷新鉴权信息功能暂未实现');
+    return null;
+  }
 }

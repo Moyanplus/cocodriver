@@ -394,4 +394,38 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     // 夸克云盘暂时返回原文件，不需要路径更新
     return file;
   }
+
+  /// 搜索文件
+  ///
+  /// [account] 夸克云盘账号信息
+  /// [keyword] 搜索关键词
+  /// [folderId] 可选，在指定文件夹内搜索
+  /// [page] 页码，默认第1页
+  /// [pageSize] 每页数量，默认50
+  /// [fileType] 可选，文件类型筛选
+  /// 返回符合条件的文件列表
+  @override
+  Future<List<CloudDriveFile>> searchFiles({
+    required CloudDriveAccount account,
+    required String keyword,
+    String? folderId,
+    int page = 1,
+    int pageSize = 50,
+    String? fileType,
+  }) async {
+    QuarkLogger.info('夸克云盘 - 搜索文件功能暂未实现');
+    return [];
+  }
+
+  /// 刷新鉴权信息
+  ///
+  /// [account] 夸克云盘账号信息
+  /// 返回刷新后的账号信息，如果刷新失败返回null
+  @override
+  Future<CloudDriveAccount?> refreshAuth({
+    required CloudDriveAccount account,
+  }) async {
+    QuarkLogger.info('夸克云盘 - 刷新鉴权信息功能暂未实现');
+    return null;
+  }
 }
