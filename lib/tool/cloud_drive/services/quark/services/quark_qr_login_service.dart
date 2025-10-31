@@ -7,6 +7,8 @@ import '../core/quark_config.dart';
 import '../utils/quark_logger.dart';
 
 /// 夸克网盘二维码登录服务
+///
+/// 实现夸克网盘的二维码登录功能。
 class QuarkQRLoginService extends QRLoginService {
   @override
   CloudDriveType get cloudDriveType => CloudDriveType.quark;

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 /// 性能指标收集器
+///
+/// 收集和管理性能指标，包括操作耗时、系统资源使用情况等。
 class PerformanceMetrics {
   static final PerformanceMetrics _instance = PerformanceMetrics._internal();
   factory PerformanceMetrics() => _instance;
@@ -248,7 +250,7 @@ class PerformanceMetrics {
   }
 }
 
-/// 性能指标数据模型
+/// 性能指标类
 class PerformanceMetric {
   final String operation;
   final String category;
@@ -278,7 +280,7 @@ class PerformanceMetric {
   };
 }
 
-/// 性能统计数据模型
+/// 性能统计信息类
 class PerformanceStats {
   final String category;
   final int totalOperations;
@@ -325,7 +327,7 @@ class PerformanceStats {
   };
 }
 
-/// 系统性能信息
+/// 系统性能信息类
 class SystemPerformanceInfo {
   final int memoryUsage;
   final int totalMemory;
@@ -377,7 +379,7 @@ class SystemPerformanceInfo {
   };
 }
 
-/// 磁盘使用情况
+/// 磁盘使用情况类
 class DiskUsage {
   final int used;
   final int total;
@@ -399,7 +401,7 @@ class DiskUsage {
   };
 }
 
-/// 网络统计信息
+/// 网络统计信息类
 class NetworkStats {
   final int bytesReceived;
   final int bytesSent;

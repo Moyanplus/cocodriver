@@ -11,6 +11,8 @@ import '../services/quark_share_service.dart';
 import '../utils/quark_logger.dart';
 
 /// 夸克云盘操作策略
+///
+/// 实现 CloudDriveOperationStrategy 接口，提供夸克云盘特定的操作实现。
 class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   @override
   Future<String?> getDownloadUrl({
@@ -316,6 +318,29 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     } catch (e) {
       QuarkLogger.info('夸克云盘 - 获取文件列表异常: $e');
       return [];
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> uploadFile({
+    required CloudDriveAccount account,
+    required String filePath,
+    required String fileName,
+    String? folderId,
+  }) async {
+    QuarkLogger.info('夸克云盘 - 上传文件开始');
+    QuarkLogger.info('文件路径: $filePath');
+    QuarkLogger.info('文件名: $fileName');
+    QuarkLogger.info('文件夹ID: ${folderId ?? '0'}');
+
+    try {
+      // TODO: 实现夸克云盘上传功能
+      QuarkLogger.info('夸克云盘 - 上传功能暂未实现');
+      return {'success': false, 'message': '夸克云盘上传功能暂未实现'};
+    } catch (e, stackTrace) {
+      QuarkLogger.error('夸克云盘 - 上传文件异常: $e');
+      QuarkLogger.error('夸克云盘 - 错误堆栈: $stackTrace');
+      return {'success': false, 'message': e.toString()};
     }
   }
 

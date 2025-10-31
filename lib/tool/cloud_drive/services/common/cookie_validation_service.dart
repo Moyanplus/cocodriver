@@ -1,8 +1,14 @@
-import '../data/models/cloud_drive_entities.dart';
-import '../data/models/cloud_drive_configs.dart';
-import '../base/cloud_drive_operation_service.dart';
+import '../../data/models/cloud_drive_entities.dart';
+import '../../data/models/cloud_drive_configs.dart';
+import '../../base/cloud_drive_operation_service.dart';
 
-/// Cookie 验证结果
+/// Cookie 验证服务
+///
+/// 负责验证和管理云盘账号的 Cookie，包括 Cookie 格式化和验证。
+
+/// Cookie 验证结果类
+///
+/// 表示 Cookie 验证的结果，包括验证状态、错误信息、用户名等。
 class CookieValidationResult {
   final bool isValid;
   final String? errorMessage;
@@ -37,7 +43,7 @@ class CookieValidationResult {
 
 /// Cookie 验证服务
 ///
-/// 负责 Cookie 的验证、提取和格式化
+/// 负责 Cookie 的验证、提取和格式化。
 class CookieValidationService {
   /// 获取指定云盘类型的 Cookie 配置
   static CookieProcessingConfig getConfig(CloudDriveType type) {
@@ -50,6 +56,8 @@ class CookieValidationService {
         return CookieProcessingConfig.quarkConfig;
       case CloudDriveType.pan123:
         return CookieProcessingConfig.pan123Config;
+      case CloudDriveType.chinaMobile:
+        return CookieProcessingConfig.chinaMobileConfig;
       default:
         return CookieProcessingConfig(requiredCookies: []);
     }
@@ -59,7 +67,6 @@ class CookieValidationService {
   ///
   /// [cookies] Cookie 字符串
   /// [type] 云盘类型
-  /// 返回提取后的 Cookie 键值对
   static Map<String, String> extractRequiredCookies(
     String cookies,
     CloudDriveType type,
@@ -96,7 +103,6 @@ class CookieValidationService {
   /// 格式化 Cookie 为字符串
   ///
   /// [cookieMap] Cookie 键值对
-  /// 返回格式化后的 Cookie 字符串
   static String formatCookie(Map<String, String> cookieMap) {
     return cookieMap.entries.map((e) => '${e.key}=${e.value}').join('; ');
   }
@@ -104,7 +110,6 @@ class CookieValidationService {
   /// 获取必需的 Cookie 字段说明
   ///
   /// [type] 云盘类型
-  /// 返回字段说明字符串
   static String getRequiredFieldsDescription(CloudDriveType type) {
     final config = getConfig(type);
 
@@ -120,7 +125,6 @@ class CookieValidationService {
   /// [cookies] Cookie 字符串
   /// [type] 云盘类型
   /// [accountName] 账号名称（可选）
-  /// 返回验证结果
   static Future<CookieValidationResult> validateCookie({
     required String cookies,
     required CloudDriveType type,

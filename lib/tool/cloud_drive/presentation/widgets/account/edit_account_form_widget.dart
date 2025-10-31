@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../data/models/cloud_drive_entities.dart';
 import '../add_account/cookie_auth_form_widget.dart';
+import '../add_account/authorization_auth_form_widget.dart';
 import '../add_account/auth_method_selector_widget.dart';
 import '../add_account/add_account_form_constants.dart';
 
@@ -35,6 +36,7 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
   // 文本控制器
   late TextEditingController _nameController;
   late TextEditingController _cookiesController;
+  late TextEditingController _authorizationController;
 
   @override
   void initState() {
@@ -55,17 +57,30 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
       _cookiesController = TextEditingController();
     }
 
+    // 初始化 Authorization 控制器
+    if (_selectedAuthType == AuthType.authorization &&
+        widget.account.authorizationToken != null) {
+      _authorizationController = TextEditingController(
+        text: widget.account.authorizationToken,
+      );
+    } else {
+      _authorizationController = TextEditingController();
+    }
+
     // 监听输入框变化
     _nameController.addListener(_updateButtonState);
     _cookiesController.addListener(_updateButtonState);
+    _authorizationController.addListener(_updateButtonState);
   }
 
   @override
   void dispose() {
     _nameController.removeListener(_updateButtonState);
     _cookiesController.removeListener(_updateButtonState);
+    _authorizationController.removeListener(_updateButtonState);
     _nameController.dispose();
     _cookiesController.dispose();
+    _authorizationController.dispose();
     super.dispose();
   }
 
@@ -190,6 +205,12 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
         return CookieAuthFormWidget(
           cloudDriveType: widget.account.type,
           cookiesController: _cookiesController,
+          nameController: _nameController,
+        );
+      case AuthType.authorization:
+        return AuthorizationAuthFormWidget(
+          cloudDriveType: widget.account.type,
+          authorizationController: _authorizationController,
           nameController: _nameController,
         );
       case AuthType.web:
@@ -343,11 +364,17 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
     setState(() {
       _selectedAuthType = authType;
 
-      // 如果切换认证方式，清空 Cookie 控制器
+      // 如果切换认证方式，尝试恢复对应的认证信息
       if (authType == AuthType.cookie && _cookiesController.text.isEmpty) {
         // 如果有旧的 Cookie，尝试恢复
         if (widget.account.cookies != null) {
           _cookiesController.text = widget.account.cookies!;
+        }
+      } else if (authType == AuthType.authorization &&
+          _authorizationController.text.isEmpty) {
+        // 如果有旧的 Authorization Token，尝试恢复
+        if (widget.account.authorizationToken != null) {
+          _authorizationController.text = widget.account.authorizationToken!;
         }
       }
     });
@@ -385,6 +412,16 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
             cookies: _cookiesController.text.trim(),
             // 清除其他认证方式的字段
             clearAuthorizationToken: true,
+            clearQrCodeToken: true,
+            lastLoginAt: DateTime.now(),
+          );
+          break;
+        case AuthType.authorization:
+          updatedAccount = widget.account.copyWith(
+            name: _nameController.text.trim(),
+            authorizationToken: _authorizationController.text.trim(),
+            // 清除其他认证方式的字段
+            clearCookies: true,
             clearQrCodeToken: true,
             lastLoginAt: DateTime.now(),
           );

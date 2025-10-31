@@ -8,12 +8,14 @@ import '../core/quark_config.dart';
 import '../models/quark_models.dart';
 import '../utils/quark_logger.dart';
 
-/// 夸克云盘分享服务 - 创建分享链接、查询分享信息
+/// 夸克云盘分享服务
+///
+/// 提供创建分享链接、查询分享信息等功能。
 class QuarkShareService {
   /// 创建分享链接
   ///
-  /// 使用 [QuarkShareRequest] 构建请求
-  /// 返回 [QuarkApiResult] 包装的 [QuarkShareResponse]
+  /// [account] 夸克云盘账号信息
+  /// [request] 分享请求对象
   static Future<QuarkApiResult<QuarkShareResponse>> createShareLink({
     required CloudDriveAccount account,
     required QuarkShareRequest request,

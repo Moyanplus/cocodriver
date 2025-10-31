@@ -136,6 +136,8 @@ class AuthTypeSelector extends StatelessWidget {
     switch (authType) {
       case AuthType.cookie:
         return Icons.cookie;
+      case AuthType.authorization:
+        return Icons.lock;
       case AuthType.qrCode:
         return Icons.qr_code;
       case AuthType.web:
@@ -147,6 +149,8 @@ class AuthTypeSelector extends StatelessWidget {
     switch (authType) {
       case AuthType.cookie:
         return 'Cookie登录';
+      case AuthType.authorization:
+        return 'Authorization登录';
       case AuthType.qrCode:
         return '二维码登录';
       case AuthType.web:
@@ -158,6 +162,8 @@ class AuthTypeSelector extends StatelessWidget {
     switch (authType) {
       case AuthType.cookie:
         return '手动输入Cookie信息';
+      case AuthType.authorization:
+        return '手动输入Authorization Token';
       case AuthType.qrCode:
         return '扫描二维码快速登录';
       case AuthType.web:

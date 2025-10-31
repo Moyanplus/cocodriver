@@ -4,7 +4,8 @@ import '../../data/models/cloud_drive_dtos.dart';
 import '../../data/models/cloud_drive_entities.dart';
 
 /// 二维码登录服务抽象基类
-/// 每个云盘服务需要实现此接口来提供具体的二维码登录功能
+///
+/// 每个云盘服务需要实现此接口来提供具体的二维码登录功能。
 abstract class QRLoginService {
   /// 云盘类型
   CloudDriveType get cloudDriveType;
@@ -13,21 +14,21 @@ abstract class QRLoginService {
   QRLoginConfig get config;
 
   /// 生成二维码登录信息
-  /// 返回包含二维码ID、内容等信息的QRLoginInfo对象
   Future<QRLoginInfo> generateQRCode();
 
   /// 查询二维码登录状态
+  ///
   /// [qrId] 二维码ID
-  /// 返回更新后的QRLoginInfo对象
   Future<QRLoginInfo> checkQRStatus(String qrId);
 
   /// 取消二维码登录
+  ///
   /// [qrId] 二维码ID
   Future<void> cancelQRLogin(String qrId);
 
   /// 解析登录成功后的认证数据
-  /// [loginInfo] 包含登录token的QRLoginInfo对象
-  /// 返回可用于API调用的认证数据（如Cookie或Token）
+  ///
+  /// [loginInfo] 包含登录 token 的 QRLoginInfo 对象
   Future<String> parseAuthData(QRLoginInfo loginInfo);
 
   /// 获取二维码登录的显示名称
@@ -41,7 +42,8 @@ abstract class QRLoginService {
 }
 
 /// 二维码登录管理器
-/// 负责管理二维码登录的整个生命周期
+///
+/// 负责管理二维码登录的整个生命周期，包括服务注册和查询。
 class QRLoginManager {
   static final Map<CloudDriveType, QRLoginService> _services = {};
   static final Map<String, StreamController<QRLoginInfo>> _statusStreams = {};
@@ -157,7 +159,7 @@ class QRLoginManager {
             info.status == QRLoginStatus.cancelled ||
             info.status == QRLoginStatus.expired) {
           // 立即取消 Timer，避免继续往已关闭的 stream 添加数据
-          timer?.cancel();
+          timer.cancel();
           break;
         }
       }

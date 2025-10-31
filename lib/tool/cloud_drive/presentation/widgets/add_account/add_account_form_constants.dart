@@ -27,6 +27,7 @@ class AddAccountFormConstants {
   // 登录方式文本
   static const String authMethodWeb = '网页';
   static const String authMethodCookie = 'CK';
+  static const String authMethodAuthorization = 'AUTH';
   static const String authMethodQRCode = '二维码';
 
   // 说明文本

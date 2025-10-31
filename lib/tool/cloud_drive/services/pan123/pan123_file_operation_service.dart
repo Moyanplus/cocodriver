@@ -4,7 +4,8 @@ import 'pan123_base_service.dart';
 import 'pan123_config.dart';
 
 /// 123云盘文件操作服务
-/// 专门处理文件重命名、移动、复制、删除等操作
+///
+/// 专门处理文件重命名、移动、复制、删除等操作。
 class Pan123FileOperationService {
   /// 统一错误处理
   static void _handleError(

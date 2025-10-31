@@ -2,6 +2,8 @@ import 'cloud_drive_dependency_injection.dart';
 import '../../../../../core/logging/log_manager.dart';
 
 /// 云盘模块初始化器
+///
+/// 负责云盘模块的初始化，包括依赖注入容器的初始化。
 class CloudDriveInitializer {
   static bool _isInitialized = false;
 

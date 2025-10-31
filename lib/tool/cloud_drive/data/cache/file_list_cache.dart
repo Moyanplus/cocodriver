@@ -1,7 +1,11 @@
 import '../../data/models/cloud_drive_entities.dart';
 import '../../../../core/logging/log_manager.dart';
 
-/// 文件列表缓存项
+/// 文件列表缓存管理器
+///
+/// 提供文件列表缓存功能，支持智能过期策略和 LRU 策略。
+
+/// 文件列表缓存项类
 class FileListCacheEntry {
   final List<CloudDriveFile> files;
   final List<CloudDriveFile> folders;
@@ -35,13 +39,7 @@ class FileListCacheEntry {
       'remainingTime: ${remainingSeconds}s, expired: $isExpired}';
 }
 
-/// 文件列表缓存管理器
-///
-/// 功能：
-/// 1. 缓存文件列表，避免频繁网络请求
-/// 2. 智能过期策略（默认5分钟）
-/// 3. 支持手动清除和刷新
-/// 4. LRU 策略，最多保留 100 个缓存项
+/// 文件列表缓存管理器类
 class FileListCacheManager {
   // 单例模式
   static final FileListCacheManager _instance =

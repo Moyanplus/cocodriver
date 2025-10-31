@@ -1,4 +1,10 @@
-/// Cookie捕获规则
+/// 云盘配置数据模型
+///
+/// 定义云盘相关的配置类，包括 Cookie 处理、登录检测、Token 配置等。
+
+/// Cookie 捕获规则类
+///
+/// 定义 Cookie 捕获的规则，包括 URL 模式、Cookie 名称和域名。
 class CookieCaptureRule {
   final String urlPattern;
   final List<String> cookieNames;
@@ -32,7 +38,9 @@ enum UserAgentType {
   custom,
 }
 
-/// UserAgent类型扩展
+/// UserAgent 类型扩展
+///
+/// 为 UserAgentType 枚举提供用户代理字符串获取功能。
 extension UserAgentTypeExtension on UserAgentType {
   String get userAgent {
     switch (this) {
@@ -52,7 +60,9 @@ extension UserAgentTypeExtension on UserAgentType {
   }
 }
 
-/// Token配置
+/// Token 配置类
+///
+/// 配置 Token 的存储位置、格式和提取方式。
 class TokenConfig {
   final List<String> localStorageKeys;
   final List<String> sessionStorageKeys;
@@ -99,7 +109,9 @@ class TokenConfig {
   );
 }
 
-/// 登录检测配置
+/// 登录检测配置类
+///
+/// 配置登录状态的检测方式、检测间隔和成功指示器。
 class LoginDetectionConfig {
   final bool enableAutoDetection;
   final String detectionMethod;
@@ -182,9 +194,23 @@ class LoginDetectionConfig {
     successTitle: '夸克网盘',
     timeout: Duration(seconds: 30),
   );
+
+  /// 中国移动云盘登录检测配置
+  static const LoginDetectionConfig chinaMobileConfig = LoginDetectionConfig(
+    enableAutoDetection: true,
+    detectionMethod: 'cookie',
+    checkInterval: Duration(seconds: 2),
+    maxRetries: 30,
+    successIndicators: ['token', 'userId'], // 与Cookie处理配置保持一致
+    successUrl: 'https://yun.139.com/',
+    successTitle: '中国移动云盘',
+    timeout: Duration(seconds: 30),
+  );
 }
 
-/// Cookie处理配置
+/// Cookie 处理配置类
+///
+/// 配置 Cookie 的处理方式、必需字段和排除域名。
 class CookieProcessingConfig {
   final bool enableProcessing;
   final bool useInterceptedCookies;
@@ -225,9 +251,19 @@ class CookieProcessingConfig {
     useInterceptedCookies: true,
     requiredCookies: ['__puus', 'QKUID', 'QK_UID'],
   );
+
+  /// 中国移动云盘Cookie处理配置
+  static const CookieProcessingConfig chinaMobileConfig =
+      CookieProcessingConfig(
+        enableProcessing: true,
+        useInterceptedCookies: true,
+        requiredCookies: ['token', 'userId'],
+      );
 }
 
-/// 登录后处理配置
+/// 登录后处理配置类
+///
+/// 配置登录成功后的处理逻辑，包括 Cookie 提取、Token 保存等。
 class PostLoginConfig {
   final bool hasPostLoginProcessing;
   final String? postLoginMessage;
@@ -253,7 +289,9 @@ class PostLoginConfig {
   );
 }
 
-/// 请求拦截配置
+/// 请求拦截配置类
+///
+/// 配置请求拦截规则，包括拦截模式、跳过规则和自定义请求头。
 class RequestInterceptConfig {
   final bool enableRequestIntercept;
   final List<String> skipInterceptForAuthTypes;
@@ -282,7 +320,9 @@ class RequestInterceptConfig {
       );
 }
 
-/// 云盘统一配置
+/// 云盘统一配置类
+///
+/// 整合云盘的各种配置，包括 Token、登录检测、Cookie 处理等。
 class CloudDriveConfig {
   final String name;
   final String baseUrl;
@@ -291,6 +331,7 @@ class CloudDriveConfig {
   final CookieProcessingConfig cookieProcessingConfig;
   final PostLoginConfig postLoginConfig;
   final RequestInterceptConfig requestInterceptConfig;
+  final bool isAvailable;
 
   const CloudDriveConfig({
     required this.name,
@@ -300,6 +341,7 @@ class CloudDriveConfig {
     required this.cookieProcessingConfig,
     required this.postLoginConfig,
     required this.requestInterceptConfig,
+    this.isAvailable = true,
   });
 
   /// 百度网盘配置
@@ -311,6 +353,7 @@ class CloudDriveConfig {
     cookieProcessingConfig: CookieProcessingConfig.defaultConfig,
     postLoginConfig: PostLoginConfig.defaultConfig,
     requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
+    isAvailable: false,
   );
 
   /// 阿里云盘配置
@@ -326,6 +369,7 @@ class CloudDriveConfig {
     ),
     postLoginConfig: PostLoginConfig.defaultConfig,
     requestInterceptConfig: RequestInterceptConfig.tokenBasedConfig,
+    isAvailable: false,
   );
 
   /// 蓝奏云配置
@@ -336,6 +380,7 @@ class CloudDriveConfig {
     cookieProcessingConfig: CookieProcessingConfig.lanzouConfig,
     postLoginConfig: PostLoginConfig.defaultConfig,
     requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
+    isAvailable: true,
   );
 
   /// 夸克云盘配置
@@ -346,6 +391,7 @@ class CloudDriveConfig {
     cookieProcessingConfig: CookieProcessingConfig.quarkConfig,
     postLoginConfig: PostLoginConfig.defaultConfig,
     requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
+    isAvailable: true,
   );
 
   /// 123云盘配置
@@ -356,10 +402,24 @@ class CloudDriveConfig {
     cookieProcessingConfig: CookieProcessingConfig.pan123Config,
     postLoginConfig: PostLoginConfig.defaultConfig,
     requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
+    isAvailable: false,
+  );
+
+  /// 中国移动云盘配置
+  static const CloudDriveConfig chinaMobile = CloudDriveConfig(
+    name: '中国移动云盘',
+    baseUrl: 'https://yun.139.com',
+    loginDetectionConfig: LoginDetectionConfig.chinaMobileConfig,
+    cookieProcessingConfig: CookieProcessingConfig.chinaMobileConfig,
+    postLoginConfig: PostLoginConfig.defaultConfig,
+    requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
+    isAvailable: true,
   );
 }
 
-/// 云盘WebView配置
+/// 云盘 WebView 配置类
+///
+/// 配置 WebView 登录相关的参数，包括初始 URL、UserAgent、Cookie 捕获规则等。
 class CloudDriveWebViewConfig {
   final String? initialUrl;
   final String? userAgent;

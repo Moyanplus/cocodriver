@@ -2,7 +2,7 @@ import '../../../../../core/logging/log_manager.dart';
 
 /// 夸克云盘日志工具类
 ///
-/// 提供统一、简洁的日志输出格式
+/// 提供统一、简洁的日志输出格式。
 class QuarkLogger {
   static const String _tag = 'Quark';
 

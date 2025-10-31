@@ -4,9 +4,10 @@ import '../../data/models/cloud_drive_entities.dart';
 import 'lanzou_config.dart';
 
 /// 蓝奏云盘基础服务
-/// 提供dio配置和通用方法
+///
+/// 提供 Dio 配置和通用方法，包括请求拦截、响应处理等。
 class LanzouBaseService {
-  // 创建dio实例
+  /// 创建 Dio 实例
   static Dio createDio(CloudDriveAccount account) {
     final dio = Dio(
       BaseOptions(
@@ -33,41 +34,22 @@ class LanzouBaseService {
         onRequest: (options, handler) {
           LogManager().cloudDrive(
             '蓝奏云盘 - 发送请求: ${options.method} ${options.uri}',
-            
           );
-          LogManager().cloudDrive(
-            '蓝奏云盘 - 请求头: ${options.headers}',
-            
-          );
+          LogManager().cloudDrive('蓝奏云盘 - 请求头: ${options.headers}');
           if (options.data != null) {
-            LogManager().cloudDrive(
-              '蓝奏云盘 - 请求体: ${options.data}',
-              
-            );
+            LogManager().cloudDrive('蓝奏云盘 - 请求体: ${options.data}');
           }
           handler.next(options);
         },
         onResponse: (response, handler) {
-          LogManager().cloudDrive(
-            '蓝奏云盘 - 收到响应: ${response.statusCode}',
-            
-          );
-          LogManager().cloudDrive(
-            '蓝奏云盘 - 响应数据: ${response.data}',
-            
-          );
+          LogManager().cloudDrive('蓝奏云盘 - 收到响应: ${response.statusCode}');
+          LogManager().cloudDrive('蓝奏云盘 - 响应数据: ${response.data}');
           handler.next(response);
         },
         onError: (error, handler) {
-          LogManager().cloudDrive(
-            '蓝奏云盘 - 请求错误: ${error.message}',
-            
-          );
+          LogManager().cloudDrive('蓝奏云盘 - 请求错误: ${error.message}');
           if (error.response != null) {
-            LogManager().cloudDrive(
-              '蓝奏云盘 - 错误响应: ${error.response?.data}',
-              
-            );
+            LogManager().cloudDrive('蓝奏云盘 - 错误响应: ${error.response?.data}');
           }
           handler.next(error);
         },

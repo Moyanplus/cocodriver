@@ -2,7 +2,11 @@ import '../../../../../core/logging/log_manager.dart';
 // import '../../data/models/cloud_drive_entities.dart'; // 未使用
 import '../../data/models/cloud_drive_dtos.dart';
 
-/// 缓存条目 - 增强版本
+/// 云盘缓存服务
+///
+/// 提供缓存管理功能，支持多种缓存策略（LRU、LFU、FIFO、TTL）。
+
+/// 缓存条目类
 class CacheEntry {
   final Map<String, dynamic> data;
   final DateTime timestamp;
@@ -62,7 +66,6 @@ enum CacheStrategy {
   ttl,
 }
 
-/// 云盘缓存服务 - 增强版本
 class CloudDriveCacheService {
   static final Map<String, CacheEntry> _cache = {};
   static final Map<String, int> _accessCounts = {};

@@ -6,7 +6,8 @@ import 'ali_base_service.dart';
 import 'ali_config.dart';
 
 /// 阿里云盘服务
-/// 处理账号信息、容量信息等核心功能
+///
+/// 处理账号信息、容量信息等核心功能，作为阿里云盘的主服务类。
 class AliCloudDriveService {
   /// 获取用户信息
   static Future<CloudDriveAccountInfo?> getUserInfo({
@@ -68,9 +69,7 @@ class AliCloudDriveService {
     try {
       // 优先使用账号中存储的driveId
       if (account.driveId != null && account.driveId!.isNotEmpty) {
-        LogManager().cloudDrive(
-          '阿里云盘 - 使用账号中存储的Drive ID: ${account.driveId}',
-        );
+        LogManager().cloudDrive('阿里云盘 - 使用账号中存储的Drive ID: ${account.driveId}');
         return account.driveId;
       }
 
@@ -131,9 +130,7 @@ class AliCloudDriveService {
       );
 
       if (!AliBaseService.isHttpSuccess(response.statusCode)) {
-        LogManager().cloudDrive(
-          '阿里云盘 - 获取容量信息HTTP错误: ${response.statusCode}',
-        );
+        LogManager().cloudDrive('阿里云盘 - 获取容量信息HTTP错误: ${response.statusCode}');
         return null;
       }
 

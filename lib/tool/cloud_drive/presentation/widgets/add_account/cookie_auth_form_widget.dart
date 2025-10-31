@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../data/models/cloud_drive_entities.dart';
-import '../../../services/cookie_validation_service.dart';
+import '../../../services/common/cookie_validation_service.dart';
 import 'add_account_form_constants.dart';
 
 /// Cookie 认证表单组件

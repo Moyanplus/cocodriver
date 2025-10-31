@@ -8,7 +8,9 @@ import '../core/quark_config.dart';
 import '../models/quark_models.dart';
 import '../utils/quark_logger.dart';
 
-/// 夸克云盘账号服务 - 负责账号信息、容量信息、会员信息查询
+/// 夸克云盘账号服务
+///
+/// 负责账号信息、容量信息、会员信息查询等功能。
 class QuarkAccountService {
   /// 获取账号个人信息（使用 DTO）
   static Future<QuarkApiResult<QuarkAccountInfoResponse>>

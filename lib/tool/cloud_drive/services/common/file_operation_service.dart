@@ -1,11 +1,13 @@
 // import '../../../../../core/logging/log_manager.dart'; // 未使用
-import '../data/models/cloud_drive_entities.dart';
-import '../data/models/cloud_drive_dtos.dart';
-import '../base/cloud_drive_operation_service.dart';
-import '../core/result.dart';
-import 'cloud_drive_service_factory.dart';
+import '../../data/models/cloud_drive_entities.dart';
+import '../../data/models/cloud_drive_dtos.dart';
+import '../../base/cloud_drive_operation_service.dart';
+import '../../core/result.dart';
+import '../cloud_drive_service_factory.dart';
 
-/// 文件操作服务 - 专门处理文件相关操作
+/// 文件操作服务
+///
+/// 处理文件相关的操作，包括文件列表、文件详情、文件夹操作等。
 class FileOperationService extends CloudDriveService {
   FileOperationService(CloudDriveType type) : super(type);
 
@@ -22,6 +24,9 @@ class FileOperationService extends CloudDriveService {
 
     return await ResultUtils.fromAsync(() async {
       final strategy = CloudDriveOperationService.getStrategy(type);
+      if (strategy == null) {
+        throw Exception('策略未找到: ${type.displayName}');
+      }
       final fileList = await strategy.getFileList(
         account: account,
         folderId: folderId,
@@ -56,6 +61,9 @@ class FileOperationService extends CloudDriveService {
 
     return await ResultUtils.fromAsync(() async {
       final strategy = CloudDriveOperationService.getStrategy(type);
+      if (strategy == null) {
+        throw Exception('策略未找到: ${type.displayName}');
+      }
       final accountDetails = await strategy.getAccountDetails(account: account);
 
       if (accountDetails != null) {
@@ -86,6 +94,9 @@ class FileOperationService extends CloudDriveService {
 
     return await ResultUtils.fromAsync(() async {
       final strategy = CloudDriveOperationService.getStrategy(type);
+      if (strategy == null) {
+        throw Exception('策略未找到: ${type.displayName}');
+      }
       final result = await strategy.createFolder(
         account: account,
         folderName: folderName,
@@ -118,6 +129,9 @@ class FileOperationService extends CloudDriveService {
 
     return await ResultUtils.fromAsync(() async {
       final strategy = CloudDriveOperationService.getStrategy(type);
+      if (strategy == null) {
+        throw Exception('策略未找到: ${type.displayName}');
+      }
       final success = await strategy.moveFile(
         account: account,
         file: file,
@@ -143,6 +157,9 @@ class FileOperationService extends CloudDriveService {
 
     return await ResultUtils.fromAsync(() async {
       final strategy = CloudDriveOperationService.getStrategy(type);
+      if (strategy == null) {
+        throw Exception('策略未找到: ${type.displayName}');
+      }
       final success = await strategy.deleteFile(account: account, file: file);
 
       if (success) {
@@ -165,6 +182,9 @@ class FileOperationService extends CloudDriveService {
 
     return await ResultUtils.fromAsync(() async {
       final strategy = CloudDriveOperationService.getStrategy(type);
+      if (strategy == null) {
+        throw Exception('策略未找到: ${type.displayName}');
+      }
       final success = await strategy.renameFile(
         account: account,
         file: file,
@@ -195,6 +215,9 @@ class FileOperationService extends CloudDriveService {
 
     return await ResultUtils.fromAsync(() async {
       final strategy = CloudDriveOperationService.getStrategy(type);
+      if (strategy == null) {
+        throw Exception('策略未找到: ${type.displayName}');
+      }
       final success = await strategy.copyFile(
         account: account,
         file: file,
@@ -230,6 +253,9 @@ class FileOperationService extends CloudDriveService {
 
     return await ResultUtils.fromAsync(() async {
       final strategy = CloudDriveOperationService.getStrategy(type);
+      if (strategy == null) {
+        throw Exception('策略未找到: ${type.displayName}');
+      }
       final shareLink = await strategy.createShareLink(
         account: account,
         files: files,
@@ -250,12 +276,18 @@ class FileOperationService extends CloudDriveService {
   /// 获取支持的操作
   Map<String, bool> getSupportedOperations() {
     final strategy = CloudDriveOperationService.getStrategy(type);
+    if (strategy == null) {
+      return {};
+    }
     return strategy.getSupportedOperations();
   }
 
   /// 获取UI配置
   Map<String, dynamic> getOperationUIConfig() {
     final strategy = CloudDriveOperationService.getStrategy(type);
+    if (strategy == null) {
+      return {};
+    }
     return strategy.getOperationUIConfig();
   }
 
@@ -267,6 +299,9 @@ class FileOperationService extends CloudDriveService {
 
     return await ResultUtils.fromAsync(() async {
       final strategy = CloudDriveOperationService.getStrategy(type);
+      if (strategy == null) {
+        throw Exception('策略未找到: ${type.displayName}');
+      }
       final accountDetails = await strategy.getAccountDetails(account: account);
 
       if (accountDetails != null) {
@@ -285,6 +320,9 @@ class FileOperationService extends CloudDriveService {
   /// 将路径信息转换为目标文件夹ID
   String convertPathToTargetFolderId(List<PathInfo> folderPath) {
     final strategy = CloudDriveOperationService.getStrategy(type);
+    if (strategy == null) {
+      return '';
+    }
     return strategy.convertPathToTargetFolderId(folderPath);
   }
 
@@ -294,6 +332,9 @@ class FileOperationService extends CloudDriveService {
     String targetPath,
   ) {
     final strategy = CloudDriveOperationService.getStrategy(type);
+    if (strategy == null) {
+      return file;
+    }
     return strategy.updateFilePathForTargetDirectory(file, targetPath);
   }
 }

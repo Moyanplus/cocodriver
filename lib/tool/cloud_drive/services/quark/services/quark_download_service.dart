@@ -4,12 +4,14 @@ import '../core/quark_config.dart';
 import '../models/quark_models.dart';
 import '../utils/quark_logger.dart';
 
-/// 夸克云盘下载服务 - 获取文件下载链接、支持批量下载
+/// 夸克云盘下载服务
+///
+/// 提供文件下载链接获取、支持批量下载等功能。
 class QuarkDownloadService {
   /// 获取文件下载链接（使用 DTO）
   ///
-  /// 使用 [QuarkDownloadRequest] 构建请求
-  /// 返回 [QuarkApiResult] 包装的 [QuarkDownloadResponse]
+  /// [account] 夸克云盘账号信息
+  /// [request] 下载请求对象
   static Future<QuarkApiResult<QuarkDownloadResponse>> getDownloadUrlWithDTO({
     required CloudDriveAccount account,
     required QuarkDownloadRequest request,

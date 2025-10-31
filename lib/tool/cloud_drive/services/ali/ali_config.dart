@@ -1,6 +1,8 @@
 import '../../../../../core/logging/log_manager.dart';
 
-/// 阿里云盘配置
+/// 阿里云盘配置类
+///
+/// 集中管理阿里云盘的所有配置参数，包括 API 端点、请求头、超时设置等。
 class AliConfig {
   /// 基础URL
   static const String baseUrl = 'https://user.aliyundrive.com';

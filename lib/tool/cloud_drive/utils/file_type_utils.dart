@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// 文件类型工具类
+///
+/// 提供文件类型识别、图标获取、颜色获取等功能。
+
 /// 文件类型信息
 class FileTypeInfo {
   final IconData iconData;
@@ -9,8 +13,6 @@ class FileTypeInfo {
   const FileTypeInfo(this.iconData, this.color, this.category);
 }
 
-/// 文件类型工具类
-/// 统一管理文件类型图标、颜色和分类信息
 class FileTypeUtils {
   /// 文件类型映射表
   static final Map<String, FileTypeInfo> _fileTypeMap = {

@@ -9,14 +9,16 @@ class CloudDriveTypeState {
 
   const CloudDriveTypeState({
     this.selectedType,
-    this.availableTypes = const [
-      CloudDriveType.baidu,
-      CloudDriveType.ali,
-      CloudDriveType.lanzou,
-      CloudDriveType.quark,
-    ],
+    this.availableTypes = const [],
     this.isFilterEnabled = false,
   });
+
+  /// 使用可用云盘类型的默认构造函数
+  factory CloudDriveTypeState.defaultState() {
+    return CloudDriveTypeState(
+      availableTypes: CloudDriveTypeHelper.availableTypes,
+    );
+  }
 
   /// 是否有选中的云盘类型
   bool get hasSelectedType => selectedType != null;
@@ -38,7 +40,7 @@ class CloudDriveTypeState {
 
 /// 云盘类型状态管理
 class CloudDriveTypeNotifier extends StateNotifier<CloudDriveTypeState> {
-  CloudDriveTypeNotifier() : super(const CloudDriveTypeState());
+  CloudDriveTypeNotifier() : super(CloudDriveTypeState.defaultState());
 
   /// 选择云盘类型
   void selectType(CloudDriveType type) {

@@ -6,7 +6,8 @@ import 'ali_cloud_drive_service.dart';
 import 'ali_config.dart';
 
 /// 阿里云盘文件操作服务
-/// 专门处理文件操作如重命名、删除、移动等
+///
+/// 专门处理文件操作，包括重命名、删除、移动等。
 class AliFileOperationService {
   /// 重命名文件
   static Future<bool> renameFile({
@@ -77,9 +78,7 @@ class AliFileOperationService {
     required String targetFolderId,
   }) async {
     try {
-      LogManager().cloudDrive(
-        '阿里云盘 - 移动文件: ${file.name} -> $targetFolderId',
-      );
+      LogManager().cloudDrive('阿里云盘 - 移动文件: ${file.name} -> $targetFolderId');
 
       // 首先获取drive_id
       final driveId = await AliCloudDriveService.getDriveId(account: account);
@@ -246,9 +245,7 @@ class AliFileOperationService {
       );
 
       if (!AliBaseService.isHttpSuccess(response.statusCode)) {
-        LogManager().cloudDrive(
-          '阿里云盘 - 获取下载链接HTTP错误: ${response.statusCode}',
-        );
+        LogManager().cloudDrive('阿里云盘 - 获取下载链接HTTP错误: ${response.statusCode}');
         return null;
       }
 

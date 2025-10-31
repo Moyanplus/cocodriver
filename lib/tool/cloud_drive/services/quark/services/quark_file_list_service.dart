@@ -4,12 +4,14 @@ import '../core/quark_config.dart';
 import '../models/quark_models.dart';
 import '../utils/quark_logger.dart';
 
-/// 夸克云盘文件列表服务 - 获取文件列表、解析文件元数据
+/// 夸克云盘文件列表服务
+///
+/// 提供文件列表获取、解析文件元数据等功能。
 class QuarkFileListService {
   /// 获取文件列表（使用 DTO）
   ///
-  /// 使用 [QuarkFileListRequest] 构建请求
-  /// 返回 [QuarkApiResult] 包装的 [QuarkFileListResponse]
+  /// [account] 夸克云盘账号信息
+  /// [request] 文件列表请求对象
   static Future<QuarkApiResult<QuarkFileListResponse>> getFileListWithDTO({
     required CloudDriveAccount account,
     required QuarkFileListRequest request,

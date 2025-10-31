@@ -3,8 +3,9 @@ import 'package:dio/dio.dart';
 import '../../../../../core/logging/log_manager.dart';
 import 'lanzou_config.dart';
 
-/// 蓝奏云vei参数管理服务
-/// 专门负责vei参数的获取、存储和管理
+/// 蓝奏云 vei 参数管理服务
+///
+/// 专门负责 vei 参数的获取、存储和管理。
 class LanzouVeiService {
   static final Dio _dio = Dio(
     BaseOptions(
@@ -104,9 +105,7 @@ class LanzouVeiService {
           return null;
         }
       } else {
-        LogManager().cloudDrive(
-          '蓝奏云 - 获取vei参数失败，状态码: ${response.statusCode}',
-        );
+        LogManager().cloudDrive('蓝奏云 - 获取vei参数失败，状态码: ${response.statusCode}');
         return null;
       }
     } catch (e) {

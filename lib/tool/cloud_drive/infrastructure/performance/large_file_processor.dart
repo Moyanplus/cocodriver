@@ -7,7 +7,9 @@ import '../../../../../core/logging/log_manager.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../../core/result.dart';
 
-/// 大文件处理器 - 优化大文件上传下载性能
+/// 大文件处理器
+///
+/// 优化大文件上传下载性能，支持分块上传和下载。
 class LargeFileProcessor {
   static const int _defaultChunkSize = 1024 * 1024; // 1MB
   static const int _maxConcurrentChunks = 3;
@@ -444,7 +446,9 @@ class LargeFileProcessor {
   }
 }
 
-/// 信号量 - 控制并发数量
+/// 信号量类
+///
+/// 控制并发数量，用于大文件分块处理时的并发控制。
 class Semaphore {
   final int maxCount;
   int _currentCount;

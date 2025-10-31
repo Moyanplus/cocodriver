@@ -5,7 +5,8 @@ import '../../../../../core/logging/log_manager.dart';
 import 'lanzou_config.dart';
 
 /// 蓝奏云直链解析服务
-/// 专门负责蓝奏云分享链接的解析和直链获取
+///
+/// 专门负责蓝奏云分享链接的解析和直链获取。
 class LanzouDirectLinkService {
   static final Dio _dio = Dio(
     BaseOptions(
@@ -156,9 +157,7 @@ class LanzouDirectLinkService {
         LogManager().cloudDrive(
           '页面包含 "function down_p()": ${content.contains('function down_p()')}',
         );
-        LogManager().cloudDrive(
-          '页面包含 "iframe": ${content.contains('iframe')}',
-        );
+        LogManager().cloudDrive('页面包含 "iframe": ${content.contains('iframe')}');
         LogManager().cloudDrive(
           '页面包含 "文件取消分享了": ${content.contains('文件取消分享了')}',
         );

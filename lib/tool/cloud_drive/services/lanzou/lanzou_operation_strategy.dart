@@ -6,6 +6,8 @@ import 'lanzou_cloud_drive_service.dart';
 // import 'lanzou_config.dart'; // 未使用
 
 /// 蓝奏云操作策略
+///
+/// 实现 CloudDriveOperationStrategy 接口，提供蓝奏云特定的操作实现。
 class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   @override
   Future<String?> getDownloadUrl({
@@ -310,6 +312,40 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       LogManager().cloudDrive('蓝奏云 - 获取文件列表异常: $e');
       LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
       return [];
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> uploadFile({
+    required CloudDriveAccount account,
+    required String filePath,
+    required String fileName,
+    String? folderId,
+  }) async {
+    LogManager().cloudDrive('蓝奏云 - 上传文件开始');
+    LogManager().cloudDrive('文件路径: $filePath');
+    LogManager().cloudDrive('文件名: $fileName');
+    LogManager().cloudDrive('文件夹ID: ${folderId ?? '-1'}');
+
+    try {
+      final result = await LanzouCloudDriveService.uploadFile(
+        account: account,
+        filePath: filePath,
+        fileName: fileName,
+        folderId: folderId ?? '-1',
+      );
+
+      if (result['success'] == true) {
+        LogManager().cloudDrive('蓝奏云 - 文件上传成功');
+      } else {
+        LogManager().cloudDrive('蓝奏云 - 文件上传失败: ${result['message']}');
+      }
+
+      return result;
+    } catch (e, stackTrace) {
+      LogManager().cloudDrive('蓝奏云 - 上传文件异常: $e');
+      LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
+      return {'success': false, 'message': e.toString()};
     }
   }
 }

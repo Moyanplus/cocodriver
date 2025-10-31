@@ -1,10 +1,12 @@
 // import '../../../../../core/logging/log_manager.dart'; // 未使用
-import '../data/models/cloud_drive_entities.dart';
-import '../base/cloud_drive_account_service.dart';
-import '../core/result.dart';
-import 'cloud_drive_service_factory.dart';
+import '../../data/models/cloud_drive_entities.dart';
+import '../../base/cloud_drive_account_service.dart';
+import '../../core/result.dart';
+import '../cloud_drive_service_factory.dart';
 
-/// 账号服务 - 专门处理账号相关操作
+/// 账号服务
+///
+/// 处理账号相关的操作，包括账号的加载、保存、添加、更新、删除等。
 class AccountService extends CloudDriveService {
   AccountService(CloudDriveType type) : super(type);
 
@@ -139,6 +141,13 @@ class AccountService extends CloudDriveService {
           return const Failure('Cookie为空');
         }
         break;
+      case AuthType.authorization:
+        if (account.authorizationToken == null ||
+            account.authorizationToken!.isEmpty) {
+          logWarning('验证账号登录状态', 'Authorization Token为空');
+          return const Failure('Authorization Token为空');
+        }
+        break;
       case AuthType.web:
         if (account.authorizationToken == null ||
             account.authorizationToken!.isEmpty) {
@@ -167,6 +176,7 @@ class AccountService extends CloudDriveService {
       'pan123': 0,
       'ali': 0,
       'quark': 0,
+      'chinaMobile': 0,
       'loggedIn': 0,
       'loggedOut': 0,
     };
@@ -188,6 +198,9 @@ class AccountService extends CloudDriveService {
           break;
         case CloudDriveType.quark:
           stats['quark'] = (stats['quark'] ?? 0) + 1;
+          break;
+        case CloudDriveType.chinaMobile:
+          stats['chinaMobile'] = (stats['chinaMobile'] ?? 0) + 1;
           break;
       }
 

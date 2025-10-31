@@ -1,78 +1,13 @@
-/// 云盘基础服务抽象类 (Cloud Drive Base Service Abstract Class)
-///
-/// 这是整个云盘服务的基础抽象类，为所有云盘平台提供统一的基础设施和功能接口。
-/// 通过抽象方法定义标准接口，确保所有云盘实现的一致性和可维护性。
-///
-/// 核心功能：
-/// 1. 网络请求管理
-///    - 统一的HTTP请求处理（GET, POST, PUT, DELETE）
-///    - 请求头和认证信息管理
-///    - 响应解析和错误处理
-///
-/// 2. 性能监控
-///    - 请求性能跟踪
-///    - 操作耗时统计
-///    - 资源使用监控
-///
-/// 3. 错误处理
-///    - 统一的错误捕获机制
-///    - 错误日志记录
-///    - 重试策略实现
-///
-/// 4. 文件操作
-///    - 文件列表获取
-///    - 文件上传下载
-///    - 文件管理操作
-///
-/// 5. 账号管理
-///    - 账号验证
-///    - 登录状态维护
-///    - 会话管理
-///
-/// 技术特点：
-/// - 使用Dio进行网络请求
-/// - 支持异步操作
-/// - 实现依赖注入模式
-/// - 遵循SOLID原则
-///
-/// 使用方式：
-/// 1. 继承此类实现具体云盘服务
-/// 2. 实现所有抽象方法
-/// 3. 根据需要重写部分方法
-///
-/// 扩展性：
-/// - 易于添加新的云盘支持
-/// - 可自定义请求处理
-/// - 灵活的错误处理机制
-///
-/// @author Flutter开发团队
-/// @version 1.0.0
-/// @since 2024年
-/// @see CloudDriveAccountService
-/// @see CloudDriveFileService
-/// @see CloudDriveOperationService
-
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-
-// 云盘数据模型导入
 import '../data/models/cloud_drive_entities.dart';
-
-// 工具类导入
 import '../utils/common_utils.dart';
-
-// 性能监控导入
-import '../infrastructure/performance/performance_metrics.dart';
 
 /// 云盘基础服务抽象类
 ///
-/// 提供云盘服务的通用功能，减少各云盘平台服务类的代码重复
-/// 包含网络请求、性能监控、错误处理等基础功能
+/// 为所有云盘平台提供统一的基础功能，包括网络请求、错误处理等。
 abstract class CloudDriveBaseService {
-  // 性能监控实例
-  final PerformanceMetrics _metrics = PerformanceMetrics();
-
   /// 创建Dio实例
   ///
   /// 为指定的云盘账号创建配置好的Dio实例

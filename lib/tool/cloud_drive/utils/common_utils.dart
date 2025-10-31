@@ -8,20 +8,19 @@ import '../data/models/cloud_drive_entities.dart';
 import '../infrastructure/performance/performance_metrics.dart';
 import '../infrastructure/error/recovery_strategies.dart';
 
-/// 通用工具类 - 减少代码重复
+/// 通用工具类
+///
+/// 提供通用的工具方法，包括 Dio 创建、错误处理、性能监控等。
 class CommonUtils {
   static final PerformanceMetrics _metrics = PerformanceMetrics();
 
-  /// 统一的Dio创建方法
-  ///
-  /// 创建配置好的Dio实例，包含默认请求头和拦截器
+  /// 统一的 Dio 创建方法
   ///
   /// [account] 云盘账号信息
   /// [connectTimeout] 连接超时时间（可选）
   /// [receiveTimeout] 接收超时时间（可选）
   /// [sendTimeout] 发送超时时间（可选）
   /// [defaultHeaders] 默认请求头（可选）
-  /// 返回配置好的Dio实例
   static Dio createDio({
     required CloudDriveAccount account,
     Duration? connectTimeout,

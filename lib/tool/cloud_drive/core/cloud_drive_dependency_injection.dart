@@ -5,7 +5,9 @@ import '../infrastructure/error/cloud_drive_error_handler.dart';
 import '../infrastructure/logging/cloud_drive_logger.dart';
 import '../data/repositories/cloud_drive_repository.dart';
 
-/// 云盘服务定位器 - 简化的依赖注入容器
+/// 云盘服务定位器
+///
+/// 提供依赖注入容器功能，管理各种云盘服务的注册和获取。
 class CloudDriveServiceLocator {
   static final Map<Type, dynamic> _services = {};
   static bool _isInitialized = false;
@@ -66,7 +68,9 @@ class CloudDriveServiceLocator {
   static bool get isInitialized => _isInitialized;
 }
 
-/// 云盘服务提供者 - 简化的服务访问接口
+/// 云盘服务提供者
+///
+/// 提供简化的服务访问接口，方便获取各种云盘服务。
 class CloudDriveServices {
   /// 获取文件服务
   static CloudDriveFileService get fileService =>

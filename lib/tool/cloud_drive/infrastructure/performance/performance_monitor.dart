@@ -1,7 +1,9 @@
 import 'dart:collection';
 import '../../../../../core/logging/log_manager.dart';
 
-/// 性能监控器 - 监控和优化云盘操作性能
+/// 性能监控器
+///
+/// 监控和优化云盘操作性能，记录操作耗时和错误信息。
 class PerformanceMonitor {
   static final PerformanceMonitor _instance = PerformanceMonitor._internal();
   factory PerformanceMonitor() => _instance;
@@ -191,7 +193,7 @@ class PerformanceMonitor {
   }
 }
 
-/// 性能计时器
+/// 性能计时器类
 class PerformanceTimer {
   final String operationName;
   final Map<String, dynamic>? metadata;
@@ -214,7 +216,7 @@ class PerformanceTimer {
   }
 }
 
-/// 性能指标
+/// 性能指标类
 class PerformanceMetric {
   final String operationName;
   final int totalCount;
@@ -258,7 +260,7 @@ class PerformanceMetric {
   }
 }
 
-/// 性能事件
+/// 性能事件类
 class PerformanceEvent {
   final String operationName;
   final Duration duration;
@@ -286,7 +288,7 @@ class PerformanceEvent {
   }
 }
 
-/// 性能报告
+/// 性能报告类
 class PerformanceReport {
   final int totalOperations;
   final int successfulOperations;

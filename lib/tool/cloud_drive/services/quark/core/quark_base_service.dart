@@ -5,9 +5,11 @@ import 'quark_auth_service.dart';
 import 'quark_config.dart';
 import '../utils/quark_logger.dart';
 
-/// 夸克云盘基础服务 - Dio实例创建、请求拦截、响应验证
+/// 夸克云盘基础服务
+///
+/// 提供 Dio 实例创建、请求拦截、响应验证等功能。
 abstract class QuarkBaseService {
-  /// 创建dio实例（使用原始认证头）
+  /// 创建 Dio 实例（使用原始认证头）
   static Dio createDio(CloudDriveAccount account) {
     final dio = Dio(
       BaseOptions(

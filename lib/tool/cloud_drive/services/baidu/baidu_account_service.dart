@@ -1,11 +1,11 @@
-import 'package:dio/dio.dart';
-
 import '../../../../core/logging/log_manager.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import 'baidu_base_service.dart';
 
 /// 百度网盘账号服务
+///
+/// 提供百度网盘账号相关功能，包括 Cookie 验证、账号信息获取等。
 class BaiduAccountService {
   static const String _baseUrl = 'https://pan.baidu.com/api';
 

@@ -2,7 +2,9 @@ import '../../../../../core/logging/log_manager.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../../core/result.dart';
 
-/// 云盘错误处理器 - 使用 Result 模式
+/// 云盘错误处理器
+///
+/// 提供统一的错误处理功能，支持 Result 模式的错误处理。
 class CloudDriveErrorHandler {
   /// 处理错误
   static void handleError(CloudDriveException error) {

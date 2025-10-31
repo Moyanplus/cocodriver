@@ -1,20 +1,14 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import '../data/models/cloud_drive_entities.dart';
+import '../../data/models/cloud_drive_entities.dart';
 
 /// 云盘用户偏好设置服务
 ///
-/// 负责管理云盘相关的用户偏好设置，包括：
-/// - 默认云盘类型选择
-/// - 登录方式偏好
-/// - 其他用户设置
+/// 管理云盘相关的用户偏好设置，包括默认云盘类型、登录方式等。
 class CloudDrivePreferencesService {
   static const String _keyDefaultCloudDriveType = 'cloud_drive_default_type';
   static const String _keyDefaultAuthType = 'cloud_drive_default_auth_type';
 
   /// 获取默认云盘类型
-  ///
-  /// 如果用户之前选择过，返回用户的选择
-  /// 否则返回百度网盘作为默认值
   Future<CloudDriveType> getDefaultCloudDriveType() async {
     try {
       final prefs = await SharedPreferences.getInstance();

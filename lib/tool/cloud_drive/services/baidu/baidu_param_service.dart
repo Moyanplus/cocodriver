@@ -4,7 +4,8 @@ import 'baidu_base_service.dart';
 import 'baidu_config.dart';
 
 /// 百度网盘参数管理服务
-/// 专门负责获取和缓存百度网盘的API参数（bdstoken、sign等）
+///
+/// 负责获取和缓存百度网盘的 API 参数（bdstoken、sign 等）。
 class BaiduParamService {
   // 缓存参数，避免重复请求
   static final Map<String, Map<String, dynamic>> _paramCache = {};

@@ -2,90 +2,11 @@ import '../../../../../core/logging/log_manager.dart';
 import '../../download/services/download_config_service.dart';
 import '../../download/services/download_service.dart';
 import '../data/models/cloud_drive_entities.dart';
-import '../services/lanzou/lanzou_cloud_drive_service.dart';
-import '../services/lanzou/lanzou_direct_link_service.dart';
 import 'cloud_drive_operation_service.dart';
 
-/// 云盘文件管理服务 (Cloud Drive File Management Service)
+/// 云盘文件管理服务
 ///
-/// 该服务是云盘系统的核心组件之一，负责统一管理各种云盘平台的文件操作。
-/// 采用策略模式设计，支持多个云盘平台的无缝集成和统一操作接口。
-///
-/// 核心功能：
-/// 1. 文件操作管理
-///    - 文件上传和下载
-///    - 文件移动和复制
-///    - 文件删除和重命名
-///    - 文件夹创建和管理
-///
-/// 2. 批量操作支持
-///    - 批量文件下载
-///    - 批量文件移动
-///    - 批量文件删除
-///    - 操作进度跟踪
-///
-/// 3. 高速传输支持
-///    - 多线程下载
-///    - 断点续传
-///    - 传输速度优化
-///    - 带宽控制
-///
-/// 4. 文件管理功能
-///    - 文件列表获取
-///    - 文件搜索
-///    - 文件分类
-///    - 文件预览
-///
-/// 5. 错误处理和恢复
-///    - 传输错误处理
-///    - 自动重试机制
-///    - 错误恢复策略
-///    - 日志记录
-///
-/// 技术特点：
-/// - 策略模式实现
-/// - 异步操作支持
-/// - 进度监控
-/// - 性能优化
-///
-/// 支持的云盘平台：
-/// - 百度网盘
-/// - 阿里云盘
-/// - 夸克网盘
-/// - 蓝奏云
-/// - 123云盘
-///
-/// 使用方式：
-/// ```dart
-/// // 获取文件列表
-/// final files = await CloudDriveFileService.getFileList(
-///   account: account,
-///   folderId: "root"
-/// );
-///
-/// // 下载文件
-/// final success = await CloudDriveFileService.downloadFile(
-///   account: account,
-///   file: file
-/// );
-/// ```
-///
-/// 性能优化：
-/// - 文件缓存机制
-/// - 请求合并处理
-/// - 智能重试策略
-/// - 资源池管理
-///
-/// 安全特性：
-/// - 传输加密
-/// - 文件完整性校验
-/// - 访问权限控制
-/// - 安全传输协议
-///
-/// @author Flutter开发团队
-/// @version 1.0.0
-/// @since 2024年
-/// @see CloudDriveBaseService
+/// 统一管理各种云盘平台的文件操作，包括文件列表、下载、批量操作等。
 /// @see CloudDriveOperationService
 /// @see CloudDriveAccountService
 class CloudDriveFileService {
@@ -107,6 +28,10 @@ class CloudDriveFileService {
 
       // 使用策略模式获取文件列表
       final strategy = CloudDriveOperationService.getStrategy(account.type);
+      if (strategy == null) {
+        _logError('获取文件列表', account, '策略未找到: ${account.type.displayName}');
+        return {'files': [], 'folders': []};
+      }
       final fileList = await strategy.getFileList(
         account: account,
         folderId: _normalizeRootFolder(folderId, account),
@@ -153,6 +78,10 @@ class CloudDriveFileService {
 
       // 使用策略模式获取账号详情
       final strategy = CloudDriveOperationService.getStrategy(account.type);
+      if (strategy == null) {
+        _logError('获取文件详情', account, '策略未找到: ${account.type.displayName}');
+        return null;
+      }
       final accountDetails = await strategy.getAccountDetails(account: account);
 
       if (accountDetails != null) {
@@ -426,58 +355,24 @@ class CloudDriveFileService {
         return {'success': false, 'message': '账号未登录'};
       }
 
-      // 根据云盘类型选择合适的上传服务
-      switch (account.type) {
-        case CloudDriveType.lanzou:
-          final result = await LanzouCloudDriveService.uploadFile(
-            account: account,
-            filePath: filePath,
-            fileName: fileName,
-            folderId: folderId ?? '-1',
-          );
-          _logSuccess('文件上传', account, fileName);
-          return result;
-
-        case CloudDriveType.baidu:
-        case CloudDriveType.pan123:
-        case CloudDriveType.ali:
-        case CloudDriveType.quark:
-          // 其他云盘的上传功能待实现
-          _logWarning('文件上传', account, '${account.type.displayName}上传功能暂未实现');
-          return {
-            'success': false,
-            'message': '${account.type.displayName}上传功能暂未实现',
-          };
-      }
-    } catch (e) {
-      _logError('上传文件', account, e);
-      return {'success': false, 'message': e.toString()};
-    }
-  }
-
-  /// 解析蓝奏云直链
-  static Future<Map<String, dynamic>?> parseLanzouDirectLink({
-    required String shareUrl,
-    String? password,
-  }) async {
-    try {
-      LogManager().cloudDrive('开始解析蓝奏云直链: $shareUrl');
-
-      final result = await LanzouDirectLinkService.parseDirectLink(
-        shareUrl: shareUrl,
-        password: password,
+      // 使用策略模式上传文件
+      final result = await CloudDriveOperationService.uploadFile(
+        account: account,
+        filePath: filePath,
+        fileName: fileName,
+        folderId: folderId,
       );
 
-      if (result != null) {
-        LogManager().cloudDrive('蓝奏云直链解析成功');
+      if (result['success'] == true) {
+        _logSuccess('文件上传', account, fileName);
       } else {
-        LogManager().cloudDrive('蓝奏云直链解析失败');
+        _logWarning('文件上传', account, result['message'] ?? '上传失败');
       }
 
       return result;
     } catch (e) {
-      LogManager().error('解析蓝奏云直链异常');
-      return null;
+      _logError('上传文件', account, e);
+      return {'success': false, 'message': e.toString()};
     }
   }
 
@@ -527,6 +422,13 @@ class CloudDriveFileService {
       case AuthType.cookie:
         if (account.cookies == null || account.cookies!.isEmpty) {
           _logWarning('账号验证', account, 'Cookie为空');
+          return false;
+        }
+        break;
+      case AuthType.authorization:
+        if (account.authorizationToken == null ||
+            account.authorizationToken!.isEmpty) {
+          _logWarning('账号验证', account, 'Authorization Token为空');
           return false;
         }
         break;
@@ -582,27 +484,8 @@ class CloudDriveFileService {
           continue;
         }
 
-        // 构建认证头 - 根据云盘类型添加相应的认证信息
-        Map<String, String> authHeaders = {};
-        if (account.type == CloudDriveType.ali) {
-          // 阿里云盘使用Authorization Bearer Token认证
-          if (account.authorizationToken != null &&
-              account.authorizationToken!.isNotEmpty) {
-            authHeaders['Authorization'] =
-                'Bearer ${account.authorizationToken}';
-            LogManager().cloudDrive(
-              '🔑 阿里云盘 - 批量下载任务使用Authorization认证: ${account.authorizationToken!.length}字符',
-            );
-          } else {
-            LogManager().cloudDrive('阿里云盘 - 账号缺少Authorization Token');
-          }
-        } else if (account.type == CloudDriveType.quark) {
-          // 夸克云盘使用Cookie认证
-          authHeaders['Cookie'] = account.cookies ?? '';
-        } else {
-          // 其他云盘使用Cookie认证
-          authHeaders['Cookie'] = account.cookies ?? '';
-        }
+        // 使用账号的认证头信息（根据实际认证方式自动生成）
+        final authHeaders = account.authHeaders;
 
         // 合并认证头和配置中的自定义请求头
         final finalHeaders = <String, String>{

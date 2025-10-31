@@ -58,6 +58,17 @@ class AuthInfoSection extends StatelessWidget {
                   : cookieStr;
         }
         break;
+      case AuthType.authorization:
+        if (account.authorizationToken != null) {
+          paramInfo = 'Authorization';
+          final tokenStr = account.authorizationToken!;
+          // 显示前30个字符，避免过长
+          paramValue =
+              tokenStr.length > 30
+                  ? '${tokenStr.substring(0, 30)}...'
+                  : tokenStr;
+        }
+        break;
       case AuthType.web:
         if (account.authorizationToken != null) {
           paramInfo = 'Token';

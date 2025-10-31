@@ -4,7 +4,8 @@ import 'ali_base_service.dart';
 import 'ali_config.dart';
 
 /// 阿里云盘文件列表服务
-/// 专门处理文件列表获取和解析
+///
+/// 专门处理文件列表获取和解析。
 class AliFileListService {
   /// 获取文件列表
   static Future<List<CloudDriveFile>> getFileList({
@@ -42,9 +43,7 @@ class AliFileListService {
       final response = await dio.postUri(uri, data: requestBody);
 
       if (!AliBaseService.isHttpSuccess(response.statusCode)) {
-        LogManager().cloudDrive(
-          '阿里云盘 - 获取文件列表HTTP错误: ${response.statusCode}',
-        );
+        LogManager().cloudDrive('阿里云盘 - 获取文件列表HTTP错误: ${response.statusCode}');
         return [];
       }
 

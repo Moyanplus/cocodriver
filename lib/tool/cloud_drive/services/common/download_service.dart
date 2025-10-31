@@ -1,11 +1,13 @@
 import '../../../../../core/logging/log_manager.dart';
-import '../data/models/cloud_drive_entities.dart';
-// import '../data/models/cloud_drive_dtos.dart'; // 未使用
-import '../base/cloud_drive_operation_service.dart';
-import '../core/result.dart';
-import 'cloud_drive_service_factory.dart';
+import '../../data/models/cloud_drive_entities.dart';
+// import '../../data/models/cloud_drive_dtos.dart'; // 未使用
+import '../../base/cloud_drive_operation_service.dart';
+import '../../core/result.dart';
+import '../cloud_drive_service_factory.dart';
 
-/// 下载服务 - 专门处理下载相关操作
+/// 下载服务
+///
+/// 处理文件下载相关操作，包括获取下载链接、高速下载等。
 class DownloadService extends CloudDriveService {
   DownloadService(CloudDriveType type) : super(type);
 
@@ -25,6 +27,9 @@ class DownloadService extends CloudDriveService {
 
     return await ResultUtils.fromAsync(() async {
       final strategy = CloudDriveOperationService.getStrategy(type);
+      if (strategy == null) {
+        throw Exception('策略未找到: ${type.displayName}');
+      }
       final downloadUrl = await strategy.getDownloadUrl(
         account: account,
         file: file,
@@ -59,6 +64,9 @@ class DownloadService extends CloudDriveService {
 
     return await ResultUtils.fromAsync(() async {
       final strategy = CloudDriveOperationService.getStrategy(type);
+      if (strategy == null) {
+        throw Exception('策略未找到: ${type.displayName}');
+      }
       final downloadUrls = await strategy.getHighSpeedDownloadUrls(
         account: account,
         file: file,
@@ -137,7 +145,10 @@ class DownloadService extends CloudDriveService {
   /// 检查下载是否支持
   bool isDownloadSupported() {
     final supportedOps =
-        CloudDriveOperationService.getStrategy(type).getSupportedOperations();
+        CloudDriveOperationService.getStrategy(
+          type,
+        )?.getSupportedOperations() ??
+        {};
     return supportedOps['download'] ?? false;
   }
 

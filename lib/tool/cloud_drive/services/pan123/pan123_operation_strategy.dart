@@ -6,6 +6,8 @@ import 'pan123_cloud_drive_service.dart';
 import 'pan123_config.dart';
 
 /// 123云盘操作策略
+///
+/// 实现 CloudDriveOperationStrategy 接口，提供123云盘特定的操作实现。
 class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   @override
   Future<String?> getDownloadUrl({
@@ -306,6 +308,29 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }
 
   @override
+  Future<Map<String, dynamic>> uploadFile({
+    required CloudDriveAccount account,
+    required String filePath,
+    required String fileName,
+    String? folderId,
+  }) async {
+    LogManager().cloudDrive('123云盘 - 上传文件开始');
+    LogManager().cloudDrive('文件路径: $filePath');
+    LogManager().cloudDrive('文件名: $fileName');
+    LogManager().cloudDrive('文件夹ID: ${folderId ?? '0'}');
+
+    try {
+      // TODO: 实现123云盘上传功能
+      LogManager().cloudDrive('123云盘 - 上传功能暂未实现');
+      return {'success': false, 'message': '123云盘上传功能暂未实现'};
+    } catch (e, stackTrace) {
+      LogManager().cloudDrive('123云盘 - 上传文件异常: $e');
+      LogManager().cloudDrive('123云盘 - 错误堆栈: $stackTrace');
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  @override
   Map<String, bool> getSupportedOperations() => {
     'download': true, // 已实现下载功能
     'share': false, // 暂未实现分享功能
@@ -380,8 +405,100 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? folderId,
     int page = 1,
     int pageSize = 50,
-  }) {
-    // TODO: implement getFileList
-    throw UnimplementedError();
+  }) async {
+    try {
+      LogManager().cloudDrive('123云盘 - 获取文件列表开始');
+      LogManager().cloudDrive('123云盘 - 文件夹ID: ${folderId ?? '根目录'}');
+      LogManager().cloudDrive(
+        '123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
+      );
+
+      final files = await Pan123CloudDriveService.getFileList(
+        account: account,
+        parentId: folderId ?? '0',
+        page: page,
+        limit: pageSize,
+      );
+
+      LogManager().cloudDrive('123云盘 - 文件列表获取完成: ${files.length} 个文件');
+      return files;
+    } catch (e, stackTrace) {
+      LogManager().cloudDrive('123云盘 - 获取文件列表异常: $e');
+      LogManager().cloudDrive('错误堆栈: $stackTrace');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<CloudDriveFile>> searchFiles({
+    required CloudDriveAccount account,
+    required String keyword,
+    String? folderId,
+    int page = 1,
+    int pageSize = 50,
+    String? fileType,
+  }) async {
+    try {
+      LogManager().cloudDrive('123云盘 - 搜索文件开始');
+      LogManager().cloudDrive('123云盘 - 搜索关键词: $keyword');
+      LogManager().cloudDrive(
+        '123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
+      );
+
+      // 使用123云盘的搜索API
+      final files = await Pan123CloudDriveService.getFileList(
+        account: account,
+        parentId: folderId ?? '0',
+        page: page,
+        limit: pageSize,
+        searchValue: keyword,
+      );
+
+      // 如果指定了文件类型，进行筛选
+      List<CloudDriveFile> filteredFiles = files;
+      if (fileType != null) {
+        if (fileType == 'file') {
+          filteredFiles = files.where((f) => !f.isFolder).toList();
+        } else if (fileType == 'folder') {
+          filteredFiles = files.where((f) => f.isFolder).toList();
+        }
+      }
+
+      LogManager().cloudDrive('123云盘 - 搜索完成: 找到 ${filteredFiles.length} 个文件');
+      return filteredFiles;
+    } catch (e, stackTrace) {
+      LogManager().cloudDrive('123云盘 - 搜索文件异常: $e');
+      LogManager().cloudDrive('错误堆栈: $stackTrace');
+      return [];
+    }
+  }
+
+  @override
+  Future<CloudDriveAccount?> refreshAuth({
+    required CloudDriveAccount account,
+  }) async {
+    try {
+      LogManager().cloudDrive('123云盘 - 刷新鉴权开始');
+      LogManager().cloudDrive(
+        '123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
+      );
+
+      // 调用服务层的方法来刷新鉴权
+      final refreshedAccount = await Pan123CloudDriveService.refreshAuth(
+        account,
+      );
+
+      if (refreshedAccount != null) {
+        LogManager().cloudDrive('123云盘 - 鉴权刷新成功: ${refreshedAccount.name}');
+      } else {
+        LogManager().warning('123云盘 - 鉴权刷新失败: 返回null');
+      }
+
+      return refreshedAccount;
+    } catch (e, stackTrace) {
+      LogManager().error('123云盘 - 刷新鉴权异常: $e');
+      LogManager().error('错误堆栈: $stackTrace');
+      return null;
+    }
   }
 }

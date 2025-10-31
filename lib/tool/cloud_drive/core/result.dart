@@ -1,6 +1,8 @@
 import '../../../../../core/logging/log_manager.dart';
 
-/// 操作结果类型 - 统一的错误处理模式
+/// 操作结果封装
+///
+/// 提供统一的错误处理模式，使用 Result 类型封装成功和失败的情况。
 sealed class Result<T> {
   const Result();
 
@@ -86,7 +88,7 @@ sealed class Result<T> {
   }
 }
 
-/// 成功结果
+/// 成功结果类
 class Success<T> extends Result<T> {
   final T data;
 
@@ -106,7 +108,7 @@ class Success<T> extends Result<T> {
   int get hashCode => data.hashCode;
 }
 
-/// 失败结果
+/// 失败结果类
 class Failure<T> extends Result<T> {
   final String error;
   final CloudDriveError? errorDetail;
@@ -128,7 +130,7 @@ class Failure<T> extends Result<T> {
   int get hashCode => error.hashCode ^ errorDetail.hashCode;
 }
 
-/// 云盘错误类型
+/// 云盘错误类型枚举
 enum CloudDriveErrorType {
   /// 网络错误
   network,
@@ -173,7 +175,7 @@ enum CloudDriveErrorType {
   unknown,
 }
 
-/// 云盘错误详情
+/// 云盘错误详情类
 class CloudDriveError {
   final CloudDriveErrorType type;
   final String message;
@@ -250,7 +252,7 @@ class CloudDriveError {
   }
 }
 
-/// 云盘异常
+/// 云盘异常类
 class CloudDriveException implements Exception {
   final String message;
   final CloudDriveErrorType type;
@@ -339,6 +341,8 @@ class CloudDriveException implements Exception {
 }
 
 /// Result 工具类
+///
+/// 提供将异步和同步操作包装为 Result 类型的工具方法。
 class ResultUtils {
   /// 将异步操作包装为 Result
   static Future<Result<T>> fromAsync<T>(

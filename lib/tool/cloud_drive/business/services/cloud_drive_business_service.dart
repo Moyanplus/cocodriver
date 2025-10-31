@@ -1,6 +1,6 @@
 import '../../data/models/cloud_drive_entities.dart';
 
-/// 上传权限验证结果
+/// 上传权限验证结果类
 class UploadPermissionValidation {
   final bool isValid;
   final String message;
@@ -11,7 +11,7 @@ class UploadPermissionValidation {
   });
 }
 
-/// 上传结果项
+/// 上传结果项类
 class UploadResultItem {
   final String fileName;
   final bool success;
@@ -24,7 +24,7 @@ class UploadResultItem {
   });
 }
 
-/// 批量上传结果
+/// 批量上传结果类
 class UploadBatchResult {
   final int totalCount;
   final int successCount;
@@ -52,7 +52,7 @@ class UploadBatchResult {
   }
 }
 
-/// 直链解析结果
+/// 直链解析结果类
 class DirectLinkParseResult {
   final bool success;
   final String message;
@@ -65,7 +65,7 @@ class DirectLinkParseResult {
   });
 }
 
-/// 文件下载结果
+/// 文件下载结果类
 class FileDownloadResult {
   final bool success;
   final String message;
@@ -81,6 +81,8 @@ class FileDownloadResult {
 }
 
 /// 云盘业务服务
+///
+/// 提供云盘相关的业务逻辑，包括上传权限验证、批量上传、直链解析等。
 class CloudDriveBusinessService {
   /// 验证上传权限
   static Future<UploadPermissionValidation> validateUploadPermission({

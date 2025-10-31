@@ -1,13 +1,14 @@
 import '../../../../core/logging/log_manager.dart';
 import '../../data/models/cloud_drive_entities.dart';
-import '../../data/models/cloud_drive_dtos.dart';
 import 'baidu_file_list_service.dart';
 import 'baidu_file_operations_service.dart';
 import 'baidu_download_service.dart';
 import 'baidu_account_service.dart';
 import 'baidu_param_service.dart';
 
-/// 百度网盘主服务 - 重构后的简化版本
+/// 百度网盘主服务
+///
+/// 作为门面模式，提供百度网盘功能的统一 API 接口，整合各个子服务。
 class BaiduCloudDriveService {
   /// 获取文件列表
   static Future<Map<String, List<CloudDriveFile>>> getFileList({

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/logging/log_manager.dart';
 import '../../../../../core/utils/responsive_utils.dart';

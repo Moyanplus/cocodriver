@@ -4,6 +4,8 @@ import 'pan123_base_service.dart';
 import 'pan123_config.dart';
 
 /// 123云盘下载服务
+///
+/// 提供 123 云盘文件下载链接获取功能。
 class Pan123DownloadService {
   /// 统一错误处理
   static void _handleError(
@@ -11,40 +13,25 @@ class Pan123DownloadService {
     dynamic error,
     StackTrace? stackTrace,
   ) {
-    LogManager().cloudDrive(
-      '123云盘 - $operation 失败: $error',
-      
-    );
+    LogManager().cloudDrive('123云盘 - $operation 失败: $error');
     if (stackTrace != null) {
-      LogManager().cloudDrive(
-        '错误堆栈: $stackTrace',
-        
-      );
+      LogManager().cloudDrive('错误堆栈: $stackTrace');
     }
   }
 
   /// 统一日志记录
   static void _logInfo(String message, {Map<String, dynamic>? params}) {
-    LogManager().cloudDrive(
-      message,
-      
-    );
+    LogManager().cloudDrive(message);
   }
 
   /// 统一成功日志记录
   static void _logSuccess(String message, {Map<String, dynamic>? details}) {
-    LogManager().cloudDrive(
-      '123云盘 - $message',
-      
-    );
+    LogManager().cloudDrive('123云盘 - $message');
   }
 
   /// 统一错误日志记录
   static void _logError(String message, dynamic error) {
-    LogManager().cloudDrive(
-      '123云盘 - $message: $error',
-      
-    );
+    LogManager().cloudDrive('123云盘 - $message: $error');
   }
 
   /// 获取文件下载链接

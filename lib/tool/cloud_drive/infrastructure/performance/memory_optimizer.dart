@@ -4,7 +4,9 @@ import 'dart:io';
 import 'dart:isolate';
 import '../../../../../core/logging/log_manager.dart';
 
-/// 内存优化器 - 优化大文件处理时的内存使用
+/// 内存优化器
+///
+/// 优化大文件处理时的内存使用，提供内存监控和优化建议。
 class MemoryOptimizer {
   static final MemoryOptimizer _instance = MemoryOptimizer._internal();
   factory MemoryOptimizer() => _instance;
@@ -263,7 +265,7 @@ class MemoryOptimizer {
   }
 }
 
-/// 内存使用情况
+/// 内存使用情况类
 class MemoryUsage {
   final int usedBytes;
   final int totalBytes;
@@ -297,7 +299,7 @@ class MemoryUsage {
 /// 内存压力级别
 enum MemoryPressureLevel { low, medium, high, critical }
 
-/// 进程信息（简化版本）
+/// 进程信息类
 class ProcessInfo {
   static int get currentRss {
     // 在实际应用中，这里应该获取真实的进程内存使用情况

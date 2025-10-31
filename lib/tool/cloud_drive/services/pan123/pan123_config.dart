@@ -1,5 +1,6 @@
 /// 123云盘配置类
-/// 集中管理123云盘的所有配置参数，避免硬编码和耦合
+///
+/// 集中管理 123 云盘的所有配置参数，包括 API 端点、请求头、超时设置等。
 class Pan123Config {
   // API 配置
   static const String baseUrl = 'https://www.123pan.com';

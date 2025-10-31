@@ -4,6 +4,8 @@ import '../../core/cloud_drive_base_service.dart';
 import '../../base/cloud_drive_operation_service.dart';
 
 /// 云盘数据仓库接口
+///
+/// 定义云盘数据的访问接口，包括文件列表、文件详情、搜索等功能。
 abstract class CloudDriveRepositoryInterface {
   /// 获取文件列表
   Future<FileListResult> getFileList(FileListRequest request);
@@ -40,6 +42,8 @@ abstract class CloudDriveRepositoryInterface {
 }
 
 /// 云盘数据仓库实现
+///
+/// 实现云盘数据的访问逻辑，通过策略模式调用不同云盘平台的操作。
 class CloudDriveRepository implements CloudDriveRepositoryInterface {
   static final CloudDriveRepository _instance =
       CloudDriveRepository._internal();
@@ -68,6 +72,19 @@ class CloudDriveRepository implements CloudDriveRepositoryInterface {
       final strategy = CloudDriveOperationService.getStrategy(
         request.account.type,
       );
+      if (strategy == null) {
+        CloudDriveLogger.logError(
+          'Repository: 策略未找到',
+          request.account.type,
+          Exception('策略未找到: ${request.account.type.displayName}'),
+        );
+        return const FileListResult(
+          files: [],
+          folders: [],
+          hasMore: false,
+          totalCount: 0,
+        );
+      }
       final files = await strategy.getFileList(
         account: request.account,
         folderId: request.folderId,
@@ -122,6 +139,14 @@ class CloudDriveRepository implements CloudDriveRepositoryInterface {
       final strategy = CloudDriveOperationService.getStrategy(
         request.account.type,
       );
+      if (strategy == null) {
+        CloudDriveLogger.logError(
+          'Repository: 策略未找到',
+          request.account.type,
+          Exception('策略未找到: ${request.account.type.displayName}'),
+        );
+        return null;
+      }
       final accountDetails = await strategy.getAccountDetails(
         account: request.account,
       );

@@ -1,7 +1,9 @@
 import '../../../../../core/logging/log_manager.dart';
 import '../data/models/cloud_drive_entities.dart';
 
-/// 云盘基础服务接口
+/// 云盘服务基础接口
+///
+/// 定义云盘服务的基本接口，包括文件列表、文件操作、账号验证等功能。
 abstract class CloudDriveServiceInterface {
   /// 获取文件列表
   Future<FileListResult> getFileList(FileListRequest request);
@@ -37,7 +39,7 @@ abstract class CloudDriveServiceInterface {
   Map<String, bool> getSupportedOperations();
 }
 
-/// 文件列表请求
+/// 文件列表请求类
 class FileListRequest {
   final CloudDriveAccount account;
   final String? folderId;
@@ -52,7 +54,7 @@ class FileListRequest {
   });
 }
 
-/// 文件列表结果
+/// 文件列表结果类
 class FileListResult {
   final List<CloudDriveFile> files;
   final List<CloudDriveFile> folders;
@@ -71,7 +73,7 @@ class FileListResult {
   bool get isSuccess => error == null;
 }
 
-/// 文件详情请求
+/// 文件详情请求类
 class FileDetailRequest {
   final CloudDriveAccount account;
   final String fileId;
@@ -79,7 +81,7 @@ class FileDetailRequest {
   const FileDetailRequest({required this.account, required this.fileId});
 }
 
-/// 文件详情结果
+/// 文件详情结果类
 class FileDetailResult {
   final CloudDriveFile file;
   final Map<String, dynamic> metadata;
@@ -94,7 +96,7 @@ class FileDetailResult {
   bool get isSuccess => error == null;
 }
 
-/// 上传请求
+/// 上传请求类
 class UploadRequest {
   final CloudDriveAccount account;
   final String filePath;
@@ -111,7 +113,7 @@ class UploadRequest {
   });
 }
 
-/// 上传结果
+/// 上传结果类
 class UploadResult {
   final bool success;
   final String? fileId;
@@ -126,7 +128,7 @@ class UploadResult {
   });
 }
 
-/// 下载请求
+/// 下载请求类
 class DownloadRequest {
   final CloudDriveAccount account;
   final CloudDriveFile file;
@@ -141,7 +143,7 @@ class DownloadRequest {
   });
 }
 
-/// 下载结果
+/// 下载结果类
 class DownloadResult {
   final String? downloadUrl;
   final String? error;
@@ -152,7 +154,7 @@ class DownloadResult {
   bool get isSuccess => downloadUrl != null && error == null;
 }
 
-/// 分享请求
+/// 分享请求类
 class ShareRequest {
   final CloudDriveAccount account;
   final List<CloudDriveFile> files;
@@ -167,7 +169,7 @@ class ShareRequest {
   });
 }
 
-/// 分享结果
+/// 分享结果类
 class ShareResult {
   final String? shareUrl;
   final String? password;
@@ -179,7 +181,7 @@ class ShareResult {
   bool get isSuccess => shareUrl != null && error == null;
 }
 
-/// 移动请求
+/// 移动请求类
 class MoveRequest {
   final CloudDriveAccount account;
   final CloudDriveFile file;
@@ -192,7 +194,7 @@ class MoveRequest {
   });
 }
 
-/// 删除请求
+/// 删除请求类
 class DeleteRequest {
   final CloudDriveAccount account;
   final CloudDriveFile file;
@@ -200,7 +202,7 @@ class DeleteRequest {
   const DeleteRequest({required this.account, required this.file});
 }
 
-/// 重命名请求
+/// 重命名请求类
 class RenameRequest {
   final CloudDriveAccount account;
   final CloudDriveFile file;
@@ -213,7 +215,7 @@ class RenameRequest {
   });
 }
 
-/// 复制请求
+/// 复制请求类
 class CopyRequest {
   final CloudDriveAccount account;
   final CloudDriveFile file;
@@ -228,7 +230,7 @@ class CopyRequest {
   });
 }
 
-/// 操作结果
+/// 操作结果类
 class OperationResult {
   final bool success;
   final String? error;
@@ -237,7 +239,9 @@ class OperationResult {
   const OperationResult({required this.success, this.error, this.metadata});
 }
 
-/// 云盘基础服务
+/// 云盘基础服务抽象类
+///
+/// 为所有云盘平台提供统一的基础功能，包括网络请求、错误处理等。
 abstract class CloudDriveBaseService implements CloudDriveServiceInterface {
   final CloudDriveType cloudDriveType;
 

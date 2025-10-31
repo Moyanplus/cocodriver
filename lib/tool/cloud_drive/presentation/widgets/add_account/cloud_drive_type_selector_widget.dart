@@ -34,7 +34,7 @@ class CloudDriveTypeSelectorWidget extends StatelessWidget {
         ),
       ),
       items:
-          CloudDriveType.values.map((type) {
+          CloudDriveTypeHelper.availableTypes.map((type) {
             return DropdownMenuItem(
               value: type,
               child: Row(

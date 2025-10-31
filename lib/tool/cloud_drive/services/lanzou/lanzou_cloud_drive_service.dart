@@ -10,7 +10,8 @@ import 'lanzou_direct_link_service.dart';
 import 'lanzou_vei_service.dart';
 
 /// 蓝奏云盘 API 服务
-/// 专门处理蓝奏云盘的 API 调用
+///
+/// 专门处理蓝奏云盘的 API 调用，作为蓝奏云的主服务类。
 class LanzouCloudDriveService {
   /// 统一错误处理
   static void _handleError(

@@ -4,6 +4,8 @@ import 'dart:io';
 import '../performance/performance_metrics.dart';
 
 /// 错误恢复管理器
+///
+/// 提供错误恢复、重试策略、熔断器等功能，提高系统的容错能力。
 class ErrorRecoveryManager {
   static final ErrorRecoveryManager _instance =
       ErrorRecoveryManager._internal();
@@ -373,7 +375,7 @@ class ErrorRecoveryManager {
   }
 }
 
-/// 重试配置
+/// 重试配置类
 class RetryConfig {
   final int maxAttempts;
   final Duration baseDelay;
@@ -402,7 +404,7 @@ class RetryConfig {
   }
 }
 
-/// 熔断器配置
+/// 熔断器配置类
 class CircuitBreakerConfig {
   final int failureThreshold;
   final Duration timeout;
@@ -423,13 +425,12 @@ class CircuitBreakerConfig {
   }
 }
 
-/// 熔断器
+/// 熔断器类
 class CircuitBreaker {
   final CircuitBreakerConfig config;
   int _failureCount = 0;
   int _successCount = 0;
   DateTime? _openedAt;
-  DateTime? _lastFailureTime;
 
   CircuitBreaker(this.config);
 
@@ -448,7 +449,6 @@ class CircuitBreaker {
 
   void recordFailure() {
     _failureCount++;
-    _lastFailureTime = DateTime.now();
 
     if (_failureCount >= config.failureThreshold) {
       _openedAt = DateTime.now();
@@ -459,11 +459,10 @@ class CircuitBreaker {
     _failureCount = 0;
     _successCount = 0;
     _openedAt = null;
-    _lastFailureTime = null;
   }
 }
 
-/// 恢复尝试记录
+/// 恢复尝试记录类
 class RecoveryAttempt {
   final String operationId;
   final String category;
@@ -484,7 +483,7 @@ class RecoveryAttempt {
   });
 }
 
-/// 恢复事件
+/// 恢复事件类
 class RecoveryEvent {
   final String operationId;
   final String category;
@@ -509,7 +508,7 @@ class RecoveryEvent {
   });
 }
 
-/// 熔断器打开异常
+/// 熔断器打开异常类
 class CircuitBreakerOpenException implements Exception {
   final String message;
   final String operationId;

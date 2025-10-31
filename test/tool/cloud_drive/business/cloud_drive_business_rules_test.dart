@@ -80,7 +80,7 @@ void main() {
         final authTypes = AuthType.values;
         expect(authTypes, hasLength(3));
         expect(authTypes, contains(AuthType.cookie));
-        expect(authTypes, contains(AuthType.authorization));
+        expect(authTypes, contains(AuthType.web));
         expect(authTypes, contains(AuthType.qrCode));
       });
     });

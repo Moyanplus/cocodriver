@@ -3,7 +3,9 @@ import 'quark_base_service.dart';
 import 'quark_config.dart';
 import '../utils/quark_logger.dart';
 
-/// 夸克云盘认证服务 - Token刷新、认证头管理、缓存优化
+/// 夸克云盘认证服务
+///
+/// 负责 Token 刷新、认证头管理、缓存优化等功能。
 class QuarkAuthService {
   // 缓存最新的 __puus token
   static final Map<String, String> _puusTokenCache = {};

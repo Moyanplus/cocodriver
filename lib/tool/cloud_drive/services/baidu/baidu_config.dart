@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 /// 百度网盘配置类
-/// 集中管理百度网盘的所有配置参数，避免硬编码和耦合
+///
+/// 集中管理百度网盘的所有配置参数，包括 API 端点、请求头、超时设置等。
 class BaiduConfig {
   // API 配置
   static const String baseUrl = 'https://pan.baidu.com';

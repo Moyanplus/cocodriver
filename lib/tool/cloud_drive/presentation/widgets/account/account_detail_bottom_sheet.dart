@@ -411,6 +411,10 @@ class _AccountDetailBottomSheetState
         authType = 'Cookie';
         authValue = widget.account.cookies ?? '';
         break;
+      case AuthType.authorization:
+        authType = 'Authorization Token';
+        authValue = widget.account.authorizationToken ?? '';
+        break;
       case AuthType.web:
         authType = 'Authorization Token';
         authValue = widget.account.authorizationToken ?? '';
@@ -793,6 +797,8 @@ class _AccountDetailBottomSheetState
     switch (authType) {
       case AuthType.cookie:
         return 'Cookie 认证';
+      case AuthType.authorization:
+        return 'Authorization 认证';
       case AuthType.web:
         return 'WebView 认证';
       case AuthType.qrCode:

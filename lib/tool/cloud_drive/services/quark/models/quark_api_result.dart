@@ -1,9 +1,8 @@
 import '../../../../../core/logging/log_manager.dart';
 
-/// 夸克API响应结果封装
+/// 夸克 API 响应结果封装
 ///
-/// 统一的API响应包装类，提供类型安全和错误处理
-/// 使用泛型支持不同的返回类型
+/// 统一的 API 响应包装类，提供类型安全和错误处理，使用泛型支持不同的返回类型。
 class QuarkApiResult<T> {
   /// 操作是否成功
   final bool isSuccess;
@@ -126,7 +125,7 @@ class QuarkApiResult<T> {
   }
 }
 
-/// 夸克API异常
+/// 夸克 API 异常类
 class QuarkApiException implements Exception {
   final String message;
   final String? code;

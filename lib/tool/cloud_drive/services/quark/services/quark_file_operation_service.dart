@@ -4,12 +4,14 @@ import '../core/quark_config.dart';
 import '../models/quark_models.dart';
 import '../utils/quark_logger.dart';
 
-/// 夸克云盘文件操作服务 - 移动、删除、复制、重命名、创建文件夹
+/// 夸克云盘文件操作服务
+///
+/// 提供移动、删除、复制、重命名、创建文件夹等操作功能。
 class QuarkFileOperationService {
   /// 执行文件操作（统一方法）
   ///
-  /// 使用 [QuarkFileOperationRequest] 及其子类构建请求
-  /// 返回 [QuarkApiResult] 包装的 [QuarkFileOperationResponse]
+  /// [account] 夸克云盘账号信息
+  /// [request] 文件操作请求对象
   static Future<QuarkApiResult<QuarkFileOperationResponse>> executeOperation({
     required CloudDriveAccount account,
     required QuarkFileOperationRequest request,

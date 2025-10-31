@@ -4,6 +4,8 @@ import 'pan123_base_service.dart';
 import 'pan123_config.dart';
 
 /// 123云盘文件列表服务
+///
+/// 提供 123 云盘文件列表获取功能。
 class Pan123FileListService {
   /// 统一错误处理
   static void _handleError(

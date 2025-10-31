@@ -1,26 +1,13 @@
-/// 云盘数据传输对象(DTO)模型
+/// 云盘数据传输对象（DTO）模型
 ///
-/// 定义云盘功能中使用的各种数据传输对象
-/// 包括路径信息、账号信息、文件信息等核心数据结构
-///
-/// 主要功能：
-/// - 路径信息管理
-/// - 云盘账号信息
-/// - 文件操作数据
-/// - 网络请求响应
-/// - 数据传输封装
-///
-/// 作者: Flutter开发团队
-/// 版本: 1.0.0
-/// 创建时间: 2024年
+/// 定义云盘功能中使用的各种数据传输对象，包括路径信息、账号信息、文件信息等。
 
 import 'package:flutter/material.dart';
 
 // import 'cloud_drive_entities.dart'; // 未使用
 /// 路径信息模型
 ///
-/// 表示云盘中的路径信息，包含路径ID和名称
-/// 用于文件导航和路径管理
+/// 表示云盘中的路径信息，包含路径 ID 和名称，用于文件导航和路径管理。
 class PathInfo {
   /// 路径唯一标识符
   final String id;
@@ -47,8 +34,7 @@ class PathInfo {
 
 /// 云盘账号信息模型
 ///
-/// 表示云盘账号的基本信息，包括用户名、手机号、头像等
-/// 用于账号管理和用户信息展示
+/// 表示云盘账号的基本信息，包括用户名、手机号、头像等。
 class CloudDriveAccountInfo {
   /// 用户名
   final String username;
@@ -105,6 +91,8 @@ class CloudDriveAccountInfo {
 }
 
 /// 云盘容量信息模型
+///
+/// 表示云盘的存储容量信息，包括总容量、已使用容量、可用容量等。
 class CloudDriveQuotaInfo {
   final int total; // 总容量（字节）
   final int used; // 已使用（字节）
@@ -172,6 +160,8 @@ class CloudDriveQuotaInfo {
 // CloudDriveAccountDetails moved to cloud_drive_entities.dart
 
 /// 下载配置模型
+///
+/// 配置文件下载的参数，包括文件名、大小、超时时间、重试次数等。
 class DownloadConfig {
   final String? fileName;
   final int? size;
@@ -215,6 +205,8 @@ class DownloadConfig {
 }
 
 /// 批量操作配置模型
+///
+/// 配置批量操作的参数，包括并发数、操作间隔、错误处理策略等。
 class BatchOperationConfig {
   final int maxConcurrent;
   final Duration delayBetweenOperations;
@@ -237,6 +229,8 @@ class BatchOperationConfig {
 }
 
 /// 操作结果模型
+///
+/// 表示操作的结果，包括成功/失败状态、错误信息、返回数据等。
 class OperationResult {
   final bool success;
   final String? error;
@@ -300,6 +294,8 @@ enum QRLoginStatus {
 }
 
 /// 二维码登录状态扩展
+///
+/// 为 QRLoginStatus 枚举提供显示名称、颜色、图标等扩展功能。
 extension QRLoginStatusExtension on QRLoginStatus {
   String get displayName {
     switch (this) {
@@ -360,6 +356,8 @@ extension QRLoginStatusExtension on QRLoginStatus {
 }
 
 /// 二维码登录信息模型
+///
+/// 表示二维码登录的完整信息，包括二维码 ID、内容、状态等。
 class QRLoginInfo {
   /// 二维码ID
   final String qrId;
@@ -477,7 +475,9 @@ class QRLoginInfo {
   };
 }
 
-/// 二维码登录配置
+/// 二维码登录配置模型
+///
+/// 配置二维码登录的参数，包括生成 URL、查询 URL、轮询间隔等。
 class QRLoginConfig {
   /// 二维码生成API端点
   final String generateEndpoint;

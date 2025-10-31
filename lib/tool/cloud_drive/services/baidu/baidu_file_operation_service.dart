@@ -6,7 +6,8 @@ import 'baidu_config.dart';
 import 'baidu_param_service.dart';
 
 /// 百度网盘文件操作服务
-/// 专门处理文件重命名、移动、复制、删除等操作
+///
+/// 专门处理文件重命名、移动、复制、删除等操作。
 class BaiduFileOperationService {
   /// 重命名文件
   static Future<bool> renameFile({

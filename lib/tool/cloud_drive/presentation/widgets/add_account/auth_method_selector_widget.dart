@@ -52,14 +52,24 @@ class AuthMethodSelectorWidget extends StatelessWidget {
                   label: AddAccountFormConstants.authMethodWeb,
                   isEnabled: supportedAuthTypes.contains(AuthType.web),
                 ),
-                // Cookie 登录
-                _buildFilterChip(
-                  context: context,
-                  authType: AuthType.cookie,
-                  icon: Icons.cookie,
-                  label: AddAccountFormConstants.authMethodCookie,
-                  isEnabled: supportedAuthTypes.contains(AuthType.cookie),
-                ),
+                // Cookie 登录（与Authorization互斥）
+                if (supportedAuthTypes.contains(AuthType.cookie))
+                  _buildFilterChip(
+                    context: context,
+                    authType: AuthType.cookie,
+                    icon: Icons.cookie,
+                    label: AddAccountFormConstants.authMethodCookie,
+                    isEnabled: true,
+                  ),
+                // Authorization Token登录（与Cookie互斥）
+                if (supportedAuthTypes.contains(AuthType.authorization))
+                  _buildFilterChip(
+                    context: context,
+                    authType: AuthType.authorization,
+                    icon: Icons.lock,
+                    label: AddAccountFormConstants.authMethodAuthorization,
+                    isEnabled: true,
+                  ),
                 // 二维码登录
                 _buildFilterChip(
                   context: context,

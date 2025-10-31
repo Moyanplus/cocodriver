@@ -10,14 +10,13 @@ import 'baidu_cloud_drive_service.dart';
 // import 'baidu_config.dart'; // 未使用
 
 /// 百度网盘操作策略
+///
+/// 实现 CloudDriveOperationStrategy 接口，提供百度网盘特定的操作实现。
 class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   /// 获取文件下载链接
   ///
-  /// 为指定的百度网盘文件获取下载链接
-  ///
   /// [account] 百度网盘账号信息
   /// [file] 要下载的文件
-  /// 返回下载链接，如果获取失败则返回null
   @override
   Future<String?> getDownloadUrl({
     required CloudDriveAccount account,
@@ -190,9 +189,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         downloadUrls.addAll(urls.map((url) => url.toString()));
       }
 
-      LogManager().cloudDrive(
-        '百度网盘 - 高速下载链接获取成功，共 ${downloadUrls.length} 个链接',
-      );
+      LogManager().cloudDrive('百度网盘 - 高速下载链接获取成功，共 ${downloadUrls.length} 个链接');
       return downloadUrls;
     } catch (e) {
       LogManager().error('百度网盘 - 高速下载解析失败');
@@ -406,6 +403,29 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     } catch (e) {
       LogManager().error('百度网盘 - 重命名文件异常');
       rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> uploadFile({
+    required CloudDriveAccount account,
+    required String filePath,
+    required String fileName,
+    String? folderId,
+  }) async {
+    LogManager().cloudDrive('百度网盘 - 上传文件开始');
+    LogManager().cloudDrive('文件路径: $filePath');
+    LogManager().cloudDrive('文件名: $fileName');
+    LogManager().cloudDrive('文件夹ID: ${folderId ?? '根目录'}');
+
+    try {
+      // TODO: 实现百度网盘上传功能
+      LogManager().cloudDrive('百度网盘 - 上传功能暂未实现');
+      return {'success': false, 'message': '百度网盘上传功能暂未实现'};
+    } catch (e, stackTrace) {
+      LogManager().cloudDrive('百度网盘 - 上传文件异常: $e');
+      LogManager().cloudDrive('百度网盘 - 错误堆栈: $stackTrace');
+      return {'success': false, 'message': e.toString()};
     }
   }
 
@@ -652,9 +672,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     int pageSize = 50,
   }) async {
     try {
-      LogManager().cloudDrive(
-        '百度网盘 - 获取文件列表: path=$path, folderId=$folderId',
-      );
+      LogManager().cloudDrive('百度网盘 - 获取文件列表: path=$path, folderId=$folderId');
 
       // 使用百度网盘服务获取文件列表
       final result = await BaiduCloudDriveService.getFileList(

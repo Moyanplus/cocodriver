@@ -1,30 +1,13 @@
-/// 123云盘主服务类
-///
-/// 作为门面模式，提供123云盘功能的统一API接口
-/// 整合文件列表、文件操作、下载等各个子服务
-///
-/// 主要功能：
-/// - 文件列表获取
-/// - 文件操作管理
-/// - 下载服务集成
-/// - 统一API接口
-/// - 服务协调管理
-///
-/// 作者: Flutter开发团队
-/// 版本: 1.0.0
-/// 创建时间: 2024年
-
-import '../../data/models/cloud_drive_entities.dart';
-// import '../../data/models/cloud_drive_dtos.dart'; // 未使用
-import 'pan123_config.dart';
-import 'pan123_download_service.dart';
-import 'pan123_file_list_service.dart';
-import 'pan123_file_operation_service.dart';
+import '../../../../../core/logging/log_manager.dart';
+import 'package:coco_cloud_drive/tool/cloud_drive/data/models/cloud_drive_entities.dart';
+import 'package:coco_cloud_drive/tool/cloud_drive/services/pan123/pan123_config.dart';
+import 'package:coco_cloud_drive/tool/cloud_drive/services/pan123/pan123_download_service.dart';
+import 'package:coco_cloud_drive/tool/cloud_drive/services/pan123/pan123_file_list_service.dart';
+import 'package:coco_cloud_drive/tool/cloud_drive/services/pan123/pan123_file_operation_service.dart';
 
 /// 123云盘主服务类
 ///
-/// 作为门面模式，提供123云盘功能的统一API接口
-/// 整合文件列表、文件操作、下载等各个子服务
+/// 作为门面模式，提供 123 云盘功能的统一 API 接口，整合文件列表、文件操作、下载等各个子服务。
 class Pan123CloudDriveService {
   ///
   /// 获取指定文件夹下的文件和文件夹列表
@@ -201,6 +184,44 @@ class Pan123CloudDriveService {
       return files.isNotEmpty;
     } catch (e) {
       return false;
+    }
+  }
+
+  /// 刷新鉴权信息
+  ///
+  /// 刷新账号的鉴权信息（cookies、token等）
+  /// 参考 alist-main/drivers/139/util.go 中的 refreshToken 实现
+  ///
+  /// [account] 123云盘账号信息
+  /// 返回刷新后的账号信息，如果刷新失败返回null
+  static Future<CloudDriveAccount?> refreshAuth(
+    CloudDriveAccount account,
+  ) async {
+    try {
+      // 如果使用cookies认证，需要重新获取cookies
+      // 123云盘主要通过cookies进行认证，所以这里可以通过验证认证有效性来判断是否需要刷新
+      final isValid = await validateAuth(account);
+
+      if (isValid) {
+        // 认证仍然有效，无需刷新
+        return account;
+      }
+
+      // 认证已失效，需要重新登录
+      // 注意：实际刷新逻辑可能需要调用123云盘的刷新API
+      // 如果123云盘没有提供刷新API，则需要用户重新登录
+      // TODO: 实现123云盘的具体刷新鉴权逻辑
+      // 参考139云盘的实现，可能需要：
+      // 1. 解析当前cookies/token的过期时间
+      // 2. 如果即将过期，调用刷新API
+      // 3. 更新cookies/token并返回新的账号对象
+
+      // 目前暂时返回原账号，表示刷新失败需要重新登录
+      return null;
+    } catch (e, stackTrace) {
+      LogManager().error('123云盘 - 刷新鉴权失败: $e');
+      LogManager().error('错误堆栈: $stackTrace');
+      return null;
     }
   }
 

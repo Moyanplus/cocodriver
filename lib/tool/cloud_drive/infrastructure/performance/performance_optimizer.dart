@@ -5,7 +5,9 @@ import 'performance_monitor.dart';
 import 'memory_optimizer.dart';
 import 'large_file_processor.dart';
 
-/// 性能优化器 - 综合性能优化管理
+/// 性能优化器
+///
+/// 综合性能优化管理，包括性能监控、内存优化、大文件处理等。
 class PerformanceOptimizer {
   static final PerformanceOptimizer _instance =
       PerformanceOptimizer._internal();
@@ -299,7 +301,7 @@ class PerformanceOptimizer {
   }
 }
 
-/// 优化建议
+/// 优化建议类
 class OptimizationSuggestion {
   final OptimizationType type;
   final String title;

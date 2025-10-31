@@ -6,14 +6,12 @@ import '../../data/models/cloud_drive_entities.dart';
 import 'ali_config.dart';
 
 /// 阿里云盘基础服务
-/// 提供通用的Dio配置和响应处理功能
+///
+/// 提供通用的 Dio 配置和响应处理功能。
 abstract class AliBaseService {
-  /// 创建配置好的Dio实例
-  ///
-  /// 为阿里云盘账号创建配置好的Dio实例
+  /// 创建配置好的 Dio 实例
   ///
   /// [account] 阿里云盘账号信息
-  /// 返回配置好的Dio实例
   static Dio createDio(CloudDriveAccount account) {
     // 记录云盘服务初始化日志
     LogManager().cloudDrive(

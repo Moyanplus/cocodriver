@@ -3,18 +3,17 @@ import '../../data/models/cloud_drive_entities.dart';
 import 'baidu_base_service.dart';
 
 /// 百度网盘文件列表服务
+///
+/// 提供百度网盘文件列表获取功能。
 class BaiduFileListService {
   static const String _baseUrl = 'https://pan.baidu.com/api';
 
   /// 获取文件列表
   ///
-  /// 获取指定文件夹下的文件和文件夹列表
-  ///
   /// [account] 百度网盘账号信息
-  /// [folderId] 文件夹ID（默认根目录）
-  /// [page] 页码（默认1）
-  /// [pageSize] 每页大小（默认50）
-  /// 返回包含文件和文件夹列表的映射
+  /// [folderId] 文件夹 ID（默认根目录）
+  /// [page] 页码（默认 1）
+  /// [pageSize] 每页大小（默认 50）
   static Future<Map<String, List<CloudDriveFile>>> getFileList({
     required CloudDriveAccount account,
     String folderId = '/',
@@ -141,49 +140,6 @@ class BaiduFileListService {
       default:
         return FileCategory.other;
     }
-  }
-
-  /// 格式化时间戳
-  ///
-  /// 将时间戳格式化为相对时间描述
-  ///
-  /// [timestamp] 时间戳（秒）
-  /// 返回格式化的时间字符串
-  static String _formatTimestamp(int timestamp) {
-    final date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays}天前';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}小时前';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}分钟前';
-    } else {
-      return '刚刚';
-    }
-  }
-
-  /// 格式化文件大小
-  ///
-  /// 将字节数格式化为可读的文件大小字符串
-  ///
-  /// [bytes] 字节数
-  /// 返回格式化的文件大小字符串
-  static String _formatFileSize(int bytes) {
-    if (bytes == 0) return '0B';
-
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    int unitIndex = 0;
-    double size = bytes.toDouble();
-
-    while (size >= 1024 && unitIndex < units.length - 1) {
-      size /= 1024;
-      unitIndex++;
-    }
-
-    return '${size.toStringAsFixed(unitIndex == 0 ? 0 : 1)}${units[unitIndex]}';
   }
 
   /// 获取错误消息

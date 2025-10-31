@@ -7,10 +7,11 @@ import '../../../../core/logging/log_manager.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import '../../services/base/qr_login_service.dart';
-import '../../services/cloud_drive_preferences_service.dart';
+import '../../services/common/preferences_service.dart';
 import 'add_account/qr_code_auth_widget.dart';
 import 'add_account/webview_auth_widget.dart';
 import 'add_account/cookie_auth_form_widget.dart';
+import 'add_account/authorization_auth_form_widget.dart';
 import 'add_account/auth_method_selector_widget.dart';
 import 'add_account/cloud_drive_type_selector_widget.dart';
 import 'add_account/add_account_form_constants.dart';
@@ -46,6 +47,7 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
   // 文本控制器
   final _nameController = TextEditingController();
   final _cookiesController = TextEditingController();
+  final _authorizationController = TextEditingController();
 
   // 二维码登录相关
   StreamSubscription<QRLoginInfo>? _qrLoginSubscription;
@@ -62,6 +64,7 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
     // 监听输入框变化，实时更新按钮状态
     _nameController.addListener(_updateButtonState);
     _cookiesController.addListener(_updateButtonState);
+    _authorizationController.addListener(_updateButtonState);
   }
 
   /// 更新按钮状态
@@ -76,9 +79,11 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
     // 移除监听器
     _nameController.removeListener(_updateButtonState);
     _cookiesController.removeListener(_updateButtonState);
+    _authorizationController.removeListener(_updateButtonState);
 
     _nameController.dispose();
     _cookiesController.dispose();
+    _authorizationController.dispose();
     _qrLoginSubscription?.cancel();
     if (_currentQRLoginInfo != null) {
       QRLoginManager.cancelQRLogin(_currentQRLoginInfo!.qrId);
@@ -90,22 +95,38 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
   Future<void> _initializePreferences() async {
     try {
       final defaultType = await _preferencesService.getDefaultCloudDriveType();
+      final availableTypes = CloudDriveTypeHelper.availableTypes;
+
+      // 确保选择的类型在可用列表中，如果不在则使用第一个可用类型
+      final selectedType =
+          availableTypes.contains(defaultType)
+              ? defaultType
+              : (availableTypes.isNotEmpty
+                  ? availableTypes.first
+                  : CloudDriveType.baidu);
+
       final defaultAuthType = await _preferencesService.getDefaultAuthType(
-        defaultType,
+        selectedType,
       );
 
       if (mounted) {
         setState(() {
-          _selectedType = defaultType;
+          _selectedType = selectedType;
           _selectedAuthType = defaultAuthType;
           _isInitialized = true;
         });
       }
     } catch (e) {
+      final availableTypes = CloudDriveTypeHelper.availableTypes;
+      final fallbackType =
+          availableTypes.isNotEmpty
+              ? availableTypes.first
+              : CloudDriveType.baidu;
+
       if (mounted) {
         setState(() {
-          _selectedType = CloudDriveType.baidu;
-          _selectedAuthType = AuthType.web;
+          _selectedType = fallbackType;
+          _selectedAuthType = fallbackType.authType;
           _isInitialized = true;
         });
       }
@@ -211,6 +232,8 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
         return _buildWebViewAuth();
       case AuthType.cookie:
         return _buildCookieAuth();
+      case AuthType.authorization:
+        return _buildAuthorizationAuth();
     }
   }
 
@@ -288,6 +311,15 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
     return CookieAuthFormWidget(
       cloudDriveType: _selectedType,
       cookiesController: _cookiesController,
+      nameController: _nameController,
+    );
+  }
+
+  /// 构建 Authorization Token 认证
+  Widget _buildAuthorizationAuth() {
+    return AuthorizationAuthFormWidget(
+      cloudDriveType: _selectedType,
+      authorizationController: _authorizationController,
       nameController: _nameController,
     );
   }
@@ -391,6 +423,9 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
       case AuthType.cookie:
         return _nameController.text.trim().isNotEmpty &&
             _cookiesController.text.trim().isNotEmpty;
+      case AuthType.authorization:
+        return _nameController.text.trim().isNotEmpty &&
+            _authorizationController.text.trim().isNotEmpty;
       case AuthType.qrCode:
         // 二维码登录不需要填名称，成功后即可添加
         return _currentQRLoginInfo != null;
@@ -413,6 +448,9 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
         case AuthType.cookie:
           account = _createCookieAccount();
           break;
+        case AuthType.authorization:
+          account = _createAuthorizationAccount();
+          break;
         case AuthType.qrCode:
           // 显示加载提示
           ScaffoldMessenger.of(
@@ -421,7 +459,7 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
           account = await _createQRCodeAccount();
           break;
         case AuthType.web:
-          // Authorization 登录在 WebViewAuthWidget 中处理
+          // WebView 登录在 WebViewAuthWidget 中处理
           return;
       }
 
@@ -453,6 +491,31 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
     debugPrint('🍪 账号创建完成 - isLoggedIn: ${account.isLoggedIn}');
     debugPrint(
       '🍪 账号创建完成 - cookies字段: ${account.cookies?.substring(0, account.cookies!.length > 100 ? 100 : account.cookies!.length)}',
+    );
+
+    return account;
+  }
+
+  /// 创建 Authorization Token 账号
+  CloudDriveAccount _createAuthorizationAccount() {
+    final authorizationValue = _authorizationController.text.trim();
+    debugPrint('🔑 创建Authorization账号 - token长度: ${authorizationValue.length}');
+    debugPrint(
+      '🔑 创建Authorization账号 - token前50字符: ${authorizationValue.length > 50 ? authorizationValue.substring(0, 50) : authorizationValue}...',
+    );
+
+    final account = CloudDriveAccount(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _nameController.text.trim(),
+      type: _selectedType,
+      authorizationToken: authorizationValue,
+      createdAt: DateTime.now(),
+      lastLoginAt: DateTime.now(),
+    );
+
+    debugPrint('🔑 账号创建完成 - isLoggedIn: ${account.isLoggedIn}');
+    debugPrint(
+      '🔑 账号创建完成 - authorizationToken字段: ${account.authorizationToken?.substring(0, account.authorizationToken!.length > 50 ? 50 : account.authorizationToken!.length)}...',
     );
 
     return account;

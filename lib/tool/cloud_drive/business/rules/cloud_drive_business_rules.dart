@@ -1,7 +1,8 @@
 import '../../data/models/cloud_drive_entities.dart';
-// import '../../data/models/cloud_drive_dtos.dart'; // 未使用
 
-/// 云盘业务规则类
+/// 云盘业务规则
+///
+/// 定义云盘操作的业务规则，包括文件大小限制、操作权限验证等。
 class CloudDriveBusinessRules {
   /// 验证文件上传权限
   static bool validateUploadPermission({
@@ -37,6 +38,8 @@ class CloudDriveBusinessRules {
       case CloudDriveType.ali:
         return 20 * 1024 * 1024 * 1024; // 20GB
       case CloudDriveType.quark:
+        return 5 * 1024 * 1024 * 1024; // 5GB
+      case CloudDriveType.chinaMobile:
         return 5 * 1024 * 1024 * 1024; // 5GB
     }
   }
@@ -125,6 +128,16 @@ class CloudDriveBusinessRules {
           'copy': true,
           'share': true,
         };
+      case CloudDriveType.chinaMobile:
+        return {
+          'upload': true,
+          'download': true,
+          'delete': true,
+          'rename': true,
+          'move': true,
+          'copy': true,
+          'share': true,
+        };
     }
   }
 
@@ -172,6 +185,8 @@ class CloudDriveBusinessRules {
       case CloudDriveType.ali:
         return 100;
       case CloudDriveType.quark:
+        return 50;
+      case CloudDriveType.chinaMobile:
         return 50;
     }
   }
@@ -234,6 +249,8 @@ class CloudDriveBusinessRules {
         return 20 * 1024 * 1024 * 1024; // 20GB
       case CloudDriveType.quark:
         return 5 * 1024 * 1024 * 1024; // 5GB
+      case CloudDriveType.chinaMobile:
+        return 5 * 1024 * 1024 * 1024; // 5GB
     }
   }
 
@@ -249,6 +266,8 @@ class CloudDriveBusinessRules {
       case CloudDriveType.ali:
         return 7; // 7天
       case CloudDriveType.quark:
+        return 7; // 7天
+      case CloudDriveType.chinaMobile:
         return 7; // 7天
     }
   }
@@ -288,6 +307,8 @@ class CloudDriveBusinessRules {
       case CloudDriveType.ali:
         return 20 * 1024 * 1024 * 1024; // 20GB
       case CloudDriveType.quark:
+        return 5 * 1024 * 1024 * 1024; // 5GB
+      case CloudDriveType.chinaMobile:
         return 5 * 1024 * 1024 * 1024; // 5GB
     }
   }

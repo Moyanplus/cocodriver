@@ -123,6 +123,8 @@ class _CloudDriveLoginPageState extends State<CloudDriveLoginPage> {
         return Uri.parse('https://up.woozooo.com/account.php');
       case CloudDriveType.pan123:
         return Uri.parse('https://www.123pan.com/login');
+      case CloudDriveType.chinaMobile:
+        return Uri.parse('https://yun.139.com/');
     }
   }
 
@@ -159,6 +161,10 @@ class _CloudDriveLoginPageState extends State<CloudDriveLoginPage> {
       case CloudDriveType.pan123:
         isLoginSuccess =
             urlString.contains('123pan.com') && !urlString.contains('login');
+        break;
+      case CloudDriveType.chinaMobile:
+        isLoginSuccess =
+            urlString.contains('yun.139.com') && !urlString.contains('login');
         break;
     }
 
@@ -270,6 +276,8 @@ class _CloudDriveLoginPageState extends State<CloudDriveLoginPage> {
         return '蓝奏云';
       case CloudDriveType.pan123:
         return '123云盘';
+      case CloudDriveType.chinaMobile:
+        return '中国移动云盘';
     }
   }
 }

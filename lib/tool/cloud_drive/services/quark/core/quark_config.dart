@@ -1,5 +1,6 @@
 /// 夸克云盘配置类
-/// 集中管理夸克云盘的所有配置参数，避免硬编码和耦合
+///
+/// 集中管理夸克云盘的所有配置参数，包括 API 端点、请求头、超时设置等。
 class QuarkConfig {
   // API 配置
   static const String baseUrl = 'https://drive-pc.quark.cn';

@@ -78,7 +78,7 @@ void main() {
       test('should have correct enum values', () {
         expect(AuthType.values, hasLength(3));
         expect(AuthType.values, contains(AuthType.cookie));
-        expect(AuthType.values, contains(AuthType.authorization));
+        expect(AuthType.values, contains(AuthType.web));
         expect(AuthType.values, contains(AuthType.qrCode));
       });
     });

@@ -4,7 +4,8 @@ import 'baidu_base_service.dart';
 import 'baidu_config.dart';
 
 /// 百度网盘任务管理服务
-/// 专门负责异步任务的轮询和状态查询
+///
+/// 负责异步任务的轮询和状态查询。
 class BaiduTaskService {
   static const int _maxRetries = 20; // 最多轮询20次（10秒）
   static const Duration _retryInterval = Duration(

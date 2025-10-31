@@ -1,10 +1,10 @@
-import 'package:dio/dio.dart';
-
 import '../../../../core/logging/log_manager.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import 'baidu_base_service.dart';
 
 /// 百度网盘下载服务
+///
+/// 提供百度网盘文件下载链接获取功能。
 class BaiduDownloadService {
   static const String _baseUrl = 'https://pan.baidu.com/api';
 

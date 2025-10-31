@@ -4,9 +4,10 @@ import '../../data/models/cloud_drive_entities.dart';
 import 'baidu_config.dart';
 
 /// 百度云盘基础服务
-/// 提供dio配置和通用方法
+///
+/// 提供 Dio 配置和通用方法，包括请求拦截、响应处理等。
 class BaiduBaseService {
-  // 创建dio实例
+  /// 创建 Dio 实例
   static Dio createDio(CloudDriveAccount account) {
     final dio = Dio(
       BaseOptions(

@@ -2,10 +2,25 @@ import 'package:flutter/material.dart';
 import 'cloud_drive_configs.dart';
 import 'cloud_drive_dtos.dart';
 
+/// 云盘核心数据模型
+///
+/// 定义云盘相关的核心实体类、枚举和扩展，包括云盘类型、账号、文件等。
+
+/// 云盘类型辅助类
+class CloudDriveTypeHelper {
+  /// 获取所有可用的云盘类型
+  static List<CloudDriveType> get availableTypes {
+    return CloudDriveType.values.where((type) => type.isAvailable).toList();
+  }
+}
+
 /// 认证方式枚举
 enum AuthType {
   /// Cookie认证
   cookie,
+
+  /// Authorization Token认证
+  authorization,
 
   /// WebView网页登录认证
   web,
@@ -51,9 +66,14 @@ enum CloudDriveType {
 
   /// 夸克云盘
   quark,
+
+  /// 中国移动云盘
+  chinaMobile,
 }
 
 /// 云盘类型扩展
+///
+/// 为 CloudDriveType 枚举提供显示名称、图标、颜色等扩展功能。
 extension CloudDriveTypeExtension on CloudDriveType {
   String get displayName {
     switch (this) {
@@ -67,6 +87,8 @@ extension CloudDriveTypeExtension on CloudDriveType {
         return '阿里云盘';
       case CloudDriveType.quark:
         return '夸克云盘';
+      case CloudDriveType.chinaMobile:
+        return '中国移动云盘';
     }
   }
 
@@ -82,6 +104,8 @@ extension CloudDriveTypeExtension on CloudDriveType {
         return Icons.cloud_done;
       case CloudDriveType.quark:
         return Icons.cloud_queue;
+      case CloudDriveType.chinaMobile:
+        return Icons.phone_android;
     }
   }
 
@@ -97,6 +121,8 @@ extension CloudDriveTypeExtension on CloudDriveType {
         return Colors.red;
       case CloudDriveType.quark:
         return Colors.purple;
+      case CloudDriveType.chinaMobile:
+        return Colors.blueGrey;
     }
   }
 
@@ -112,6 +138,8 @@ extension CloudDriveTypeExtension on CloudDriveType {
         return 'assets/icons/ali.png';
       case CloudDriveType.quark:
         return 'assets/icons/quark.png';
+      case CloudDriveType.chinaMobile:
+        return 'assets/icons/china_mobile.png';
     }
   }
 
@@ -124,10 +152,14 @@ extension CloudDriveTypeExtension on CloudDriveType {
       case CloudDriveType.pan123:
       case CloudDriveType.quark:
         return AuthType.cookie;
+      case CloudDriveType.chinaMobile:
+        return AuthType.authorization;
     }
   }
 
   /// 获取支持的认证方式列表
+  ///
+  /// Authorization 和 Cookie 是互斥的，只会返回其中一个
   List<AuthType> get supportedAuthTypes {
     switch (this) {
       case CloudDriveType.ali:
@@ -140,6 +172,8 @@ extension CloudDriveTypeExtension on CloudDriveType {
         return [AuthType.cookie, AuthType.qrCode];
       case CloudDriveType.quark:
         return [AuthType.cookie, AuthType.qrCode];
+      case CloudDriveType.chinaMobile:
+        return [AuthType.authorization, AuthType.qrCode];
     }
   }
 
@@ -192,8 +226,38 @@ extension CloudDriveTypeExtension on CloudDriveType {
           cookieProcessingConfig: CookieProcessingConfig.quarkConfig,
           requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
         );
+      case CloudDriveType.chinaMobile:
+        return CloudDriveWebViewConfig(
+          initialUrl: 'https://yun.139.com/',
+          userAgentType: UserAgentType.pcChrome,
+          rootDir: '/',
+          loginDetectionConfig: LoginDetectionConfig.chinaMobileConfig,
+          cookieProcessingConfig: CookieProcessingConfig.chinaMobileConfig,
+          requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
+        );
     }
   }
+
+  /// 获取云盘配置
+  CloudDriveConfig get config {
+    switch (this) {
+      case CloudDriveType.baidu:
+        return CloudDriveConfig.baidu;
+      case CloudDriveType.ali:
+        return CloudDriveConfig.aliyun;
+      case CloudDriveType.lanzou:
+        return CloudDriveConfig.lanzou;
+      case CloudDriveType.pan123:
+        return CloudDriveConfig.pan123;
+      case CloudDriveType.quark:
+        return CloudDriveConfig.quark;
+      case CloudDriveType.chinaMobile:
+        return CloudDriveConfig.chinaMobile;
+    }
+  }
+
+  /// 检查是否可用
+  bool get isAvailable => config.isAvailable;
 }
 
 /// 云盘账号模型
@@ -237,7 +301,7 @@ class CloudDriveAccount {
     if (cookies != null && cookies!.isNotEmpty) {
       return AuthType.cookie;
     } else if (authorizationToken != null && authorizationToken!.isNotEmpty) {
-      return AuthType.web;
+      return AuthType.authorization;
     } else if (qrCodeToken != null && qrCodeToken!.isNotEmpty) {
       return AuthType.qrCode;
     }

@@ -1,6 +1,10 @@
 import '../../../../../core/logging/log_manager.dart';
 import '../../data/models/cloud_drive_entities.dart';
 
+/// 云盘日志服务
+///
+/// 提供云盘相关的日志记录功能，包括日志配置、日志级别管理等。
+
 /// 云盘日志级别
 enum CloudDriveLogLevel {
   /// 调试信息
@@ -16,7 +20,7 @@ enum CloudDriveLogLevel {
   error,
 }
 
-/// 云盘日志配置 - 简化版本
+/// 云盘日志配置类
 class CloudDriveLogConfig {
   final bool enableLogging;
   final CloudDriveLogLevel minLevel;
@@ -66,7 +70,7 @@ class CloudDriveLogConfig {
   );
 }
 
-/// 云盘日志条目
+/// 云盘日志条目类
 class CloudDriveLogEntry {
   final DateTime timestamp;
   final CloudDriveLogLevel level;
@@ -101,7 +105,7 @@ class CloudDriveLogEntry {
   }
 }
 
-/// 云盘日志服务 - 简化版本
+/// 云盘日志记录器
 class CloudDriveLogger {
   static CloudDriveLogConfig _config = CloudDriveLogConfig.defaultConfig;
   static final List<CloudDriveLogEntry> _logEntries = [];

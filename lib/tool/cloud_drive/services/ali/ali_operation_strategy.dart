@@ -8,7 +8,8 @@ import 'ali_file_list_service.dart';
 import 'ali_file_operation_service.dart';
 
 /// 阿里云盘操作策略
-/// 实现CloudDriveOperationStrategy，提供阿里云盘特定的操作
+///
+/// 实现 CloudDriveOperationStrategy 接口，提供阿里云盘特定的操作实现。
 class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   @override
   Future<List<CloudDriveFile>> getFileList({
@@ -19,9 +20,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     int pageSize = 50,
   }) async {
     try {
-      LogManager().cloudDrive(
-        '阿里云盘 - 获取文件列表: path=$path, folderId=$folderId',
-      );
+      LogManager().cloudDrive('阿里云盘 - 获取文件列表: path=$path, folderId=$folderId');
 
       // 首先获取drive_id
       final driveId = await AliCloudDriveService.getDriveId(account: account);
@@ -130,9 +129,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     String? targetFolderId,
   }) async {
     try {
-      LogManager().cloudDrive(
-        '阿里云盘 - 移动文件: ${file.name} -> $targetFolderId',
-      );
+      LogManager().cloudDrive('阿里云盘 - 移动文件: ${file.name} -> $targetFolderId');
 
       if (targetFolderId == null) {
         LogManager().cloudDrive('阿里云盘 - 目标文件夹ID为空，移动失败');
@@ -305,6 +302,29 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   @override
   Map<String, bool> getSupportedOperations() =>
       AliConfig.getSupportedOperationsStatus();
+
+  @override
+  Future<Map<String, dynamic>> uploadFile({
+    required CloudDriveAccount account,
+    required String filePath,
+    required String fileName,
+    String? folderId,
+  }) async {
+    LogManager().cloudDrive('阿里云盘 - 上传文件开始');
+    LogManager().cloudDrive('文件路径: $filePath');
+    LogManager().cloudDrive('文件名: $fileName');
+    LogManager().cloudDrive('文件夹ID: ${folderId ?? 'root'}');
+
+    try {
+      // TODO: 实现阿里云盘上传功能
+      LogManager().cloudDrive('阿里云盘 - 上传功能暂未实现');
+      return {'success': false, 'message': '阿里云盘上传功能暂未实现'};
+    } catch (e, stackTrace) {
+      LogManager().cloudDrive('阿里云盘 - 上传文件异常: $e');
+      LogManager().cloudDrive('阿里云盘 - 错误堆栈: $stackTrace');
+      return {'success': false, 'message': e.toString()};
+    }
+  }
 
   @override
   Map<String, dynamic> getOperationUIConfig() => {
