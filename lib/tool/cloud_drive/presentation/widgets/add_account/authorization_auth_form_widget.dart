@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../../services/common/authorization_validation_service.dart';
 import 'add_account_form_constants.dart';
 
 /// Authorization Token 认证表单组件
@@ -46,8 +47,7 @@ class _AuthorizationAuthFormWidgetState
         _buildStatusIndicator(),
 
         // 帮助信息
-        if (_errorMessage == null && _successMessage == null)
-          SizedBox(height: AddAccountFormConstants.smallSpacing.h),
+        SizedBox(height: AddAccountFormConstants.smallSpacing.h),
         _buildHelpInfo(),
       ],
     );
@@ -165,6 +165,47 @@ class _AuthorizationAuthFormWidgetState
 
   /// 构建帮助信息
   Widget _buildHelpInfo() {
+    // 检查是否支持 Authorization Token
+    final supportsAuth =
+        AuthorizationValidationService.supportsAuthorizationToken(
+          widget.cloudDriveType,
+        );
+
+    if (!supportsAuth) {
+      return Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AddAccountFormConstants.contentPaddingHorizontal.w,
+          vertical: AddAccountFormConstants.contentPaddingVertical.h,
+        ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.errorContainer.withValues(
+            alpha: AddAccountFormConstants.containerOpacity,
+          ),
+          borderRadius: BorderRadius.circular(
+            AddAccountFormConstants.borderRadius.r,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: Theme.of(context).colorScheme.error,
+              size: AddAccountFormConstants.iconSizeLarge.w,
+            ),
+            SizedBox(width: AddAccountFormConstants.smallSpacing.w),
+            Expanded(
+              child: Text(
+                '该云盘不支持 Authorization Token 认证方式，请使用 Cookie 认证方式添加账号',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: AddAccountFormConstants.contentPaddingHorizontal.w,
@@ -200,11 +241,9 @@ class _AuthorizationAuthFormWidgetState
           ),
           SizedBox(height: AddAccountFormConstants.smallSpacing.h),
           Text(
-            '1. 打开浏览器开发者工具（F12）\n'
-            '2. 访问中国移动云盘网站并登录\n'
-            '3. 在 Network 标签页中找到任意 API 请求\n'
-            '4. 查看请求头中的 Authorization 字段\n'
-            '5. 复制完整的 Authorization 值',
+            AuthorizationValidationService.getTokenInstructions(
+              widget.cloudDriveType,
+            ),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
@@ -215,6 +254,8 @@ class _AuthorizationAuthFormWidgetState
   /// 检查 Authorization Token
   Future<void> _checkAuthorization() async {
     final token = widget.authorizationController.text.trim();
+
+    // 基本检查
     if (token.isEmpty) {
       setState(() {
         _errorMessage = '请先输入 Authorization Token';
@@ -223,10 +264,12 @@ class _AuthorizationAuthFormWidgetState
       return;
     }
 
-    // 基本格式验证
-    if (!token.startsWith('Bearer ') && !token.contains(' ')) {
+    // 检查是否支持
+    if (!AuthorizationValidationService.supportsAuthorizationToken(
+      widget.cloudDriveType,
+    )) {
       setState(() {
-        _errorMessage = 'Token 格式不正确，通常以 "Bearer " 开头';
+        _errorMessage = '该云盘不支持 Authorization Token 认证方式，请使用 Cookie 认证方式';
         _successMessage = null;
       });
       return;
@@ -238,16 +281,42 @@ class _AuthorizationAuthFormWidgetState
       _successMessage = null;
     });
 
-    // TODO: 这里可以添加实际的验证逻辑
-    // 暂时只做格式验证
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      // 调用验证服务
+      final result = await AuthorizationValidationService.validateToken(
+        token: token,
+        type: widget.cloudDriveType,
+        accountName: widget.nameController?.text.trim(),
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      _isValidating = false;
-      _successMessage = 'Token 格式验证通过';
-      _errorMessage = null;
-    });
+      if (result.isValid) {
+        // 验证成功，更新输入框
+        if (result.formattedToken != null) {
+          widget.authorizationController.text = result.formattedToken!;
+        }
+
+        setState(() {
+          _isValidating = false;
+          _successMessage = result.successMessage ?? 'Token 验证成功！';
+          _errorMessage = null;
+        });
+      } else {
+        setState(() {
+          _isValidating = false;
+          _errorMessage = result.errorMessage ?? 'Token 验证失败';
+          _successMessage = null;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isValidating = false;
+        _errorMessage = '验证过程中发生错误: $e';
+        _successMessage = null;
+      });
+    }
   }
 }
