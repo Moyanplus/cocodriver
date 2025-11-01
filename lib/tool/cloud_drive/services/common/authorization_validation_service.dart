@@ -159,7 +159,7 @@ class AuthorizationValidationService {
     }
 
     final url = type.webViewConfig.initialUrl ?? 'https://yun.139.com/';
-    
+
     // 通用步骤说明
     return '1. 在浏览器中打开 $url\n'
         '2. 登录您的账号\n'
