@@ -28,7 +28,7 @@ class ChinaMobileConfig {
   // 请求头配置
   static const Map<String, String> defaultHeaders = {
     'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0',
     'Accept': 'application/json, text/plain, */*',
     'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
     'Accept-Encoding': 'gzip, deflate, br',
@@ -36,6 +36,10 @@ class ChinaMobileConfig {
     'Content-Type': 'application/json',
     'Referer': '$baseUrl/',
     'Origin': baseUrl,
+    'x-yun-api-version': 'v1',
+    'x-yun-app-channel': '10000034',
+    'x-yun-client-info':
+        '||9|7.16.2|edge||f810f0e1d62dac1dbe172f49b307ee27||macos 10.15.7||zh-CN|||ZWRnZQ==||',
   };
 
   // 超时配置
@@ -53,6 +57,9 @@ class ChinaMobileConfig {
 
   // 日志配置
   static const String logSubCategory = 'cloudDrive.chinaMobile';
+  
+  // 详细日志配置 - 控制是否打印请求头等详细信息
+  static bool verboseLogging = true;
 
   // 响应状态码配置
   static const Map<String, dynamic> responseStatus = {

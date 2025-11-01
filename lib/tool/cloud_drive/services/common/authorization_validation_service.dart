@@ -43,13 +43,18 @@ class AuthorizationValidationResult {
 class AuthorizationValidationService {
   /// 清理 Token 字符串
   ///
-  /// 移除 "Bearer " 前缀和多余空白字符
+  /// 移除 "Bearer " 和 "Basic " 前缀和多余空白字符
   static String cleanToken(String token) {
     var cleaned = token.trim();
 
     // 移除 Bearer 前缀（如果有）
     if (cleaned.toLowerCase().startsWith('bearer ')) {
       cleaned = cleaned.substring(7).trim();
+    }
+
+    // 移除 Basic 前缀（如果有）
+    if (cleaned.toLowerCase().startsWith('basic ')) {
+      cleaned = cleaned.substring(6).trim();
     }
 
     return cleaned;

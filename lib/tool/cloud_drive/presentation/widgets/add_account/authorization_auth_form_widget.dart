@@ -297,6 +297,13 @@ class _AuthorizationAuthFormWidgetState
           widget.authorizationController.text = result.formattedToken!;
         }
 
+        // 如果提供了名称控制器且名称为空，自动填充用户名
+        if (widget.nameController != null &&
+            widget.nameController!.text.trim().isEmpty &&
+            result.username != null) {
+          widget.nameController!.text = result.username!;
+        }
+
         setState(() {
           _isValidating = false;
           _successMessage = result.successMessage ?? 'Token 验证成功！';

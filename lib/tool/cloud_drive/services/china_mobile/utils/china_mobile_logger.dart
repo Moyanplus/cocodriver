@@ -75,6 +75,26 @@ class ChinaMobileLogger {
     );
   }
 
+  /// 记录详细的网络请求信息（包括请求头）
+  static void networkVerbose({
+    required String method,
+    String? url,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? data,
+  }) {
+    LogManager().cloudDrive(
+      '中国移动云盘 - $method 请求: $url',
+      className: 'ChinaMobileLogger',
+      methodName: 'networkVerbose',
+      data: {
+        'method': method,
+        'url': url,
+        'headers': headers,
+        'data': data,
+      },
+    );
+  }
+
   /// 记录性能指标
   static void performance(String message, {Duration? duration}) {
     LogManager().cloudDrive(

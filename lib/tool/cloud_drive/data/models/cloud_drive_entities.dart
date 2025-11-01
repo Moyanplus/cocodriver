@@ -316,9 +316,13 @@ class CloudDriveAccount {
     if (cookies != null && cookies!.isNotEmpty) {
       return {'Cookie': cookies!};
     } else if (authorizationToken != null && authorizationToken!.isNotEmpty) {
-      return {'Authorization': 'Bearer $authorizationToken'};
+      // 从配置中获取 Authorization 前缀
+      final prefix = type.config.authorizationPrefix;
+      return {'Authorization': '$prefix $authorizationToken'};
     } else if (qrCodeToken != null && qrCodeToken!.isNotEmpty) {
-      return {'Authorization': 'Bearer $qrCodeToken'};
+      // 从配置中获取 Authorization 前缀
+      final prefix = type.config.authorizationPrefix;
+      return {'Authorization': '$prefix $qrCodeToken'};
     }
     return {};
   }

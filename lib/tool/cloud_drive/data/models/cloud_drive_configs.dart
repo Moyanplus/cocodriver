@@ -331,6 +331,7 @@ class CloudDriveConfig {
   final CookieProcessingConfig cookieProcessingConfig;
   final PostLoginConfig postLoginConfig;
   final RequestInterceptConfig requestInterceptConfig;
+  final String authorizationPrefix; // Authorization 头前缀，如 "Bearer" 或 "Basic"
   final bool isAvailable;
 
   const CloudDriveConfig({
@@ -341,6 +342,7 @@ class CloudDriveConfig {
     required this.cookieProcessingConfig,
     required this.postLoginConfig,
     required this.requestInterceptConfig,
+    this.authorizationPrefix = 'Bearer', // 默认使用 Bearer
     this.isAvailable = true,
   });
 
@@ -413,6 +415,7 @@ class CloudDriveConfig {
     cookieProcessingConfig: CookieProcessingConfig.chinaMobileConfig,
     postLoginConfig: PostLoginConfig.defaultConfig,
     requestInterceptConfig: RequestInterceptConfig.cookieBasedConfig,
+    authorizationPrefix: 'Basic', // 中国移动云盘使用 Basic 认证
     isAvailable: true,
   );
 }

@@ -51,47 +51,32 @@ class ChinaMobileCloudDriveOperationStrategy
     try {
       LogManager().cloudDrive('中国移动云盘 - 获取账号详情开始');
 
-      // 通过尝试获取文件列表来验证认证并获取基本信息
-      try {
-        await getFileList(
-          account: account,
-          folderId: ChinaMobileConfig.rootFolderId,
-          page: 1,
-          pageSize: 1,
-        );
-
-        LogManager().cloudDrive('中国移动云盘 - 文件列表获取成功，认证有效');
-
-        // 从 Authorization Token 中解析用户信息
-        String? username;
-        if (account.authorizationToken != null &&
-            account.authorizationToken!.isNotEmpty) {
-          username = _extractUsernameFromAuthToken(account.authorizationToken!);
-        }
-
-        // 创建账号信息对象
-        final accountInfo = CloudDriveAccountInfo(
-          username: username ?? account.name,
-          uk: 0,
-          isVip: false,
-          isSvip: false,
-          loginState: 1,
-        );
-
-        // 中国移动云盘没有容量信息，返回null
-        final accountDetails = CloudDriveAccountDetails(
-          id: account.id,
-          name: account.name,
-          accountInfo: accountInfo,
-          quotaInfo: null,
-        );
-
-        LogManager().cloudDrive('中国移动云盘 - 账号详情获取成功: ${accountInfo.username}');
-        return accountDetails;
-      } catch (e) {
-        LogManager().cloudDrive('中国移动云盘 - 文件列表获取失败，认证可能无效: $e');
-        return null;
+      // 从 Authorization Token 中解析用户信息
+      String? username;
+      if (account.authorizationToken != null &&
+          account.authorizationToken!.isNotEmpty) {
+        username = _extractUsernameFromAuthToken(account.authorizationToken!);
       }
+
+      // 创建账号信息对象
+      final accountInfo = CloudDriveAccountInfo(
+        username: username ?? account.name,
+        uk: 0,
+        isVip: false,
+        isSvip: false,
+        loginState: 1,
+      );
+
+      // 中国移动云盘没有容量信息，返回null
+      final accountDetails = CloudDriveAccountDetails(
+        id: account.id,
+        name: account.name,
+        accountInfo: accountInfo,
+        quotaInfo: null,
+      );
+
+      LogManager().cloudDrive('中国移动云盘 - 账号详情获取成功: ${accountInfo.username}');
+      return accountDetails;
     } catch (e) {
       LogManager().cloudDrive('中国移动云盘 - 获取账号详情异常: $e');
       return null;

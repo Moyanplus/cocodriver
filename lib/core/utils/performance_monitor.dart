@@ -21,7 +21,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../logging/log_manager.dart';
-import '../logging/log_category.dart';
 import '../logging/log_formatter.dart';
 
 /// 性能监控器类

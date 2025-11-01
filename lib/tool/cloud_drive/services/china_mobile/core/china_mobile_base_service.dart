@@ -17,6 +17,9 @@ abstract class ChinaMobileBaseService {
         receiveTimeout: ChinaMobileConfig.receiveTimeout,
         sendTimeout: ChinaMobileConfig.sendTimeout,
         headers: {...ChinaMobileConfig.defaultHeaders, ...account.authHeaders},
+        followRedirects: ChinaMobileConfig.followRedirects,
+        maxRedirects: ChinaMobileConfig.maxRedirects,
+        validateStatus: ChinaMobileConfig.validateStatus,
       ),
     );
 
@@ -33,6 +36,9 @@ abstract class ChinaMobileBaseService {
         receiveTimeout: ChinaMobileConfig.receiveTimeout,
         sendTimeout: ChinaMobileConfig.sendTimeout,
         headers: {...ChinaMobileConfig.defaultHeaders, ...account.authHeaders},
+        followRedirects: ChinaMobileConfig.followRedirects,
+        maxRedirects: ChinaMobileConfig.maxRedirects,
+        validateStatus: ChinaMobileConfig.validateStatus,
       ),
     );
 
@@ -45,10 +51,20 @@ abstract class ChinaMobileBaseService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          ChinaMobileLogger.network(
-            options.method,
-            url: options.uri.toString(),
-          );
+          // 根据配置决定是否打印详细信息
+          if (ChinaMobileConfig.verboseLogging) {
+            ChinaMobileLogger.networkVerbose(
+              method: options.method,
+              url: options.uri.toString(),
+              headers: options.headers.map((key, value) => MapEntry(key, value.toString())),
+              data: options.data,
+            );
+          } else {
+            ChinaMobileLogger.network(
+              options.method,
+              url: options.uri.toString(),
+            );
+          }
           handler.next(options);
         },
         onResponse: (response, handler) {
