@@ -4,11 +4,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/utils/responsive_utils.dart';
 import '../../config/cloud_drive_ui_config.dart';
+import '../../data/models/cloud_drive_entities.dart';
 import '../providers/cloud_drive_provider.dart';
+import '../state/cloud_drive_state_model.dart';
+import '../view_models/cloud_drive_browser_view_model.dart';
 import '../widgets/cloud_drive_file_list.dart';
 import '../widgets/cloud_drive_account_selector.dart';
 import '../widgets/cloud_drive_batch_action_bar.dart';
 import '../widgets/cloud_drive_path_navigator.dart';
+import '../widgets/sheets/file_operation_bottom_sheet.dart';
 
 /// ========================================
 /// 云盘文件浏览器页面 - 主文件浏览页面
@@ -40,13 +44,19 @@ class CloudDriveBrowserPage extends ConsumerStatefulWidget {
 class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   final ScrollController _scrollController = ScrollController();
   bool _showScrollToTop = false;
+  bool _isLoadMorePending = false;
+  final CloudDriveBrowserViewModel _viewModel =
+      const CloudDriveBrowserViewModel();
+
+  CloudDriveEventHandler get _eventHandler =>
+      ref.read(cloudDriveEventHandlerProvider);
 
   @override
   void initState() {
     super.initState();
     // 加载初始数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(cloudDriveProvider.notifier).loadAccounts();
+      _eventHandler.loadAccounts();
     });
 
     // 监听滚动事件
@@ -60,14 +70,27 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   }
 
   void _onScroll() {
-    // 当滚动超过200像素时显示回到顶部按钮
-    if (_scrollController.hasClients) {
-      final showButton = _scrollController.offset > 200;
-      if (showButton != _showScrollToTop) {
-        setState(() {
-          _showScrollToTop = showButton;
-        });
+    if (!_scrollController.hasClients) return;
+
+    final offset = _scrollController.offset;
+    final showButton = offset > 200;
+    if (showButton != _showScrollToTop) {
+      setState(() {
+        _showScrollToTop = showButton;
+      });
+    }
+
+    final position = _scrollController.position;
+    final isNearBottom = position.maxScrollExtent - offset <= 200;
+    if (isNearBottom && !_isLoadMorePending) {
+      final state = ref.read(cloudDriveProvider);
+      if (!state.hasMoreData || state.isLoadingMore) {
+        return;
       }
+      _isLoadMorePending = true;
+      _eventHandler.loadMore().whenComplete(() {
+        _isLoadMorePending = false;
+      });
     }
   }
 
@@ -82,51 +105,64 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(cloudDriveProvider);
+    final eventHandler = _eventHandler;
 
     return Scaffold(
       backgroundColor: CloudDriveUIConfig.backgroundColor,
-      body: _buildBody(state),
+      body: _buildBody(state, eventHandler),
       bottomNavigationBar:
           state.isBatchMode ? const CloudDriveBatchActionBar() : null,
-      floatingActionButton: _buildFloatingActionButton(state),
+      floatingActionButton: _buildFloatingActionButton(state, eventHandler),
     );
   }
 
   /// 构建主体内容
-  Widget _buildBody(dynamic state) {
+  Widget _buildBody(CloudDriveState state, CloudDriveEventHandler handler) {
+    final bodyType = _viewModel.resolveBody(state);
     return Column(
       children: [
-        // ========== 账号选择器 - 在顶部显示 ==========
-        // 这是一个横向滚动的账号列表，高度约 130h（含 padding）
         const CloudDriveAccountSelector(),
-
-        // ========== 主要内容区域 - 占据剩余空间 ==========
-        // 使用 Expanded 让内容区域自动填充剩余高度，避免出现空白
-        Expanded(child: _buildMainContent(state)),
+        Expanded(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            child: _buildMainContent(state, handler, bodyType),
+          ),
+        ),
       ],
     );
   }
 
   /// 构建主要内容
-  Widget _buildMainContent(dynamic state) {
-    // ========== 条件1：检查是否有账号 ==========
-    // 如果没有账号，显示空状态
-    if (state.accounts.isEmpty && !state.isLoading) {
-      return _buildEmptyState();
+  Widget _buildMainContent(
+    CloudDriveState state,
+    CloudDriveEventHandler handler,
+    CloudDriveBrowserBodyType bodyType,
+  ) {
+    switch (bodyType) {
+      case CloudDriveBrowserBodyType.noAccount:
+        return _buildEmptyState(key: const ValueKey('no-accounts'));
+      case CloudDriveBrowserBodyType.selectAccount:
+        return _buildNoAccountSelectedState(key: const ValueKey('select-account'));
+      case CloudDriveBrowserBodyType.content:
+        return _buildContent(state, handler);
     }
+  }
 
-    // ========== 条件2：检查是否选择了账号 ==========
-    // 如果没有当前账号，显示账号选择提示
-    if (state.currentAccount == null && state.accounts.isNotEmpty) {
-      return _buildNoAccountSelectedState();
-    }
-
+  Widget _buildContent(
+    CloudDriveState state,
+    CloudDriveEventHandler handler,
+  ) {
     // ========== 正常显示：路径导航器 + 文件列表 ==========
     // 布局结构：
     // Column (紧凑布局，无多余间距)
     //   ├── CloudDrivePathNavigator (路径导航器 - 显示面包屑导航)
     //   └── Expanded(CloudDriveFileList) (文件列表 - 占据剩余空间，无上边距)
     return Column(
+      key: ValueKey(
+        'content-${state.currentAccount?.id}-${state.currentFolder?.id}',
+      ),
       // 【重要】设置为 min 避免 Column 占用多余空间
       mainAxisSize: MainAxisSize.min,
       // 【重要】设置为 stretch 让子组件填满宽度
@@ -136,15 +172,25 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
         const CloudDrivePathNavigator(),
         // 文件列表 - 使用 Expanded 让它占满剩余空间（紧贴路径导航器，无间隙）
         Expanded(
-          child: CloudDriveFileList(scrollController: _scrollController),
+          child: CloudDriveFileList(
+            scrollController: _scrollController,
+            state: state,
+            account: state.currentAccount!,
+            onRefresh: () => handler.loadFolder(forceRefresh: true),
+            onFolderTap: handler.enterFolder,
+            onFileTap: (file) => _showFileOptions(file, state.currentAccount),
+            onLongPress: handler.enterBatchMode,
+            onToggleSelection: handler.toggleSelection,
+          ),
         ),
       ],
     );
   }
 
   /// 构建空状态
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState({Key? key}) {
     return Center(
+      key: key,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -193,8 +239,9 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   }
 
   /// 构建未选择账号状态
-  Widget _buildNoAccountSelectedState() {
+  Widget _buildNoAccountSelectedState({Key? key}) {
     return Center(
+      key: key,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -246,21 +293,22 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   }
 
   /// 构建悬浮按钮
-  Widget? _buildFloatingActionButton(dynamic state) {
+  Widget? _buildFloatingActionButton(
+    CloudDriveState state,
+    CloudDriveEventHandler handler,
+  ) {
     if (state.isBatchMode) {
-      return null; // 批量模式下不显示悬浮按钮
+      return null;
     }
 
-    // 如果有待操作文件，显示移动/复制到此处按钮
+    Widget fab;
     if (state.pendingOperationFile != null &&
         state.pendingOperationType != null) {
       final isMove = state.pendingOperationType == 'move';
-      return FloatingActionButton.extended(
+      fab = FloatingActionButton.extended(
+        key: const ValueKey('fab-operation'),
         onPressed: () async {
-          // 执行待操作
-          await ref
-              .read(cloudDriveEventHandlerProvider)
-              .executePendingOperation();
+          await handler.executePendingOperation();
 
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -276,26 +324,91 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
         icon: Icon(isMove ? Icons.drive_file_move : Icons.file_copy),
         label: Text(isMove ? '移动到此处' : '复制到此处'),
       );
-    }
-
-    // 如果正在滚动，显示回到顶部按钮
-    if (_showScrollToTop) {
-      return FloatingActionButton(
+    } else if (_showScrollToTop) {
+      fab = FloatingActionButton(
+        key: const ValueKey('fab-scroll'),
         onPressed: _scrollToTop,
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
         child: const Icon(Icons.arrow_upward),
       );
+    } else {
+      fab = FloatingActionButton(
+        key: const ValueKey('fab-add'),
+        onPressed: () {},
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.add),
+      );
     }
 
-    // 默认显示添加账号按钮
-    return FloatingActionButton(
-      onPressed: () {
-        // 添加账号功能由主应用工具栏处理
-      },
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      foregroundColor: Colors.white,
-      child: const Icon(Icons.add),
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      transitionBuilder: (child, animation) => ScaleTransition(
+        scale: animation,
+        child: FadeTransition(opacity: animation, child: child),
+      ),
+      child: fab,
+    );
+  }
+
+  // 显示文件操作选项
+  void _showFileOptions(
+    CloudDriveFile file,
+    CloudDriveAccount? account,
+  ) {
+    if (account == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('账号信息不可用')),
+      );
+      return;
+    }
+
+    final parentContext = context;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => Stack(
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    color: Colors.black.withOpacity(0.2),
+                  ),
+                ),
+              ),
+              DraggableScrollableSheet(
+                initialChildSize: 0.7,
+                minChildSize: 0.5,
+                maxChildSize: 0.9,
+                builder:
+                    (context, scrollController) => GestureDetector(
+                      behavior: HitTestBehavior.deferToChild,
+                      onTap: () {},
+                      child: FileOperationBottomSheet(
+                        file: file,
+                        account: account,
+                        onClose: () => Navigator.pop(context),
+                        onOperationResult: (message, isSuccess) {
+                          ScaffoldMessenger.of(parentContext).showSnackBar(
+                            SnackBar(
+                              content: Text(message),
+                              backgroundColor:
+                                  isSuccess ? Colors.green : Colors.red,
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+              ),
+            ],
+          ),
     );
   }
 }

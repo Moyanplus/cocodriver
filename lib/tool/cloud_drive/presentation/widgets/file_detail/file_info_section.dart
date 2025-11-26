@@ -102,7 +102,6 @@ class FileInfoSection extends StatelessWidget {
             ),
             child: Column(
               children: [
-                // 修改时间
                 if (file.modifiedTime != null)
                   _buildInfoItem(
                     context,
@@ -111,8 +110,27 @@ class FileInfoSection extends StatelessWidget {
                     value: _formatDateTime(file.modifiedTime!),
                     isFirst: true,
                   ),
-
-                // 文件ID
+                _buildInfoItem(
+                  context,
+                  icon: Icons.download_outlined,
+                  label: '下载次数',
+                  value: file.downloadCount >= 0
+                      ? file.downloadCount.toString()
+                      : '暂不提供',
+                  isFirst: file.modifiedTime == null,
+                  isLast: false,
+                ),
+                _buildInfoItem(
+                  context,
+                  icon: Icons.share_outlined,
+                  label: '分享次数',
+                  value:
+                      file.shareCount >= 0
+                          ? file.shareCount.toString()
+                          : '暂不提供',
+                  isFirst: false,
+                  isLast: false,
+                ),
                 _buildInfoItem(
                   context,
                   icon: Icons.tag_rounded,
@@ -121,7 +139,7 @@ class FileInfoSection extends StatelessWidget {
                       file.id.length > 20
                           ? '${file.id.substring(0, 20)}...'
                           : file.id,
-                  isFirst: file.modifiedTime == null,
+                  isFirst: false,
                   isLast: true,
                 ),
               ],

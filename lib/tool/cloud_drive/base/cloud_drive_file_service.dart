@@ -59,7 +59,7 @@ class CloudDriveFileService {
       return {'files': files, 'folders': folders};
     } catch (e) {
       _logError('获取文件列表', account, e);
-      return {'files': [], 'folders': []};
+      rethrow;
     }
   }
 

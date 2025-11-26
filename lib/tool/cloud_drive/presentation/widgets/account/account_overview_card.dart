@@ -13,7 +13,10 @@ class AccountOverviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return CloudDriveCommonWidgets.buildCard(
+      backgroundColor: colorScheme.surfaceContainerHighest,
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,15 +32,19 @@ class AccountOverviewCard extends StatelessWidget {
                   children: [
                     Text(
                       account.name,
-                      style: CloudDriveUIConfig.titleTextStyle,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     SizedBox(height: CloudDriveUIConfig.spacingXS),
                     Text(
                       account.type.displayName,
-                      style: CloudDriveUIConfig.smallTextStyle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     SizedBox(height: CloudDriveUIConfig.spacingXS),
-                    _buildStatusIndicator(account),
+                    _buildStatusIndicator(context, account),
                   ],
                 ),
               ),
@@ -47,7 +54,7 @@ class AccountOverviewCard extends StatelessWidget {
           SizedBox(height: CloudDriveUIConfig.spacingM),
 
           // 账号详细信息
-          _buildAccountDetails(account),
+          _buildAccountDetails(context, account),
         ],
       ),
     );
@@ -62,38 +69,42 @@ class AccountOverviewCard extends StatelessWidget {
         onBackgroundImageError: (exception, stackTrace) {
           // 如果网络图片加载失败，使用默认头像
         },
-        child: _buildDefaultAvatar(account),
+        child: _buildDefaultAvatar(context, account),
       );
     }
-    return _buildDefaultAvatar(account);
+    return _buildDefaultAvatar(context, account);
   }
 
   /// 构建默认头像
-  Widget _buildDefaultAvatar(CloudDriveAccount account) => Container(
-    width: 60.w,
-    height: 60.h,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: _getAccountTypeColor(account.type),
-    ),
-    child: Icon(
-      _getAccountTypeIcon(account.type),
-      size: CloudDriveUIConfig.iconSizeL,
-      color: Colors.white,
-    ),
-  );
+  Widget _buildDefaultAvatar(BuildContext context, CloudDriveAccount account) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: 60.w,
+      height: 60.h,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: _getAccountTypeColor(account.type).withOpacity(0.15),
+      ),
+      child: Icon(
+        _getAccountTypeIcon(account.type),
+        size: CloudDriveUIConfig.iconSizeL,
+        color: colorScheme.onPrimary,
+      ),
+    );
+  }
 
   /// 构建状态指示器
-  Widget _buildStatusIndicator(CloudDriveAccount account) {
+  Widget _buildStatusIndicator(BuildContext context, CloudDriveAccount account) {
     String status;
+    final colorScheme = Theme.of(context).colorScheme;
     Color statusColor;
 
     if (account.isLoggedIn) {
       status = '已登录';
-      statusColor = CloudDriveUIConfig.successColor;
+      statusColor = colorScheme.primary;
     } else {
       status = '未登录';
-      statusColor = CloudDriveUIConfig.errorColor;
+      statusColor = colorScheme.error;
     }
 
     return CloudDriveCommonWidgets.buildStatusIndicator(
@@ -103,19 +114,29 @@ class AccountOverviewCard extends StatelessWidget {
   }
 
   /// 构建账号详细信息
-  Widget _buildAccountDetails(CloudDriveAccount account) {
+  Widget _buildAccountDetails(BuildContext context, CloudDriveAccount account) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
-        CloudDriveCommonWidgets.buildInfoRow(label: '账号ID', value: account.id),
+        CloudDriveCommonWidgets.buildInfoRow(
+          label: '账号ID',
+          value: account.id,
+          labelColor: colorScheme.onSurfaceVariant,
+          valueColor: colorScheme.onSurface,
+        ),
         // 注意：CloudDriveAccount模型中没有email和phone字段
         // 这些信息在CloudDriveAccountDetails.accountInfo中
         CloudDriveCommonWidgets.buildInfoRow(
           label: '创建时间',
           value: _formatDateTime(account.createdAt),
+          labelColor: colorScheme.onSurfaceVariant,
+          valueColor: colorScheme.onSurface,
         ),
         CloudDriveCommonWidgets.buildInfoRow(
           label: '最后登录',
           value: _formatDateTime(account.lastLoginAt),
+          labelColor: colorScheme.onSurfaceVariant,
+          valueColor: colorScheme.onSurface,
         ),
       ],
     );

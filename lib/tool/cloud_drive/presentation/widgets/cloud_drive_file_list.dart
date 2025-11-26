@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/utils/responsive_utils.dart';
 import '../../data/models/cloud_drive_entities.dart';
-import '../providers/cloud_drive_provider.dart';
-import 'sheets/file_operation_bottom_sheet.dart';
 import 'cloud_drive_file_item.dart';
+import '../state/cloud_drive_state_model.dart';
 
 /// ========================================
 /// 云盘文件列表组件
@@ -17,8 +15,9 @@ import 'cloud_drive_file_item.dart';
 ///   1. 支持下拉刷新
 ///   2. 支持滚动懒加载（距离底部200px时自动加载更多）
 ///   3. 支持批量选择模式
-///   4. 支持外部传入 ScrollController
-///   5. 零 padding 布局，紧贴路径导航器
+///   4. 事件回调由外部注入，组件只关注 UI
+///   5. 支持外部传入 ScrollController
+///   6. 零 padding 布局，紧贴路径导航器
 ///
 /// 显示内容：
 ///   - 文件夹（可点击进入）
@@ -26,74 +25,56 @@ import 'cloud_drive_file_item.dart';
 ///   - 空状态提示
 ///   - 加载更多指示器
 /// ========================================
-class CloudDriveFileList extends ConsumerStatefulWidget {
-  final ScrollController? scrollController;
+class CloudDriveFileList extends StatelessWidget {
+  final ScrollController scrollController;
+  final CloudDriveState state;
+  final CloudDriveAccount account;
+  final Future<void> Function() onRefresh;
+  final void Function(CloudDriveFile folder) onFolderTap;
+  final void Function(CloudDriveFile file) onFileTap;
+  final void Function(String itemId) onLongPress;
+  final void Function(String itemId) onToggleSelection;
 
-  const CloudDriveFileList({super.key, this.scrollController});
-
-  @override
-  ConsumerState<CloudDriveFileList> createState() => _CloudDriveFileListState();
-}
-
-class _CloudDriveFileListState extends ConsumerState<CloudDriveFileList> {
-  late ScrollController _scrollController;
-
-  @override
-  void initState() {
-    super.initState();
-    // 使用外部传入的 ScrollController，如果没有则创建新的
-    _scrollController = widget.scrollController ?? ScrollController();
-    // 监听滚动事件，实现懒加载
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    // 只有当 ScrollController 是内部创建的时候才dispose
-    if (widget.scrollController == null) {
-      _scrollController.dispose();
-    }
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      // 距离底部200px时开始加载更多
-      ref.read(cloudDriveProvider.notifier).loadMore();
-    }
-  }
+  const CloudDriveFileList({
+    super.key,
+    required this.scrollController,
+    required this.state,
+    required this.account,
+    required this.onRefresh,
+    required this.onFolderTap,
+    required this.onFileTap,
+    required this.onLongPress,
+    required this.onToggleSelection,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(cloudDriveProvider);
+    final theme = Theme.of(context);
+    final bool showSkeleton = state.isLoading && !state.hasData;
+    final bool showEmpty =
+        !showSkeleton && state.folders.isEmpty && state.files.isEmpty;
 
-    if (state.folders.isEmpty && state.files.isEmpty && !state.isLoading) {
-      return const Center(
+    Widget child;
+    if (showSkeleton) {
+      child = const _FileListSkeleton();
+    } else if (showEmpty) {
+      child = const Center(
         child: EmptyStateWidget(
           title: '暂无文件',
           subtitle: '当前文件夹为空',
           icon: Icons.folder_open,
         ),
       );
-    }
-
-    return Container(
-      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
-      child: RefreshIndicator(
-        onRefresh: () async {
-          await ref
-              .read(cloudDriveProvider.notifier)
-              .loadFolder(forceRefresh: true);
-        },
+    } else {
+      child = RefreshIndicator(
+        onRefresh: onRefresh,
         child: ListView.builder(
-          controller: _scrollController,
-          // 【重要】移除 ListView 默认的顶部和底部 padding，让列表紧贴路径导航器
+          key: ValueKey('${state.currentFolder?.id}_${state.allItems.length}'),
+          controller: scrollController,
           padding: EdgeInsets.zero,
           itemCount: state.allItems.length + (state.isLoadingMore ? 1 : 0),
           itemBuilder: (context, index) {
             if (index >= state.allItems.length) {
-              // 加载更多指示器
               return Container(
                 padding: EdgeInsets.all(16.w),
                 child: const Center(child: CircularProgressIndicator()),
@@ -103,77 +84,38 @@ class _CloudDriveFileListState extends ConsumerState<CloudDriveFileList> {
             final item = state.allItems[index];
             final isFolder = state.folders.contains(item);
 
-            return CloudDriveFileItem(
-              file: item,
-              account: state.currentAccount!,
-              isFolder: isFolder,
-              isSelected: state.selectedItems.contains(item.id),
-              isBatchMode: state.isBatchMode,
-              onTap: () => _handleItemTap(item, isFolder, state),
-              onLongPress: () => _handleItemLongPress(item.id),
+            return _AnimatedFileEntry(
+              key: ValueKey('${state.currentFolder?.id}_${item.id}'),
+              position: index,
+              child: CloudDriveFileItem(
+                file: item,
+                account: account,
+                isFolder: isFolder,
+                isSelected: state.selectedItems.contains(item.id),
+                isBatchMode: state.isBatchMode,
+                onTap:
+                    () => state.isBatchMode
+                        ? onToggleSelection(item.id)
+                        : isFolder
+                            ? onFolderTap(item)
+                            : onFileTap(item),
+                onLongPress: () => onLongPress(item.id),
+              ),
             );
           },
         ),
+      );
+    }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      child: Container(
+        key: ValueKey('$showSkeleton-$showEmpty-${state.currentFolder?.id}'),
+        decoration: BoxDecoration(color: theme.colorScheme.surface),
+        child: child,
       ),
-    );
-  }
-
-  void _handleItemTap(CloudDriveFile item, bool isFolder, dynamic state) {
-    if (state.isBatchMode) {
-      ref.read(cloudDriveProvider.notifier).toggleSelection(item.id);
-    } else if (isFolder) {
-      ref.read(cloudDriveProvider.notifier).enterFolder(item);
-    } else {
-      _showFileOptions(context, item, state.currentAccount);
-    }
-  }
-
-  void _handleItemLongPress(String itemId) {
-    ref.read(cloudDriveProvider.notifier).enterBatchMode(itemId);
-  }
-
-  // 显示文件操作选项
-  void _showFileOptions(
-    BuildContext context,
-    CloudDriveFile file,
-    CloudDriveAccount? account,
-  ) {
-    if (account == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('账号信息不可用')));
-      return;
-    }
-
-    // 保存父组件的context引用
-    final parentContext = context;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder:
-          (context) => DraggableScrollableSheet(
-            initialChildSize: 0.7,
-            minChildSize: 0.5,
-            maxChildSize: 0.9,
-            builder:
-                (context, scrollController) => FileOperationBottomSheet(
-                  file: file,
-                  account: account,
-                  onClose: () => Navigator.pop(context),
-                  onOperationResult: (message, isSuccess) {
-                    // 使用父组件的context显示SnackBar
-                    ScaffoldMessenger.of(parentContext).showSnackBar(
-                      SnackBar(
-                        content: Text(message),
-                        backgroundColor: isSuccess ? Colors.green : Colors.red,
-                        duration: const Duration(seconds: 3),
-                      ),
-                    );
-                  },
-                ),
-          ),
     );
   }
 }
@@ -248,4 +190,153 @@ class EmptyStateWidget extends StatelessWidget {
       ],
     ),
   );
+}
+
+class _FileListSkeleton extends StatelessWidget {
+  const _FileListSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(
+        vertical: ResponsiveUtils.getSpacing(),
+        horizontal: ResponsiveUtils.getSpacing() * 0.5,
+      ),
+      itemCount: 8,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 6.h),
+          child: _SkeletonItem(delay: index * 60),
+        );
+      },
+    );
+  }
+}
+
+class _SkeletonItem extends StatefulWidget {
+  const _SkeletonItem({required this.delay});
+
+  final int delay;
+
+  @override
+  State<_SkeletonItem> createState() => _SkeletonItemState();
+}
+
+class _SkeletonItemState extends State<_SkeletonItem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..forward(from: widget.delay / 1200);
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _controller.reverse();
+      } else if (status == AnimationStatus.dismissed) {
+        _controller.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return FadeTransition(
+      opacity: Tween<double>(begin: 0.4, end: 0.9).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      ),
+      child: Container(
+        height: 60.h,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceVariant,
+          borderRadius: BorderRadius.circular(
+            ResponsiveUtils.getCardRadius() * 0.6,
+          ),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        child: Row(
+          children: [
+            Container(
+              width: ResponsiveUtils.getIconSize(20.sp) * 1.6,
+              height: ResponsiveUtils.getIconSize(20.sp) * 1.6,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.getCardRadius() * 0.5,
+                ),
+              ),
+            ),
+            SizedBox(width: ResponsiveUtils.getSpacing() * 0.5),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 12.h,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Container(
+                    height: 10.h,
+                    width: MediaQuery.of(context).size.width * 0.4,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedFileEntry extends StatelessWidget {
+  const _AnimatedFileEntry({
+    super.key,
+    required this.child,
+    required this.position,
+  });
+
+  final Widget child;
+  final int position;
+
+  @override
+  Widget build(BuildContext context) {
+    final duration = Duration(milliseconds: 220 + (position % 8) * 30);
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 1, end: 0),
+      duration: duration,
+      curve: Curves.easeOut,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, value * 12),
+          child: Opacity(
+            opacity: 1 - value * 0.4,
+            child: child,
+          ),
+        );
+      },
+      child: child,
+    );
+  }
 }

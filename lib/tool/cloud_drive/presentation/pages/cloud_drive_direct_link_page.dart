@@ -4,7 +4,7 @@ import '../../../../../core/logging/log_manager.dart';
 import '../../../../../core/utils/responsive_utils.dart';
 import '../../config/cloud_drive_ui_config.dart';
 import '../widgets/direct_link/direct_link.dart';
-// import '../../business/services/cloud_drive_business_service.dart'; // 未使用
+import '../../business/cloud_drive_business_service.dart';
 
 /// 直链解析页面 - 重构版本
 class CloudDriveDirectLinkPage extends StatefulWidget {
@@ -85,35 +85,30 @@ class _CloudDriveDirectLinkPageState extends State<CloudDriveDirectLinkPage> {
     try {
       LogManager().cloudDrive('开始解析直链: $url');
 
-      // TODO: 实现直链解析逻辑
-      // final result = await CloudDriveBusinessService.parseDirectLink(
-      //   url: url,
-      //   password: _passwordController.text.trim().isEmpty
-      //       ? null
-      //       : _passwordController.text.trim(),
-      // );
-
-      // 模拟解析结果
-      final result = {
-        'fileName': '示例文件.txt',
-        'fileSize': '1.2 MB',
-        'fileType': '文本文件',
-        'downloadUrl': 'https://example.com/download/123456',
-      };
+      final result = await CloudDriveBusinessService.parseAndDownloadFile(
+        shareUrl: url,
+        password: _passwordController.text.trim().isEmpty
+            ? null
+            : _passwordController.text.trim(),
+      );
 
       if (mounted) {
         setState(() {
-          _result = result;
+          _result = result.fileInfo;
           _isLoading = false;
         });
 
-        LogManager().cloudDrive('直链解析成功');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('解析成功'),
-            backgroundColor: CloudDriveUIConfig.successColor,
-          ),
-        );
+        if (result.success) {
+          LogManager().cloudDrive('直链解析成功');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: CloudDriveUIConfig.successColor,
+            ),
+          );
+        } else {
+          _error = result.message;
+        }
       }
     } catch (e) {
       LogManager().error('直链解析失败: $e');

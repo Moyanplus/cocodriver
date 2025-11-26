@@ -1,5 +1,7 @@
 import 'package:logger/logger.dart';
 
+import 'log_style.dart';
+
 /// 自定义日志打印器
 /// 格式：[月-日 时:分:秒] [级别] 消息
 class CustomLogPrinter extends LogPrinter {
@@ -23,18 +25,10 @@ class CustomLogPrinter extends LogPrinter {
 
   @override
   List<String> log(LogEvent event) {
-    final now = DateTime.now();
-    final timestamp =
-        '${now.month.toString().padLeft(2, '0')}-'
-        '${now.day.toString().padLeft(2, '0')} '
-        '${now.hour.toString().padLeft(2, '0')}:'
-        '${now.minute.toString().padLeft(2, '0')}:'
-        '${now.second.toString().padLeft(2, '0')}';
-
-    final level = levelLabels[event.level] ?? 'I';
+    final timestamp = LogStyle.formatTimestamp(DateTime.now());
     final message = event.message;
 
-    // 格式：[月-日 时:分:秒] [级别] 消息
-    return ['[$timestamp] [$level] $message'];
+    // 控制台输出：带颜色的时间戳 + 已格式化的消息（消息内部已包含等级/分类）
+    return ['$timestamp $message'];
   }
 }

@@ -1,4 +1,5 @@
 import '../../data/models/cloud_drive_entities.dart';
+import '../../config/cloud_drive_cache_config.dart';
 import '../../../../core/logging/log_manager.dart';
 
 /// 文件列表缓存管理器
@@ -16,7 +17,7 @@ class FileListCacheEntry {
     required this.files,
     required this.folders,
     required this.timestamp,
-    this.ttl = const Duration(minutes: 5), // 默认缓存5分钟
+    this.ttl = CloudDriveCacheConfig.defaultFolderCacheTtl,
   });
 
   /// 是否已过期
@@ -54,10 +55,8 @@ class FileListCacheManager {
   final Map<String, DateTime> _accessTime = {};
 
   /// 最大缓存数量
-  static const int _maxCacheSize = 100;
-
-  /// 默认缓存时间
-  static const Duration _defaultCacheDuration = Duration(minutes: 5);
+  static const int _maxCacheSize =
+      CloudDriveCacheConfig.maxFolderCacheEntries;
 
   /// 构建缓存键
   String _buildKey(String accountId, String folderId) {
@@ -126,7 +125,7 @@ class FileListCacheManager {
       files: List.unmodifiable(files), // 不可变列表
       folders: List.unmodifiable(folders),
       timestamp: DateTime.now(),
-      ttl: ttl ?? _defaultCacheDuration,
+      ttl: ttl ?? CloudDriveCacheConfig.defaultFolderCacheTtl,
     );
 
     _cache[key] = entry;

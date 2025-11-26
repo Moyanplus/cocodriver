@@ -22,11 +22,19 @@ class AuthInfoSection extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return CloudDriveCommonWidgets.buildCard(
+      backgroundColor: colorScheme.surfaceContainerHighest,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('认证信息', style: CloudDriveUIConfig.titleTextStyle),
+          Text(
+            '认证信息',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
           SizedBox(height: CloudDriveUIConfig.spacingM),
 
           _buildAuthInfoRow(context, account),
@@ -39,6 +47,7 @@ class AuthInfoSection extends StatelessWidget {
   Widget _buildAuthInfoRow(BuildContext context, CloudDriveAccount account) {
     String paramInfo = '';
     String paramValue = '';
+    final colorScheme = Theme.of(context).colorScheme;
 
     // 使用实际的认证方式，而不是云盘类型的默认认证方式
     final actualAuth = account.actualAuthType;
@@ -92,7 +101,7 @@ class AuthInfoSection extends StatelessWidget {
 
     return Column(
       children: [
-        CloudDriveCommonWidgets.buildClickableInfoRow(
+        ClickableInfoRow(
           label: paramInfo,
           value: paramValue,
           onTap: onView,
@@ -106,7 +115,9 @@ class AuthInfoSection extends StatelessWidget {
             CloudDriveCommonWidgets.buildSecondaryButton(
               text: '查看完整信息',
               onPressed: onView ?? () {},
-              icon: const Icon(Icons.visibility),
+              textColor: colorScheme.primary,
+              backgroundColor: colorScheme.primary,
+              icon: Icon(Icons.visibility, color: colorScheme.primary),
             ),
 
             SizedBox(width: CloudDriveUIConfig.spacingS),
@@ -114,7 +125,9 @@ class AuthInfoSection extends StatelessWidget {
             CloudDriveCommonWidgets.buildSecondaryButton(
               text: '复制',
               onPressed: onCopy ?? () {},
-              icon: const Icon(Icons.copy),
+              textColor: colorScheme.secondary,
+              backgroundColor: colorScheme.secondary,
+              icon: Icon(Icons.copy, color: colorScheme.secondary),
             ),
           ],
         ),
@@ -140,14 +153,18 @@ class ClickableInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(CloudDriveUIConfig.cardRadius),
       child: Container(
         padding: CloudDriveUIConfig.cardPadding,
         decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest,
           border: Border.all(
-            color: CloudDriveUIConfig.dividerColor.withOpacity(0.3),
+            color: colorScheme.outline.withValues(alpha: 0.3),
           ),
           borderRadius: BorderRadius.circular(CloudDriveUIConfig.cardRadius),
         ),
@@ -157,8 +174,8 @@ class ClickableInfoRow extends StatelessWidget {
               flex: 2,
               child: Text(
                 label,
-                style: CloudDriveUIConfig.bodyTextStyle.copyWith(
-                  color: CloudDriveUIConfig.secondaryTextColor,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -167,8 +184,8 @@ class ClickableInfoRow extends StatelessWidget {
               flex: 3,
               child: Text(
                 value,
-                style: CloudDriveUIConfig.bodyTextStyle.copyWith(
-                  color: CloudDriveUIConfig.textColor,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -182,7 +199,7 @@ class ClickableInfoRow extends StatelessWidget {
               SizedBox(width: CloudDriveUIConfig.spacingS),
               Icon(
                 Icons.chevron_right,
-                color: CloudDriveUIConfig.secondaryTextColor,
+                color: colorScheme.onSurfaceVariant,
                 size: CloudDriveUIConfig.iconSizeS,
               ),
             ],

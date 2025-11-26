@@ -6,6 +6,7 @@ import 'log_category.dart';
 import 'log_config.dart';
 import 'log_file_manager.dart';
 import 'custom_log_printer.dart';
+import 'log_style.dart';
 
 /// 统一的日志管理器
 /// 提供应用级别的日志记录功能
@@ -205,10 +206,13 @@ class LogManager {
 
       // 构建完整的日志消息
       final fullMessage = _buildLogMessage(
-        filteredMessage,
-        category,
-        data,
-        exception,
+        level: level,
+        message: filteredMessage,
+        category: category,
+        className: className,
+        methodName: methodName,
+        data: data,
+        exception: exception,
       );
 
       // 记录到Logger和文件
@@ -239,21 +243,40 @@ class LogManager {
   }
 
   /// 构建完整的日志消息
-  String _buildLogMessage(
-    String message,
-    LogCategory category,
+  String _buildLogMessage({
+    required LogLevel level,
+    required String message,
+    required LogCategory category,
+    String? className,
+    String? methodName,
     Map<String, dynamic>? data,
     dynamic exception,
-  ) {
+  }) {
     final buffer = StringBuffer();
-    buffer.write('[${category.displayName}] $message');
+    buffer
+      ..write(LogStyle.formatLevel(level))
+      ..write(' ')
+      ..write(LogStyle.formatCategory(category))
+      ..write(' ')
+      ..write(message);
+
+    final scope = LogStyle.formatScope(className, methodName);
+    if (scope != null) {
+      buffer
+        ..write(' ')
+        ..write(LogStyle.dim(scope));
+    }
 
     if (data != null && data.isNotEmpty) {
-      buffer.write('\n数据: ${data.toString()}');
+      buffer
+        ..write('\n')
+        ..write(LogStyle.dim('数据: ${data.toString()}'));
     }
 
     if (exception != null) {
-      buffer.write('\n异常: $exception');
+      buffer
+        ..write('\n')
+        ..write(LogStyle.emphasizeError('异常: $exception'));
     }
 
     return buffer.toString();

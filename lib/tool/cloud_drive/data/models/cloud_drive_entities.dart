@@ -417,20 +417,55 @@ class CloudDriveAccount {
 }
 
 /// 云盘文件模型
+/// 通用文件实体。
+///
+/// 除统一字段外，还可以把各云盘的原始字段放进 [metadata]，
+/// 例如蓝奏的 `downloads`、`isLock` 等，方便页面按需展示。
 class CloudDriveFile {
+  /// 云盘生成的唯一标识
   final String id;
+
+  /// 文件/文件夹名称
   final String name;
+
+  /// 是否为文件夹
   final bool isFolder;
+
+  /// 文件大小（字节），文件夹通常为空
   final int? size;
+
+  /// 最后修改时间
   final DateTime? modifiedTime;
+
+  /// 所属文件夹 ID（可能为根目录 `/`）
   final String? folderId;
+
+  /// 相对路径（部分云盘会返回）
   final String? path;
+
+  /// 下载链接（当场获取或缓存）
   final String? downloadUrl;
+
+  /// 缩略图 URL
   final String? thumbnailUrl;
+
+  /// 大图/高清缩略图 URL
   final String? bigThumbnailUrl;
+
+  /// 预览链接（可用于在线播放/预览）
   final String? previewUrl;
+
+  /// 云盘特定的扩展字段（如蓝奏 raw 字段、百度标签等）。
   final Map<String, dynamic>? metadata;
+
+  /// 统一的文件分类标签（图片/视频/压缩等）
   final FileCategory? category;
+
+  /// 下载量（-1 表示该云盘未提供）
+  final int downloadCount;
+
+  /// 分享次数（-1 表示该云盘未提供）
+  final int shareCount;
 
   const CloudDriveFile({
     required this.id,
@@ -446,6 +481,8 @@ class CloudDriveFile {
     this.previewUrl,
     this.metadata,
     this.category,
+    this.downloadCount = -1,
+    this.shareCount = -1,
   });
 
   /// 是否为目录
@@ -535,6 +572,8 @@ class CloudDriveFile {
               orElse: () => FileCategory.other,
             )
             : null,
+    downloadCount: json['downloadCount'] as int? ?? -1,
+    shareCount: json['shareCount'] as int? ?? -1,
   );
 
   /// 转换为JSON
@@ -552,6 +591,8 @@ class CloudDriveFile {
     'previewUrl': previewUrl,
     'metadata': metadata,
     'category': category?.name,
+    'downloadCount': downloadCount,
+    'shareCount': shareCount,
   };
 
   /// 复制并更新
@@ -569,6 +610,8 @@ class CloudDriveFile {
     String? previewUrl,
     Map<String, dynamic>? metadata,
     FileCategory? category,
+    int? downloadCount,
+    int? shareCount,
   }) => CloudDriveFile(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -583,6 +626,8 @@ class CloudDriveFile {
     previewUrl: previewUrl ?? this.previewUrl,
     metadata: metadata ?? this.metadata,
     category: category ?? this.category,
+    downloadCount: downloadCount ?? this.downloadCount,
+    shareCount: shareCount ?? this.shareCount,
   );
 
   @override

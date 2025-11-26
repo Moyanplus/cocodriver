@@ -144,7 +144,7 @@ class CloudInfoCard extends StatelessWidget {
         else if (accountDetails == null)
           _buildEmptyState(context)
         else
-          _buildCloudDetailsContent(accountDetails!),
+          _buildCloudDetailsContent(context, accountDetails!),
         SizedBox(height: CloudDriveUIConfig.spacingM),
       ],
     );
@@ -178,27 +178,28 @@ class CloudInfoCard extends StatelessWidget {
   /// - 带有半透明背景和边框的容器
   /// - 居中布局的错误信息展示
   Widget _buildErrorState(BuildContext context, String error) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: CloudDriveUIConfig.cardPadding,
       decoration: BoxDecoration(
-        color: CloudDriveUIConfig.errorColor.withOpacity(0.1),
+        color: colorScheme.error.withOpacity(0.1),
         borderRadius: BorderRadius.circular(CloudDriveUIConfig.cardRadius),
         border: Border.all(
-          color: CloudDriveUIConfig.errorColor.withOpacity(0.3),
+          color: colorScheme.error.withOpacity(0.3),
         ),
       ),
       child: Column(
         children: [
           Icon(
             Icons.error_outline,
-            color: CloudDriveUIConfig.errorColor,
+            color: colorScheme.error,
             size: CloudDriveUIConfig.iconSizeL,
           ),
           SizedBox(height: CloudDriveUIConfig.spacingS),
           Text(
             '加载失败',
             style: CloudDriveUIConfig.bodyTextStyle.copyWith(
-              color: CloudDriveUIConfig.errorColor,
+              color: colorScheme.error,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -230,20 +231,21 @@ class CloudInfoCard extends StatelessWidget {
   /// - 居中布局
   /// - 简洁的空状态提示
   Widget _buildEmptyState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: CloudDriveUIConfig.cardPadding,
       child: Column(
         children: [
           Icon(
             Icons.cloud_off,
-            color: CloudDriveUIConfig.secondaryTextColor,
+            color: colorScheme.onSurfaceVariant,
             size: CloudDriveUIConfig.iconSizeL,
           ),
           SizedBox(height: CloudDriveUIConfig.spacingS),
           Text(
             '暂无云盘信息',
             style: CloudDriveUIConfig.bodyTextStyle.copyWith(
-              color: CloudDriveUIConfig.secondaryTextColor,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -271,24 +273,27 @@ class CloudInfoCard extends StatelessWidget {
   /// - 调用 [_buildStorageInfo] 构建存储空间信息
   /// - 调用 [_buildFileStats] 构建文件统计信息
   /// - 调用 [_buildOtherInfo] 构建其他信息
-  Widget _buildCloudDetailsContent(CloudDriveAccountDetails details) {
+  Widget _buildCloudDetailsContent(
+    BuildContext context,
+    CloudDriveAccountDetails details,
+  ) {
     return Column(
       children: [
         // 存储空间信息
         if (details.quotaInfo?.total != null &&
             details.quotaInfo?.used != null &&
             (details.quotaInfo!.total > 0 || details.quotaInfo!.used > 0))
-          _buildStorageInfo(details),
+          _buildStorageInfo(context, details),
 
         SizedBox(height: CloudDriveUIConfig.spacingM),
 
         // 文件统计信息
-        _buildFileStats(details),
+        _buildFileStats(context, details),
 
         SizedBox(height: CloudDriveUIConfig.spacingM),
 
         // 其他信息
-        _buildOtherInfo(details),
+        _buildOtherInfo(context, details),
       ],
     );
   }
@@ -312,15 +317,18 @@ class CloudInfoCard extends StatelessWidget {
   /// - 调用 [_buildStorageProgressBar] 构建存储空间进度条
   /// - 使用 [CloudDriveCommonWidgets.buildInfoRow] 构建信息行
   /// - 使用 [_formatFileSize] 格式化存储空间数值
-  Widget _buildStorageInfo(CloudDriveAccountDetails details) {
+  Widget _buildStorageInfo(
+    BuildContext context,
+    CloudDriveAccountDetails details,
+  ) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           '存储空间',
-          style: CloudDriveUIConfig.bodyTextStyle.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
+          style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         SizedBox(height: CloudDriveUIConfig.spacingS),
 
@@ -329,7 +337,7 @@ class CloudInfoCard extends StatelessWidget {
             details.quotaInfo!.total > 0 &&
             details.quotaInfo!.used > 0) ...[
           // 存储空间进度条
-          _buildStorageProgressBar(details),
+          _buildStorageProgressBar(context, details),
           SizedBox(height: CloudDriveUIConfig.spacingS),
         ],
 
@@ -340,12 +348,16 @@ class CloudInfoCard extends StatelessWidget {
               child: CloudDriveCommonWidgets.buildInfoRow(
                 label: '已使用',
                 value: _formatFileSize(details.quotaInfo?.used ?? 0),
+                labelColor: colorScheme.onSurfaceVariant,
+                valueColor: colorScheme.onSurface,
               ),
             ),
             Expanded(
               child: CloudDriveCommonWidgets.buildInfoRow(
                 label: '总容量',
                 value: _formatFileSize(details.quotaInfo?.total ?? 0),
+                labelColor: colorScheme.onSurfaceVariant,
+                valueColor: colorScheme.onSurface,
               ),
             ),
           ],
@@ -376,7 +388,10 @@ class CloudInfoCard extends StatelessWidget {
   /// 注意：
   /// - 仅在有效的存储空间数据（total > 0 且 used > 0）时显示
   /// - 使用 [CloudDriveUIConfig] 中定义的颜色主题
-  Widget _buildStorageProgressBar(CloudDriveAccountDetails details) {
+  Widget _buildStorageProgressBar(
+    BuildContext context,
+    CloudDriveAccountDetails details,
+  ) {
     if (details.quotaInfo?.total == null ||
         details.quotaInfo?.used == null ||
         details.quotaInfo!.total == 0 ||
@@ -385,14 +400,16 @@ class CloudInfoCard extends StatelessWidget {
     }
 
     final usedPercentage = details.quotaInfo!.used / details.quotaInfo!.total;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     Color progressColor;
 
     if (usedPercentage > 0.9) {
-      progressColor = CloudDriveUIConfig.errorColor;
+      progressColor = colorScheme.error;
     } else if (usedPercentage > 0.7) {
-      progressColor = CloudDriveUIConfig.warningColor;
+      progressColor = colorScheme.tertiary;
     } else {
-      progressColor = CloudDriveUIConfig.successColor;
+      progressColor = colorScheme.primary;
     }
 
     return Column(
@@ -401,11 +418,17 @@ class CloudInfoCard extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('使用率', style: CloudDriveUIConfig.smallTextStyle),
+            Text(
+              '使用率',
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
             Text(
               '${(usedPercentage * 100).toStringAsFixed(1)}%',
-              style: CloudDriveUIConfig.smallTextStyle.copyWith(
-                fontWeight: FontWeight.w500,
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -413,7 +436,7 @@ class CloudInfoCard extends StatelessWidget {
         SizedBox(height: CloudDriveUIConfig.spacingXS),
         LinearProgressIndicator(
           value: usedPercentage,
-          backgroundColor: CloudDriveUIConfig.dividerColor,
+          backgroundColor: colorScheme.surfaceVariant,
           valueColor: AlwaysStoppedAnimation<Color>(progressColor),
         ),
       ],
@@ -441,15 +464,18 @@ class CloudInfoCard extends StatelessWidget {
   /// 注意：
   /// - 手机号信息仅在 [details.accountInfo?.phone] 存在时显示
   /// - 使用不同的主题色区分不同类型的信息
-  Widget _buildFileStats(CloudDriveAccountDetails details) {
+  Widget _buildFileStats(
+    BuildContext context,
+    CloudDriveAccountDetails details,
+  ) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           '文件统计',
-          style: CloudDriveUIConfig.bodyTextStyle.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
+          style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         SizedBox(height: CloudDriveUIConfig.spacingS),
 
@@ -457,19 +483,21 @@ class CloudInfoCard extends StatelessWidget {
           children: [
             Expanded(
               child: _buildStatItem(
+                context: context,
                 icon: Icons.person,
                 label: '用户名',
                 value: details.accountInfo?.username ?? '未知用户',
-                color: CloudDriveUIConfig.infoColor,
+                color: colorScheme.primary,
               ),
             ),
             if (details.accountInfo?.phone != null)
               Expanded(
                 child: _buildStatItem(
+                  context: context,
                   icon: Icons.phone,
                   label: '手机',
                   value: details.accountInfo?.phone ?? '',
-                  color: CloudDriveUIConfig.folderColor,
+                  color: colorScheme.secondary,
                 ),
               ),
           ],
@@ -503,11 +531,13 @@ class CloudInfoCard extends StatelessWidget {
   /// - 用于展示用户名、手机号等账号信息
   /// - 可用于展示其他类型的统计数据
   Widget _buildStatItem({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required String value,
     required Color color,
   }) {
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: CloudDriveUIConfig.cardPadding,
       decoration: BoxDecoration(
@@ -520,9 +550,17 @@ class CloudInfoCard extends StatelessWidget {
           SizedBox(height: CloudDriveUIConfig.spacingXS),
           Text(
             value,
-            style: CloudDriveUIConfig.titleTextStyle.copyWith(color: color),
+            style: textTheme.titleMedium?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          Text(label, style: CloudDriveUIConfig.smallTextStyle),
+          Text(
+            label,
+            style: textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -547,17 +585,25 @@ class CloudInfoCard extends StatelessWidget {
   /// 条件渲染：
   /// - VIP状态始终显示
   /// - SVIP状态仅在 [details.accountInfo?.isSvip] 为 true 时显示
-  Widget _buildOtherInfo(CloudDriveAccountDetails details) {
+  Widget _buildOtherInfo(
+    BuildContext context,
+    CloudDriveAccountDetails details,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         CloudDriveCommonWidgets.buildInfoRow(
           label: 'VIP状态',
           value: details.accountInfo?.isVip == true ? 'VIP用户' : '普通用户',
+          labelColor: colorScheme.onSurfaceVariant,
+          valueColor: colorScheme.onSurface,
         ),
         if (details.accountInfo?.isSvip == true)
           CloudDriveCommonWidgets.buildInfoRow(
             label: 'SVIP状态',
             value: 'SVIP用户',
+            labelColor: colorScheme.onSurfaceVariant,
+            valueColor: colorScheme.onSurface,
           ),
       ],
     );

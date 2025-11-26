@@ -18,7 +18,7 @@ class LanzouConfig {
 
   // vei参数配置
   static String? _veiParameter;
-  static const String defaultVei = 'UlYHVFdWAAwODABQ'; // 默认vei参数
+  static const String defaultVei = 'UVVTUQRWVwhUBA9f'; // 默认vei参数
 
   // API 任务配置
   static const Map<String, String> tasks = {

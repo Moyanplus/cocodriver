@@ -2,7 +2,8 @@ import '../../../../../core/logging/log_manager.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import '../../base/cloud_drive_operation_service.dart';
-import 'lanzou_cloud_drive_service.dart';
+import 'facade/lanzou_cloud_drive_service.dart';
+import 'repository/lanzou_share_repository.dart';
 // import 'lanzou_config.dart'; // 未使用
 
 /// 蓝奏云操作策略
@@ -57,9 +58,26 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     LogManager().cloudDrive('蓝奏云 - 过期天数: ${expireDays ?? '永久'}');
 
     try {
-      // TODO: 实现蓝奏云分享链接生成
-      LogManager().cloudDrive('蓝奏云 - 分享链接生成功能暂未实现');
-      return null;
+      if (files.isEmpty) {
+        LogManager().cloudDrive('蓝奏云 - 分享失败，文件为空');
+        return null;
+      }
+      final file = files.first;
+      final repository = LanzouShareRepository();
+      final result = await repository.createShareLink(
+        fileIds: [file.id],
+        password: password,
+        expireDays: expireDays,
+      );
+      if (result.isSuccess && result.data != null) {
+        LogManager().cloudDrive('蓝奏云 - 分享链接创建成功');
+        return result.data;
+      } else {
+        LogManager().cloudDrive(
+          '蓝奏云 - 分享链接创建失败: ${result.error?.message}',
+        );
+        return null;
+      }
     } catch (e, stackTrace) {
       LogManager().cloudDrive('蓝奏云 - 创建分享链接异常: $e');
       LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
@@ -80,19 +98,21 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
 
     try {
       // 调用蓝奏云服务的移动文件方法
-      final success = await LanzouCloudDriveService.moveFile(
+      final result = await LanzouCloudDriveService.moveFile(
         account: account,
         file: file,
         targetFolderId: targetFolderId,
       );
 
-      if (success) {
+      if (result.isSuccess && result.data == true) {
         LogManager().cloudDrive('蓝奏云 - 文件移动成功');
+        return true;
       } else {
-        LogManager().cloudDrive('蓝奏云 - 文件移动失败');
+        LogManager().cloudDrive(
+          '蓝奏云 - 文件移动失败: ${result.error?.message}',
+        );
+        return false;
       }
-
-      return success;
     } catch (e, stackTrace) {
       LogManager().cloudDrive('蓝奏云 - 移动文件异常: $e');
       LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
@@ -209,12 +229,12 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       }
 
       // 验证 Cookie 有效性
-      final isValid = await LanzouCloudDriveService.validateCookies(
+      final validateResult = await LanzouCloudDriveService.validateCookies(
         account.cookies ?? '',
         uid,
       );
 
-      if (!isValid) {
+      if (!(validateResult.isSuccess && validateResult.data == true)) {
         LogManager().cloudDrive('蓝奏云 - Cookie 验证失败');
         return null;
       }
@@ -288,19 +308,27 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       LogManager().cloudDrive('蓝奏云 - UID提取成功: $uid');
 
       // 获取文件和文件夹
-      final files = await LanzouCloudDriveService.getFiles(
+      final filesResult = await LanzouCloudDriveService.getFiles(
         cookies: account.cookies ?? '',
         uid: uid,
         folderId: folderId ?? '-1',
       );
 
-      final folders = await LanzouCloudDriveService.getFolders(
+      final foldersResult = await LanzouCloudDriveService.getFolders(
         cookies: account.cookies ?? '',
         uid: uid,
         folderId: folderId ?? '-1',
       );
 
-      // 合并文件和文件夹列表
+      if (!filesResult.isSuccess || !foldersResult.isSuccess) {
+        throw Exception(
+          filesResult.error?.message ?? foldersResult.error?.message,
+        );
+      }
+
+      final files = filesResult.data ?? [];
+      final folders = foldersResult.data ?? [];
+
       final allItems = [...folders, ...files];
 
       LogManager().cloudDrive(
@@ -335,13 +363,15 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         folderId: folderId ?? '-1',
       );
 
-      if (result['success'] == true) {
+      if (result.isSuccess) {
         LogManager().cloudDrive('蓝奏云 - 文件上传成功');
+        return result.data ?? {};
       } else {
-        LogManager().cloudDrive('蓝奏云 - 文件上传失败: ${result['message']}');
+        LogManager().cloudDrive(
+          '蓝奏云 - 文件上传失败: ${result.error?.message}',
+        );
+        return {'success': false, 'message': result.error?.message};
       }
-
-      return result;
     } catch (e, stackTrace) {
       LogManager().cloudDrive('蓝奏云 - 上传文件异常: $e');
       LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');

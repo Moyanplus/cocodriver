@@ -1,8 +1,9 @@
-import '../../../../../core/logging/log_manager.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../../data/models/cloud_drive_dtos.dart'; // 导入 PathInfo
 import '../../../base/cloud_drive_file_service.dart';
 import '../../../data/cache/file_list_cache.dart'; // 导入缓存管理器
+import '../../../infrastructure/logging/cloud_drive_logger_adapter.dart';
+import '../../../utils/cloud_drive_error_utils.dart';
 import '../cloud_drive_state_manager.dart';
 import '../cloud_drive_state_model.dart'; // 导入 CloudDriveState
 
@@ -12,8 +13,9 @@ import '../cloud_drive_state_model.dart'; // 导入 CloudDriveState
 class FolderStateHandler {
   final CloudDriveStateManager _stateManager;
   final FileListCacheManager _cacheManager = FileListCacheManager();
+  final CloudDriveLoggerAdapter _logger;
 
-  FolderStateHandler(this._stateManager);
+  FolderStateHandler(this._stateManager) : _logger = _stateManager.logger;
 
   /// 加载文件夹内容，使用缓存机制提升性能
   ///
@@ -21,12 +23,12 @@ class FolderStateHandler {
   Future<void> loadFolder({bool forceRefresh = false}) async {
     final account = _stateManager.getCurrentState().currentAccount;
     if (account == null) {
-      LogManager().cloudDrive('没有当前账号，无法加载文件夹');
+      _logger.warning('没有当前账号，无法加载文件夹');
       return;
     }
 
     final folderId = _stateManager.getCurrentState().currentFolder?.id ?? '/';
-    LogManager().cloudDrive(
+    _logger.info(
       '📂 加载文件夹: ${_stateManager.getCurrentState().currentFolder?.name ?? '根目录'} (ID: $folderId)',
     );
 
@@ -36,7 +38,7 @@ class FolderStateHandler {
         final cachedData = _cacheManager.get(account.id, folderId);
         if (cachedData != null) {
           // 使用缓存数据
-          LogManager().cloudDrive(
+          _logger.info(
             '⚡ 使用缓存数据 (${cachedData.files.length} 文件, ${cachedData.folders.length} 文件夹, '
             '剩余 ${cachedData.remainingSeconds}s)',
           );
@@ -60,7 +62,7 @@ class FolderStateHandler {
         (state) => state.copyWith(isLoading: true, error: null),
       );
 
-      LogManager().cloudDrive('🌐 从网络获取数据...');
+      _logger.info('🌐 从网络获取数据...');
 
       final result = await CloudDriveFileService.getFileList(
         account: account,
@@ -71,7 +73,7 @@ class FolderStateHandler {
       final newFiles = List<CloudDriveFile>.from(result['files'] ?? []);
       final newFolders = List<CloudDriveFile>.from(result['folders'] ?? []);
 
-      LogManager().cloudDrive(
+      _logger.info(
         '✅ 网络数据获取成功: ${newFiles.length} 文件, ${newFolders.length} 文件夹',
       );
 
@@ -91,15 +93,23 @@ class FolderStateHandler {
       );
 
       final updatedState = _stateManager.getCurrentState();
-      LogManager().cloudDrive(
+      _logger.info(
         '📌 状态更新完成 - 文件: ${updatedState.files.length}, 文件夹: ${updatedState.folders.length}',
       );
     } catch (e) {
-      LogManager().error('❌ 加载文件夹内容失败: $e');
+      _logger.error('❌ 加载文件夹内容失败: $e');
       _stateManager.updateState(
-        (state) => state.copyWith(isLoading: false, error: e.toString()),
+        (state) => state.copyWith(
+          isLoading: false,
+          error: CloudDriveErrorUtils.format(e),
+        ),
       );
     }
+  }
+
+  /// 使指定账号+文件夹的缓存失效。
+  void invalidateCache(String accountId, String folderId) {
+    _cacheManager.remove(accountId, folderId.isEmpty ? '/' : folderId);
   }
 
   /// 进入指定文件夹并加载其内容
@@ -110,20 +120,18 @@ class FolderStateHandler {
   Future<void> enterFolder(CloudDriveFile folder) async {
     // 确保传入的是文件夹而非文件
     if (!folder.isDirectory) {
-      LogManager().cloudDrive('尝试进入非文件夹: ${folder.name}');
+      _logger.warning('尝试进入非文件夹: ${folder.name}');
       return;
     }
 
-    LogManager().cloudDrive('进入文件夹: ${folder.name}');
+    _logger.info('进入文件夹: ${folder.name}');
 
     try {
       final currentState = _stateManager.getCurrentState();
       final currentPath = List<PathInfo>.from(currentState.folderPath);
       currentPath.add(PathInfo(id: folder.id, name: folder.name));
 
-      LogManager().cloudDrive(
-        '📍 更新路径: ${currentPath.map((p) => p.name).join(' > ')}',
-      );
+      _logger.info('📍 更新路径: ${currentPath.map((p) => p.name).join(' > ')}');
 
       // 更新状态
       _stateManager.updateState(
@@ -139,10 +147,12 @@ class FolderStateHandler {
       // 加载新文件夹的内容
       await loadFolder(forceRefresh: false);
 
-      LogManager().cloudDrive('进入文件夹成功: ${folder.name}');
+      _logger.info('进入文件夹成功: ${folder.name}');
     } catch (e) {
-      LogManager().error('进入文件夹失败: $e');
-      _stateManager.updateState((state) => state.copyWith(error: e.toString()));
+      _logger.error('进入文件夹失败: $e');
+      _stateManager.updateState(
+        (state) => state.copyWith(error: CloudDriveErrorUtils.format(e)),
+      );
     }
   }
 
@@ -157,11 +167,11 @@ class FolderStateHandler {
 
     // 检查索引是否有效
     if (pathIndex < 0 || pathIndex >= currentPath.length) {
-      LogManager().cloudDrive('无效的路径索引: $pathIndex');
+      _logger.warning('无效的路径索引: $pathIndex');
       return;
     }
 
-    LogManager().cloudDrive('跳转到路径索引: $pathIndex');
+    _logger.info('跳转到路径索引: $pathIndex');
 
     try {
       final newPath = currentPath.sublist(0, pathIndex + 1);
@@ -179,7 +189,7 @@ class FolderStateHandler {
         );
       }
 
-      LogManager().cloudDrive(
+      _logger.info(
         '📍 跳转到: ${newPath.isEmpty ? '根目录' : newPath.map((p) => p.name).join(' > ')}',
       );
 
@@ -215,10 +225,12 @@ class FolderStateHandler {
       // 加载目标文件夹的内容
       await loadFolder(forceRefresh: false);
 
-      LogManager().cloudDrive('跳转成功');
+      _logger.info('跳转成功');
     } catch (e) {
-      LogManager().error('跳转失败: $e');
-      _stateManager.updateState((state) => state.copyWith(error: e.toString()));
+      _logger.error('跳转失败: $e');
+      _stateManager.updateState(
+        (state) => state.copyWith(error: CloudDriveErrorUtils.format(e)),
+      );
     }
   }
 
@@ -234,11 +246,11 @@ class FolderStateHandler {
 
     // 检查是否已在根目录
     if (currentFolder == null || currentPath.isEmpty) {
-      LogManager().cloudDrive('已在根目录，无法返回');
+      _logger.warning('已在根目录，无法返回');
       return;
     }
 
-    LogManager().cloudDrive('返回上级目录');
+    _logger.info('返回上级目录');
 
     try {
       final newPath = List<PathInfo>.from(currentPath);
@@ -257,7 +269,7 @@ class FolderStateHandler {
         );
       }
 
-      LogManager().cloudDrive(
+      _logger.info(
         '📍 更新路径: ${newPath.isEmpty ? '根目录' : newPath.map((p) => p.name).join(' > ')}',
       );
 
@@ -293,10 +305,12 @@ class FolderStateHandler {
       // 加载父文件夹的内容
       await loadFolder(forceRefresh: false);
 
-      LogManager().cloudDrive('返回上级目录成功');
+      _logger.info('返回上级目录成功');
     } catch (e) {
-      LogManager().error('返回上级目录失败: $e');
-      _stateManager.updateState((state) => state.copyWith(error: e.toString()));
+      _logger.error('返回上级目录失败: $e');
+      _stateManager.updateState(
+        (state) => state.copyWith(error: CloudDriveErrorUtils.format(e)),
+      );
     }
   }
 
@@ -305,11 +319,11 @@ class FolderStateHandler {
     final currentState = _stateManager.getCurrentState();
     final account = currentState.currentAccount;
     if (account == null) {
-      LogManager().cloudDrive('没有当前账号，无法加载更多');
+      _logger.warning('没有当前账号，无法加载更多');
       return;
     }
 
-    LogManager().cloudDrive('加载更多内容');
+    _logger.info('加载更多内容');
 
     try {
       final currentState = _stateManager.getCurrentState();
@@ -340,20 +354,23 @@ class FolderStateHandler {
         ),
       );
 
-      LogManager().cloudDrive(
+      _logger.info(
         '加载更多内容成功: ${newFiles.length}个文件, ${newFolders.length}个文件夹',
       );
     } catch (e) {
-      LogManager().error('加载更多内容失败: $e');
+      _logger.error('加载更多内容失败: $e');
       _stateManager.updateState(
-        (state) => state.copyWith(isLoadingMore: false, error: e.toString()),
+        (state) => state.copyWith(
+          isLoadingMore: false,
+          error: CloudDriveErrorUtils.format(e),
+        ),
       );
     }
   }
 
   /// 刷新当前文件夹，忽略缓存重新获取数据
   Future<void> refresh() async {
-    LogManager().cloudDrive('刷新当前文件夹');
+    _logger.info('刷新当前文件夹');
     await loadFolder(forceRefresh: true);
   }
 
@@ -364,7 +381,7 @@ class FolderStateHandler {
     String? targetFolderId,
   }) async {
     try {
-      LogManager().cloudDrive('移动文件: ${file.name} -> $targetFolderId');
+      _logger.info('移动文件: ${file.name} -> $targetFolderId');
 
       final success = await CloudDriveFileService.moveFile(
         account: account,
@@ -373,14 +390,14 @@ class FolderStateHandler {
       );
 
       if (success) {
-        LogManager().cloudDrive('文件移动成功: ${file.name}');
+        _logger.info('文件移动成功: ${file.name}');
       } else {
-        LogManager().cloudDrive('文件移动失败');
+        _logger.warning('文件移动失败');
       }
 
       return success;
     } catch (e) {
-      LogManager().error('移动文件失败: $e');
+      _logger.error('移动文件失败: $e');
       return false;
     }
   }
@@ -392,7 +409,7 @@ class FolderStateHandler {
     String? targetFolderId,
   }) async {
     try {
-      LogManager().cloudDrive('复制文件: ${file.name} -> $targetFolderId');
+      _logger.info('复制文件: ${file.name} -> $targetFolderId');
 
       final success = await CloudDriveFileService.copyFile(
         account: account,
@@ -401,14 +418,14 @@ class FolderStateHandler {
       );
 
       if (success) {
-        LogManager().cloudDrive('文件复制成功: ${file.name}');
+        _logger.info('文件复制成功: ${file.name}');
       } else {
-        LogManager().cloudDrive('文件复制失败');
+        _logger.warning('文件复制失败');
       }
 
       return success;
     } catch (e) {
-      LogManager().error('复制文件失败: $e');
+      _logger.error('复制文件失败: $e');
       return false;
     }
   }

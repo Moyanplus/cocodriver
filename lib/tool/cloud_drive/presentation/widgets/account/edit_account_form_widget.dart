@@ -469,7 +469,10 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
   /// 显示警告提示
   void _showWarningSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.orange),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.tertiary,
+      ),
     );
   }
 }

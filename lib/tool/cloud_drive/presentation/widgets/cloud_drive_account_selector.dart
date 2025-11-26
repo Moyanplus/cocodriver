@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -37,6 +39,10 @@ class CloudDriveAccountSelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(cloudDriveProvider);
+    final double accountTileHeight = math.max(
+      ResponsiveUtils.getResponsiveHeight(90.h),
+      ResponsiveUtils.isMobile ? 76.0 : 88.0,
+    );
 
     // 如果不显示账号选择器，返回空容器
     if (!state.showAccountSelector) {
@@ -63,7 +69,7 @@ class CloudDriveAccountSelector extends ConsumerWidget {
           if (state.accounts.isNotEmpty) ...[
             SizedBox(
               // 【优化】调整高度以适应更大的可点击区域
-              height: ResponsiveUtils.getResponsiveHeight(90.h),
+              height: accountTileHeight,
               width: double.infinity,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -170,51 +176,61 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                         ],
                                       ),
                                     ),
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.info_outline,
-                                        size: ResponsiveUtils.getIconSize(
-                                          20.sp,
+                                    SizedBox(
+                                      width: ResponsiveUtils.getResponsiveWidth(
+                                        40,
+                                      ),
+                                      height:
+                                          ResponsiveUtils.getResponsiveHeight(
+                                        40,
+                                      ),
+                                      child: IconButton(
+                                        icon: Icon(
+                                          Icons.info_outline,
+                                          size: ResponsiveUtils.getIconSize(
+                                            20.sp,
+                                          ),
+                                          color:
+                                              isSelected
+                                                  ? Theme.of(
+                                                    context,
+                                                  ).colorScheme
+                                                      .onPrimaryContainer
+                                                  : Theme.of(
+                                                    context,
+                                                  ).colorScheme
+                                                      .onSurfaceVariant,
                                         ),
-                                        color:
-                                            isSelected
-                                                ? Theme.of(
+                                        padding: EdgeInsets.zero,
+                                        splashRadius:
+                                            ResponsiveUtils.getResponsiveWidth(
+                                              20,
+                                            ),
+                                        onPressed: () {
+                                          // 显示账号详情底部弹窗
+                                          showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder:
+                                                (
                                                   context,
-                                                ).colorScheme.onPrimaryContainer
-                                                : Theme.of(
-                                                  context,
-                                                ).colorScheme.onSurfaceVariant,
+                                                ) => DraggableScrollableSheet(
+                                                  initialChildSize: 0.7,
+                                                  minChildSize: 0.5,
+                                                  maxChildSize: 0.95,
+                                                  builder:
+                                                      (
+                                                        context,
+                                                        scrollController,
+                                                      ) =>
+                                                          AccountDetailBottomSheet(
+                                                            account: account,
+                                                          ),
+                                                ),
+                                          );
+                                        },
                                       ),
-                                      padding: EdgeInsets.all(12.w),
-                                      constraints: BoxConstraints(
-                                        minWidth: 44.w,
-                                        minHeight: 44.h,
-                                      ),
-                                      visualDensity: VisualDensity.standard,
-                                      onPressed: () {
-                                        // 显示账号详情底部弹窗
-                                        showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          backgroundColor: Colors.transparent,
-                                          builder:
-                                              (
-                                                context,
-                                              ) => DraggableScrollableSheet(
-                                                initialChildSize: 0.7,
-                                                minChildSize: 0.5,
-                                                maxChildSize: 0.95,
-                                                builder:
-                                                    (
-                                                      context,
-                                                      scrollController,
-                                                    ) =>
-                                                        AccountDetailBottomSheet(
-                                                          account: account,
-                                                        ),
-                                              ),
-                                        );
-                                      },
                                     ),
                                   ],
                                 ),
@@ -248,7 +264,7 @@ class CloudDriveAccountSelector extends ConsumerWidget {
             // 无账号提示
             SizedBox(
               // 【优化】与有账号时的高度保持一致
-              height: ResponsiveUtils.getResponsiveHeight(85.h),
+              height: accountTileHeight,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

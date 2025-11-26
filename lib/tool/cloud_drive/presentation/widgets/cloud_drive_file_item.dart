@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/utils/responsive_utils.dart';
-import '../../../../../core/logging/log_manager.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../../utils/file_type_utils.dart';
 import '../ui/cloud_drive_base_widgets.dart';
@@ -31,53 +30,56 @@ class CloudDriveFileItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 打印文件数据，查看thumbnailUrl
-    LogManager().cloudDrive(
-      '文件项数据: name=${file.name}, '
-      'isFolder=$isFolder, '
-      'thumbnailUrl=${file.thumbnailUrl}, '
-      'size=${file.size}, '
-      'id=${file.id}',
+    final theme = Theme.of(context);
+    final borderRadius = BorderRadius.circular(
+      ResponsiveUtils.getCardRadius() * 0.5,
     );
 
-    return GestureDetector(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: EdgeInsets.symmetric(
-          vertical: 1.h,
-          horizontal: ResponsiveUtils.getSpacing() * 0.5,
-        ),
-        child: Card(
-          margin: EdgeInsets.zero,
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          color: Theme.of(context).colorScheme.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-              ResponsiveUtils.getCardRadius() * 0.5,
+    final bool highlight = isBatchMode && isSelected;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: 1.h,
+        horizontal: ResponsiveUtils.getSpacing() * 0.5,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: borderRadius,
+        child: InkWell(
+          borderRadius: borderRadius,
+          onTap: onTap,
+          onLongPress: onLongPress,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            decoration: BoxDecoration(
+              color: highlight
+                  ? theme.colorScheme.primary.withValues(alpha: 0.08)
+                  : theme.colorScheme.surface,
+              borderRadius: borderRadius,
+              border:
+                  highlight
+                      ? Border.all(
+                        color: theme.colorScheme.primary,
+                        width: 1.6.w,
+                      )
+                      : null,
             ),
-            side:
-                isBatchMode && isSelected
-                    ? BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 2.w,
-                    )
-                    : BorderSide.none,
-          ),
-          child: Container(
-            height: ResponsiveUtils.getResponsiveHeight(42.h),
+            constraints: BoxConstraints(
+              minHeight: ResponsiveUtils.getResponsiveHeight(52.h),
+            ),
             padding: ResponsiveUtils.getResponsivePadding(
-              horizontal: 6.w,
-              vertical: 2.h,
+              horizontal: 12.w,
+              vertical: 8.h,
             ),
             child: Row(
               children: [
-                // 文件/文件夹图标或预览图
-                _buildFileIcon(context),
+                AnimatedScale(
+                  scale: highlight ? 1.05 : 1,
+                  duration: const Duration(milliseconds: 180),
+                  child: _buildFileIcon(context),
+                ),
                 SizedBox(width: ResponsiveUtils.getSpacing() * 0.5),
-                // 文本内容
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -90,13 +92,12 @@ class CloudDriveFileItem extends StatelessWidget {
                             12.sp,
                           ),
                           fontWeight: FontWeight.w500,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: theme.colorScheme.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       SizedBox(height: ResponsiveUtils.getSpacing() * 0.15),
-                      // 显示文件大小和修改时间
                       Text(
                         isFolder
                             ? (file.modifiedTime?.toString() ?? '')
@@ -105,7 +106,7 @@ class CloudDriveFileItem extends StatelessWidget {
                           fontSize: ResponsiveUtils.getResponsiveFontSize(
                             10.sp,
                           ),
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -145,10 +146,6 @@ class CloudDriveFileItem extends StatelessWidget {
 
     // 文件有预览图时显示图片
     if (file.thumbnailUrl != null && file.thumbnailUrl!.isNotEmpty) {
-      LogManager().cloudDrive(
-        '[${file.name}] 准备加载缩略图: ${file.thumbnailUrl}',
-      );
-
       // 缩略图直接占满容器，不需要padding和背景色
       return ClipRRect(
         borderRadius: BorderRadius.circular(
@@ -186,7 +183,7 @@ class CloudDriveFileItem extends StatelessWidget {
       );
     }
 
-    LogManager().cloudDrive('[${file.name}] 没有缩略图，使用默认图标');
+    // LogManager().cloudDrive('[${file.name}] 没有缩略图，使用默认图标');
 
     // 没有预览图时显示默认图标
     return Container(
@@ -223,6 +220,8 @@ class CloudDriveFileItem extends StatelessWidget {
     if (item.size != null && item.size! > 0) {
       parts.add(CloudDriveBaseWidgets.formatFileSize(item.size!));
     }
+
+    // 下载量/分享量（>=0 才显示）
 
     // 如果没有任何信息，返回空字符串
     if (parts.isEmpty) {

@@ -1,30 +1,45 @@
+library cloud_drive_state_manager;
+
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../core/logging/log_manager.dart';
 import '../../data/models/cloud_drive_entities.dart';
+import '../../infrastructure/logging/cloud_drive_logger.dart';
+import '../../infrastructure/logging/cloud_drive_logger_adapter.dart';
 import 'cloud_drive_state_model.dart';
 import 'handlers/account_state_handler.dart';
 import 'handlers/folder_state_handler.dart';
 import 'handlers/batch_operation_handler.dart';
+part 'handlers/pending_operation_handler.dart';
 
 /// 云盘状态管理器
 ///
 /// 使用 StateNotifier 管理云盘应用的状态，通过 Handler 模式分离不同模块的状态处理逻辑。
 class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
-  CloudDriveStateManager() : super(const CloudDriveState()) {
-    _initializeHandlers();
+  CloudDriveStateManager({
+    CloudDriveLoggerAdapter? logger,
+    AccountStateHandler Function(CloudDriveStateManager)? accountHandlerBuilder,
+    FolderStateHandler Function(CloudDriveStateManager)? folderHandlerBuilder,
+    BatchOperationHandler Function(CloudDriveStateManager)? batchHandlerBuilder,
+    PendingOperationHandler Function(CloudDriveStateManager)? pendingHandlerBuilder,
+  }) : _logger = logger ?? DefaultCloudDriveLoggerAdapter(),
+       super(const CloudDriveState()) {
+    accountHandler =
+        accountHandlerBuilder?.call(this) ?? AccountStateHandler(this);
+    folderHandler = folderHandlerBuilder?.call(this) ?? FolderStateHandler(this);
+    batchHandler = batchHandlerBuilder?.call(this) ?? BatchOperationHandler(this);
+    pendingHandler =
+        pendingHandlerBuilder?.call(this) ?? PendingOperationHandler(this);
   }
+
+  final CloudDriveLoggerAdapter _logger;
+  CloudDriveLoggerAdapter get logger => _logger;
 
   // 状态处理器
   late final AccountStateHandler accountHandler;
   late final FolderStateHandler folderHandler;
   late final BatchOperationHandler batchHandler;
-
-  /// 初始化状态处理器
-  void _initializeHandlers() {
-    accountHandler = AccountStateHandler(this);
-    folderHandler = FolderStateHandler(this);
-    batchHandler = BatchOperationHandler(this);
-  }
+  late final PendingOperationHandler pendingHandler;
 
   /// 更新状态
   ///
@@ -47,7 +62,7 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
   ///
   /// [event] 要处理的云盘事件
   Future<void> handleEvent(CloudDriveEvent event) async {
-    LogManager().cloudDrive('处理事件: ${event.runtimeType}');
+    _logger.info('处理事件: ${event.runtimeType}');
 
     try {
       switch (event) {
@@ -95,22 +110,22 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
         case ToggleAccountSelectorEvent():
           toggleAccountSelector();
         case SetPendingOperationEvent():
-          _setPendingOperation(event.file, event.operationType);
+          pendingHandler.setPendingOperation(event.file, event.operationType);
         case ClearPendingOperationEvent():
-          _clearPendingOperation();
+          pendingHandler.clearPendingOperation();
         case ExecutePendingOperationEvent():
           await executePendingOperation();
         case AddFileToStateEvent():
-          _addFileToState(event.file);
+          pendingHandler.addFileToState(event.file);
         case RemoveFileFromStateEvent():
-          _removeFileFromState(event.fileId);
+          pendingHandler.removeFileFromState(event.fileId);
         case RemoveFolderFromStateEvent():
-          _removeFolderFromState(event.folderId);
+          pendingHandler.removeFolderFromState(event.folderId);
         case UpdateFileInStateEvent():
-          _updateFileInState(event.fileId, event.newName);
+          pendingHandler.updateFileInState(event.fileId, event.newName);
       }
     } catch (e) {
-      LogManager().error('处理事件失败: ${event.runtimeType} - $e');
+      _logger.error('处理事件失败: ${event.runtimeType} - $e');
       state = state.copyWith(error: e.toString());
     }
   }
@@ -137,7 +152,7 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
 
   /// 重置状态管理器，清除所有数据
   void reset() {
-    LogManager().cloudDrive('重置状态管理器');
+    _logger.info('重置状态管理器');
     state = const CloudDriveState();
   }
 
@@ -282,151 +297,12 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
   }
 
   /// 执行待处理操作
-  Future<bool> executePendingOperation() async {
-    final pendingFile = state.pendingOperationFile;
-    final operationType = state.pendingOperationType;
-    final currentAccount = state.currentAccount;
-    final currentFolderId = state.currentFolder?.id;
-
-    if (pendingFile == null ||
-        operationType == null ||
-        currentAccount == null) {
-      LogManager().error('执行待操作失败: 缺少必要参数');
-      _clearPendingOperation();
-      return false;
-    }
-
-    try {
-      if (operationType == 'move') {
-        // 执行移动操作
-        LogManager().cloudDrive(
-          '执行移动操作: ${pendingFile.name} -> $currentFolderId',
-        );
-        final success = await folderHandler.moveFile(
-          account: currentAccount,
-          file: pendingFile,
-          targetFolderId: currentFolderId,
-        );
-
-        if (success) {
-          // 移动成功后，延迟200ms再刷新列表（确保服务器端操作完成）
-          await Future.delayed(const Duration(milliseconds: 200));
-          await folderHandler.loadFolder(forceRefresh: true);
-        }
-
-        _clearPendingOperation();
-        return success;
-      } else if (operationType == 'copy') {
-        // 执行复制操作
-        LogManager().cloudDrive(
-          '执行复制操作: ${pendingFile.name} -> $currentFolderId',
-        );
-        final success = await folderHandler.copyFile(
-          account: currentAccount,
-          file: pendingFile,
-          targetFolderId: currentFolderId,
-        );
-
-        if (success) {
-          // 复制成功后，延迟200ms再刷新列表（确保服务器端操作完成）
-          await Future.delayed(const Duration(milliseconds: 200));
-          await folderHandler.loadFolder(forceRefresh: true);
-        }
-
-        _clearPendingOperation();
-        return success;
-      }
-
-      _clearPendingOperation();
-      return false;
-    } catch (e) {
-      LogManager().error('执行待操作失败: $e');
-      _clearPendingOperation();
-      return false;
-    }
-  }
+  Future<bool> executePendingOperation() async =>
+      pendingHandler.executePendingOperation();
 
   /// 切换账号选择器显示状态
   void toggleAccountSelector() {
     state = state.copyWith(showAccountSelector: !state.showAccountSelector);
-  }
-
-  /// 设置待处理操作
-  ///
-  /// [file] 要操作的文件
-  /// [operationType] 操作类型
-  void _setPendingOperation(CloudDriveFile file, String operationType) {
-    state = state.copyWith(
-      pendingOperationFile: file,
-      pendingOperationType: operationType,
-    );
-  }
-
-  /// 清除待处理操作
-  void _clearPendingOperation() {
-    state = CloudDriveState(
-      accounts: state.accounts,
-      currentAccount: state.currentAccount,
-      currentFolder: state.currentFolder,
-      folders: state.folders,
-      files: state.files,
-      folderPath: state.folderPath,
-      isLoading: state.isLoading,
-      isRefreshing: state.isRefreshing,
-      error: state.error,
-      isBatchMode: state.isBatchMode,
-      isInBatchMode: state.isInBatchMode,
-      selectedItems: state.selectedItems,
-      isAllSelected: state.isAllSelected,
-      currentPage: state.currentPage,
-      hasMoreData: state.hasMoreData,
-      isLoadingMore: state.isLoadingMore,
-      isFromCache: state.isFromCache,
-      lastRefreshTime: state.lastRefreshTime,
-      showAccountSelector: state.showAccountSelector,
-      pendingOperationFile: null, // 清空待操作文件
-      pendingOperationType: null, // 清空待操作类型
-      showFloatingActionButton: state.showFloatingActionButton,
-    );
-  }
-
-  /// 添加文件到状态
-  ///
-  /// [file] 要添加的文件
-  void _addFileToState(CloudDriveFile file) {
-    final currentFiles = List<CloudDriveFile>.from(state.files);
-    currentFiles.add(file);
-    state = state.copyWith(files: currentFiles);
-  }
-
-  /// 从状态中移除文件
-  ///
-  /// [fileId] 要移除的文件ID
-  void _removeFileFromState(String fileId) {
-    final currentFiles =
-        state.files.where((file) => file.id != fileId).toList();
-    state = state.copyWith(files: currentFiles);
-  }
-
-  /// 从状态中移除文件夹
-  ///
-  /// [folderId] 要移除的文件夹ID
-  void _removeFolderFromState(String folderId) {
-    final currentFolders =
-        state.folders.where((folder) => folder.id != folderId).toList();
-    state = state.copyWith(folders: currentFolders);
-  }
-
-  /// 更新状态中的文件
-  ///
-  /// [fileId] 要更新的文件ID
-  /// [newName] 新的文件名
-  void _updateFileInState(String fileId, String newName) {
-    final currentFiles =
-        state.files
-            .map((f) => f.id == fileId ? f.copyWith(name: newName) : f)
-            .toList();
-    state = state.copyWith(files: currentFiles);
   }
 
   /// 获取账号详情
@@ -438,7 +314,7 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
     try {
       return await accountHandler.getAccountDetails(account);
     } catch (e) {
-      LogManager().error('获取账号详情失败: ${account.name} - $e');
+      _logger.error('获取账号详情失败: ${account.name} - $e');
       return null;
     }
   }

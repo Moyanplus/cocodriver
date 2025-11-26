@@ -38,49 +38,92 @@ class FileOperationBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _FileOperationBottomSheetState
-    extends ConsumerState<FileOperationBottomSheet> {
+    extends ConsumerState<FileOperationBottomSheet>
+    with SingleTickerProviderStateMixin {
   bool _isLoading = false;
   String? _loadingMessage;
+  bool _wasLoading = false;
+  late final AnimationController _controller;
+  late final Animation<Offset> _offsetAnimation;
   // 【已移除】_fileDetail - UI不需要此数据
 
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 280),
+    );
+    _offsetAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+    _controller.forward();
     // 【优化】移除不必要的文件详情加载
     // UI不需要账号详情信息，只需要文件本身的属性
     // _loadFileDetail();
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return _buildLoadingState();
+    if (_wasLoading && !_isLoading) {
+      _controller.forward(from: 0);
+    }
+    _wasLoading = _isLoading;
+
+    final child =
+        _isLoading
+            ? _buildLoadingState(key: const ValueKey('loading'))
+            : _buildAnimatedSheet(context);
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      child: child,
+    );
+  }
+
+  Widget _buildAnimatedSheet(BuildContext context) {
+    if (_controller.status == AnimationStatus.dismissed ||
+        _controller.status == AnimationStatus.reverse) {
+      _controller.forward();
     }
 
+    return FadeTransition(
+      opacity: CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+      child: SlideTransition(
+        position: _offsetAnimation,
+        child: _buildSheetContent(context),
+      ),
+    );
+  }
+
+  Widget _buildSheetContent(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 顶部标题栏
           _buildHeader(),
-
-          // 可滚动内容区域
           Flexible(
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 文件信息区域
                   FileInfoSection(file: widget.file, fileDetail: null),
-
-                  // 操作按钮区域
                   _buildOperationButtons(),
-
-                  // 底部间距（安全区域）
                   SizedBox(height: CloudDriveUIConfig.spacingL),
                 ],
               ),
@@ -343,8 +386,9 @@ class _FileOperationBottomSheetState
   }
 
   /// 构建加载状态
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState({Key? key}) {
     return Padding(
+      key: key,
       padding: EdgeInsets.all(CloudDriveUIConfig.spacingM),
       child: Column(
         mainAxisSize: MainAxisSize.min,

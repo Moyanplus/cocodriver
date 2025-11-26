@@ -1,3 +1,5 @@
+import '../../services/lanzou/facade/lanzou_cloud_drive_service.dart';
+
 import '../data/models/cloud_drive_entities.dart';
 
 /// 上传权限验证结果
@@ -130,19 +132,22 @@ class CloudDriveBusinessService {
     required String shareUrl,
     String? password,
   }) async {
-    // TODO: 实现直链解析逻辑
-    await Future.delayed(const Duration(seconds: 2)); // 模拟解析过程
+    final result = await LanzouCloudDriveService.parseDirectLink(
+      shareUrl: shareUrl,
+      password: password,
+    );
 
-    // 模拟成功结果
+    if (result.isSuccess && result.data != null) {
+      return DirectLinkParseResult(
+        success: true,
+        message: '解析成功',
+        fileInfo: result.data!.toMap(),
+      );
+    }
+
     return DirectLinkParseResult(
-      success: true,
-      message: '解析成功',
-      fileInfo: {
-        'name': '示例文件.txt',
-        'size': '1.5 MB',
-        'directLink': 'https://example.com/direct/download/link',
-        'originalUrl': shareUrl,
-      },
+      success: false,
+      message: result.error?.message ?? '解析失败，请检查链接或密码',
     );
   }
 

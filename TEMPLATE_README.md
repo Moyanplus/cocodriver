@@ -7,6 +7,7 @@
 ## ✨ 主要特性
 
 ### 🎨 UI设计
+
 - **Material Design 3** - 使用最新的Material Design规范
 - **多主题支持** - 内置多种精美主题，支持浅色/深色模式
 - **响应式设计** - 使用flutter_screenutil进行屏幕适配
@@ -14,22 +15,26 @@
 - **图标库** - 使用Phosphor图标库
 
 ### 🏗️ 架构设计
+
 - **分层架构** - 清晰的分层结构，便于维护和扩展
 - **功能模块化** - 按业务功能组织代码结构
 - **依赖注入** - 使用GetIt进行依赖管理
 - **状态管理** - 集成Riverpod和Provider
 
 ### 🌍 国际化
+
 - **多语言支持** - 支持中英文切换
 - **本地化服务** - 完整的本地化解决方案
 
 ### 📱 多平台支持
+
 - **Android** - 完整的Android支持
 - **iOS** - 完整的iOS支持
 - **Web** - Web平台支持
 - **Desktop** - Windows、macOS、Linux支持
 
 ### 🔧 开发工具
+
 - **构建脚本** - 提供多种构建选项
 - **代码生成** - 集成代码生成工具
 - **性能监控** - 内置性能监控工具
@@ -95,6 +100,7 @@ flutter run
 ### 3. 自定义配置
 
 #### 修改应用信息
+
 ```yaml
 # pubspec.yaml
 name: your_app_name
@@ -103,6 +109,7 @@ version: 1.0.0+1
 ```
 
 #### 修改应用标题
+
 ```dart
 // lib/main.dart
 title: 'Your App Name',
@@ -146,27 +153,32 @@ title: 'Your App Name',
 ## 🔧 依赖说明
 
 ### 核心依赖
+
 - `flutter_riverpod` - 状态管理
 - `flutter_screenutil` - 屏幕适配
 - `google_fonts` - 字体支持
 - `phosphor_flutter` - 图标库
 
 ### UI组件
+
 - `lottie` - 动画支持
 - `flutter_animate` - 动画库
 - `auto_size_text` - 自适应文本
 - `responsive_framework` - 响应式布局
 
 ### 数据存储
+
 - `shared_preferences` - 本地存储
 - `hive` - 数据库
 - `flutter_secure_storage` - 安全存储
 
 ### 网络请求
+
 - `dio` - HTTP客户端
 - `retrofit` - API客户端生成
 
 ### 多平台支持
+
 - `device_info_plus` - 设备信息
 - `platform` - 平台检测
 - `url_launcher` - URL启动
@@ -193,6 +205,11 @@ MIT License
 1. 查看文档和FAQ
 2. 搜索已有的Issue
 3. 创建新的Issue描述问题
+
+
+
+现在 我感觉 软件界面就是没 什么 弹性 动画 效果，请 帮我看看 是不是 这样，我感觉 现在 UI 质量不太行
+
 
 ---
 

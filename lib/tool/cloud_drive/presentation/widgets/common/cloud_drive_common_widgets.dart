@@ -72,26 +72,32 @@ class CloudDriveCommonWidgets {
           ),
           elevation: 2,
         ),
-        child:
-            isLoading
-                ? SizedBox(
-                  width: 20.w,
-                  height: 20.h,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        child: isLoading
+            ? SizedBox(
+                width: 20.w,
+                height: 20.h,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    textColor ?? Colors.white,
                   ),
-                )
-                : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (icon != null) ...[
-                      icon,
-                      SizedBox(width: CloudDriveUIConfig.spacingS),
-                    ],
-                    Text(text, style: CloudDriveUIConfig.buttonTextStyle),
-                  ],
                 ),
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (icon != null) ...[
+                    icon,
+                    SizedBox(width: CloudDriveUIConfig.spacingS),
+                  ],
+                  Text(
+                    text,
+                    style: CloudDriveUIConfig.buttonTextStyle.copyWith(
+                      color: textColor ?? Colors.white,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }

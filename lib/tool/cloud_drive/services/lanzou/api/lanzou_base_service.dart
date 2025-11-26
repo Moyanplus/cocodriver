@@ -1,7 +1,7 @@
+import 'package:coco_cloud_drive/tool/cloud_drive/data/models/cloud_drive_entities.dart';
 import 'package:dio/dio.dart';
 import '../../../../../core/logging/log_manager.dart';
-import '../../data/models/cloud_drive_entities.dart';
-import 'lanzou_config.dart';
+import '../lanzou_config.dart';
 
 /// 蓝奏云盘基础服务
 ///
