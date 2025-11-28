@@ -346,6 +346,7 @@ class CloudDriveFileService {
     required String filePath,
     required String fileName,
     String? folderId,
+    UploadProgressCallback? onProgress,
   }) async {
     try {
       _logOperation('上传文件', account, fileName);
@@ -361,6 +362,7 @@ class CloudDriveFileService {
         filePath: filePath,
         fileName: fileName,
         folderId: folderId,
+        onProgress: onProgress,
       );
 
       if (result['success'] == true) {

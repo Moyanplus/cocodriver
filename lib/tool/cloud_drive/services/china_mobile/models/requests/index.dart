@@ -4,3 +4,5 @@ export 'china_mobile_file_operation_request.dart';
 export 'china_mobile_search_request.dart';
 export 'china_mobile_share_request.dart';
 export 'china_mobile_task_request.dart';
+export 'china_mobile_create_folder_request.dart';
+export 'china_mobile_upload_request.dart';

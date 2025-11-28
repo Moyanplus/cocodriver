@@ -4,10 +4,14 @@ import '../core/china_mobile_config.dart';
 import '../models/china_mobile_models.dart';
 import '../models/requests/china_mobile_file_operation_request.dart';
 import '../models/requests/china_mobile_download_request.dart';
+import '../models/requests/china_mobile_create_folder_request.dart';
+import '../models/requests/china_mobile_upload_request.dart';
 import '../models/responses/china_mobile_download_response.dart';
+import '../models/responses/china_mobile_upload_response.dart';
 import '../models/requests/china_mobile_share_request.dart';
 import '../models/requests/china_mobile_task_request.dart';
 import '../utils/china_mobile_logger.dart';
+import '../models/responses/china_mobile_create_folder_response.dart';
 
 /// 中国移动云盘统一操作封装。
 class ChinaMobileOperations {
@@ -261,6 +265,84 @@ class ChinaMobileOperations {
       }
     } catch (e, stackTrace) {
       ChinaMobileLogger.error('查询任务状态失败', error: e, stackTrace: stackTrace);
+      return ChinaMobileApiResult.fromException(e as Exception);
+    }
+  }
+
+  static Future<ChinaMobileApiResult<ChinaMobileCreateFolderResponse>>
+  createFolder({
+    required CloudDriveAccount account,
+    required ChinaMobileCreateFolderRequest request,
+  }) async {
+    ChinaMobileLogger.operationStart('创建文件夹', params: request.toRequestBody());
+    try {
+      final dio = ChinaMobileBaseService.createDio(account);
+      final uri = Uri.parse(
+        '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint('createFolder')}',
+      );
+
+      ChinaMobileLogger.network('POST', url: uri.toString());
+      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
+
+      final response = await dio.postUri(uri, data: request.toRequestBody());
+      return ChinaMobileResponseParser.parse<ChinaMobileCreateFolderResponse>(
+        response: response.data,
+        statusCode: response.statusCode,
+        dataParser: (data) => ChinaMobileCreateFolderResponse.fromJson(
+          (response.data?['data'] as Map<String, dynamic>? ?? {}),
+        ),
+      );
+    } catch (e, stackTrace) {
+      ChinaMobileLogger.error('创建文件夹失败', error: e, stackTrace: stackTrace);
+      return ChinaMobileApiResult.fromException(e as Exception);
+    }
+  }
+
+  static Future<ChinaMobileApiResult<ChinaMobileUploadInitResponse>> initUpload({
+    required CloudDriveAccount account,
+    required ChinaMobileUploadInitRequest request,
+  }) async {
+    try {
+      final dio = ChinaMobileBaseService.createDio(account);
+      final uri = Uri.parse(
+        '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint('createFile')}',
+      );
+      ChinaMobileLogger.network('POST', url: uri.toString());
+      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
+      final response = await dio.postUri(uri, data: request.toRequestBody());
+      return ChinaMobileResponseParser.parse<ChinaMobileUploadInitResponse>(
+        response: response.data,
+        statusCode: response.statusCode,
+        dataParser: (data) => ChinaMobileUploadInitResponse.fromJson(
+          (response.data?['data'] as Map<String, dynamic>? ?? {}),
+        ),
+      );
+    } catch (e, stackTrace) {
+      ChinaMobileLogger.error('初始化上传失败', error: e, stackTrace: stackTrace);
+      return ChinaMobileApiResult.fromException(e as Exception);
+    }
+  }
+
+  static Future<ChinaMobileApiResult<Map<String, dynamic>>> completeUpload({
+    required CloudDriveAccount account,
+    required ChinaMobileUploadCompleteRequest request,
+  }) async {
+    try {
+      final dio = ChinaMobileBaseService.createDio(account);
+      final uri = Uri.parse(
+        '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint('completeUpload')}',
+      );
+      ChinaMobileLogger.network('POST', url: uri.toString());
+      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
+      final response = await dio.postUri(uri, data: request.toRequestBody());
+      return ChinaMobileResponseParser.parse<Map<String, dynamic>>(
+        response: response.data,
+        statusCode: response.statusCode,
+        dataParser: (data) =>
+            (response.data?['data'] as Map<String, dynamic>? ?? {}),
+      );
+    } catch (e, stackTrace) {
+      ChinaMobileLogger.error('完成上传失败', error: e, stackTrace: stackTrace);
       return ChinaMobileApiResult.fromException(e as Exception);
     }
   }

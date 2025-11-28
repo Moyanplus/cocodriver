@@ -22,13 +22,16 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
     AccountStateHandler Function(CloudDriveStateManager)? accountHandlerBuilder,
     FolderStateHandler Function(CloudDriveStateManager)? folderHandlerBuilder,
     BatchOperationHandler Function(CloudDriveStateManager)? batchHandlerBuilder,
-    PendingOperationHandler Function(CloudDriveStateManager)? pendingHandlerBuilder,
+    PendingOperationHandler Function(CloudDriveStateManager)?
+    pendingHandlerBuilder,
   }) : _logger = logger ?? DefaultCloudDriveLoggerAdapter(),
        super(const CloudDriveState()) {
     accountHandler =
         accountHandlerBuilder?.call(this) ?? AccountStateHandler(this);
-    folderHandler = folderHandlerBuilder?.call(this) ?? FolderStateHandler(this);
-    batchHandler = batchHandlerBuilder?.call(this) ?? BatchOperationHandler(this);
+    folderHandler =
+        folderHandlerBuilder?.call(this) ?? FolderStateHandler(this);
+    batchHandler =
+        batchHandlerBuilder?.call(this) ?? BatchOperationHandler(this);
     pendingHandler =
         pendingHandlerBuilder?.call(this) ?? PendingOperationHandler(this);
   }
@@ -111,14 +114,9 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
         case ToggleAccountSelectorEvent():
           toggleAccountSelector();
         case UpdateSortOptionEvent():
-          await folderHandler.updateSortOption(
-            event.field,
-            event.ascending,
-          );
+          await folderHandler.updateSortOption(event.field, event.ascending);
         case UpdateViewModeEvent():
-          updateState(
-            (state) => state.copyWith(viewMode: event.mode),
-          );
+          updateState((state) => state.copyWith(viewMode: event.mode));
         case SetPendingOperationEvent():
           pendingHandler.setPendingOperation(event.file, event.operationType);
         case ClearPendingOperationEvent():
@@ -133,6 +131,11 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
           pendingHandler.removeFolderFromState(event.folderId);
         case UpdateFileInStateEvent():
           pendingHandler.updateFileInState(event.fileId, event.newName);
+        case CreateFolderEvent():
+          await folderHandler.createFolder(
+            name: event.name,
+            parentId: event.parentId,
+          );
       }
     } catch (e) {
       _logger.error('处理事件失败: ${event.runtimeType} - $e');
@@ -315,6 +318,14 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
     state = state.copyWith(showAccountSelector: !state.showAccountSelector);
   }
 
+  /// 创建文件夹
+  Future<bool> createFolder({
+    required String name,
+    required String parentId,
+  }) async {
+    return folderHandler.createFolder(name: name, parentId: parentId);
+  }
+
   /// 获取账号详情
   ///
   /// [account] 要获取详情的云盘账号
@@ -327,5 +338,13 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
       _logger.error('获取账号详情失败: ${account.name} - $e');
       return null;
     }
+  }
+
+  /// 更新文件元数据
+  void updateFileMetadata(
+    String fileId,
+    Map<String, dynamic>? Function(Map<String, dynamic>?) updater,
+  ) {
+    pendingHandler.updateFileMetadata(fileId, updater);
   }
 }

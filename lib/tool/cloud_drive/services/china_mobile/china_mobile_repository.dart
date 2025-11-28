@@ -51,7 +51,24 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
     String? parentId,
     String? description,
   }) async {
-    // 暂不支持创建文件夹，返回 null
+    final req = ChinaMobileCreateFolderRequest(
+      parentFileId: parentId ?? ChinaMobileConfig.rootFolderId,
+      name: name,
+      description: description ?? '',
+    );
+    final result = await ChinaMobileOperations.createFolder(
+      account: account,
+      request: req,
+    );
+    if (result.isSuccess && result.data != null) {
+      final data = result.data!;
+      return CloudDriveFile(
+        id: data.fileId,
+        name: data.fileName,
+        isFolder: true,
+        folderId: data.parentFileId,
+      );
+    }
     return null;
   }
 

@@ -6,6 +6,7 @@ import '../../../infrastructure/logging/cloud_drive_logger_adapter.dart';
 import '../../../utils/cloud_drive_error_utils.dart';
 import '../cloud_drive_state_manager.dart';
 import '../cloud_drive_state_model.dart'; // 导入 CloudDriveState
+import '../../utils/operation_guard.dart';
 
 /// 文件夹状态处理器
 ///
@@ -561,5 +562,82 @@ class FolderStateHandler {
       _logger.error('复制文件失败: $e');
       return false;
     }
+  }
+
+  /// 创建文件夹并刷新列表
+  Future<bool> createFolder({
+    required String name,
+    required String parentId,
+  }) async {
+    final account = _stateManager.getCurrentState().currentAccount;
+    if (account == null) {
+      _logger.warning('没有当前账号，无法创建文件夹');
+      return false;
+    }
+
+    final normalizedParent = parentId.isEmpty ? '/' : parentId;
+    final tempId = 'temp_${DateTime.now().microsecondsSinceEpoch}';
+    final tempFolder = CloudDriveFile(
+      id: tempId,
+      name: name,
+      isFolder: true,
+      folderId: normalizedParent,
+      metadata: const {'temporary': true},
+    );
+
+    final result = await OperationGuard.run<Map<String, dynamic>?>(
+      optimisticUpdate: () {
+        _stateManager.updateState((state) {
+          final folders = List<CloudDriveFile>.from(state.folders)
+            ..insert(0, tempFolder);
+          return state.copyWith(folders: folders);
+        });
+      },
+      action: () async {
+        return await CloudDriveFileService.createFolder(
+          account: account,
+          folderName: name,
+          parentFolderId: normalizedParent,
+        );
+      },
+      rollback: () {
+        _stateManager.updateState((state) {
+          final folders = List<CloudDriveFile>.from(state.folders)
+            ..removeWhere((f) => f.id == tempId);
+          return state.copyWith(folders: folders);
+        });
+      },
+      rollbackWhen: (data) => data == null,
+      onSuccess: (data) async {
+        final createdFolder = data?['folder'] as CloudDriveFile?;
+        if (createdFolder != null) {
+          _stateManager.updateState((state) {
+            final folders = List<CloudDriveFile>.from(state.folders)
+              ..removeWhere((f) => f.id == tempId)
+              ..insert(0, createdFolder);
+            return state.copyWith(folders: folders);
+          });
+          final updated = _stateManager.getCurrentState();
+          _cacheManager.set(
+            account.id,
+            normalizedParent,
+            updated.files,
+            updated.folders,
+          );
+        } else {
+          invalidateCache(account.id, normalizedParent);
+          await loadFolder(forceRefresh: true);
+        }
+      },
+      onError: (error) {
+        _logger.error('创建文件夹失败: $error');
+      },
+    );
+
+    final success = result != null;
+    if (!success) {
+      _logger.warning('文件夹创建失败');
+    }
+    return success;
   }
 }

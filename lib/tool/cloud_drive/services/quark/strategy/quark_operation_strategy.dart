@@ -290,6 +290,7 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String filePath,
     required String fileName,
     String? folderId,
+    UploadProgressCallback? onProgress,
   }) async {
     QuarkLogger.info('夸克云盘 - 上传文件开始');
     QuarkLogger.info('文件路径: $filePath');

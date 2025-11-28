@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/utils/responsive_utils.dart';
 import '../../config/cloud_drive_ui_config.dart';
 import '../../data/models/cloud_drive_entities.dart';
+import '../../base/cloud_drive_file_service.dart';
 import '../providers/cloud_drive_provider.dart';
 import '../state/cloud_drive_state_model.dart';
 import '../view_models/cloud_drive_browser_view_model.dart';
@@ -13,6 +15,9 @@ import '../widgets/cloud_drive_account_selector.dart';
 import '../widgets/cloud_drive_batch_action_bar.dart';
 import '../widgets/cloud_drive_path_navigator.dart';
 import '../widgets/sheets/file_operation_bottom_sheet.dart';
+import '../../../../shared/widgets/common/bottom_sheet_widget.dart';
+import '../widgets/add_account_form_widget.dart';
+import '../widgets/sheets/create_folder_bottom_sheet.dart';
 
 /// ========================================
 /// 云盘文件浏览器页面 - 主文件浏览页面
@@ -61,6 +66,232 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
 
     // 监听滚动事件
     _scrollController.addListener(_onScroll);
+  }
+
+  Future<void> _showCreateEntrySheet() async {
+    final selectedCreateFolder = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => SafeArea(
+        child: Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+          decoration: BoxDecoration(
+            color: Theme.of(sheetContext).colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                '创建',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  _buildCreateActionButton(
+                    icon: Icons.insert_drive_file_rounded,
+                    label: '选择文件',
+                    onTap: () {
+                      Navigator.pop(sheetContext, false);
+                      _pickAndUploadFile(
+                        type: FileType.any,
+                        label: '文件',
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  _buildCreateActionButton(
+                    icon: Icons.photo_library_rounded,
+                    label: '选择媒体',
+                    onTap: () {
+                      Navigator.pop(sheetContext, false);
+                      _pickAndUploadFile(
+                        type: FileType.media,
+                        label: '媒体',
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  _buildCreateActionButton(
+                    icon: Icons.create_new_folder_rounded,
+                    label: '新建文件夹',
+                    onTap: () => Navigator.pop(sheetContext, true),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (selectedCreateFolder == true) {
+      await _showCreateFolderSheet();
+    }
+  }
+
+  Widget _buildCreateActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) => Expanded(
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.25),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 28, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  Future<void> _pickAndUploadFile({
+    required FileType type,
+    required String label,
+  }) async {
+    final state = ref.read(cloudDriveProvider);
+    final account = state.currentAccount;
+    final folderId = state.currentFolder?.id ?? '/';
+    if (account == null) {
+      _showSnack('请先选择账号', success: false);
+      return;
+    }
+
+    final tempId = 'temp_upload_${DateTime.now().microsecondsSinceEpoch}';
+    CloudDriveFile? tempFile;
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: type,
+        allowMultiple: false,
+      );
+      if (result == null || result.files.isEmpty) {
+        return;
+      }
+      final file = result.files.first;
+      final path = file.path;
+      if (path == null) {
+        _showSnack('无法获取文件路径', success: false);
+        return;
+      }
+      tempFile = CloudDriveFile(
+        id: tempId,
+        name: file.name,
+        isFolder: false,
+        size: file.size,
+        modifiedTime: DateTime.now(),
+        folderId: folderId,
+        metadata: {
+          'temporary': true,
+          'isUploading': true,
+          'uploadProgress': 0.0,
+        },
+      );
+      _eventHandler.addFileToState(tempFile);
+
+      _showSnack('正在上传$label：${file.name}');
+      final uploadResult = await CloudDriveFileService.uploadFile(
+        account: account,
+        filePath: path,
+        fileName: file.name,
+        folderId: folderId,
+        onProgress: (progress) {
+          _eventHandler.updateFileMetadata(
+            tempId,
+            (metadata) {
+              final map = Map<String, dynamic>.from(metadata ?? {});
+              map['uploadProgress'] = progress.clamp(0.0, 1.0);
+              map['isUploading'] = true;
+              return map;
+            },
+          );
+        },
+      );
+      final success = uploadResult['success'] == true;
+      if (success) {
+        final uploadedFile = uploadResult['file'] as CloudDriveFile?;
+        _eventHandler.removeFileFromState(tempId);
+        if (uploadedFile != null) {
+          _eventHandler.addFileToState(uploadedFile);
+        } else {
+          await _eventHandler.loadFolder(forceRefresh: true);
+        }
+        _showSnack('$label上传成功');
+      } else {
+        _eventHandler.removeFileFromState(tempId);
+        _showSnack(
+          uploadResult['message']?.toString() ?? '$label上传失败',
+          success: false,
+        );
+      }
+    } catch (e) {
+      if (tempFile != null) {
+        _eventHandler.removeFileFromState(tempId);
+      }
+      _showSnack('$label上传失败: $e', success: false);
+    }
+  }
+
+  void _showSnack(String message, {bool success = true}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor:
+            success
+                ? Colors.green
+                : Theme.of(context).colorScheme.error,
+      ),
+    );
+  }
+
+  Future<void> _showCreateFolderSheet() async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => CreateFolderBottomSheet(
+        onSubmit: (name) async {
+          final currentState = ref.read(cloudDriveProvider);
+          final currentAccount = currentState.currentAccount;
+          final currentFolderId = currentState.currentFolder?.id ?? '/';
+          if (currentAccount == null) {
+            return '请选择账号';
+          }
+          try {
+            final created = await _eventHandler.createFolder(
+              name: name,
+              parentId: currentFolderId,
+            );
+            return created ? null : '文件夹创建失败';
+          } catch (e) {
+            return '文件夹创建失败: $e';
+          }
+        },
+      ),
+    );
+
+    if (!mounted || result != true) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('文件夹创建成功')),
+    );
   }
 
   @override
@@ -335,7 +566,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
     } else {
       fab = FloatingActionButton(
         key: const ValueKey('fab-add'),
-        onPressed: () {},
+        onPressed: _showCreateEntrySheet,
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
         child: const Icon(Icons.add),

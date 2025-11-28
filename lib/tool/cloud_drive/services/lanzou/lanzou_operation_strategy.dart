@@ -387,6 +387,7 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String filePath,
     required String fileName,
     String? folderId,
+    UploadProgressCallback? onProgress,
   }) async {
     LogManager().cloudDrive('蓝奏云 - 上传文件开始');
     LogManager().cloudDrive('文件路径: $filePath');

@@ -118,6 +118,13 @@ class CloudDriveEventHandler {
   /// 加载更多
   Future<void> loadMore() => _stateManager.handleEvent(const LoadMoreEvent());
 
+  /// 创建文件夹
+  Future<bool> createFolder({
+    required String name,
+    required String parentId,
+  }) =>
+      _stateManager.createFolder(name: name, parentId: parentId);
+
   /// 添加账号
   Future<void> addAccount(CloudDriveAccount account) =>
       _stateManager.handleEvent(AddAccountEvent(account));
@@ -163,6 +170,12 @@ class CloudDriveEventHandler {
   /// 从状态移除文件夹
   void removeFolderFromState(String folderId) =>
       _stateManager.handleEvent(RemoveFolderFromStateEvent(folderId));
+
+  /// 更新文件元数据（进度等）
+  void updateFileMetadata(
+    String fileId,
+    Map<String, dynamic>? Function(Map<String, dynamic>?) updater,
+  ) => _stateManager.updateFileMetadata(fileId, updater);
 
   /// 更新文件信息
   void updateFileInState(String fileId, String newName) =>

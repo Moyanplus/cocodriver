@@ -5,6 +5,8 @@ import '../services/strategy_registry.dart';
 import 'cloud_drive_file_service.dart';
 import '../services/provider/cloud_drive_provider_registry.dart';
 
+typedef UploadProgressCallback = void Function(double progress);
+
 /// 云盘操作服务
 ///
 /// 实现策略模式，统一管理不同云盘平台的操作实现。
@@ -56,6 +58,7 @@ abstract class CloudDriveOperationStrategy {
     required String filePath,
     required String fileName,
     String? folderId,
+    UploadProgressCallback? onProgress,
   });
 
   /// 获取下载链接
@@ -179,8 +182,7 @@ class CloudDriveOperationService {
       methodName: 'getStrategy',
       data: {'type': descriptor?.displayName ?? type.name, 'id': providerId},
     );
-    final strategy =
-        providerId != null ? StrategyRegistry.getStrategyById(providerId) : null;
+    final strategy = StrategyRegistry.getStrategyById(providerId);
     if (strategy != null) {
       LogManager().cloudDrive(
         '策略获取成功: ${strategy.runtimeType}',
@@ -292,6 +294,7 @@ class CloudDriveOperationService {
     required String filePath,
     required String fileName,
     String? folderId,
+    UploadProgressCallback? onProgress,
   }) async {
     LogManager().cloudDrive('云盘操作服务 - 上传文件');
     LogManager().cloudDrive('文件路径: $filePath');
@@ -315,6 +318,7 @@ class CloudDriveOperationService {
       filePath: filePath,
       fileName: fileName,
       folderId: folderId,
+      onProgress: onProgress,
     );
 
     LogManager().cloudDrive('云盘操作服务 - 文件上传完成: ${result['success'] ?? false}');

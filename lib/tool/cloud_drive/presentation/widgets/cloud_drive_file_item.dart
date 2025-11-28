@@ -36,6 +36,9 @@ class CloudDriveFileItem extends StatelessWidget {
     );
 
     final bool highlight = isBatchMode && isSelected;
+    final bool isUploading = file.metadata?['isUploading'] == true;
+    final double? uploadProgress =
+        (file.metadata?['uploadProgress'] as num?)?.toDouble();
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -72,47 +75,62 @@ class CloudDriveFileItem extends StatelessWidget {
               horizontal: 12.w,
               vertical: 8.h,
             ),
-            child: Row(
+            child: Stack(
               children: [
-                AnimatedScale(
-                  scale: highlight ? 1.05 : 1,
-                  duration: const Duration(milliseconds: 180),
-                  child: _buildFileIcon(context),
-                ),
-                SizedBox(width: ResponsiveUtils.getSpacing() * 0.5),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        file.name,
-                        style: TextStyle(
-                          fontSize: ResponsiveUtils.getResponsiveFontSize(
-                            12.sp,
-                          ),
-                          fontWeight: FontWeight.w500,
-                          color: theme.colorScheme.onSurface,
+                if (isUploading && uploadProgress != null)
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: borderRadius,
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: uploadProgress.clamp(0.0, 1.0),
+                        child: Container(
+                          color: theme.colorScheme.primary.withOpacity(0.12),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(height: ResponsiveUtils.getSpacing() * 0.15),
-                      Text(
-                        isFolder
-                            ? (file.modifiedTime?.toString() ?? '')
-                            : _buildFileInfoText(file),
-                        style: TextStyle(
-                          fontSize: ResponsiveUtils.getResponsiveFontSize(
-                            10.sp,
-                          ),
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                    ),
                   ),
+                Row(
+                  children: [
+                    AnimatedScale(
+                      scale: highlight ? 1.05 : 1,
+                      duration: const Duration(milliseconds: 180),
+                      child: _buildFileIcon(context),
+                    ),
+                    SizedBox(width: ResponsiveUtils.getSpacing() * 0.5),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            file.name,
+                            style: TextStyle(
+                              fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                12.sp,
+                              ),
+                              fontWeight: FontWeight.w500,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: ResponsiveUtils.getSpacing() * 0.15),
+                          Text(
+                            _buildSecondaryText(isUploading, uploadProgress),
+                            style: TextStyle(
+                              fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                10.sp,
+                              ),
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -205,6 +223,17 @@ class CloudDriveFileItem extends StatelessWidget {
       color: FileTypeUtils.getFileTypeColor(file.name),
       size: ResponsiveUtils.getIconSize(20.sp),
     );
+  }
+
+  String _buildSecondaryText(bool isUploading, double? progress) {
+    if (isUploading && progress != null) {
+      final percent = (progress * 100).clamp(0, 100).toStringAsFixed(0);
+      return '上传中 · $percent%';
+    }
+    if (isFolder) {
+      return file.modifiedTime?.toString() ?? '';
+    }
+    return _buildFileInfoText(file);
   }
 
   // 构建文件信息文本

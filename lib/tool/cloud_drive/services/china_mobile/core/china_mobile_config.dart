@@ -3,9 +3,11 @@
 /// 集中管理中国移动云盘的所有配置参数，包括 API 端点、请求头、超时设置等。
 class ChinaMobileConfig {
   // API 配置
-  static const String baseUrl = 'https://yun.139.com'; // 基础URL，根据实际情况调整
-  static const String orchestrationUrl =
-      'https://orchestration.139.com'; // 编排服务URL
+  // 基础 API 域名（使用实际返回 200 的 personal 节点，避免 302 跳转）
+  static const String baseUrl = 'https://personal-kd-njs.yun.139.com';
+
+  // 编排服务 URL（保持原值，如需调整可按实际接口地址修改）
+  static const String orchestrationUrl = 'https://orchestration.139.com';
 
   // 文件夹配置
   static const String rootFolderId = '/'; // 根目录ID
@@ -14,6 +16,9 @@ class ChinaMobileConfig {
   // API 端点配置
   static const Map<String, String> apiEndpoints = {
     'getFileList': '/hcy/file/list', // 获取文件列表
+    'createFolder': '/hcy/file/create', // 创建文件夹
+    'createFile': '/hcy/file/create', // 初始化文件上传
+    'completeUpload': '/hcy/file/complete', // 完成上传
     'getDownloadUrl': '/hcy/file/getDownloadUrl', // 获取下载链接
     'getShareLink':
         '/orchestration/personalCloud-rebuild/outlink/v1.0/getOutLink', // 获取分享链接

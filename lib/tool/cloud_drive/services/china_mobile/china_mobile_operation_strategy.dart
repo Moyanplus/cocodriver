@@ -1,4 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:crypto/crypto.dart';
+import 'package:dio/dio.dart';
 
 import '../../../../../core/logging/log_manager.dart';
 import '../../base/cloud_drive_operation_service.dart';
@@ -6,7 +10,9 @@ import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import 'core/china_mobile_config.dart';
 import 'china_mobile_repository.dart';
-import 'package:dio/dio.dart';
+import 'api/china_mobile_operations.dart';
+import 'models/requests/china_mobile_download_request.dart';
+import 'models/requests/china_mobile_upload_request.dart';
 
 /// 中国移动云盘操作策略
 ///
@@ -115,33 +121,8 @@ class ChinaMobileCloudDriveOperationStrategy
     int pageSize = 50,
     String? fileType,
   }) async {
-    try {
-      LogManager().cloudDrive('中国移动云盘 - 搜索文件: $keyword');
-
-      final files = await ChinaMobileSearchService.searchFile(
-        account: account,
-        keyword: keyword,
-        parentFileId: folderId,
-      );
-
-      // 如果指定了文件类型，进行筛选
-      List<CloudDriveFile> filteredFiles = files;
-      if (fileType != null) {
-        if (fileType == 'file') {
-          filteredFiles = files.where((f) => !f.isFolder).toList();
-        } else if (fileType == 'folder') {
-          filteredFiles = files.where((f) => f.isFolder).toList();
-        }
-      }
-
-      LogManager().cloudDrive('中国移动云盘 - 搜索完成: 找到 ${filteredFiles.length} 个文件');
-
-      return filteredFiles;
-    } catch (e, stackTrace) {
-      LogManager().cloudDrive('中国移动云盘 - 搜索文件异常: $e');
-      LogManager().cloudDrive('错误堆栈: $stackTrace');
-      return [];
-    }
+    LogManager().cloudDrive('中国移动云盘 - 搜索未实现，返回空结果');
+    return [];
   }
 
   @override
@@ -152,10 +133,12 @@ class ChinaMobileCloudDriveOperationStrategy
     try {
       LogManager().cloudDrive('中国移动云盘 - 获取下载链接: ${file.name}');
 
-      final downloadUrl = await ChinaMobileDownloadService.getDownloadUrl(
+      final req = ChinaMobileDownloadRequest(fileId: file.id);
+      final result = await ChinaMobileOperations.getDownloadUrl(
         account: account,
-        file: file,
+        request: req,
       );
+      final downloadUrl = result.isSuccess ? result.data?.url : null;
 
       if (downloadUrl != null) {
         LogManager().cloudDrive('中国移动云盘 - 下载链接获取成功');
@@ -331,18 +314,97 @@ class ChinaMobileCloudDriveOperationStrategy
     required String filePath,
     required String fileName,
     String? folderId,
+    UploadProgressCallback? onProgress,
   }) async {
-    LogManager().cloudDrive('中国移动云盘 - 上传文件开始');
-    LogManager().cloudDrive('文件路径: $filePath');
-    LogManager().cloudDrive('文件名: $fileName');
-    LogManager().cloudDrive(
-      '文件夹ID: ${folderId ?? ChinaMobileConfig.rootFolderId}',
-    );
-
     try {
-      // TODO: 实现中国移动云盘上传功能
-      LogManager().cloudDrive('中国移动云盘 - 上传功能暂未实现');
-      return {'success': false, 'message': '中国移动云盘上传功能暂未实现'};
+      final file = File(filePath);
+      if (!file.existsSync()) {
+        return {'success': false, 'message': '文件不存在'};
+      }
+      final fileSize = await file.length();
+      final digest = await sha256.bind(file.openRead()).first;
+      final hash = digest.toString();
+      final parentId = folderId ?? ChinaMobileConfig.rootFolderId;
+
+      final initReq = ChinaMobileUploadInitRequest(
+        parentFileId: parentId,
+        name: fileName,
+        type: 'file',
+        size: fileSize,
+        fileRenameMode: 'auto_rename',
+        contentHash: hash,
+        contentHashAlgorithm: 'SHA256',
+        contentType: 'application/octet-stream',
+        partInfos: [
+          ChinaMobileUploadPartInfo(
+            partNumber: 1,
+            partSize: fileSize,
+            parallelHashCtx: {'partOffset': 0},
+          ),
+        ],
+      );
+
+      final initResult = await ChinaMobileOperations.initUpload(
+        account: account,
+        request: initReq,
+      );
+      if (!initResult.isSuccess || initResult.data == null) {
+        return {
+          'success': false,
+          'message': initResult.errorMessage ?? '初始化上传失败',
+        };
+      }
+      final initData = initResult.data!;
+      if (initData.partInfos.isEmpty ||
+          initData.partInfos.first.uploadUrl == null) {
+        return {'success': false, 'message': '未获取到上传链接'};
+      }
+
+      final uploadUrl = initData.partInfos.first.uploadUrl!;
+      final dio = Dio();
+      await dio.put(
+        uploadUrl,
+        data: file.openRead(),
+        options: Options(
+          headers: {'Content-Length': fileSize.toString()},
+          responseType: ResponseType.plain,
+        ),
+        onSendProgress: (sent, total) {
+          if (total > 0) {
+            onProgress?.call(sent / total);
+          }
+        },
+      );
+      onProgress?.call(1.0);
+
+      final completeReq = ChinaMobileUploadCompleteRequest(
+        fileId: initData.fileId,
+        uploadId: initData.uploadId,
+        contentHash: hash,
+        contentHashAlgorithm: 'SHA256',
+      );
+      final completeResult = await ChinaMobileOperations.completeUpload(
+        account: account,
+        request: completeReq,
+      );
+      if (!completeResult.isSuccess || completeResult.data == null) {
+        return {
+          'success': false,
+          'message': completeResult.errorMessage ?? '上传完成失败',
+        };
+      }
+      final data = completeResult.data!;
+      final uploadedFile = CloudDriveFile(
+        id: data['fileId'] as String? ?? initData.fileId,
+        name: data['name'] as String? ?? fileName,
+        isFolder: false,
+        size: (data['size'] as num?)?.toInt(),
+        modifiedTime: _parseDate(data['updatedAt'] ?? data['createdAt']),
+        folderId: data['parentFileId'] as String?,
+        metadata: data,
+      );
+
+      return {'success': true, 'file': uploadedFile};
     } catch (e, stackTrace) {
       LogManager().cloudDrive('中国移动云盘 - 上传文件异常: $e');
       LogManager().cloudDrive('错误堆栈: $stackTrace');
@@ -386,6 +448,13 @@ class ChinaMobileCloudDriveOperationStrategy
   ) {
     // 中国移动云盘暂时返回原文件，不需要路径更新
     return file;
+  }
+
+  DateTime? _parseDate(dynamic value) {
+    if (value is String) {
+      return DateTime.tryParse(value);
+    }
+    return null;
   }
 
   @override

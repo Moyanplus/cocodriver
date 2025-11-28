@@ -173,6 +173,22 @@ class PendingOperationHandler {
     _manager.state = _state.copyWith(folders: currentFolders);
   }
 
+  void updateFileMetadata(
+    String fileId,
+    Map<String, dynamic>? Function(Map<String, dynamic>?) updater,
+  ) {
+    final updatedFiles =
+        _state.files
+            .map(
+              (file) =>
+                  file.id == fileId
+                      ? file.copyWith(metadata: updater(file.metadata))
+                      : file,
+            )
+            .toList();
+    _manager.state = _state.copyWith(files: updatedFiles);
+  }
+
   void _removeItemFromState(CloudDriveFile file) {
     if (file.isFolder) {
       removeFolderFromState(file.id);

@@ -4,3 +4,4 @@
 library;
 
 export 'file_operation_bottom_sheet.dart';
+export 'create_folder_bottom_sheet.dart';

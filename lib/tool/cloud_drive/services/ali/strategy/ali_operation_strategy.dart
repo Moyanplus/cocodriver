@@ -306,6 +306,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required String filePath,
     required String fileName,
     String? folderId,
+    UploadProgressCallback? onProgress,
   }) async {
     LogManager().cloudDrive('阿里云盘 - 上传文件开始');
     LogManager().cloudDrive('文件路径: $filePath');
