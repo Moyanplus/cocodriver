@@ -247,11 +247,11 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
 
       if (success) {
         LogManager().cloudDrive(
-          '123云盘 - 文件复制成功: ${file.name} -> $targetFileId',
+          '123云盘 - 文件复制成功: ${file.name} -> $destPath',
         );
       } else {
         LogManager().cloudDrive(
-          '123云盘 - 文件复制失败: ${file.name} -> $targetFileId',
+          '123云盘 - 文件复制失败: ${file.name} -> $destPath',
         );
       }
 

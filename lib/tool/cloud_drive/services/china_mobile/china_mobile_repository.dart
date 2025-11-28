@@ -29,7 +29,7 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
   }) {
     return ChinaMobileFileOperationService.deleteFile(
       account: account,
-      fileId: file.id,
+      file: file,
     );
   }
 
@@ -41,7 +41,7 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
   }) {
     return ChinaMobileFileOperationService.renameFile(
       account: account,
-      fileId: file.id,
+      file: file,
       newName: newName,
     );
   }
@@ -53,18 +53,8 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
     String? parentId,
     String? description,
   }) async {
-    final created = await ChinaMobileFileOperationService.createFolder(
-      account: account,
-      folderName: name,
-      parentFolderId: parentId ?? ChinaMobileConfig.rootFolderId,
-    );
-    if (created == null) return null;
-    return CloudDriveFile(
-      id: created.folderId ?? '',
-      name: name,
-      isFolder: true,
-      folderId: created.parentFolderId ?? ChinaMobileConfig.rootFolderId,
-    );
+    // 暂不支持创建文件夹，返回 null
+    return null;
   }
 
   @override
@@ -75,7 +65,7 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
   }) {
     return ChinaMobileFileOperationService.moveFile(
       account: account,
-      fileId: file.id,
+      file: file,
       targetFolderId: targetFolderId,
     );
   }
@@ -97,14 +87,8 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
     String? password,
     int? expireDays,
   }) async {
-    if (files.isEmpty) return null;
-    final result = await ChinaMobileShareService.createShareLink(
-      account: account,
-      fileId: files.first.id,
-      password: password,
-      expireDays: expireDays,
-    );
-    return result;
+    // 分享暂未实现
+    return null;
   }
 
   @override
@@ -117,7 +101,7 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
     if (account == null || file == null) return null;
     return ChinaMobileDownloadService.getDownloadUrl(
       account: account,
-      fileId: file.id,
+      file: file,
     );
   }
 }

@@ -155,19 +155,23 @@ class Pan123ApiClient {
     if (code != 200) {
       return const [];
     }
-    final processed = Pan123BaseService.getResponseData(responseData) ??
+    final dynamic processed = Pan123BaseService.getResponseData(responseData) ??
         responseData['data'] as Map<String, dynamic>?;
-    final list = <dynamic>[
-      if (processed is List) ...processed,
-      if (processed is Map<String, dynamic>)
-        ...?processed['InfoList'] as List<dynamic>?,
-      if (processed is Map<String, dynamic>)
-        ...?processed['file_info_bean_list'] as List<dynamic>?,
-      if (processed is Map<String, dynamic>)
-        ...?processed['list'] as List<dynamic>?,
-      if (processed is Map<String, dynamic>)
-        ...?processed['files'] as List<dynamic>?,
-    ].whereType<Map<String, dynamic>>().toList();
+    final candidates = <dynamic>[];
+    if (processed is List) {
+      candidates.addAll(processed);
+    } else if (processed is Map<String, dynamic>) {
+      final lists = [
+        processed['InfoList'],
+        processed['file_info_bean_list'],
+        processed['list'],
+        processed['files'],
+      ];
+      for (final l in lists) {
+        if (l is List) candidates.addAll(l);
+      }
+    }
+    final list = candidates.whereType<Map<String, dynamic>>().toList();
 
     final files = <CloudDriveFile>[];
     for (final item in list) {

@@ -20,6 +20,8 @@ class BaiduConfig {
     'share': '/api/share/set', // 分享
   };
 
+  static String getApiEndpoint(String key) => endpoints[key] ?? '/';
+
   // 默认请求头
   static const Map<String, String> defaultHeaders = {
     'User-Agent':

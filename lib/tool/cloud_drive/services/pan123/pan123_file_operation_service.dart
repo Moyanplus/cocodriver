@@ -253,6 +253,42 @@ class Pan123FileOperationService {
     }
   }
 
+  /// 创建文件夹
+  static Future<CloudDriveFile?> createFolder({
+    required CloudDriveAccount account,
+    required String folderName,
+    required String parentFileId,
+  }) async {
+    try {
+      LogManager().cloudDrive(
+        '123云盘 - 创建文件夹: $folderName, parent=$parentFileId',
+      );
+      final dio = Pan123BaseService.createDio(account);
+      final url = Uri.parse(
+        Pan123Config.getApiUrl(Pan123Config.endpoints['createFolder']!),
+      );
+      final data = {
+        'parentFileId': int.tryParse(parentFileId) ?? 0,
+        'fileName': folderName,
+        'Type': 1,
+      };
+      final response = await dio.post(url.toString(), data: data);
+      final body = response.data as Map<String, dynamic>? ?? {};
+      final processed = Pan123BaseService.handleApiResponse(body);
+      final id = processed['data']?['file_id']?.toString() ??
+          processed['data']?['FileId']?.toString();
+      return CloudDriveFile(
+        id: id ?? '',
+        name: folderName,
+        isFolder: true,
+        folderId: parentFileId,
+      );
+    } catch (e) {
+      _handleError('创建文件夹', e, null);
+      return null;
+    }
+  }
+
   /// 删除文件
   static Future<bool> deleteFile({
     required CloudDriveAccount account,

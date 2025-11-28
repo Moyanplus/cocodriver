@@ -1,11 +1,11 @@
-import '../../data/models/cloud_drive_entities.dart';
+import '../../../data/models/cloud_drive_entities.dart';
+import '../ali_base_service.dart';
 import '../ali_cloud_drive_service.dart';
 import '../models/requests/ali_list_request.dart';
 import '../models/requests/ali_operation_requests.dart';
 import '../models/responses/ali_file_list_response.dart';
 import '../models/responses/ali_operation_response.dart';
 import '../models/responses/ali_api_result.dart';
-import '../core/ali_base_service.dart';
 import '../ali_config.dart';
 
 /// 阿里云盘 API 客户端（当前封装现有 Service，后续可逐步替换为显式请求/响应模型）。
@@ -170,11 +170,18 @@ class AliApiClient {
     CloudDriveAccount account,
     AliDownloadRequest request,
   ) async {
+    // 优先使用请求中提供的 driveId，如果缺失则补取一次，避免未定义报错。
+    var driveId = request.driveId;
+    if (driveId.isEmpty) {
+      driveId = await AliCloudDriveService.getDriveId(account: account) ?? '';
+    }
+    if (driveId.isEmpty) return null;
+
     final result = await _post<Map<String, dynamic>>(
       account: account,
       path: AliConfig.getApiEndpoint('downloadFile'),
       data: AliConfig.buildDownloadFileParams(
-        driveId: request.driveId,
+        driveId: driveId,
         fileId: request.file.id,
       ),
     );
