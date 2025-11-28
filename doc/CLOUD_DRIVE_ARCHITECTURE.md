@@ -1,0 +1,38 @@
+**Cloud Drive 模块说明**
+
+- **可插拔接入**
+  - `services/provider/cloud_drive_provider_descriptor.dart` 定义云盘描述（id、显示名、icon、能力、认证方式、可选 QR 登录服务）。
+  - `services/provider/cloud_drive_provider_registry.dart` 负责注册/查询描述，支持按 type 和 id 访问。
+  - 各云盘目录下的 `*_provider_descriptor.dart` 声明自身描述，初始化时由 `services/strategy_registry.dart` 注册策略和能力。
+
+- **能力与配置**
+  - `config/cloud_drive_capabilities.dart` 按 provider id 存储能力（上传/分享上限、批量限制等），注册时需先有 descriptor。
+  - 登录/认证依赖 `data/models/cloud_drive_configs.dart` 中的 webViewConfig/cookieProcessingConfig 等，每个 CloudDriveType 扩展已包含默认配置。
+
+- **核心实体与仓库**
+  - `data/models/cloud_drive_entities.dart` 提供 CloudDriveAccount/File 类型和 CloudDriveType 扩展（名称、图标、认证方式、webViewConfig）。
+  - `data/repositories/cloud_drive_repository.dart` 定义云盘数据接口和请求/结果模型（FileList/Upload/Share 等），策略调用集中于 `base/cloud_drive_operation_service.dart`。
+
+- **业务规则**
+  - `business/rules/cloud_drive_business_rules.dart` 基于注册表能力判断上传/分享/批量限制等，未注册会抛 StateError。
+
+- **认证与验证**
+  - `services/common/preferences_service.dart` 默认云盘/认证方式存储为 provider id，必须已注册，否则报错。
+  - `services/common/cookie_validation_service.dart`、`authorization_validation_service.dart` 依赖 descriptor + webViewConfig 配置校验，未注册直接抛错。
+  - `services/base/qr_login_service.dart` QR 登录服务按 provider id/CloudDriveType 双索引注册，`QRLoginManager` 提供 start/get/cancel。
+
+- **UI 取元数据**
+  - 账号列表/详情、登录状态、上传头部等组件通过 `CloudDriveProviderRegistry` 获取显示名/图标/颜色/描述，已移除枚举 switch。
+  - 登录页 `presentation/pages/cloud_drive_login_page.dart` 使用 webViewConfig 初始 URL、UserAgent 与登录成功检测。
+
+- **策略与功能**
+  - `base/cloud_drive_operation_service.dart` 仍按 CloudDriveType 获取策略（策略由 provider 描述工厂注册）；若需完全去枚举化，可改用 descriptor.id 作为键。
+  - 各云盘策略/仓库/API 客户端位于 `services/<vendor>/` 目录，保持自包含。
+
+- **已清理的旧架构**
+  - 旧的 DI/基类 (`core/cloud_drive_base_service.dart`、`core/cloud_drive_initializer.dart`、`base/cloud_drive_base_service.dart` 等) 已删除，文档若有引用可忽略。
+  - 服务工厂 `cloud_drive_service_factory.dart`、`services_registry.dart` 也已移除，取而代之的是 provider 描述/策略注册表。
+
+- **使用注意**
+  - 启动时必须调用 `StrategyRegistry.initialize()`（确保所有 descriptor/能力/策略注册）；未注册的类型会在能力获取、UI 元数据读取等处抛 StateError。
+  - 添加新云盘时：在 vendor 目录提供 descriptor + strategy + repository + API/模型，并在默认注册列表中注册；如能力/登录配置有差异，填入 descriptor/webViewConfig/capabilities。
