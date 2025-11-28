@@ -3,6 +3,8 @@ import '../core/china_mobile_base_service.dart';
 import '../core/china_mobile_config.dart';
 import '../models/china_mobile_models.dart';
 import '../models/requests/china_mobile_file_operation_request.dart';
+import '../models/requests/china_mobile_download_request.dart';
+import '../models/responses/china_mobile_download_response.dart';
 import '../utils/china_mobile_logger.dart';
 
 /// 中国移动云盘统一操作封装。
@@ -149,6 +151,47 @@ class ChinaMobileOperations {
     } catch (e, stackTrace) {
       ChinaMobileLogger.error('$opName 失败', error: e, stackTrace: stackTrace);
       return false;
+    }
+  }
+
+  static Future<ChinaMobileApiResult<ChinaMobileDownloadResponse>>
+  getDownloadUrl({
+    required CloudDriveAccount account,
+    required ChinaMobileDownloadRequest request,
+  }) async {
+    final startTime = DateTime.now();
+
+    try {
+      final dio = ChinaMobileBaseService.createDio(account);
+      final url = Uri.parse(
+        '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint('getDownloadUrl')}',
+      );
+
+      ChinaMobileLogger.network('POST', url: url.toString());
+      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
+
+      final response = await dio.postUri(url, data: request.toRequestBody());
+
+      final result =
+          ChinaMobileResponseParser.parse<ChinaMobileDownloadResponse>(
+            response: response.data,
+            statusCode: response.statusCode,
+            dataParser: (data) {
+              return ChinaMobileDownloadResponse.fromJson(
+                response.data as Map<String, dynamic>,
+              );
+            },
+          );
+
+      if (result.isSuccess) {
+        final duration = DateTime.now().difference(startTime);
+        ChinaMobileLogger.performance('获取下载链接完成', duration: duration);
+      }
+
+      return result;
+    } catch (e, stackTrace) {
+      ChinaMobileLogger.error('获取下载链接失败', error: e, stackTrace: stackTrace);
+      return ChinaMobileApiResult.fromException(e as Exception);
     }
   }
 }

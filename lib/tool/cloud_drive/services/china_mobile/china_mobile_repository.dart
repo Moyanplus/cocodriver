@@ -98,9 +98,11 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
     String? password,
   }) async {
     if (account == null || file == null) return null;
-    return ChinaMobileDownloadService.getDownloadUrl(
+    final req = ChinaMobileDownloadRequest(fileId: file.id);
+    final result = await ChinaMobileOperations.getDownloadUrl(
       account: account,
-      file: file,
+      request: req,
     );
+    return result.isSuccess && result.data != null ? result.data!.url : null;
   }
 }
