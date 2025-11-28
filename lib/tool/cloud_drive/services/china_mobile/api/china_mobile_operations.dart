@@ -5,6 +5,8 @@ import '../models/china_mobile_models.dart';
 import '../models/requests/china_mobile_file_operation_request.dart';
 import '../models/requests/china_mobile_download_request.dart';
 import '../models/responses/china_mobile_download_response.dart';
+import '../models/requests/china_mobile_share_request.dart';
+import '../models/requests/china_mobile_task_request.dart';
 import '../utils/china_mobile_logger.dart';
 
 /// 中国移动云盘统一操作封装。
@@ -191,6 +193,74 @@ class ChinaMobileOperations {
       return result;
     } catch (e, stackTrace) {
       ChinaMobileLogger.error('获取下载链接失败', error: e, stackTrace: stackTrace);
+      return ChinaMobileApiResult.fromException(e as Exception);
+    }
+  }
+
+  static Future<ChinaMobileApiResult<Map<String, dynamic>>> createShareLink({
+    required CloudDriveAccount account,
+    required ChinaMobileShareRequest request,
+  }) async {
+    final startTime = DateTime.now();
+
+    try {
+      final dio = ChinaMobileBaseService.createOrchestrationDio(account);
+      final url = Uri.parse(
+        '${ChinaMobileConfig.orchestrationUrl}${ChinaMobileConfig.getApiEndpoint('getShareLink')}',
+      );
+
+      ChinaMobileLogger.network('POST', url: url.toString());
+      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
+
+      final response = await dio.postUri(url, data: request.toRequestBody());
+
+      if (ChinaMobileBaseService.isHttpSuccess(response.statusCode) &&
+          ChinaMobileBaseService.isApiSuccess(response.data)) {
+        final data = response.data['data'] as Map<String, dynamic>? ?? {};
+        final duration = DateTime.now().difference(startTime);
+        ChinaMobileLogger.performance('创建分享链接完成', duration: duration);
+        return ChinaMobileApiResult.success(data);
+      } else {
+        final errorMsg = ChinaMobileBaseService.getErrorMessage(
+          response.data ?? {},
+        );
+        return ChinaMobileApiResult.failure(errorMsg);
+      }
+    } catch (e, stackTrace) {
+      ChinaMobileLogger.error('创建分享链接失败', error: e, stackTrace: stackTrace);
+      return ChinaMobileApiResult.fromException(e as Exception);
+    }
+  }
+
+  static Future<ChinaMobileApiResult<Map<String, dynamic>>> getTaskStatus({
+    required CloudDriveAccount account,
+    required ChinaMobileTaskRequest request,
+  }) async {
+    try {
+      final dio = ChinaMobileBaseService.createDio(account);
+      final uri = Uri.parse(
+        '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint('getTask')}',
+      );
+
+      ChinaMobileLogger.task('查询任务状态', taskId: request.taskId);
+      ChinaMobileLogger.network('POST', url: uri.toString());
+      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
+
+      final response = await dio.postUri(uri, data: request.toRequestBody());
+
+      if (ChinaMobileBaseService.isHttpSuccess(response.statusCode) &&
+          ChinaMobileBaseService.isApiSuccess(response.data)) {
+        final data = response.data['data'] as Map<String, dynamic>? ?? {};
+        ChinaMobileLogger.success('查询任务状态完成', data: data);
+        return ChinaMobileApiResult.success(data);
+      } else {
+        final errorMsg = ChinaMobileBaseService.getErrorMessage(
+          response.data ?? {},
+        );
+        return ChinaMobileApiResult.failure(errorMsg);
+      }
+    } catch (e, stackTrace) {
+      ChinaMobileLogger.error('查询任务状态失败', error: e, stackTrace: stackTrace);
       return ChinaMobileApiResult.fromException(e as Exception);
     }
   }

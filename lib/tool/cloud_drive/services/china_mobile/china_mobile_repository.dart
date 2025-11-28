@@ -2,7 +2,6 @@ import '../../base/base_cloud_drive_repository.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import 'core/china_mobile_config.dart';
 import 'models/requests/china_mobile_file_list_request.dart';
-import 'models/requests/china_mobile_operation_request.dart';
 import 'models/china_mobile_models.dart';
 import 'api/china_mobile_operations.dart';
 
@@ -86,7 +85,34 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
     String? password,
     int? expireDays,
   }) async {
-    // 分享暂未实现
+    if (files.isEmpty) return null;
+    // 旧实现中使用 accountNumber 等字段，这里暂取账号名称为 dedicatedName。
+    final fileIds = files.map((f) => f.id).toList();
+    final fileName = files.length == 1 ? files.first.name : '批量文件';
+    final req = ChinaMobileShareRequest(
+      getOutLinkReq: ShareRequestBody(
+        subLinkType: 0,
+        encrypt: 1,
+        coIDLst: fileIds,
+        caIDLst: [],
+        pubType: 1,
+        dedicatedName: fileName,
+        periodUnit: 1,
+        viewerLst: [],
+        extInfo: ShareExtInfo(isWatermark: 0, shareChannel: '3001'),
+        commonAccountInfo: CommonAccountInfo(
+          account: account.name,
+          accountType: 1,
+        ),
+      ),
+    );
+    final result = await ChinaMobileOperations.createShareLink(
+      account: account,
+      request: req,
+    );
+    if (result.isSuccess && result.data != null) {
+      return result.data!['shareUrl'] as String?;
+    }
     return null;
   }
 
