@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../common/cloud_drive_common_widgets.dart';
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../../services/provider/cloud_drive_provider_registry.dart';
 
 /// 登录提示组件
 class LoginInstructions extends StatelessWidget {
@@ -155,16 +156,21 @@ class LoginInstructions extends StatelessWidget {
 
   /// 获取登录步骤
   List<String> _getLoginSteps() {
-    switch (cloudDriveType) {
-      case CloudDriveType.ali:
+    final descriptor = CloudDriveProviderRegistry.get(cloudDriveType);
+    if (descriptor == null) {
+      throw StateError('未注册云盘描述: $cloudDriveType');
+    }
+    // 可按需为特定云盘定制，未配置则给通用提示
+    switch (descriptor.id ?? cloudDriveType.name) {
+      case 'ali':
         return ['在网页中输入手机号和验证码', '完成登录验证', '系统将自动获取登录信息'];
-      case CloudDriveType.baidu:
+      case 'baidu':
         return ['使用百度账号登录', '完成安全验证（如需要）', '系统将自动获取Cookie信息'];
-      case CloudDriveType.quark:
+      case 'quark':
         return ['使用夸克账号登录', '完成登录验证', '系统将自动获取Token信息'];
-      case CloudDriveType.lanzou:
+      case 'lanzou':
         return ['使用蓝奏云账号登录', '完成登录验证', '系统将自动获取登录信息'];
-      case CloudDriveType.pan123:
+      case 'pan123':
         return ['使用123云盘账号登录', '完成登录验证', '系统将自动获取Token信息'];
       default:
         return ['在网页中完成登录', '系统将自动获取登录信息'];

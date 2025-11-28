@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/cloud_drive_entities.dart';
+import '../provider/cloud_drive_provider_registry.dart';
 
 /// 云盘用户偏好设置服务
 ///
@@ -15,19 +16,16 @@ class CloudDrivePreferencesService {
       final typeString = prefs.getString(_keyDefaultCloudDriveType);
 
       if (typeString != null) {
-        // 尝试从字符串转换为枚举
-        final type = CloudDriveType.values.firstWhere(
-          (type) => type.name == typeString,
-          orElse: () => CloudDriveType.baidu, // 默认值
-        );
-        return type;
+        final descriptor = CloudDriveProviderRegistry.getById(typeString);
+        if (descriptor != null) {
+          return descriptor.type;
+        }
       }
 
-      // 如果没有保存的选择，返回默认值
-      return CloudDriveType.baidu;
+      // 如果没有保存的选择或未注册，返回注册表中的第一个
+      return _getFirstRegisteredType();
     } catch (e) {
-      // 发生错误时返回默认值
-      return CloudDriveType.baidu;
+      throw StateError('无法获取默认云盘类型: $e');
     }
   }
 
@@ -37,10 +35,16 @@ class CloudDrivePreferencesService {
   Future<void> setDefaultCloudDriveType(CloudDriveType type) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_keyDefaultCloudDriveType, type.name);
+      final descriptor = CloudDriveProviderRegistry.get(type);
+      if (descriptor == null) {
+        throw StateError('未注册云盘描述: $type');
+      }
+      await prefs.setString(
+        _keyDefaultCloudDriveType,
+        descriptor.id ?? type.name,
+      );
     } catch (e) {
-      // 保存失败时静默处理，不影响用户体验
-      // print('保存云盘类型偏好失败: $e');
+      throw StateError('保存云盘类型偏好失败: $e');
     }
   }
 
@@ -59,17 +63,25 @@ class CloudDrivePreferencesService {
           orElse: () => cloudDriveType.authType, // 使用云盘类型的默认认证方式
         );
 
-        // 检查该认证方式是否被当前云盘类型支持
-        if (cloudDriveType.supportedAuthTypes.contains(authType)) {
+        final supported =
+            CloudDriveProviderRegistry.get(cloudDriveType)?.supportedAuthTypes ??
+                cloudDriveType.supportedAuthTypes;
+
+        if (supported.contains(authType)) {
           return authType;
         }
       }
 
       // 如果没有保存的选择或不支持，返回云盘类型的默认认证方式
-      return cloudDriveType.authType;
+      final supported =
+          CloudDriveProviderRegistry.get(cloudDriveType)?.supportedAuthTypes ??
+              cloudDriveType.supportedAuthTypes;
+      if (supported.isEmpty) {
+        throw StateError('未配置认证方式: $cloudDriveType');
+      }
+      return supported.first;
     } catch (e) {
-      // 发生错误时返回云盘类型的默认认证方式
-      return cloudDriveType.authType;
+      throw StateError('获取默认认证方式失败: $e');
     }
   }
 
@@ -106,15 +118,26 @@ class CloudDrivePreferencesService {
     try {
       final defaultType = await getDefaultCloudDriveType();
       final defaultAuthType = await getDefaultAuthType(defaultType);
+      final descriptor = CloudDriveProviderRegistry.get(defaultType);
+      final supported =
+          descriptor?.supportedAuthTypes ?? defaultType.supportedAuthTypes;
 
       return {
-        'defaultCloudDriveType': defaultType.displayName,
+        'defaultCloudDriveType':
+            descriptor?.displayName ?? defaultType.displayName,
         'defaultAuthType': defaultAuthType.name,
-        'supportedAuthTypes':
-            defaultType.supportedAuthTypes.map((e) => e.name).toList(),
+        'supportedAuthTypes': supported.map((e) => e.name).toList(),
       };
     } catch (e) {
       return {'error': e.toString()};
     }
+  }
+
+  CloudDriveType _getFirstRegisteredType() {
+    final descriptors = CloudDriveProviderRegistry.descriptors;
+    if (descriptors.isNotEmpty) {
+      return descriptors.first.type;
+    }
+    throw StateError('未注册任何云盘提供方');
   }
 }

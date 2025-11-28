@@ -4,6 +4,7 @@ import '../../config/cloud_drive_ui_config.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../widgets/login/login.dart';
 import '../../../../../core/logging/log_manager.dart';
+import '../../services/provider/cloud_drive_provider_registry.dart';
 
 /// 云盘登录页面
 ///
@@ -31,12 +32,15 @@ class _CloudDriveLoginPageState extends State<CloudDriveLoginPage> {
   double _currentZoom = 1.0;
   bool _canGoBack = false;
   bool _canGoForward = false;
+  late final CloudDriveProviderDescriptor _descriptor =
+      CloudDriveProviderRegistry.get(widget.cloudDriveType) ??
+          (throw StateError('未注册云盘描述: ${widget.cloudDriveType}'));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${_getCloudDriveName()} 登录'),
+        title: Text('${_descriptor.displayName ?? widget.cloudDriveType.name} 登录'),
         backgroundColor: CloudDriveUIConfig.primaryActionColor,
         foregroundColor: Colors.white,
       ),
@@ -65,8 +69,9 @@ class _CloudDriveLoginPageState extends State<CloudDriveLoginPage> {
 
   /// 构建WebView
   Widget _buildWebView() {
+    final loginUrl = _getLoginUrl();
     return InAppWebView(
-      initialUrlRequest: URLRequest(url: WebUri(_getLoginUrl().toString())),
+      initialUrlRequest: URLRequest(url: WebUri(loginUrl.toString())),
       initialSettings: InAppWebViewSettings(
         javaScriptEnabled: true,
         domStorageEnabled: true,
@@ -112,24 +117,23 @@ class _CloudDriveLoginPageState extends State<CloudDriveLoginPage> {
 
   /// 获取登录URL
   Uri _getLoginUrl() {
-    switch (widget.cloudDriveType) {
-      case CloudDriveType.ali:
-        return Uri.parse('https://passport.alipan.com/login');
-      case CloudDriveType.baidu:
-        return Uri.parse('https://passport.baidu.com/v2/?login');
-      case CloudDriveType.quark:
-        return Uri.parse('https://pan.quark.cn/login');
-      case CloudDriveType.lanzou:
-        return Uri.parse('https://up.woozooo.com/account.php');
-      case CloudDriveType.pan123:
-        return Uri.parse('https://www.123pan.com/login');
-      case CloudDriveType.chinaMobile:
-        return Uri.parse('https://yun.139.com/');
+    final initial = widget.cloudDriveType.webViewConfig.initialUrl;
+    if (initial != null && initial.isNotEmpty) {
+      return Uri.parse(initial);
     }
+    throw StateError('未提供登录地址: ${widget.cloudDriveType}');
   }
 
   /// 获取UserAgent
   String _getUserAgent() {
+    final uaType = widget.cloudDriveType.webViewConfig.userAgentType;
+    if (uaType != null) {
+      return uaType.userAgent;
+    }
+    if (widget.cloudDriveType.webViewConfig.userAgent != null &&
+        widget.cloudDriveType.webViewConfig.userAgent!.isNotEmpty) {
+      return widget.cloudDriveType.webViewConfig.userAgent!;
+    }
     return 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1';
   }
 
@@ -137,35 +141,20 @@ class _CloudDriveLoginPageState extends State<CloudDriveLoginPage> {
   void _checkLoginStatus(Uri? url) {
     if (url == null) return;
 
-    // 根据URL判断是否登录成功
     final urlString = url.toString();
+    final detection = widget.cloudDriveType.webViewConfig.loginDetectionConfig;
     bool isLoginSuccess = false;
 
-    switch (widget.cloudDriveType) {
-      case CloudDriveType.ali:
-        isLoginSuccess =
-            urlString.contains('alipan.com') && !urlString.contains('login');
-        break;
-      case CloudDriveType.baidu:
-        isLoginSuccess = urlString.contains('pan.baidu.com');
-        break;
-      case CloudDriveType.quark:
-        isLoginSuccess =
-            urlString.contains('pan.quark.cn') && !urlString.contains('login');
-        break;
-      case CloudDriveType.lanzou:
-        isLoginSuccess =
-            urlString.contains('up.woozooo.com') &&
-            !urlString.contains('login');
-        break;
-      case CloudDriveType.pan123:
-        isLoginSuccess =
-            urlString.contains('123pan.com') && !urlString.contains('login');
-        break;
-      case CloudDriveType.chinaMobile:
-        isLoginSuccess =
-            urlString.contains('yun.139.com') && !urlString.contains('login');
-        break;
+    if (detection != null) {
+      if (detection.successUrl != null &&
+          detection.successUrl!.isNotEmpty &&
+          urlString.contains(detection.successUrl!)) {
+        isLoginSuccess = true;
+      } else if (detection.successIndicators.isNotEmpty) {
+        isLoginSuccess = detection.successIndicators.any(
+          (indicator) => urlString.contains(indicator),
+        );
+      }
     }
 
     if (isLoginSuccess && !_isLoggedIn) {

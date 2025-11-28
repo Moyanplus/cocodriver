@@ -1,6 +1,5 @@
 import '../models/cloud_drive_entities.dart';
 import '../../infrastructure/logging/cloud_drive_logger.dart';
-import '../../core/cloud_drive_base_service.dart';
 import '../../base/cloud_drive_operation_service.dart';
 
 /// 云盘数据仓库接口
@@ -336,4 +335,191 @@ class CloudDriveRepository implements CloudDriveRepositoryInterface {
       rethrow;
     }
   }
+}
+
+/// ---------- 请求/结果模型（从旧基类内联迁移，便于去除遗留依赖） ----------
+
+class FileListRequest {
+  final CloudDriveAccount account;
+  final String? folderId;
+  final int page;
+  final int pageSize;
+
+  const FileListRequest({
+    required this.account,
+    this.folderId,
+    this.page = 1,
+    this.pageSize = 50,
+  });
+}
+
+class FileListResult {
+  final List<CloudDriveFile> files;
+  final List<CloudDriveFile> folders;
+  final bool hasMore;
+  final int totalCount;
+  final String? error;
+
+  const FileListResult({
+    required this.files,
+    required this.folders,
+    this.hasMore = false,
+    this.totalCount = 0,
+    this.error,
+  });
+
+  bool get isSuccess => error == null;
+}
+
+class FileDetailRequest {
+  final CloudDriveAccount account;
+  final String fileId;
+
+  const FileDetailRequest({required this.account, required this.fileId});
+}
+
+class FileDetailResult {
+  final CloudDriveFile file;
+  final Map<String, dynamic> metadata;
+  final String? error;
+
+  const FileDetailResult({
+    required this.file,
+    required this.metadata,
+    this.error,
+  });
+
+  bool get isSuccess => error == null;
+}
+
+class UploadRequest {
+  final CloudDriveAccount account;
+  final String filePath;
+  final String fileName;
+  final String folderId;
+  final Function(double)? onProgress;
+
+  const UploadRequest({
+    required this.account,
+    required this.filePath,
+    required this.fileName,
+    required this.folderId,
+    this.onProgress,
+  });
+}
+
+class UploadResult {
+  final bool success;
+  final String? fileId;
+  final String? error;
+  final Map<String, dynamic>? metadata;
+
+  const UploadResult({
+    required this.success,
+    this.fileId,
+    this.error,
+    this.metadata,
+  });
+}
+
+class DownloadRequest {
+  final CloudDriveAccount account;
+  final CloudDriveFile file;
+  final String? fileName;
+  final int? size;
+
+  const DownloadRequest({
+    required this.account,
+    required this.file,
+    this.fileName,
+    this.size,
+  });
+}
+
+class DownloadResult {
+  final String? downloadUrl;
+  final String? error;
+  final Map<String, dynamic>? metadata;
+
+  const DownloadResult({this.downloadUrl, this.error, this.metadata});
+
+  bool get isSuccess => downloadUrl != null && error == null;
+}
+
+class ShareRequest {
+  final CloudDriveAccount account;
+  final List<CloudDriveFile> files;
+  final String? password;
+  final int? expireDays;
+
+  const ShareRequest({
+    required this.account,
+    required this.files,
+    this.password,
+    this.expireDays,
+  });
+}
+
+class ShareResult {
+  final String? shareUrl;
+  final String? password;
+  final String? error;
+  final Map<String, dynamic>? metadata;
+
+  const ShareResult({this.shareUrl, this.password, this.error, this.metadata});
+
+  bool get isSuccess => shareUrl != null && error == null;
+}
+
+class MoveRequest {
+  final CloudDriveAccount account;
+  final CloudDriveFile file;
+  final String? targetFolderId;
+
+  const MoveRequest({
+    required this.account,
+    required this.file,
+    this.targetFolderId,
+  });
+}
+
+class DeleteRequest {
+  final CloudDriveAccount account;
+  final CloudDriveFile file;
+
+  const DeleteRequest({required this.account, required this.file});
+}
+
+class RenameRequest {
+  final CloudDriveAccount account;
+  final CloudDriveFile file;
+  final String newName;
+
+  const RenameRequest({
+    required this.account,
+    required this.file,
+    required this.newName,
+  });
+}
+
+class CopyRequest {
+  final CloudDriveAccount account;
+  final CloudDriveFile file;
+  final String destPath;
+  final String? newName;
+
+  const CopyRequest({
+    required this.account,
+    required this.file,
+    required this.destPath,
+    this.newName,
+  });
+}
+
+class OperationResult {
+  final bool success;
+  final String? error;
+  final Map<String, dynamic>? metadata;
+
+  const OperationResult({required this.success, this.error, this.metadata});
 }

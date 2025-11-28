@@ -1,5 +1,6 @@
 import '../../data/models/cloud_drive_entities.dart';
 import '../../base/cloud_drive_operation_service.dart';
+import '../provider/cloud_drive_provider_registry.dart';
 
 /// Authorization Token 验证结果类
 ///
@@ -158,6 +159,10 @@ class AuthorizationValidationService {
   /// 返回步骤说明字符串
   /// 注意：这只是通用说明，云盘特定的说明应该在各云盘的配置或文档中
   static String getTokenInstructions(CloudDriveType type) {
+    final descriptor = CloudDriveProviderRegistry.get(type);
+    if (descriptor == null) {
+      throw StateError('未注册云盘描述: $type');
+    }
     if (!supportsAuthorizationToken(type)) {
       return '该云盘不支持 Authorization Token 认证方式\n'
           '请使用 Cookie 认证方式添加账号';
@@ -178,7 +183,11 @@ class AuthorizationValidationService {
   ///
   /// [type] 云盘类型
   static bool supportsAuthorizationToken(CloudDriveType type) {
-    // 直接使用 CloudDriveType 的 supportedAuthTypes 属性
-    return type.supportedAuthTypes.contains(AuthType.authorization);
+    final descriptor = CloudDriveProviderRegistry.get(type);
+    if (descriptor == null) {
+      throw StateError('未注册云盘描述: $type');
+    }
+    final supported = descriptor.supportedAuthTypes ?? type.supportedAuthTypes;
+    return supported.contains(AuthType.authorization);
   }
 }

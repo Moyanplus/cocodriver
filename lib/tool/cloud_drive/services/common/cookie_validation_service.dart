@@ -1,6 +1,7 @@
 import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_configs.dart';
 import '../../base/cloud_drive_operation_service.dart';
+import '../provider/cloud_drive_provider_registry.dart';
 
 /// Cookie 验证服务
 ///
@@ -47,20 +48,13 @@ class CookieValidationResult {
 class CookieValidationService {
   /// 获取指定云盘类型的 Cookie 配置
   static CookieProcessingConfig getConfig(CloudDriveType type) {
-    switch (type) {
-      case CloudDriveType.lanzou:
-        return CookieProcessingConfig.lanzouConfig;
-      case CloudDriveType.baidu:
-        return CookieProcessingConfig.defaultConfig;
-      case CloudDriveType.quark:
-        return CookieProcessingConfig.quarkConfig;
-      case CloudDriveType.pan123:
-        return CookieProcessingConfig.pan123Config;
-      case CloudDriveType.chinaMobile:
-        return CookieProcessingConfig.chinaMobileConfig;
-      default:
-        return CookieProcessingConfig(requiredCookies: []);
+    final descriptor = CloudDriveProviderRegistry.get(type);
+    if (descriptor == null) {
+      throw StateError('未注册云盘描述: $type');
     }
+    // 直接使用枚举扩展的配置
+    return type.webViewConfig.cookieProcessingConfig ??
+        const CookieProcessingConfig(requiredCookies: []);
   }
 
   /// 从 Cookie 字符串中提取必需字段

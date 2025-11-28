@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../services/provider/cloud_drive_provider_registry.dart';
 
 /// 上传页面头部组件
 class UploadHeader extends StatelessWidget {
@@ -15,6 +16,10 @@ class UploadHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final descriptor = CloudDriveProviderRegistry.get(account.type);
+    if (descriptor == null) {
+      throw StateError('未注册云盘描述: ${account.type}');
+    }
     return Container(
       padding: CloudDriveUIConfig.pagePadding,
       decoration: BoxDecoration(
@@ -45,7 +50,7 @@ class UploadHeader extends StatelessWidget {
                 ),
                 SizedBox(height: CloudDriveUIConfig.spacingXS),
                 Text(
-                  '${account.type.displayName} - ${account.name}',
+                  '${descriptor.displayName ?? account.type.name} - ${account.name}',
                   style: CloudDriveUIConfig.smallTextStyle,
                 ),
               ],

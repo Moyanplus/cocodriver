@@ -10,6 +10,7 @@ typedef StrategyFactory = CloudDriveOperationStrategy Function();
 /// 云盘提供方描述，用于实现可插拔注册。
 class CloudDriveProviderDescriptor {
   const CloudDriveProviderDescriptor({
+    this.id,
     required this.type,
     required this.strategyFactory,
     required this.capabilities,
@@ -27,6 +28,8 @@ class CloudDriveProviderDescriptor {
   final CloudDriveCapabilities capabilities;
 
   /// 供 UI 使用的元数据，不传则回退到 CloudDriveType 默认值。
+  /// 可选的唯一 ID，若未提供则使用 type.name
+  final String? id;
   final String? displayName;
   final IconData? iconData;
   final String? iconAsset;

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import '../../data/models/cloud_drive_entities.dart';
+import '../provider/cloud_drive_provider_registry.dart';
 
 /// 二维码登录服务抽象基类
 ///
@@ -9,6 +10,10 @@ import '../../data/models/cloud_drive_entities.dart';
 abstract class QRLoginService {
   /// 云盘类型
   CloudDriveType get cloudDriveType;
+
+  /// 供应商唯一 ID（默认使用 type.name）
+  String get providerId =>
+      CloudDriveProviderRegistry.get(cloudDriveType)?.id ?? cloudDriveType.name;
 
   /// 二维码登录配置
   QRLoginConfig get config;
@@ -46,11 +51,13 @@ abstract class QRLoginService {
 /// 负责管理二维码登录的整个生命周期，包括服务注册和查询。
 class QRLoginManager {
   static final Map<CloudDriveType, QRLoginService> _services = {};
+  static final Map<String, QRLoginService> _servicesById = {};
   static final Map<String, StreamController<QRLoginInfo>> _statusStreams = {};
 
   /// 注册二维码登录服务
   static void registerService(QRLoginService service) {
     _services[service.cloudDriveType] = service;
+    _servicesById[service.providerId] = service;
   }
 
   /// 获取二维码登录服务
@@ -58,15 +65,22 @@ class QRLoginManager {
     return _services[type];
   }
 
+  /// 按 providerId 获取服务
+  static QRLoginService? getServiceById(String id) => _servicesById[id];
+
   /// 检查是否支持二维码登录
   static bool isSupported(CloudDriveType type) {
     return _services.containsKey(type);
   }
 
+  static bool isSupportedById(String id) => _servicesById.containsKey(id);
+
   /// 获取所有支持的云盘类型
   static List<CloudDriveType> getSupportedTypes() {
     return _services.keys.toList();
   }
+
+  static List<String> getSupportedIds() => _servicesById.keys.toList();
 
   /// 开始二维码登录流程
   /// [type] 云盘类型

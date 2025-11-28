@@ -1,4 +1,5 @@
 import '../data/models/cloud_drive_entities.dart';
+import '../services/provider/cloud_drive_provider_registry.dart';
 
 /// 云盘能力与配额配置，集中管理各云盘的操作上限与默认能力。
 class CloudDriveCapabilities {
@@ -30,11 +31,12 @@ class CloudDriveCapabilities {
 }
 
 /// 统一的能力表，支持动态注册（每个云盘目录自行注册）。
-final Map<CloudDriveType, CloudDriveCapabilities> _capabilityMap = {};
+/// Key 使用 providerId，避免对枚举的强依赖。
+final Map<String, CloudDriveCapabilities> _capabilityMap = {};
 
-/// 预置能力，未注册时使用。
-final Map<CloudDriveType, CloudDriveCapabilities> _defaultCapabilities = {
-  CloudDriveType.baidu: CloudDriveCapabilities(
+/// 预置能力，未注册时使用。Key 为 providerId/name。
+final Map<String, CloudDriveCapabilities> _defaultCapabilities = {
+  'baidu': CloudDriveCapabilities(
     maxUploadSize: 2 * 1024 * 1024 * 1024, // 2GB
     maxShareFileSize: 2 * 1024 * 1024 * 1024,
     maxExpireDays: 7,
@@ -43,7 +45,7 @@ final Map<CloudDriveType, CloudDriveCapabilities> _defaultCapabilities = {
       '*': 50,
     },
   ),
-  CloudDriveType.lanzou: CloudDriveCapabilities(
+  'lanzou': CloudDriveCapabilities(
     maxUploadSize: 100 * 1024 * 1024, // 100MB
     maxShareFileSize: 100 * 1024 * 1024,
     maxExpireDays: 30,
@@ -54,13 +56,13 @@ final Map<CloudDriveType, CloudDriveCapabilities> _defaultCapabilities = {
       '*': 10,
     },
   ),
-  CloudDriveType.pan123: CloudDriveCapabilities(
+  'pan123': CloudDriveCapabilities(
     maxUploadSize: 5 * 1024 * 1024 * 1024, // 5GB
     maxShareFileSize: 5 * 1024 * 1024 * 1024,
     maxExpireDays: 7,
     maxBatchSizes: {'*': 50},
   ),
-  CloudDriveType.ali: CloudDriveCapabilities(
+  'ali': CloudDriveCapabilities(
     maxUploadSize: 20 * 1024 * 1024 * 1024, // 20GB
     maxShareFileSize: 20 * 1024 * 1024 * 1024,
     maxExpireDays: 7,
@@ -69,13 +71,13 @@ final Map<CloudDriveType, CloudDriveCapabilities> _defaultCapabilities = {
       '*': 50,
     },
   ),
-  CloudDriveType.quark: CloudDriveCapabilities(
+  'quark': CloudDriveCapabilities(
     maxUploadSize: 5 * 1024 * 1024 * 1024, // 5GB
     maxShareFileSize: 5 * 1024 * 1024 * 1024,
     maxExpireDays: 7,
     maxBatchSizes: {'*': 50},
   ),
-  CloudDriveType.chinaMobile: CloudDriveCapabilities(
+  'chinaMobile': CloudDriveCapabilities(
     maxUploadSize: 5 * 1024 * 1024 * 1024, // 5GB
     maxShareFileSize: 5 * 1024 * 1024 * 1024,
     maxExpireDays: 7,
@@ -85,9 +87,22 @@ final Map<CloudDriveType, CloudDriveCapabilities> _defaultCapabilities = {
 
 /// 注册能力，供各云盘目录在初始化时调用。
 void registerCapabilities(CloudDriveType type, CloudDriveCapabilities spec) {
-  _capabilityMap[type] = spec;
+  final descriptor = CloudDriveProviderRegistry.get(type);
+  if (descriptor == null) {
+    throw StateError('未注册云盘描述: $type');
+  }
+  final id = descriptor.id ?? type.name;
+  _capabilityMap[id] = spec;
 }
 
 /// 获取能力，优先取注册值，其次默认值。
-CloudDriveCapabilities getCapabilities(CloudDriveType type) =>
-    _capabilityMap[type] ?? _defaultCapabilities[type] ?? _defaultCapabilities.values.first;
+CloudDriveCapabilities getCapabilities(CloudDriveType type) {
+  final descriptor = CloudDriveProviderRegistry.get(type);
+  if (descriptor == null) {
+    throw StateError('未注册云盘描述: $type');
+  }
+  final id = descriptor.id ?? type.name;
+  return _capabilityMap[id] ??
+      _defaultCapabilities[id] ??
+      _defaultCapabilities.values.first;
+}

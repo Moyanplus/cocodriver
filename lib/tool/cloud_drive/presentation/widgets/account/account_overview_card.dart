@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../common/cloud_drive_common_widgets.dart';
+import '../../../services/provider/cloud_drive_provider_registry.dart';
 
 /// 账号概览卡片组件
 class AccountOverviewCard extends StatelessWidget {
@@ -38,7 +39,7 @@ class AccountOverviewCard extends StatelessWidget {
                     ),
                     SizedBox(height: CloudDriveUIConfig.spacingXS),
                     Text(
-                      account.type.displayName,
+                      _getDescriptor(account.type).displayName ?? account.type.name,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -83,10 +84,11 @@ class AccountOverviewCard extends StatelessWidget {
       height: 60.h,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: _getAccountTypeColor(account.type).withOpacity(0.15),
+        color: _getDescriptor(account.type).color?.withOpacity(0.15) ??
+            CloudDriveUIConfig.secondaryActionColor.withOpacity(0.15),
       ),
       child: Icon(
-        _getAccountTypeIcon(account.type),
+        _getDescriptor(account.type).iconData ?? Icons.cloud_queue,
         size: CloudDriveUIConfig.iconSizeL,
         color: colorScheme.onPrimary,
       ),
@@ -142,40 +144,12 @@ class AccountOverviewCard extends StatelessWidget {
     );
   }
 
-  /// 获取账号类型颜色
-  Color _getAccountTypeColor(CloudDriveType type) {
-    switch (type) {
-      case CloudDriveType.ali:
-        return Colors.blue;
-      case CloudDriveType.baidu:
-        return Colors.red;
-      case CloudDriveType.quark:
-        return Colors.green;
-      case CloudDriveType.lanzou:
-        return Colors.orange;
-      case CloudDriveType.pan123:
-        return Colors.purple;
-      default:
-        return CloudDriveUIConfig.secondaryActionColor;
+  CloudDriveProviderDescriptor _getDescriptor(CloudDriveType type) {
+    final descriptor = CloudDriveProviderRegistry.get(type);
+    if (descriptor == null) {
+      throw StateError('未注册云盘描述: $type');
     }
-  }
-
-  /// 获取账号类型图标
-  IconData _getAccountTypeIcon(CloudDriveType type) {
-    switch (type) {
-      case CloudDriveType.ali:
-        return Icons.cloud;
-      case CloudDriveType.baidu:
-        return Icons.storage;
-      case CloudDriveType.quark:
-        return Icons.speed;
-      case CloudDriveType.lanzou:
-        return Icons.link;
-      case CloudDriveType.pan123:
-        return Icons.folder;
-      default:
-        return Icons.cloud_queue;
-    }
+    return descriptor;
   }
 
   /// 格式化日期时间

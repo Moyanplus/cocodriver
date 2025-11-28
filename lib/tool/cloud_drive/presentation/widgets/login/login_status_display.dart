@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../common/cloud_drive_common_widgets.dart';
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../../services/provider/cloud_drive_provider_registry.dart';
 
 /// 登录状态显示组件
 class LoginStatusDisplay extends StatelessWidget {
@@ -24,6 +25,8 @@ class LoginStatusDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final descriptor = CloudDriveProviderRegistry.get(cloudDriveType) ??
+        (throw StateError('未注册云盘描述: $cloudDriveType'));
     return CloudDriveCommonWidgets.buildCard(
       child: Column(
         children: [
@@ -31,8 +34,8 @@ class LoginStatusDisplay extends StatelessWidget {
           Row(
             children: [
               Icon(
-                _getCloudDriveIcon(),
-                color: _getCloudDriveColor(),
+                descriptor.iconData ?? Icons.cloud_queue,
+                color: descriptor.color ?? CloudDriveUIConfig.primaryActionColor,
                 size: CloudDriveUIConfig.iconSizeL,
               ),
               SizedBox(width: CloudDriveUIConfig.spacingS),
@@ -41,7 +44,7 @@ class LoginStatusDisplay extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${_getCloudDriveName()} 登录',
+                      '${descriptor.displayName ?? cloudDriveType.name} 登录',
                       style: CloudDriveUIConfig.titleTextStyle,
                     ),
                     Text(
@@ -147,57 +150,4 @@ class LoginStatusDisplay extends StatelessWidget {
     );
   }
 
-  /// 获取云盘图标
-  IconData _getCloudDriveIcon() {
-    switch (cloudDriveType) {
-      case CloudDriveType.ali:
-        return Icons.cloud;
-      case CloudDriveType.baidu:
-        return Icons.storage;
-      case CloudDriveType.quark:
-        return Icons.speed;
-      case CloudDriveType.lanzou:
-        return Icons.link;
-      case CloudDriveType.pan123:
-        return Icons.folder;
-      default:
-        return Icons.cloud_queue;
-    }
-  }
-
-  /// 获取云盘颜色
-  Color _getCloudDriveColor() {
-    switch (cloudDriveType) {
-      case CloudDriveType.ali:
-        return Colors.blue;
-      case CloudDriveType.baidu:
-        return Colors.red;
-      case CloudDriveType.quark:
-        return Colors.green;
-      case CloudDriveType.lanzou:
-        return Colors.orange;
-      case CloudDriveType.pan123:
-        return Colors.purple;
-      default:
-        return CloudDriveUIConfig.secondaryActionColor;
-    }
-  }
-
-  /// 获取云盘名称
-  String _getCloudDriveName() {
-    switch (cloudDriveType) {
-      case CloudDriveType.ali:
-        return '阿里云盘';
-      case CloudDriveType.baidu:
-        return '百度网盘';
-      case CloudDriveType.quark:
-        return '夸克云盘';
-      case CloudDriveType.lanzou:
-        return '蓝奏云';
-      case CloudDriveType.pan123:
-        return '123云盘';
-      default:
-        return '云盘';
-    }
-  }
 }

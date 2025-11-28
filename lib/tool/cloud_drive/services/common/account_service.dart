@@ -3,6 +3,7 @@ import '../../data/models/cloud_drive_entities.dart';
 import '../../base/cloud_drive_account_service.dart';
 import '../../core/result.dart';
 import 'cloud_drive_service_base.dart';
+import '../provider/cloud_drive_provider_registry.dart';
 
 /// 账号服务
 ///
@@ -114,11 +115,15 @@ class AccountService extends CloudDriveServiceBase {
 
   /// 验证账号登录状态
   Result<bool> validateAccount(CloudDriveAccount account) {
+    final descriptor = CloudDriveProviderRegistry.get(account.type);
+    if (descriptor == null) {
+      throw StateError('未注册云盘描述: ${account.type}');
+    }
     logOperation(
       '验证账号登录状态',
       params: {
         'accountName': account.name,
-        'accountType': account.type.displayName,
+        'accountType': descriptor.displayName ?? account.type.name,
       },
     );
 
@@ -171,40 +176,15 @@ class AccountService extends CloudDriveServiceBase {
   Map<String, dynamic> getAccountStats(List<CloudDriveAccount> accounts) {
     final stats = <String, int>{
       'total': accounts.length,
-      'baidu': 0,
-      'lanzou': 0,
-      'pan123': 0,
-      'ali': 0,
-      'quark': 0,
-      'chinaMobile': 0,
       'loggedIn': 0,
       'loggedOut': 0,
     };
 
     for (final account in accounts) {
-      // 按类型统计
-      switch (account.type) {
-        case CloudDriveType.baidu:
-          stats['baidu'] = (stats['baidu'] ?? 0) + 1;
-          break;
-        case CloudDriveType.lanzou:
-          stats['lanzou'] = (stats['lanzou'] ?? 0) + 1;
-          break;
-        case CloudDriveType.pan123:
-          stats['pan123'] = (stats['pan123'] ?? 0) + 1;
-          break;
-        case CloudDriveType.ali:
-          stats['ali'] = (stats['ali'] ?? 0) + 1;
-          break;
-        case CloudDriveType.quark:
-          stats['quark'] = (stats['quark'] ?? 0) + 1;
-          break;
-        case CloudDriveType.chinaMobile:
-          stats['chinaMobile'] = (stats['chinaMobile'] ?? 0) + 1;
-          break;
-      }
+      final id = (CloudDriveProviderRegistry.get(account.type)?.id) ??
+          account.type.name;
+      stats[id] = (stats[id] ?? 0) + 1;
 
-      // 按登录状态统计
       if (account.isLoggedIn) {
         stats['loggedIn'] = (stats['loggedIn'] ?? 0) + 1;
       } else {

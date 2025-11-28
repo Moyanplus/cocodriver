@@ -140,6 +140,10 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
 
   /// 构建账号类型信息（不可编辑）
   Widget _buildAccountTypeInfo() {
+    final descriptor = CloudDriveProviderRegistry.get(widget.account.type);
+    if (descriptor == null) {
+      throw StateError('未注册云盘描述: ${widget.account.type}');
+    }
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -151,8 +155,8 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
       child: Row(
         children: [
           Icon(
-            widget.account.type.iconData,
-            color: widget.account.type.color,
+            descriptor.iconData ?? Icons.cloud_outlined,
+            color: descriptor.color ?? Theme.of(context).colorScheme.primary,
             size: 32.sp,
           ),
           SizedBox(width: 12.w),
@@ -160,7 +164,7 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.account.type.displayName,
+                descriptor.displayName ?? widget.account.type.name,
                 style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 4.h),
