@@ -29,13 +29,18 @@ class ChinaMobileFileListResponse {
     String parentFolderId,
   ) {
     final fileList = <CloudDriveFile>[];
-    final data = json['data'];
+    final data = json['data'] as Map<String, dynamic>?;
 
-    if (data != null && data['list'] != null) {
-      final files = data['list'] as List<dynamic>? ?? [];
+    if (data != null) {
+      final files = (data['items'] as List<dynamic>?) ??
+          (data['list'] as List<dynamic>?) ??
+          const [];
 
       for (final fileData in files) {
-        final file = _parseFileData(fileData, parentFolderId);
+        final file = _parseFileData(
+          fileData as Map<String, dynamic>,
+          parentFolderId,
+        );
         if (file != null) {
           fileList.add(file);
         }
@@ -44,8 +49,10 @@ class ChinaMobileFileListResponse {
 
     // 解析分页信息
     final pageInfo = data?['pageInfo'] as Map<String, dynamic>?;
-    final hasMore = data?['hasMore'] as bool? ?? false;
-    final nextPageCursor = pageInfo?['pageCursor'] as String?;
+    final nextPageCursor =
+        data?['nextPageCursor']?.toString() ??
+        pageInfo?['pageCursor']?.toString();
+    final hasMore = nextPageCursor != null && nextPageCursor.isNotEmpty;
 
     ChinaMobileLogger.success('解析文件列表完成，共 ${fileList.length} 个文件');
     return ChinaMobileFileListResponse(

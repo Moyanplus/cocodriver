@@ -1,10 +1,10 @@
 import '../../base/base_cloud_drive_repository.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import 'core/china_mobile_config.dart';
-import 'services/china_mobile_file_list_service.dart';
-import 'services/china_mobile_file_operation_service.dart';
-import 'services/china_mobile_download_service.dart';
-import 'services/china_mobile_share_service.dart';
+import 'models/requests/china_mobile_file_list_request.dart';
+import 'models/requests/china_mobile_operation_request.dart';
+import 'models/china_mobile_models.dart';
+import 'api/china_mobile_operations.dart';
 
 /// 中国移动云盘仓库，适配统一仓库接口。
 class ChinaMobileRepository extends BaseCloudDriveRepository {
@@ -15,11 +15,15 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
     int page = 1,
     int pageSize = 50,
   }) async {
-    return ChinaMobileFileListService.getFileList(
-      account: account,
+    final req = ChinaMobileFileListRequest(
       parentFileId: folderId ?? ChinaMobileConfig.rootFolderId,
-      pageSize: pageSize,
+      pageInfo: PageInfo(pageSize: pageSize),
     );
+    final result = await ChinaMobileOperations.listFiles(
+      account: account,
+      request: req,
+    );
+    return result.isSuccess && result.data != null ? result.data!.files : [];
   }
 
   @override
@@ -27,10 +31,8 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
     required CloudDriveAccount account,
     required CloudDriveFile file,
   }) {
-    return ChinaMobileFileOperationService.deleteFile(
-      account: account,
-      file: file,
-    );
+    final req = ChinaMobileDeleteFileRequest(fileIds: [file.id]);
+    return ChinaMobileOperations.deleteFile(account: account, request: req);
   }
 
   @override
@@ -39,11 +41,8 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
     required CloudDriveFile file,
     required String newName,
   }) {
-    return ChinaMobileFileOperationService.renameFile(
-      account: account,
-      file: file,
-      newName: newName,
-    );
+    final req = ChinaMobileRenameFileRequest(fileId: file.id, name: newName);
+    return ChinaMobileOperations.renameFile(account: account, request: req);
   }
 
   @override
@@ -63,11 +62,11 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
     required CloudDriveFile file,
     required String targetFolderId,
   }) {
-    return ChinaMobileFileOperationService.moveFile(
-      account: account,
-      file: file,
-      targetFolderId: targetFolderId,
+    final req = ChinaMobileMoveFileRequest(
+      fileIds: [file.id],
+      toParentFileId: targetFolderId,
     );
+    return ChinaMobileOperations.moveFile(account: account, request: req);
   }
 
   @override
