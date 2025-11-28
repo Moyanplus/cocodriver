@@ -54,20 +54,19 @@ abstract class QuarkBaseService {
       InterceptorsWrapper(
         onRequest: (options, handler) {
           QuarkLogger.network(options.method, url: options.uri.toString());
+          if (options.data != null) {
+            QuarkLogger.debug('请求体: ${options.data}');
+          }
           handler.next(options);
         },
         onResponse: (response, handler) {
-          QuarkLogger.debug('收到响应: ${response.statusCode}');
-          QuarkLogger.debug('响应内容长度: ${response.data?.toString().length ?? 0}');
+          QuarkLogger.debug('响应: ${response.statusCode}');
           handler.next(response);
         },
         onError: (error, handler) {
-          QuarkLogger.debug('请求错误: ${error.message}');
-          if (error.response != null) {
-            QuarkLogger.debug(
-              '错误响应: ${error.response?.statusCode} - ${error.response?.data}',
-            );
-          }
+          QuarkLogger.debug(
+            '请求错误: ${error.message} (${error.response?.statusCode ?? 'no status'})',
+          );
           handler.next(error);
         },
       ),
@@ -89,15 +88,20 @@ abstract class QuarkBaseService {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          QuarkLogger.debug('发送请求: ${options.method} ${options.uri}');
+          QuarkLogger.debug('请求: ${options.method} ${options.uri}');
+          if (options.data != null) {
+            QuarkLogger.debug('请求体: ${options.data}');
+          }
           handler.next(options);
         },
         onResponse: (response, handler) {
-          QuarkLogger.debug('收到响应: ${response.statusCode}');
+          QuarkLogger.debug('响应: ${response.statusCode}');
           handler.next(response);
         },
         onError: (error, handler) {
-          QuarkLogger.debug('请求错误: ${error.message}');
+          QuarkLogger.debug(
+            '请求错误: ${error.message} (${error.response?.statusCode ?? 'no status'})',
+          );
           handler.next(error);
         },
       ),

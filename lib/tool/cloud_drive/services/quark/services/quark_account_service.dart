@@ -2,9 +2,9 @@ import 'package:dio/dio.dart';
 
 import '../../../data/models/cloud_drive_dtos.dart';
 import '../../../data/models/cloud_drive_entities.dart';
-import '../core/quark_auth_service.dart';
-import '../core/quark_base_service.dart';
-import '../core/quark_config.dart';
+import '../api/quark_auth_service.dart';
+import '../api/quark_base_service.dart';
+import '../api/quark_config.dart';
 import '../models/quark_models.dart';
 import '../utils/quark_logger.dart';
 

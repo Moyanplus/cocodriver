@@ -1,10 +1,9 @@
 import '../../../../../core/logging/log_manager.dart';
-import '../../data/models/cloud_drive_entities.dart';
-import '../../data/models/cloud_drive_dtos.dart';
-import '../../base/cloud_drive_operation_service.dart';
-import 'ali_cloud_drive_service.dart';
-import 'ali_config.dart';
-import 'ali_repository.dart';
+import '../../../base/cloud_drive_operation_service.dart';
+import '../../../data/models/cloud_drive_dtos.dart';
+import '../../../data/models/cloud_drive_entities.dart';
+import '../repository/ali_repository.dart';
+import '../api/ali_api_client.dart';
 
 /// 阿里云盘操作策略
 ///
@@ -13,6 +12,19 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   AliCloudDriveOperationStrategy();
 
   final AliRepository _repository = AliRepository();
+  final AliApiClient _client = AliApiClient();
+  static const Map<String, bool> _supportedOperations = {
+    'getFileList': true,
+    'getAccountDetails': true,
+    'createFolder': true,
+    'rename': true,
+    'move': true,
+    'copy': false,
+    'delete': true,
+    'download': true,
+    'upload': false,
+    'share': false,
+  };
 
   @override
   Future<List<CloudDriveFile>> getFileList({
@@ -46,10 +58,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     required CloudDriveAccount account,
   }) async {
     try {
-      final result = await AliCloudDriveService.getAccountDetails(
-        account: account,
-      );
-      return result;
+      return await _client.getAccountDetails(account: account);
     } catch (e) {
       LogManager().cloudDrive('阿里云盘 - 获取账号详情异常: $e');
       return null;
@@ -289,8 +298,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }
 
   @override
-  Map<String, bool> getSupportedOperations() =>
-      AliConfig.getSupportedOperationsStatus();
+  Map<String, bool> getSupportedOperations() => _supportedOperations;
 
   @override
   Future<Map<String, dynamic>> uploadFile({

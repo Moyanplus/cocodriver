@@ -1,16 +1,18 @@
 import '../../base/base_cloud_drive_repository.dart';
 import '../../data/models/cloud_drive_entities.dart';
+import 'api/quark_api_client.dart';
 import 'models/quark_models.dart';
 import 'models/requests/quark_file_list_request.dart';
 import 'models/requests/quark_file_operation_request.dart';
 import 'models/requests/quark_share_request.dart';
-import 'services/quark_file_list_service.dart';
-import 'services/quark_file_operation_service.dart';
-import 'services/quark_download_service.dart';
-import 'services/quark_share_service.dart';
 
 /// 夸克云盘仓库，适配统一的云盘仓库接口。
 class QuarkRepository extends BaseCloudDriveRepository {
+  QuarkRepository({QuarkApiClient? apiClient})
+    : _api = apiClient ?? QuarkApiClient();
+
+  final QuarkApiClient _api;
+
   @override
   Future<List<CloudDriveFile>> listFiles({
     required CloudDriveAccount account,
@@ -23,10 +25,7 @@ class QuarkRepository extends BaseCloudDriveRepository {
       page: page,
       pageSize: pageSize,
     );
-    final result = await QuarkFileListService.getFileListWithDTO(
-      account: account,
-      request: request,
-    );
+    final result = await _api.listFiles(account: account, request: request);
     if (result.isSuccess && result.data != null) {
       return result.data!.files;
     }
@@ -39,10 +38,7 @@ class QuarkRepository extends BaseCloudDriveRepository {
     required CloudDriveFile file,
   }) async {
     final req = QuarkDeleteFileRequest(fileIds: [file.id]);
-    final result = await QuarkFileOperationService.executeOperation(
-      account: account,
-      request: req,
-    );
+    final result = await _api.operate(account: account, request: req);
     return result.isSuccess;
   }
 
@@ -53,10 +49,7 @@ class QuarkRepository extends BaseCloudDriveRepository {
     required String newName,
   }) async {
     final req = QuarkRenameFileRequest(fileId: file.id, newName: newName);
-    final result = await QuarkFileOperationService.executeOperation(
-      account: account,
-      request: req,
-    );
+    final result = await _api.operate(account: account, request: req);
     return result.isSuccess;
   }
 
@@ -67,7 +60,7 @@ class QuarkRepository extends BaseCloudDriveRepository {
     String? parentId,
     String? description,
   }) async {
-    final created = await QuarkFileOperationService.createFolder(
+    final created = await _api.createFolder(
       account: account,
       folderName: name,
       parentFolderId: parentId,
@@ -93,10 +86,7 @@ class QuarkRepository extends BaseCloudDriveRepository {
       targetFolderId: targetFolderId,
       fileIds: [file.id],
     );
-    final result = await QuarkFileOperationService.executeOperation(
-      account: account,
-      request: req,
-    );
+    final result = await _api.operate(account: account, request: req);
     return result.isSuccess;
   }
 
@@ -110,10 +100,7 @@ class QuarkRepository extends BaseCloudDriveRepository {
       targetFolderId: targetFolderId,
       fileIds: [file.id],
     );
-    final result = await QuarkFileOperationService.executeOperation(
-      account: account,
-      request: req,
-    );
+    final result = await _api.operate(account: account, request: req);
     return result.isSuccess;
   }
 
@@ -134,10 +121,7 @@ class QuarkRepository extends BaseCloudDriveRepository {
               ? ShareExpiredType.sevenDays
               : ShareExpiredType.permanent,
     );
-    final result = await QuarkShareService.createShareLink(
-      account: account,
-      request: request,
-    );
+    final result = await _api.createShare(account: account, request: request);
     if (result.isSuccess && result.data != null) {
       return result.data!.shareUrl;
     }
@@ -153,7 +137,7 @@ class QuarkRepository extends BaseCloudDriveRepository {
   }) async {
     if (account == null || file == null) return null;
     final size = file.size;
-    final result = await QuarkDownloadService.getDownloadUrl(
+    final result = await _api.getDownloadUrl(
       account: account,
       fileId: file.id,
       fileName: file.name,

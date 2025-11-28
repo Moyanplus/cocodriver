@@ -55,6 +55,7 @@ class Pan123Config {
 
   // 日志配置
   static const String logSubCategory = 'cloudDrive.pan123';
+  static const bool enableDetailedLog = true; // 详细日志开关（请求头/响应体）
 
   // 文件夹配置
   static const String rootFolderId = '0'; // 根目录ID

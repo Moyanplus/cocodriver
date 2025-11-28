@@ -39,7 +39,6 @@ class LanzouApiClient {
     'Cookie': account.cookies ?? '',
     'Referer': '${LanzouConfig.baseUrl}/',
     'Origin': LanzouConfig.baseUrl,
-    'X-Requested-With': 'XMLHttpRequest',
   };
 
   /// 执行 POST 请求并返回蓝奏云原始响应 Map。

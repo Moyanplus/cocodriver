@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../../../../../core/logging/log_manager.dart';
 import '../../../../../core/logging/log_category.dart';
-import '../../data/models/cloud_drive_entities.dart';
+import '../../../data/models/cloud_drive_entities.dart';
 import 'ali_config.dart';
 
 /// 阿里云盘基础服务
@@ -140,13 +140,13 @@ abstract class AliBaseService {
       statusCode != null && statusCode >= 200 && statusCode < 300;
 
   /// 检查API响应是否成功
-  ///
-  /// 检查阿里云盘API响应是否成功
-  ///
-  /// [response] API响应数据
-  /// 返回是否成功
-  static bool isApiSuccess(Map<String, dynamic> response) =>
-      AliConfig.isResponseSuccess(response);
+  static bool isApiSuccess(Map<String, dynamic> response) {
+    if (response.containsKey('success')) {
+      return response['success'] == true;
+    }
+    final code = response['code']?.toString();
+    return code == null || code.isEmpty || code.toLowerCase() == 'success';
+  }
 
   /// 获取响应数据
   ///
@@ -157,13 +157,11 @@ abstract class AliBaseService {
   static dynamic getResponseData(Map<String, dynamic> response) => response;
 
   /// 获取错误信息
-  ///
-  /// 从API响应中提取错误信息
-  ///
-  /// [response] API响应数据
-  /// 返回错误信息字符串
-  static String getErrorMessage(Map<String, dynamic> response) =>
-      AliConfig.getErrorMessage(response);
+  static String getErrorMessage(Map<String, dynamic> response) {
+    return response['message']?.toString() ??
+        response['code']?.toString() ??
+        'unknown error';
+  }
 
   /// 解析文件条目为 CloudDriveFile。
   static CloudDriveFile? parseFileItem(Map<String, dynamic> data) {
@@ -176,7 +174,10 @@ abstract class AliBaseService {
 
       final type = data['type']?.toString() ?? 'file';
       final isFolder = type == 'folder';
-      final size = data['size'] is int ? data['size'] as int : int.tryParse('${data['size'] ?? ''}');
+      final size =
+          data['size'] is int
+              ? data['size'] as int
+              : int.tryParse('${data['size'] ?? ''}');
       final updatedAtRaw = data['updated_at']?.toString();
       DateTime? updatedAt;
       if (updatedAtRaw != null) {

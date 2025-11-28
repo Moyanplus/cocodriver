@@ -9,7 +9,7 @@ CloudDriveProviderDescriptor createBaiduProviderDescriptor() {
   return CloudDriveProviderDescriptor(
     type: CloudDriveType.baidu,
     strategyFactory: () => BaiduCloudDriveOperationStrategy(),
-    capabilities: getCapabilities(CloudDriveType.baidu),
+    capabilities: getDefaultCapabilitiesForType(CloudDriveType.baidu),
     displayName: '百度网盘',
     iconData: Icons.cloud,
     iconAsset: 'assets/icons/baidu.png',

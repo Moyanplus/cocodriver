@@ -126,9 +126,9 @@ class LanzouRawFolder {
   final String? time;
 
   factory LanzouRawFolder.fromMap(Map<String, dynamic> map) => LanzouRawFolder(
-        id: map['folderid']?.toString() ?? '',
+        id: map['fol_id']?.toString() ?? '',
         name: map['name']?.toString() ?? '',
-        time: map['t']?.toString(),
+        time: map['time']?.toString(),
       );
 }
 

@@ -2,8 +2,8 @@ import 'package:dio/dio.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../../data/models/cloud_drive_dtos.dart';
 import '../../base/qr_login_service.dart';
-import '../core/quark_base_service.dart';
-import '../core/quark_config.dart';
+import '../api/quark_base_service.dart';
+import '../api/quark_config.dart';
 import '../utils/quark_logger.dart';
 
 /// 夸克网盘二维码登录服务

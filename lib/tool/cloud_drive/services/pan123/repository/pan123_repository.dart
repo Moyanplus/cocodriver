@@ -1,8 +1,8 @@
-import '../../data/models/cloud_drive_entities.dart';
-import '../../base/base_cloud_drive_repository.dart';
-import 'api/pan123_api_client.dart';
-import 'models/requests/pan123_list_request.dart';
-import 'models/requests/pan123_operation_requests.dart';
+import '../../../data/models/cloud_drive_entities.dart';
+import '../../../base/base_cloud_drive_repository.dart';
+import '../api/pan123_api_client.dart';
+import '../models/requests/pan123_list_request.dart';
+import '../models/requests/pan123_operation_requests.dart';
 
 /// 123 云盘仓库，适配统一仓库接口。
 class Pan123Repository extends BaseCloudDriveRepository {
@@ -22,6 +22,23 @@ class Pan123Repository extends BaseCloudDriveRepository {
       parentId: folderId ?? '0',
       page: page,
       pageSize: pageSize,
+    );
+    return _api.listFiles(account: account, request: request).then((r) => r.files);
+  }
+
+  /// 搜索文件列表（仅 Pan123 使用，未纳入通用接口）
+  Future<List<CloudDriveFile>> search({
+    required CloudDriveAccount account,
+    required String keyword,
+    String? folderId,
+    int page = 1,
+    int pageSize = 50,
+  }) {
+    final request = Pan123ListRequest(
+      parentId: folderId ?? '0',
+      page: page,
+      pageSize: pageSize,
+      searchValue: keyword,
     );
     return _api.listFiles(account: account, request: request).then((r) => r.files);
   }

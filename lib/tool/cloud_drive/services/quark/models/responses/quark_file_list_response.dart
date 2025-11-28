@@ -1,5 +1,5 @@
 import '../../../../data/models/cloud_drive_entities.dart';
-import '../../core/quark_config.dart';
+import '../../api/quark_config.dart';
 import '../../utils/quark_logger.dart';
 
 /// 夸克云盘文件列表响应

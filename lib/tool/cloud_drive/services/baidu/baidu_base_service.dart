@@ -33,24 +33,21 @@ class BaiduBaseService {
       InterceptorsWrapper(
         onRequest: (options, handler) {
           LogManager().cloudDrive(
-            '百度网盘 - 发送请求: ${options.method} ${options.uri}',
+            '百度网盘 - 请求: ${options.method} ${options.uri}',
           );
-          LogManager().cloudDrive('百度网盘 - 请求头: ${options.headers}');
           if (options.data != null) {
             LogManager().cloudDrive('百度网盘 - 请求体: ${options.data}');
           }
           handler.next(options);
         },
         onResponse: (response, handler) {
-          LogManager().cloudDrive('百度网盘 - 收到响应: ${response.statusCode}');
-          LogManager().cloudDrive('百度网盘 - 响应数据: ${response.data}');
+          LogManager().cloudDrive('百度网盘 - 响应: ${response.statusCode}');
           handler.next(response);
         },
         onError: (error, handler) {
-          LogManager().cloudDrive('百度网盘 - 请求错误: ${error.message}');
-          if (error.response != null) {
-            LogManager().cloudDrive('百度网盘 - 错误响应: ${error.response?.data}');
-          }
+          LogManager().cloudDrive(
+            '百度网盘 - 请求错误: ${error.message} (${error.response?.statusCode ?? 'no status'})',
+          );
           handler.next(error);
         },
       ),

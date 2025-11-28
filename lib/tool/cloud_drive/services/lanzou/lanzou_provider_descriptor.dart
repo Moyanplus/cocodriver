@@ -9,7 +9,7 @@ CloudDriveProviderDescriptor createLanzouProviderDescriptor() {
   return CloudDriveProviderDescriptor(
     type: CloudDriveType.lanzou,
     strategyFactory: () => LanzouCloudDriveOperationStrategy(),
-    capabilities: getCapabilities(CloudDriveType.lanzou),
+    capabilities: getDefaultCapabilitiesForType(CloudDriveType.lanzou),
     displayName: '蓝奏云',
     iconData: Icons.link,
     iconAsset: 'assets/icons/lanzou.png',

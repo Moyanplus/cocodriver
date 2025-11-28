@@ -362,6 +362,16 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       LogManager().cloudDrive(
         '蓝奏云 - 文件列表获取成功: ${files.length}个文件, ${folders.length}个文件夹',
       );
+      for (final folder in folders.take(5)) {
+        LogManager().cloudDrive(
+          '蓝奏云 - 文件夹示例: name=${folder.name}, id=${folder.id}, folderId=${folder.folderId ?? ''}',
+        );
+      }
+      for (final file in files.take(5)) {
+        LogManager().cloudDrive(
+          '蓝奏云 - 文件示例: name=${file.name}, id=${file.id}, folderId=${file.folderId ?? ''}',
+        );
+      }
 
       return allItems;
     } catch (e, stackTrace) {

@@ -533,8 +533,31 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
     }
 
     LogManager().cloudDrive('开始解析二维码登录认证数据...');
-    final cookies = await qrLoginService.parseAuthData(_currentQRLoginInfo!);
+    final qrToken = await qrLoginService.parseAuthData(_currentQRLoginInfo!);
     LogManager().cloudDrive('二维码登录认证数据解析成功');
+
+    // 根据 descriptor 配置决定落入 cookies 还是 Authorization
+    final descriptor =
+        CloudDriveProviderRegistry.get(_selectedType) ??
+        (throw StateError('未注册云盘描述: $_selectedType'));
+    final qrAuthType =
+        descriptor.qrLoginAuthType ?? AuthType.authorization;
+
+    String? cookiesValue;
+    String? authValue;
+    String? qrValue;
+    switch (qrAuthType) {
+      case AuthType.cookie:
+        cookiesValue = qrToken;
+        break;
+      case AuthType.authorization:
+      case AuthType.web:
+        authValue = qrToken;
+        break;
+      case AuthType.qrCode:
+        qrValue = qrToken;
+        break;
+    }
 
     final account = CloudDriveAccount(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -543,13 +566,18 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
               ? _nameController.text.trim()
               : '${_selectedType.displayName}账号',
       type: _selectedType,
-      cookies: cookies, // 保存解析得到的 cookie
+      cookies: cookiesValue,
+      authorizationToken: authValue,
+      qrCodeToken: qrValue,
       createdAt: DateTime.now(),
       lastLoginAt: DateTime.now(),
     );
 
     LogManager().cloudDrive(
-      '🍪 二维码账号创建完成 - cookies字段: ${account.cookies?.substring(0, account.cookies!.length > 100 ? 100 : account.cookies!.length)}',
+      '🔐 二维码账号创建完成 - authType=$qrAuthType '
+      'cookies=${cookiesValue?.length ?? 0} '
+      'authToken=${authValue?.length ?? 0} '
+      'qrToken=${qrValue?.length ?? 0}',
     );
 
     return account;

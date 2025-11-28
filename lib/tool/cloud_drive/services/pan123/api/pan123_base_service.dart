@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../../core/logging/log_manager.dart';
-import '../../data/models/cloud_drive_entities.dart';
+import '../../../data/models/cloud_drive_entities.dart';
 import 'pan123_config.dart';
 
 /// 123云盘基础服务
@@ -30,23 +30,29 @@ class Pan123BaseService {
       InterceptorsWrapper(
         onRequest: (options, handler) {
           LogManager().cloudDrive(
-            '123云盘 - 发送请求: ${options.method} ${options.uri}',
+            '123云盘 - 请求: ${options.method} ${options.uri}',
           );
-          LogManager().cloudDrive('123云盘 - 请求头: ${options.headers}');
-          if (options.data != null) {
-            LogManager().cloudDrive('123云盘 - 请求体: ${options.data}');
+          if (Pan123Config.enableDetailedLog) {
+            LogManager().cloudDrive('123云盘 - 请求头: ${options.headers}');
+            if (options.data != null) {
+              LogManager().cloudDrive('123云盘 - 请求体: ${options.data}');
+            }
           }
           handler.next(options);
         },
         onResponse: (response, handler) {
-          LogManager().cloudDrive('123云盘 - 收到响应: ${response.statusCode}');
-          LogManager().cloudDrive('123云盘 - 响应数据: ${response.data}');
+          LogManager().cloudDrive('123云盘 - 响应: ${response.statusCode}');
+          if (Pan123Config.enableDetailedLog) {
+            LogManager().cloudDrive('123云盘 - 响应体: ${response.data}');
+          }
           handler.next(response);
         },
         onError: (error, handler) {
-          LogManager().cloudDrive('123云盘 - 请求错误: ${error.message}');
-          if (error.response != null) {
-            LogManager().cloudDrive('123云盘 - 错误响应: ${error.response?.data}');
+          LogManager().cloudDrive(
+            '123云盘 - 请求错误: ${error.message} (${error.response?.statusCode ?? 'no status'})',
+          );
+          if (Pan123Config.enableDetailedLog && error.response != null) {
+            LogManager().cloudDrive('123云盘 - 错误响应体: ${error.response?.data}');
           }
           handler.next(error);
         },

@@ -10,7 +10,7 @@ CloudDriveProviderDescriptor createQuarkProviderDescriptor() {
   return CloudDriveProviderDescriptor(
     type: CloudDriveType.quark,
     strategyFactory: () => QuarkCloudDriveOperationStrategy(),
-    capabilities: getCapabilities(CloudDriveType.quark),
+    capabilities: getDefaultCapabilitiesForType(CloudDriveType.quark),
     displayName: '夸克云盘',
     iconData: Icons.cloud_queue,
     iconAsset: 'assets/icons/quark.png',

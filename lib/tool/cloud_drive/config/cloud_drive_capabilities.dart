@@ -106,3 +106,9 @@ CloudDriveCapabilities getCapabilities(CloudDriveType type) {
       _defaultCapabilities[id] ??
       _defaultCapabilities.values.first;
 }
+
+/// 获取预置的能力（不依赖注册表，供默认 descriptor 构建时使用）
+CloudDriveCapabilities getDefaultCapabilitiesForType(CloudDriveType type) {
+  final id = type.name;
+  return _defaultCapabilities[id] ?? _defaultCapabilities.values.first;
+}

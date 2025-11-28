@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../../config/cloud_drive_ui_config.dart';
+import '../../data/models/cloud_drive_configs.dart';
 import '../../data/models/cloud_drive_entities.dart';
+import '../../services/provider/cloud_drive_provider_descriptor.dart';
 import '../widgets/login/login.dart';
 import '../../../../../core/logging/log_manager.dart';
 import '../../services/provider/cloud_drive_provider_registry.dart';
@@ -34,13 +36,15 @@ class _CloudDriveLoginPageState extends State<CloudDriveLoginPage> {
   bool _canGoForward = false;
   late final CloudDriveProviderDescriptor _descriptor =
       CloudDriveProviderRegistry.get(widget.cloudDriveType) ??
-          (throw StateError('未注册云盘描述: ${widget.cloudDriveType}'));
+      (throw StateError('未注册云盘描述: ${widget.cloudDriveType}'));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${_descriptor.displayName ?? widget.cloudDriveType.name} 登录'),
+        title: Text(
+          '${_descriptor.displayName ?? widget.cloudDriveType.name} 登录',
+        ),
         backgroundColor: CloudDriveUIConfig.primaryActionColor,
         foregroundColor: Colors.white,
       ),

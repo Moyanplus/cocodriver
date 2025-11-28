@@ -3,6 +3,7 @@ import '../data/models/cloud_drive_entities.dart';
 import '../data/models/cloud_drive_dtos.dart';
 import '../services/strategy_registry.dart';
 import 'cloud_drive_file_service.dart';
+import '../services/provider/cloud_drive_provider_registry.dart';
 
 /// 云盘操作服务
 ///
@@ -170,13 +171,16 @@ class CloudDriveOperationService {
   ///
   /// [type] 云盘类型
   static CloudDriveOperationStrategy? getStrategy(CloudDriveType type) {
+    final descriptor = CloudDriveProviderRegistry.get(type);
+    final providerId = descriptor?.id ?? type.name;
     LogManager().cloudDrive(
-      '获取策略: ${type.displayName}',
+      '获取策略: ${descriptor?.displayName ?? type.name}',
       className: 'CloudDriveOperationService',
       methodName: 'getStrategy',
-      data: {'type': type.displayName},
+      data: {'type': descriptor?.displayName ?? type.name, 'id': providerId},
     );
-    final strategy = StrategyRegistry.getStrategy(type);
+    final strategy =
+        providerId != null ? StrategyRegistry.getStrategyById(providerId) : null;
     if (strategy != null) {
       LogManager().cloudDrive(
         '策略获取成功: ${strategy.runtimeType}',
@@ -186,10 +190,10 @@ class CloudDriveOperationService {
       );
     } else {
       LogManager().warning(
-        '策略未找到: ${type.displayName}',
+        '策略未找到: ${descriptor?.displayName ?? type.name}',
         className: 'CloudDriveOperationService',
         methodName: 'getStrategy',
-        data: {'type': type.displayName},
+        data: {'type': descriptor?.displayName ?? type.name, 'id': providerId},
       );
     }
     return strategy;

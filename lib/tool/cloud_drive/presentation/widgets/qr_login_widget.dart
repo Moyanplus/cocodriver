@@ -5,6 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../../services/base/qr_login_service.dart';
+import '../../services/provider/cloud_drive_provider_descriptor.dart';
 import '../../services/provider/cloud_drive_provider_registry.dart';
 
 /// 二维码登录页面
@@ -54,9 +55,8 @@ class _QRLoginPageState extends State<QRLoginPage> {
       _error = null;
     });
 
-    _loginSubscription = QRLoginManager.startQRLogin(
-      widget.cloudDriveType,
-    ).listen(
+    final providerId = _descriptor.id ?? widget.cloudDriveType.name;
+    _loginSubscription = QRLoginManager.startQRLoginById(providerId).listen(
       (loginInfo) {
         setState(() {
           _currentLoginInfo = loginInfo;
@@ -88,9 +88,12 @@ class _QRLoginPageState extends State<QRLoginPage> {
   /// 处理登录成功
   Future<void> _handleLoginSuccess(QRLoginInfo loginInfo) async {
     try {
-      final service = QRLoginManager.getService(widget.cloudDriveType);
+      final providerId = _descriptor.id ?? widget.cloudDriveType.name;
+      final service = QRLoginManager.getServiceById(providerId);
       if (service == null) {
-        throw Exception('找不到${_descriptor.displayName ?? widget.cloudDriveType.name}的二维码登录服务');
+        throw Exception(
+          '找不到${_descriptor.displayName ?? widget.cloudDriveType.name}的二维码登录服务',
+        );
       }
 
       // 解析认证数据
@@ -103,14 +106,16 @@ class _QRLoginPageState extends State<QRLoginPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${_descriptor.displayName ?? widget.cloudDriveType.name}登录成功'),
+            content: Text(
+              '${_descriptor.displayName ?? widget.cloudDriveType.name}登录成功',
+            ),
             backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
       setState(() {
-      _error = '解析登录数据失败: $e';
+        _error = '解析登录数据失败: $e';
       });
     }
   }

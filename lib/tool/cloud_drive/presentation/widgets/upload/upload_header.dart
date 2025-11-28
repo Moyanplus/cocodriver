@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/di/injection_container.dart'
+    as CloudDriveProviderRegistry;
 import '../../../config/cloud_drive_ui_config.dart';
 import '../../../data/models/cloud_drive_entities.dart';
-import '../../services/provider/cloud_drive_provider_registry.dart';
 
 /// 上传页面头部组件
 class UploadHeader extends StatelessWidget {

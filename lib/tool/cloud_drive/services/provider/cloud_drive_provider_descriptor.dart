@@ -21,6 +21,7 @@ class CloudDriveProviderDescriptor {
     this.supportedAuthTypes,
     this.description,
     this.qrLoginService,
+    this.qrLoginAuthType,
   });
 
   final CloudDriveType type;
@@ -39,4 +40,8 @@ class CloudDriveProviderDescriptor {
 
   /// 可选：对应云盘的二维码登录服务。
   final QRLoginService? qrLoginService;
+
+  /// 二维码登录返回的认证类型（用于保存到 cookies 或 Authorization）。
+  /// 不配置则默认写入 qrCodeToken 使用 Authorization 头。
+  final AuthType? qrLoginAuthType;
 }

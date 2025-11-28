@@ -165,7 +165,7 @@ class LanzouCloudDriveFacade {
         folderId: folderId,
       );
       _logSuccess('文件上传成功');
-      return LanzouResult.success(result as LanzouUploadResponse);
+      return LanzouResult.success(result);
     } catch (e) {
       _logError('文件上传异常', e);
       return LanzouResult.failure(LanzouFailure(message: e.toString()));

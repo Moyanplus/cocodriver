@@ -33,24 +33,29 @@ class LanzouDioFactory {
       InterceptorsWrapper(
         onRequest: (options, handler) {
           LogManager().cloudDrive(
-            '蓝奏云盘 - 发送请求: ${options.method} ${options.uri}',
+            '蓝奏云盘 - 请求: ${options.method} ${options.uri}',
           );
-          LogManager().cloudDrive('蓝奏云盘 - 请求头: ${options.headers}');
-          if (options.data != null) {
+          if (options.data is FormData) {
+            final form = options.data as FormData;
+            LogManager().cloudDrive(
+              '蓝奏云盘 - 请求体 fields: ${form.fields}',
+            );
+            LogManager().cloudDrive(
+              '蓝奏云盘 - 请求体 files: ${form.files.map((f) => f.value.filename).toList()}',
+            );
+          } else if (options.data != null) {
             LogManager().cloudDrive('蓝奏云盘 - 请求体: ${options.data}');
           }
           handler.next(options);
         },
         onResponse: (response, handler) {
-          LogManager().cloudDrive('蓝奏云盘 - 收到响应: ${response.statusCode}');
-          LogManager().cloudDrive('蓝奏云盘 - 响应数据: ${response.data}');
+          LogManager().cloudDrive('蓝奏云盘 - 响应: ${response.statusCode}');
           handler.next(response);
         },
         onError: (error, handler) {
-          LogManager().cloudDrive('蓝奏云盘 - 请求错误: ${error.message}');
-          if (error.response != null) {
-            LogManager().cloudDrive('蓝奏云盘 - 错误响应: ${error.response?.data}');
-          }
+          LogManager().cloudDrive(
+            '蓝奏云盘 - 请求错误: ${error.message} (${error.response?.statusCode ?? 'no status'})',
+          );
           handler.next(error);
         },
       ),

@@ -9,7 +9,7 @@ CloudDriveProviderDescriptor createChinaMobileProviderDescriptor() {
   return CloudDriveProviderDescriptor(
     type: CloudDriveType.chinaMobile,
     strategyFactory: () => ChinaMobileCloudDriveOperationStrategy(),
-    capabilities: getCapabilities(CloudDriveType.chinaMobile),
+    capabilities: getDefaultCapabilitiesForType(CloudDriveType.chinaMobile),
     displayName: '中国移动云盘',
     iconData: Icons.phone_android,
     iconAsset: 'assets/icons/china_mobile.png',

@@ -1,13 +1,10 @@
 import '../../../base/cloud_drive_operation_service.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../../data/models/cloud_drive_dtos.dart';
-import '../core/quark_config.dart';
+import '../api/quark_config.dart';
 import '../models/quark_models.dart';
 import '../services/quark_account_service.dart';
-import '../services/quark_download_service.dart';
-import '../services/quark_file_list_service.dart';
-import '../services/quark_file_operation_service.dart';
-import '../services/quark_share_service.dart';
+import '../api/quark_download_service.dart';
 import '../utils/quark_logger.dart';
 import '../quark_repository.dart';
 

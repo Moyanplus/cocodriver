@@ -1,10 +1,9 @@
 import '../../../../../core/logging/log_manager.dart';
-import '../../base/cloud_drive_operation_service.dart';
-import '../../data/models/cloud_drive_entities.dart';
-import '../../data/models/cloud_drive_dtos.dart';
-import 'pan123_cloud_drive_service.dart';
-import 'pan123_config.dart';
-import 'pan123_repository.dart';
+import '../../../base/cloud_drive_operation_service.dart';
+import '../../../data/models/cloud_drive_entities.dart';
+import '../../../data/models/cloud_drive_dtos.dart';
+import '../api/pan123_config.dart';
+import '../repository/pan123_repository.dart';
 
 /// 123云盘操作策略
 ///
@@ -246,13 +245,9 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       if (success) {
-        LogManager().cloudDrive(
-          '123云盘 - 文件复制成功: ${file.name} -> $destPath',
-        );
+        LogManager().cloudDrive('123云盘 - 文件复制成功: ${file.name} -> $destPath');
       } else {
-        LogManager().cloudDrive(
-          '123云盘 - 文件复制失败: ${file.name} -> $destPath',
-        );
+        LogManager().cloudDrive('123云盘 - 文件复制失败: ${file.name} -> $destPath');
       }
 
       return success;
@@ -409,13 +404,12 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         '123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
       );
 
-      // 使用123云盘的搜索API
-      final files = await Pan123CloudDriveService.getFileList(
+      final files = await _repository.search(
         account: account,
-        parentId: folderId ?? '0',
+        keyword: keyword,
+        folderId: folderId,
         page: page,
-        limit: pageSize,
-        searchValue: keyword,
+        pageSize: pageSize,
       );
 
       // 如果指定了文件类型，进行筛选
@@ -441,28 +435,8 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   Future<CloudDriveAccount?> refreshAuth({
     required CloudDriveAccount account,
   }) async {
-    try {
-      LogManager().cloudDrive('123云盘 - 刷新鉴权开始');
-      LogManager().cloudDrive(
-        '123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
-      );
-
-      // 调用服务层的方法来刷新鉴权
-      final refreshedAccount = await Pan123CloudDriveService.refreshAuth(
-        account,
-      );
-
-      if (refreshedAccount != null) {
-        LogManager().cloudDrive('123云盘 - 鉴权刷新成功: ${refreshedAccount.name}');
-      } else {
-        LogManager().warning('123云盘 - 鉴权刷新失败: 返回null');
-      }
-
-      return refreshedAccount;
-    } catch (e, stackTrace) {
-      LogManager().error('123云盘 - 刷新鉴权异常: $e');
-      LogManager().error('错误堆栈: $stackTrace');
-      return null;
-    }
+    // 暂无官方刷新接口，直接返回当前账号。
+    LogManager().cloudDrive('123云盘 - 暂不支持刷新鉴权，返回原账号');
+    return account;
   }
 }

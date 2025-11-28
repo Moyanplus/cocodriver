@@ -1,9 +1,8 @@
-import '../../data/models/cloud_drive_entities.dart';
-import '../../base/base_cloud_drive_repository.dart';
-import 'ali_cloud_drive_service.dart';
-import 'api/ali_api_client.dart';
-import 'models/requests/ali_list_request.dart';
-import 'models/requests/ali_operation_requests.dart';
+import '../../../base/base_cloud_drive_repository.dart';
+import '../../../data/models/cloud_drive_entities.dart';
+import '../api/ali_api_client.dart';
+import '../models/requests/ali_list_request.dart';
+import '../models/requests/ali_operation_requests.dart';
 
 /// 阿里云盘仓库，适配统一仓库接口。
 class AliRepository extends BaseCloudDriveRepository {
@@ -39,7 +38,9 @@ class AliRepository extends BaseCloudDriveRepository {
     required CloudDriveFile file,
   }) {
     final req = AliDeleteRequest(file: file);
-    return _client.deleteFile(account: account, request: req).then((r) => r.success);
+    return _client
+        .deleteFile(account: account, request: req)
+        .then((r) => r.success);
   }
 
   @override
@@ -111,9 +112,6 @@ class AliRepository extends BaseCloudDriveRepository {
     final driveId = await _client.getDriveId(account);
     if (driveId == null) return null;
     final req = AliDownloadRequest(file: file, driveId: driveId);
-    return _client.getDownloadUrl(
-      account: account,
-      request: req,
-    );
+    return _client.getDownloadUrl(account: account, request: req);
   }
 }

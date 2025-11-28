@@ -90,7 +90,22 @@ class QRLoginManager {
     if (service == null) {
       throw Exception('${type.displayName}不支持二维码登录');
     }
+    yield* _startWithService(service);
+  }
 
+  /// 按 providerId 开始二维码登录流程
+  static Stream<QRLoginInfo> startQRLoginById(String providerId) async* {
+    final service = getServiceById(providerId);
+    if (service == null) {
+      throw Exception('未注册二维码登录服务: $providerId');
+    }
+    yield* _startWithService(service);
+  }
+
+  static Stream<QRLoginInfo> _startWithService(QRLoginService service) async* {
+    final typeLabel =
+        CloudDriveProviderRegistry.get(service.cloudDriveType)?.displayName ??
+            service.cloudDriveType.name;
     StreamController<QRLoginInfo>? streamController;
     Timer? timer;
 
