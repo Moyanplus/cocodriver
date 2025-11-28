@@ -9,11 +9,16 @@ import '../services/quark_file_list_service.dart';
 import '../services/quark_file_operation_service.dart';
 import '../services/quark_share_service.dart';
 import '../utils/quark_logger.dart';
+import '../quark_repository.dart';
 
 /// 夸克云盘操作策略
 ///
 /// 实现 CloudDriveOperationStrategy 接口，提供夸克云盘特定的操作实现。
 class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
+  QuarkCloudDriveOperationStrategy();
+
+  final QuarkRepository _repository = QuarkRepository();
+
   @override
   Future<String?> getDownloadUrl({
     required CloudDriveAccount account,
@@ -31,11 +36,9 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         fileSize = file.size;
       }
 
-      final downloadUrl = await QuarkDownloadService.getDownloadUrl(
+      final downloadUrl = await _repository.getDirectLink(
         account: account,
-        fileId: file.id,
-        fileName: file.name,
-        size: fileSize,
+        file: file,
       );
 
       if (downloadUrl != null) {
@@ -87,51 +90,20 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     QuarkLogger.info('文件数量: ${files.length}');
 
     try {
-      if (files.isEmpty) {
-        throw Exception('文件列表为空');
-      }
-
-      // 目前只支持单个文件分享
-      final file = files.first;
-
-      // 将过期天数转换为 ShareExpiredType 枚举
-      ShareExpiredType expiredType = ShareExpiredType.permanent;
-      if (expireDays != null) {
-        switch (expireDays) {
-          case 1:
-            expiredType = ShareExpiredType.oneDay;
-            break;
-          case 7:
-            expiredType = ShareExpiredType.sevenDays;
-            break;
-          case 30:
-            expiredType = ShareExpiredType.thirtyDays;
-            break;
-          default:
-            expiredType = ShareExpiredType.permanent;
-        }
-      }
-
-      final request = QuarkShareRequest(
-        fileIds: [file.id],
-        title: file.name,
-        passcode: password,
-        expiredType: expiredType,
-      );
-
-      final result = await QuarkShareService.createShareLink(
+      final shareUrl = await _repository.createShareLink(
         account: account,
-        request: request,
+        files: files,
+        password: password,
+        expireDays: expireDays,
       );
 
-      if (result.isSuccess && result.data != null) {
-        final shareUrl = result.data!.shareUrl;
+      if (shareUrl != null) {
         QuarkLogger.info('夸克云盘 - 分享链接创建成功: $shareUrl');
         return shareUrl;
-      } else {
-        QuarkLogger.info('夸克云盘 - 分享链接创建失败: ${result.errorMessage}');
-        return null;
       }
+
+      QuarkLogger.info('夸克云盘 - 分享链接创建失败');
+      return null;
     } catch (e, stackTrace) {
       QuarkLogger.info('夸克云盘 - 创建分享链接异常: $e');
       QuarkLogger.info('错误堆栈: $stackTrace');
@@ -148,10 +120,7 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     QuarkLogger.info('文件信息: ${file.name} (ID: ${file.id})');
 
     try {
-      final success = await QuarkFileOperationService.deleteFile(
-        account: account,
-        file: file,
-      );
+      final success = await _repository.delete(account: account, file: file);
 
       if (success) {
         QuarkLogger.info('夸克云盘 - 文件删除成功: ${file.name}');
@@ -178,7 +147,7 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     QuarkLogger.info('目标文件夹ID: $targetFolderId');
 
     try {
-      final success = await QuarkFileOperationService.moveFile(
+      final success = await _repository.move(
         account: account,
         file: file,
         targetFolderId: targetFolderId ?? '',
@@ -209,7 +178,7 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     QuarkLogger.info('新名称: $newName');
 
     try {
-      final result = await QuarkFileOperationService.renameFile(
+      final result = await _repository.rename(
         account: account,
         file: file,
         newName: newName,
@@ -241,8 +210,7 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     QuarkLogger.info('新名称: $newName');
 
     try {
-      // 调用夸克云盘复制文件 API
-      final success = await QuarkFileOperationService.copyFile(
+      final success = await _repository.copy(
         account: account,
         file: file,
         targetFolderId: destPath,
@@ -277,22 +245,19 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     QuarkLogger.info('父文件夹ID: $parentFolderId');
 
     try {
-      final result = await QuarkFileOperationService.createFolder(
+      final folder = await _repository.createFolder(
         account: account,
-        folderName: folderName,
-        parentFolderId: parentFolderId,
+        name: folderName,
+        parentId: parentFolderId,
       );
 
-      if (result != null && result['success'] == true) {
+      if (folder != null) {
         QuarkLogger.info('夸克云盘 - 文件夹创建成功: $folderName');
-
-        // 直接返回服务层的结果，它已经包含了folder对象
-        return result;
-      } else {
-        QuarkLogger.info('夸克云盘 - 文件夹创建失败');
-
-        return {'success': false, 'message': result?['message'] ?? '文件夹创建失败'};
+        return {'success': true, 'folder': folder};
       }
+
+      QuarkLogger.info('夸克云盘 - 文件夹创建失败');
+      return {'success': false, 'message': '文件夹创建失败'};
     } catch (e, stackTrace) {
       QuarkLogger.info('夸克云盘 - 创建文件夹异常: $e');
       QuarkLogger.info('错误堆栈: $stackTrace');
@@ -310,9 +275,11 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     int pageSize = 50,
   }) async {
     try {
-      final fileList = await QuarkFileListService.getFileList(
+      final fileList = await _repository.listFiles(
         account: account,
-        parentFileId: folderId ?? '0',
+        folderId: folderId,
+        page: page,
+        pageSize: pageSize,
       );
       return fileList;
     } catch (e) {

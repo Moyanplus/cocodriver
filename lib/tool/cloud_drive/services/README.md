@@ -1,107 +1,40 @@
-# 云盘服务目录
+# 云盘服务目录（重构版）
 
-本目录包含各种云盘服务的具体实现，采用策略模式设计。
+本目录在进行「可插拔 + 目录规范」重构，目标是**新增云盘只改各自目录，公共层零散修改最小化**。请优先参考本文与 `doc/CLOUD_DRIVE_REFACTOR_PLAN.md`。
 
-## 目录结构
+## 目录概览
 
 ```
 services/
-├── ali/                    # 阿里云盘服务
-│   ├── ali_base_service.dart      # 基础服务
-│   ├── ali_config.dart            # 配置
-│   ├── ali_cloud_drive_service.dart # 云盘服务
-│   ├── ali_file_list_service.dart # 文件列表服务
-│   ├── ali_file_operation_service.dart # 文件操作服务
-│   └── ali_operation_strategy.dart # 操作策略
-├── quark/                  # 夸克云盘服务
-│   ├── quark_base_service.dart    # 基础服务
-│   ├── quark_config.dart          # 配置
-│   ├── quark_auth_service.dart    # 认证服务
-│   ├── quark_cloud_drive_service.dart # 云盘服务
-│   ├── quark_file_list_service.dart # 文件列表服务
-│   ├── quark_file_operation_service.dart # 文件操作服务
-│   └── quark_operation_strategy.dart # 操作策略
-├── baidu/                  # 百度云盘服务
-│   ├── baidu_base_service.dart    # 基础服务
-│   ├── baidu_config.dart          # 配置
-│   ├── baidu_cloud_drive_service.dart # 云盘服务
-│   ├── baidu_file_operation_service.dart # 文件操作服务
-│   ├── baidu_operation_strategy.dart # 操作策略
-│   ├── baidu_param_service.dart   # 参数服务
-│   └── baidu_task_service.dart    # 任务服务
-├── lanzou/                 # 蓝奏云盘服务
-│   ├── lanzou_config.dart         # 配置
-│   ├── lanzou_cloud_drive_facade.dart # 云盘服务（包含直链解析）
-│   ├── lanzou_operation_strategy.dart # 操作策略
-│   └── lanzou_vei_provider.dart    # VEI服务
-├── pan123/                 # 123云盘服务
-│   ├── pan123_base_service.dart   # 基础服务
-│   ├── pan123_config.dart         # 配置
-│   ├── pan123_cloud_drive_service.dart # 云盘服务
-│   ├── pan123_file_list_service.dart # 文件列表服务
-│   ├── pan123_file_operation_service.dart # 文件操作服务
-│   ├── pan123_operation_strategy.dart # 操作策略
-│   └── pan123_download_service.dart # 下载服务
-└── services.dart           # 统一导出文件
+├── provider/                # 可插拔注册：descriptor + registry
+├── lanzou/                  # 示例：已按新规范拆分的云盘
+│   ├── api/                 # 请求构建、Dio封装
+│   ├── config/              # API 常量、超时、headers
+│   ├── models/requests/     # 请求 DTO
+│   ├── models/responses/    # 响应 DTO
+│   ├── repository/          # 继承 BaseCloudDriveRepository
+│   ├── facade/              # 组合能力（如直链解析、上传）
+│   └── lanzou_operation_strategy.dart
+├── ali/ baidu/ pan123/ ...  # 其他云盘（逐步迁移中）
+└── strategy_registry.dart           # 新版策略注册入口
 ```
 
-## 设计原则
+## 新架构要点
+- **Descriptor 驱动**：每个云盘提供 `CloudDriveProviderDescriptor(type + strategyFactory + capabilities + UI 元数据)`，在 `CloudDriveProviderRegistry` 中注册。
+- **可选插件**：如二维码登录服务可随 descriptor 一并注册（示例：Quark）。
+- **统一接口**：仓库继承 `BaseCloudDriveRepository`，策略实现 `CloudDriveOperationStrategy`；上层只依赖这两个接口。
+- **能力集中**：能力表通过 `CloudDriveCapabilities` 注册，UI/业务读能力而非硬编码。
+- **目录自包含**：请求/响应/配置/仓库/策略尽量封装在各自云盘目录内。
 
-### 1. 策略模式
-每个云盘类型都有自己的操作策略实现，通过 `CloudDriveOperationStrategy` 接口统一。
+## 如何新增云盘（建议流程）
+1. 在 `services/<provider>/` 创建目录，按 lanzou 的拆分方式放置 `config/api/models/repository/strategy`。
+2. 实现 `<provider>_operation_strategy.dart`，内部调用仓库即可。
+3. 定义 `<provider>` 的 `CloudDriveProviderDescriptor` 并注册（可加入默认列表）。
+4. 在能力表里注册能力（`cloud_drive_capabilities.dart`），供 UI/规则使用。
 
-### 2. 基础服务
-每个云盘都有基础服务类，提供：
-- Dio实例创建
-- 请求拦截器
-- 通用响应处理
+## 旧接口状态
+- 旧模式（cloud_drive_service_factory / services_registry）已移除；新功能请直接走 `CloudDriveOperationStrategy + ProviderDescriptor` 路径。必要的日志基类见 `common/cloud_drive_service_base.dart`。
 
-### 3. 配置管理
-每个云盘都有独立的配置类，包含：
-- API端点
-- 请求头
-- 超时设置
-- 日志配置
-
-### 4. 服务分离
-- **文件列表服务**: 获取文件和文件夹列表
-- **文件操作服务**: 下载、删除、重命名等操作
-- **认证服务**: 登录、Token管理等
-- **云盘服务**: 用户信息、容量信息等
-
-## 使用方式
-
-### 1. 通过策略模式使用
-```dart
-final strategy = CloudDriveOperationService.getStrategy(account.type);
-final files = await strategy.getFileList(account: account, folderId: folderId);
-```
-
-### 2. 直接使用具体服务
-```dart
-import '../services/ali/ali_cloud_drive_service.dart';
-
-final driveId = await AliCloudDriveService.getDriveId(account: account);
-```
-
-### 3. 通过依赖注入使用
-```dart
-final repository = CloudDriveDIProvider.repository;
-final result = await repository.getFileList(request);
-```
-
-## 扩展新云盘
-
-1. 创建新的云盘目录（如 `onedrive/`）
-2. 实现 `CloudDriveOperationStrategy` 接口
-3. 创建基础服务、配置、文件操作等服务类
-4. 在 `services.dart` 中导出新服务
-5. 在 `CloudDriveOperationService` 中注册新策略
-
-## 注意事项
-
-1. **认证方式**: 不同云盘使用不同的认证方式（Cookie、Token等）
-2. **API差异**: 每个云盘的API结构和参数都有差异
-3. **错误处理**: 需要针对不同云盘的错误码进行处理
-4. **限流处理**: 注意API调用频率限制
-5. **缓存策略**: 合理使用缓存提高性能 
+## 其他注意事项
+- 认证方式、错误码、限流策略因云盘而异，保持在各自目录内处理。
+- 注释使用 Dart 文档注释 `///`，对外暴露的类/方法需补充语义清晰的说明。文件头部库注释请避免悬空，避免 analyzer 的 `dangling_library_doc_comments`。

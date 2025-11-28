@@ -2,6 +2,7 @@ import '../../base/cloud_drive_operation_service.dart'
     show CloudDriveOperationStrategy;
 import '../../config/cloud_drive_capabilities.dart';
 import '../../data/models/cloud_drive_entities.dart';
+import '../base/qr_login_service.dart';
 import 'package:flutter/material.dart';
 
 typedef StrategyFactory = CloudDriveOperationStrategy Function();
@@ -18,6 +19,7 @@ class CloudDriveProviderDescriptor {
     this.color,
     this.supportedAuthTypes,
     this.description,
+    this.qrLoginService,
   });
 
   final CloudDriveType type;
@@ -31,4 +33,7 @@ class CloudDriveProviderDescriptor {
   final Color? color;
   final List<AuthType>? supportedAuthTypes;
   final String? description;
+
+  /// 可选：对应云盘的二维码登录服务。
+  final QRLoginService? qrLoginService;
 }

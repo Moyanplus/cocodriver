@@ -8,28 +8,16 @@ class BaiduConfig {
   static const String baseUrl = 'https://pan.baidu.com';
   static const String apiBaseUrl = 'https://pan.baidu.com/api';
 
-  // API 端点配置
+  // API 端点配置（后续可补充校验/重试等）
   static const Map<String, String> endpoints = {
-    'fileList': '/file/list', // 获取文件列表
-    'fileInfo': '/file/info', // 获取文件信息
-    'fileManager': '/filemanager', // 文件管理（重命名、移动、复制、删除）
-    'download': '/download', // 获取下载链接
-    'upload': '/upload', // 上传文件
-    'share': '/share/pset', // 分享文件
-    'shareList': '/share/list', // 获取分享列表
-    'shareCancel': '/share/cancel', // 取消分享
-    'taskQuery': '/share/taskquery', // 查询任务
-    'taskCancel': '/share/taskcancel', // 取消任务
-    'templateVariable': '/gettemplatevariable', // 获取模板变量
-    'userInfo': '/user/info', // 用户信息
-    'quota': '/quota', // 空间配额
-    'search': '/search', // 搜索文件
-    'recycle': '/recycle', // 回收站
-    // 新增账号详情相关API
-    'accountQuota': '/quota', // 获取账号容量信息
-    'accountUserInfo': '/rest/2.0/membership/user/info', // 获取用户个人信息
-    // 新增文件夹管理API
-    'createFolder': '/create', // 新建文件夹
+    'fileList': '/api/list', // 获取文件列表
+    'delete': '/api/delete', // 删除
+    'rename': '/api/rename', // 重命名
+    'move': '/api/move', // 移动
+    'copy': '/api/copy', // 复制
+    'download': '/api/download', // 获取下载链接
+    'createFolder': '/api/create', // 新建文件夹
+    'share': '/api/share/set', // 分享
   };
 
   // 默认请求头

@@ -164,4 +164,36 @@ abstract class AliBaseService {
   /// 返回错误信息字符串
   static String getErrorMessage(Map<String, dynamic> response) =>
       AliConfig.getErrorMessage(response);
+
+  /// 解析文件条目为 CloudDriveFile。
+  static CloudDriveFile? parseFileItem(Map<String, dynamic> data) {
+    try {
+      final fileId = data['file_id']?.toString();
+      final name = data['name']?.toString();
+      if (fileId == null || name == null) {
+        return null;
+      }
+
+      final type = data['type']?.toString() ?? 'file';
+      final isFolder = type == 'folder';
+      final size = data['size'] is int ? data['size'] as int : int.tryParse('${data['size'] ?? ''}');
+      final updatedAtRaw = data['updated_at']?.toString();
+      DateTime? updatedAt;
+      if (updatedAtRaw != null) {
+        updatedAt = DateTime.tryParse(updatedAtRaw);
+      }
+      final parentId = data['parent_file_id']?.toString();
+
+      return CloudDriveFile(
+        id: fileId,
+        name: name,
+        size: size,
+        modifiedTime: updatedAt,
+        isFolder: isFolder,
+        folderId: parentId,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 }

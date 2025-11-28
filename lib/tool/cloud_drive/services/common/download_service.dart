@@ -3,12 +3,12 @@ import '../../data/models/cloud_drive_entities.dart';
 // import '../../data/models/cloud_drive_dtos.dart'; // 未使用
 import '../../base/cloud_drive_operation_service.dart';
 import '../../core/result.dart';
-import '../cloud_drive_service_factory.dart';
+import 'cloud_drive_service_base.dart';
 
 /// 下载服务
 ///
 /// 处理文件下载相关操作，包括获取下载链接、高速下载等。
-class DownloadService extends CloudDriveService {
+class DownloadService extends CloudDriveServiceBase {
   DownloadService(CloudDriveType type) : super(type);
 
   /// 获取下载链接

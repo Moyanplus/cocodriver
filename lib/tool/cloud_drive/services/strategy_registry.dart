@@ -1,6 +1,7 @@
 import '../base/cloud_drive_operation_service.dart';
 import '../config/cloud_drive_capabilities.dart' show registerCapabilities;
 import '../data/models/cloud_drive_entities.dart';
+import 'base/qr_login_service.dart';
 import 'provider/cloud_drive_provider_registry.dart';
 import 'provider/default_cloud_drive_providers.dart';
 
@@ -41,6 +42,10 @@ class StrategyRegistry {
       register(descriptor.type, descriptor.strategyFactory());
       // 将能力表注册到全局，供业务/规则使用
       registerCapabilities(descriptor.type, descriptor.capabilities);
+      // 可选：注册二维码登录服务
+      if (descriptor.qrLoginService != null) {
+        QRLoginManager.registerService(descriptor.qrLoginService!);
+      }
     });
   }
 

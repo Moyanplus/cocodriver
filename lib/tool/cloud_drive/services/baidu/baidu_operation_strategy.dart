@@ -7,12 +7,16 @@ import '../../base/cloud_drive_operation_service.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import 'baidu_cloud_drive_service.dart';
+import 'baidu_repository.dart';
 // import 'baidu_config.dart'; // 未使用
 
 /// 百度网盘操作策略
 ///
 /// 实现 CloudDriveOperationStrategy 接口，提供百度网盘特定的操作实现。
 class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
+  BaiduCloudDriveOperationStrategy();
+
+  final BaiduRepository _repository = BaiduRepository();
   /// 获取文件下载链接
   ///
   /// [account] 百度网盘账号信息
@@ -29,9 +33,9 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     );
 
     try {
-      final downloadUrl = await BaiduCloudDriveService.getDownloadUrl(
+      final downloadUrl = await _repository.getDirectLink(
         account: account,
-        fileId: file.id,
+        file: file,
       );
 
       if (downloadUrl != null) {
@@ -251,11 +255,11 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       final fileIds = files.map((f) => f.id).toList();
       LogManager().cloudDrive('百度网盘 - 文件ID列表: $fileIds');
 
-      final shareLink = await BaiduCloudDriveService.createShareLink(
+      final shareLink = await _repository.createShareLink(
         account: account,
-        fileId: fileIds.first,
+        files: files,
         password: password,
-        expireTime: (expireDays ?? 1) * 24 * 60 * 60, // 转换为秒
+        expireDays: expireDays,
       );
 
       if (shareLink != null) {
@@ -309,9 +313,9 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
 
       LogManager().cloudDrive('百度网盘 - 文件路径: $filePath');
 
-      final success = await BaiduCloudDriveService.moveFile(
+      final success = await _repository.move(
         account: account,
-        fileId: file.id,
+        file: file,
         targetFolderId: targetFolderId ?? '/',
       );
 
@@ -347,10 +351,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     );
 
     try {
-      final success = await BaiduCloudDriveService.deleteFile(
-        account: account,
-        fileId: file.id,
-      );
+      final success = await _repository.delete(account: account, file: file);
 
       if (success) {
         LogManager().cloudDrive('百度网盘 - 文件删除成功');
@@ -387,9 +388,9 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     );
 
     try {
-      final success = await BaiduCloudDriveService.renameFile(
+      final success = await _repository.rename(
         account: account,
-        fileId: file.id,
+        file: file,
         newName: newName,
       );
 
@@ -497,9 +498,9 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     );
 
     try {
-      final success = await BaiduCloudDriveService.copyFile(
+      final success = await _repository.copy(
         account: account,
-        fileId: file.id,
+        file: file,
         targetFolderId: destPath,
       );
 
@@ -535,13 +536,13 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     LogManager().cloudDrive('百度网盘 - 父文件夹ID: $parentFolderId');
 
     try {
-      final success = await BaiduCloudDriveService.createFolder(
+      final created = await _repository.createFolder(
         account: account,
-        folderName: folderName,
-        parentFolderId: parentFolderId,
+        name: folderName,
+        parentId: parentFolderId,
       );
 
-      if (success) {
+      if (created != null) {
         LogManager().cloudDrive('百度网盘 - 文件夹创建成功: $folderName');
 
         return {'success': true, 'message': '文件夹创建成功'};

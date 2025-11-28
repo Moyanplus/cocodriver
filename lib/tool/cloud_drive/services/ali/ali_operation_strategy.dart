@@ -4,13 +4,16 @@ import '../../data/models/cloud_drive_dtos.dart';
 import '../../base/cloud_drive_operation_service.dart';
 import 'ali_cloud_drive_service.dart';
 import 'ali_config.dart';
-import 'ali_file_list_service.dart';
-import 'ali_file_operation_service.dart';
+import 'ali_repository.dart';
 
 /// 阿里云盘操作策略
 ///
 /// 实现 CloudDriveOperationStrategy 接口，提供阿里云盘特定的操作实现。
 class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
+  AliCloudDriveOperationStrategy();
+
+  final AliRepository _repository = AliRepository();
+
   @override
   Future<List<CloudDriveFile>> getFileList({
     required CloudDriveAccount account,
@@ -22,18 +25,11 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     try {
       LogManager().cloudDrive('阿里云盘 - 获取文件列表: path=$path, folderId=$folderId');
 
-      // 首先获取drive_id
-      final driveId = await AliCloudDriveService.getDriveId(account: account);
-      if (driveId == null) {
-        LogManager().cloudDrive('阿里云盘 - 无法获取drive_id，文件列表获取失败');
-        return [];
-      }
-
-      // 使用专门的文件列表服务获取文件
-      final files = await AliFileListService.getFileList(
+      final files = await _repository.listFiles(
         account: account,
-        driveId: driveId,
-        parentFileId: folderId ?? 'root',
+        folderId: folderId ?? 'root',
+        page: page,
+        pageSize: pageSize,
       );
 
       LogManager().cloudDrive('阿里云盘 - 文件列表获取完成: ${files.length} 个文件');
@@ -71,11 +67,10 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         '阿里云盘 - 创建文件夹: name=$folderName, parentFolderId=$parentFolderId',
       );
 
-      // 使用专门的文件操作服务创建文件夹
-      final createdFolder = await AliFileOperationService.createFolder(
+      final createdFolder = await _repository.createFolder(
         account: account,
-        folderName: folderName,
-        parentFolderId: parentFolderId,
+        name: folderName,
+        parentId: parentFolderId,
       );
 
       if (createdFolder != null) {
@@ -112,10 +107,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     try {
       LogManager().cloudDrive('阿里云盘 - 删除文件: ${file.name}');
 
-      // TODO: 实现阿里云盘删除文件
-      // 这里需要实现具体的API调用逻辑
-
-      return false;
+      return await _repository.delete(account: account, file: file);
     } catch (e) {
       LogManager().cloudDrive('阿里云盘 - 删除文件异常: $e');
       return false;
@@ -136,8 +128,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         return false;
       }
 
-      // 使用专门的文件操作服务进行移动
-      final success = await AliFileOperationService.moveFile(
+      final success = await _repository.move(
         account: account,
         file: file,
         targetFolderId: targetFolderId,
@@ -189,8 +180,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     try {
       LogManager().cloudDrive('阿里云盘 - 重命名文件: ${file.name} -> $newName');
 
-      // 使用专门的文件操作服务进行重命名
-      final success = await AliFileOperationService.renameFile(
+      final success = await _repository.rename(
         account: account,
         file: file,
         newName: newName,
@@ -217,8 +207,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     try {
       LogManager().cloudDrive('阿里云盘 - 获取下载链接: ${file.name}');
 
-      // 使用专门的文件操作服务获取下载链接
-      final downloadUrl = await AliFileOperationService.getDownloadUrl(
+      final downloadUrl = await _repository.getDirectLink(
         account: account,
         file: file,
       );

@@ -3,12 +3,12 @@ import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import '../../base/cloud_drive_operation_service.dart';
 import '../../core/result.dart';
-import '../cloud_drive_service_factory.dart';
+import 'cloud_drive_service_base.dart';
 
 /// 文件操作服务
 ///
 /// 处理文件相关的操作，包括文件列表、文件详情、文件夹操作等。
-class FileOperationService extends CloudDriveService {
+class FileOperationService extends CloudDriveServiceBase {
   FileOperationService(CloudDriveType type) : super(type);
 
   /// 获取文件列表

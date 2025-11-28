@@ -3,12 +3,12 @@ import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import '../../infrastructure/cache/cloud_drive_cache_service.dart';
 import '../../core/result.dart';
-import '../cloud_drive_service_factory.dart';
+import 'cloud_drive_service_base.dart';
 
 /// 缓存服务
 ///
 /// 处理缓存相关操作，包括数据缓存、缓存获取、缓存清除等。
-class CacheService extends CloudDriveService {
+class CacheService extends CloudDriveServiceBase {
   CacheService(CloudDriveType type) : super(type);
 
   /// 缓存数据

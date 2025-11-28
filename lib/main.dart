@@ -18,7 +18,6 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'core/navigation/navigation_providers.dart';
 import 'core/providers/localization_providers.dart';
 import 'core/utils/memory_manager.dart';
-import 'core/utils/performance_monitor.dart';
 import 'core/di/injection_container.dart' as di;
 
 // 功能模块导入
@@ -33,8 +32,8 @@ import 'l10n/app_localizations.dart';
 // 测试页面（仅在debug模式使用）
 import 'test/pages/webview_test_page.dart';
 
-// 云盘服务注册
-import 'tool/cloud_drive/services/services_registry.dart';
+// 云盘服务注册（策略 + Provider）
+import 'tool/cloud_drive/services/strategy_registry.dart';
 
 // 下载管理器
 import 'tool/download/pages/download_manager_page.dart';
@@ -59,9 +58,8 @@ void main() async {
   // 注册所有需要的服务和依赖
   await di.init();
 
-  // 初始化云盘服务注册表
-  // 注册各种云盘服务（百度、阿里、夸克等）
-  CloudDriveServicesRegistry.initialize();
+  // 初始化云盘策略与可插拔提供方
+  StrategyRegistry.initialize();
 
   // 启动内存监控服务
   // 监控应用内存使用情况，防止内存泄漏

@@ -4,11 +4,16 @@ import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import 'pan123_cloud_drive_service.dart';
 import 'pan123_config.dart';
+import 'pan123_repository.dart';
 
 /// 123云盘操作策略
 ///
 /// 实现 CloudDriveOperationStrategy 接口，提供123云盘特定的操作实现。
 class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
+  Pan123CloudDriveOperationStrategy();
+
+  final Pan123Repository _repository = Pan123Repository();
+
   @override
   Future<String?> getDownloadUrl({
     required CloudDriveAccount account,
@@ -39,13 +44,9 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         '123云盘 - 提取的参数: s3keyFlag=$s3keyFlag, etag=$etag',
       );
 
-      final downloadUrl = await Pan123CloudDriveService.getDownloadUrl(
+      final downloadUrl = await _repository.getDirectLink(
         account: account,
-        fileId: file.id,
-        fileName: file.name,
-        size: fileSize,
-        s3keyFlag: s3keyFlag,
-        etag: etag,
+        file: file,
       );
 
       if (downloadUrl != null) {
@@ -120,10 +121,10 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         '123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
       );
 
-      final success = await Pan123CloudDriveService.moveFile(
+      final success = await _repository.move(
         account: account,
-        fileId: file.id,
-        targetParentFileId: targetFolderId ?? '0',
+        file: file,
+        targetFolderId: targetFolderId ?? '0',
       );
 
       if (success) {
@@ -172,16 +173,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       s3keyFlag = null;
       etag = null;
 
-      final success = await Pan123CloudDriveService.deleteFile(
-        account: account,
-        fileId: file.id,
-        fileName: file.name,
-        type: file.isFolder ? 1 : 0,
-        size: fileSize,
-        s3keyFlag: s3keyFlag,
-        etag: etag,
-        parentFileId: file.folderId,
-      );
+      final success = await _repository.delete(account: account, file: file);
 
       if (success) {
         LogManager().cloudDrive('123云盘 - 文件删除成功: ${file.name}');
@@ -211,10 +203,10 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         '123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
       );
 
-      final success = await Pan123CloudDriveService.renameFile(
+      final success = await _repository.rename(
         account: account,
-        fileId: file.id,
-        newFileName: newName,
+        file: file,
+        newName: newName,
       );
 
       if (success) {
@@ -247,46 +239,10 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         '123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
       );
 
-      // 解析目标文件夹ID
-      String targetFileId;
-      if (destPath == '/' || destPath.isEmpty) {
-        targetFileId = '0'; // 根目录
-      } else {
-        // 移除可能的路径前缀
-        String cleanTargetId = destPath;
-        if (cleanTargetId.startsWith('/')) {
-          cleanTargetId = cleanTargetId.substring(1);
-        }
-        targetFileId = cleanTargetId;
-      }
-
-      LogManager().cloudDrive(
-        '123云盘 - 解析后的目标文件夹ID: $targetFileId (原始: $destPath)',
-      );
-
-      // 解析文件大小
-      int? fileSize;
-      if (file.size != null && file.size! > 0) {
-        // 直接使用int类型的size
-        fileSize = file.size;
-      }
-
-      // 从文件信息中提取Etag
-      String? etag;
-
-      // TODO: 如果需要从其他地方获取etag，请在这里实现
-      // 目前CloudDriveFile模型中没有downloadUrl字段，所以设置为null
-      etag = null;
-
-      final success = await Pan123CloudDriveService.copyFile(
+      final success = await _repository.copy(
         account: account,
-        fileId: file.id,
-        targetFileId: targetFileId,
-        fileName: newName ?? file.name,
-        size: fileSize,
-        etag: etag,
-        type: file.isFolder ? 1 : 0,
-        parentFileId: file.folderId,
+        file: file,
+        targetFolderId: destPath,
       );
 
       if (success) {
@@ -338,7 +294,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     'delete': true, // 已实现删除功能
     'rename': true, // 已实现重命名功能
     'copy': true, // 已实现复制功能
-    'createFolder': false, // 暂未实现创建文件夹功能
+    'createFolder': true, // 通过仓库实现
   };
 
   @override
@@ -362,9 +318,17 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     LogManager().cloudDrive('123云盘 - 父文件夹ID: $parentFolderId');
 
     try {
-      // TODO: 实现123云盘创建文件夹功能
-      LogManager().cloudDrive('123云盘 - 创建文件夹功能暂未实现');
-      return null;
+      final created = await _repository.createFolder(
+        account: account,
+        name: folderName,
+        parentId: parentFolderId,
+      );
+      if (created != null) {
+        LogManager().cloudDrive('123云盘 - 创建文件夹成功');
+        return {'success': true, 'file': created};
+      }
+      LogManager().cloudDrive('123云盘 - 创建文件夹失败');
+      return {'success': false};
     } catch (e, stackTrace) {
       LogManager().cloudDrive('123云盘 - 创建文件夹异常: $e');
       LogManager().cloudDrive('123云盘 - 错误堆栈: $stackTrace');
@@ -413,11 +377,11 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         '123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
       );
 
-      final files = await Pan123CloudDriveService.getFileList(
+      final files = await _repository.listFiles(
         account: account,
-        parentId: folderId ?? '0',
+        folderId: folderId,
         page: page,
-        limit: pageSize,
+        pageSize: pageSize,
       );
 
       LogManager().cloudDrive('123云盘 - 文件列表获取完成: ${files.length} 个文件');

@@ -9,6 +9,7 @@ import 'services/china_mobile_download_service.dart';
 import 'services/china_mobile_file_list_service.dart';
 import 'services/china_mobile_file_operation_service.dart';
 import 'services/china_mobile_search_service.dart';
+import 'china_mobile_repository.dart';
 import 'package:dio/dio.dart';
 
 /// 中国移动云盘操作策略
@@ -17,6 +18,9 @@ import 'package:dio/dio.dart';
 /// 参考 alist-main/drivers/139 的实现。
 class ChinaMobileCloudDriveOperationStrategy
     implements CloudDriveOperationStrategy {
+  ChinaMobileCloudDriveOperationStrategy();
+
+  final ChinaMobileRepository _repository = ChinaMobileRepository();
   @override
   Future<List<CloudDriveFile>> getFileList({
     required CloudDriveAccount account,
@@ -28,9 +32,10 @@ class ChinaMobileCloudDriveOperationStrategy
     try {
       LogManager().cloudDrive('中国移动云盘 - 获取文件列表: folderId=$folderId');
 
-      final files = await ChinaMobileFileListService.getFileList(
+      final files = await _repository.listFiles(
         account: account,
-        parentFileId: folderId ?? ChinaMobileConfig.rootFolderId,
+        folderId: folderId,
+        page: page,
         pageSize: pageSize,
       );
 
@@ -198,8 +203,13 @@ class ChinaMobileCloudDriveOperationStrategy
     try {
       LogManager().cloudDrive('中国移动云盘 - 生成分享链接');
 
-      // TODO: 实现中国移动云盘分享链接生成
-      return null;
+      final shareUrl = await _repository.createShareLink(
+        account: account,
+        files: files,
+        password: password,
+        expireDays: expireDays,
+      );
+      return shareUrl;
     } catch (e) {
       LogManager().error('中国移动云盘生成分享链接失败: $e');
       return null;
@@ -215,7 +225,7 @@ class ChinaMobileCloudDriveOperationStrategy
     try {
       LogManager().cloudDrive('中国移动云盘 - 移动文件: ${file.name}');
 
-      final success = await ChinaMobileFileOperationService.moveFile(
+      final success = await _repository.move(
         account: account,
         file: file,
         targetFolderId: targetFolderId ?? ChinaMobileConfig.rootFolderId,
@@ -237,10 +247,7 @@ class ChinaMobileCloudDriveOperationStrategy
     try {
       LogManager().cloudDrive('中国移动云盘 - 删除文件: ${file.name}');
 
-      final success = await ChinaMobileFileOperationService.deleteFile(
-        account: account,
-        file: file,
-      );
+      final success = await _repository.delete(account: account, file: file);
 
       return success;
     } catch (e, stackTrace) {
@@ -259,7 +266,7 @@ class ChinaMobileCloudDriveOperationStrategy
     try {
       LogManager().cloudDrive('中国移动云盘 - 重命名文件: ${file.name} -> $newName');
 
-      final success = await ChinaMobileFileOperationService.renameFile(
+      final success = await _repository.rename(
         account: account,
         file: file,
         newName: newName,
@@ -283,7 +290,7 @@ class ChinaMobileCloudDriveOperationStrategy
     try {
       LogManager().cloudDrive('中国移动云盘 - 复制文件: ${file.name} -> $destPath');
 
-      final success = await ChinaMobileFileOperationService.copyFile(
+      final success = await _repository.copy(
         account: account,
         file: file,
         targetFolderId: destPath,
@@ -306,8 +313,15 @@ class ChinaMobileCloudDriveOperationStrategy
     try {
       LogManager().cloudDrive('中国移动云盘 - 创建文件夹: $folderName');
 
-      // TODO: 实现中国移动云盘创建文件夹功能
-      return null;
+      final folder = await _repository.createFolder(
+        account: account,
+        name: folderName,
+        parentId: parentFolderId,
+      );
+      if (folder != null) {
+        return {'success': true, 'folder': folder};
+      }
+      return {'success': false, 'message': '创建文件夹失败'};
     } catch (e, stackTrace) {
       LogManager().cloudDrive('中国移动云盘 - 创建文件夹异常: $e');
       LogManager().cloudDrive('错误堆栈: $stackTrace');

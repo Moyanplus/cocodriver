@@ -2,12 +2,12 @@
 import '../../data/models/cloud_drive_entities.dart';
 import '../../base/cloud_drive_account_service.dart';
 import '../../core/result.dart';
-import '../cloud_drive_service_factory.dart';
+import 'cloud_drive_service_base.dart';
 
 /// 账号服务
 ///
 /// 处理账号相关的操作，包括账号的加载、保存、添加、更新、删除等。
-class AccountService extends CloudDriveService {
+class AccountService extends CloudDriveServiceBase {
   AccountService(CloudDriveType type) : super(type);
 
   /// 加载所有账号
