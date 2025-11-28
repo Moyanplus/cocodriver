@@ -65,15 +65,16 @@ class QuarkRepository extends BaseCloudDriveRepository {
       folderName: name,
       parentFolderId: parentId,
     );
-    if (created == null) return null;
-    final folder = created['folder'] as CloudDriveFile?;
-    return folder ??
-        CloudDriveFile(
-          id: created['folderId']?.toString() ?? '',
-          name: name,
-          isFolder: true,
-          folderId: parentId ?? '0',
-        );
+    if (created.isSuccess && created.data != null) {
+      final fid = created.data!.folderId ?? '';
+      return CloudDriveFile(
+        id: fid,
+        name: name,
+        isFolder: true,
+        folderId: parentId ?? '0',
+      );
+    }
+    return null;
   }
 
   @override

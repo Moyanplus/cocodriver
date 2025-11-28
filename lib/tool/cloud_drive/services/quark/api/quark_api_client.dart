@@ -17,14 +17,14 @@ class QuarkApiClient {
     return QuarkOperations.listFiles(account: account, request: request);
   }
 
-  Future<QuarkApiResult<QuarkOperationResponse>> operate({
+  Future<QuarkApiResult<QuarkFileOperationResponse>> operate({
     required CloudDriveAccount account,
     required QuarkFileOperationRequest request,
   }) {
     return QuarkOperations.operate(account: account, request: request);
   }
 
-  Future<QuarkApiResult<QuarkFileOperationResult>> createFolder({
+  Future<QuarkApiResult<QuarkCreateFolderResponse>> createFolder({
     required CloudDriveAccount account,
     required String folderName,
     String? parentFolderId,

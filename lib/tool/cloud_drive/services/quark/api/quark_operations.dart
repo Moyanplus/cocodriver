@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:dio/dio.dart';
+
 import '../../../data/models/cloud_drive_entities.dart';
 import '../models/quark_api_result.dart';
 import '../models/quark_models.dart';
@@ -56,7 +59,7 @@ class QuarkOperations {
     );
   }
 
-  static Future<QuarkApiResult<QuarkOperationResponse>> operate({
+  static Future<QuarkApiResult<QuarkFileOperationResponse>> operate({
     required CloudDriveAccount account,
     required QuarkFileOperationRequest request,
   }) async {
@@ -73,10 +76,10 @@ class QuarkOperations {
 
       final response = await dio.postUri(uri, data: request.toRequestBody());
 
-      return QuarkResponseParser.parse<QuarkOperationResponse>(
+      return QuarkResponseParser.parse<QuarkFileOperationResponse>(
         response: response.data,
         statusCode: response.statusCode,
-        dataParser: (data) => QuarkOperationResponse.fromJson(data),
+        dataParser: (data) => QuarkFileOperationResponse.fromJson(data),
       );
     } catch (e, stackTrace) {
       QuarkLogger.error('文件操作失败', error: e, stackTrace: stackTrace);
@@ -84,7 +87,7 @@ class QuarkOperations {
     }
   }
 
-  static Future<QuarkApiResult<QuarkFileOperationResult>> createFolder({
+  static Future<QuarkApiResult<QuarkCreateFolderResponse>> createFolder({
     required CloudDriveAccount account,
     required String folderName,
     String? parentFolderId,
@@ -143,25 +146,14 @@ class QuarkOperations {
           folderId: QuarkConfig.getFolderId(parentFolderId),
         );
 
-        final result = {
-          'success': true,
-          'folderId': fid,
-          'folderName': folderName,
-          'parentFolderId': QuarkConfig.getFolderId(parentFolderId),
-          'finish': finish ?? false,
-          'folder': folder,
-        };
-        return QuarkApiResult.success(QuarkFileOperationResult.fromJson(result));
+        return QuarkApiResult.success(
+          QuarkCreateFolderResponse(folderId: fid, isFinished: finish ?? false),
+        );
       } else {
         QuarkLogger.error('文件夹创建成功但未返回文件夹ID');
-        final result = {
-          'success': true,
-          'folderId': null,
-          'folderName': folderName,
-          'parentFolderId': QuarkConfig.getFolderId(parentFolderId),
-          'finish': finish ?? false,
-        };
-        return QuarkApiResult.success(QuarkFileOperationResult.fromJson(result));
+        return QuarkApiResult.success(
+          QuarkCreateFolderResponse(folderId: null, isFinished: finish ?? false),
+        );
       }
     } catch (e, stackTrace) {
       QuarkLogger.error('创建文件夹失败', error: e, stackTrace: stackTrace);
