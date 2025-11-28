@@ -4,7 +4,6 @@ import '../../../data/models/cloud_drive_dtos.dart';
 import '../api/quark_config.dart';
 import '../models/quark_models.dart';
 import '../services/quark_account_service.dart';
-import '../api/quark_download_service.dart';
 import '../utils/quark_logger.dart';
 import '../quark_repository.dart';
 
