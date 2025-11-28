@@ -266,7 +266,7 @@ class CloudDriveFileService {
       return success;
     } catch (e) {
       _logError('删除文件', account, e);
-      return false;
+      rethrow;
     }
   }
 
@@ -300,7 +300,7 @@ class CloudDriveFileService {
       return success;
     } catch (e) {
       _logError('重命名文件', account, e);
-      return false;
+      rethrow;
     }
   }
 

@@ -8,6 +8,7 @@ import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import '../../services/base/qr_login_service.dart';
 import '../../services/common/preferences_service.dart';
+import '../../services/provider/cloud_drive_provider_registry.dart';
 import 'add_account/qr_code_auth_widget.dart';
 import 'add_account/webview_auth_widget.dart';
 import 'add_account/cookie_auth_form_widget.dart';
@@ -95,7 +96,7 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
   Future<void> _initializePreferences() async {
     try {
       final defaultType = await _preferencesService.getDefaultCloudDriveType();
-      final availableTypes = CloudDriveTypeHelper.availableTypes;
+      final availableTypes = _getAvailableTypes();
 
       // 确保选择的类型在可用列表中，如果不在则使用第一个可用类型
       final selectedType =
@@ -117,11 +118,9 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
         });
       }
     } catch (e) {
-      final availableTypes = CloudDriveTypeHelper.availableTypes;
+      final availableTypes = _getAvailableTypes();
       final fallbackType =
-          availableTypes.isNotEmpty
-              ? availableTypes.first
-              : CloudDriveType.baidu;
+          availableTypes.isNotEmpty ? availableTypes.first : CloudDriveType.baidu;
 
       if (mounted) {
         setState(() {
@@ -572,5 +571,13 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
         backgroundColor: Theme.of(context).colorScheme.error,
       ),
     );
+  }
+
+  List<CloudDriveType> _getAvailableTypes() {
+    final descriptors = CloudDriveProviderRegistry.descriptors;
+    if (descriptors.isNotEmpty) {
+      return descriptors.map((d) => d.type).toList();
+    }
+    return CloudDriveTypeHelper.availableTypes;
   }
 }

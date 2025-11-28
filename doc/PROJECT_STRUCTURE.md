@@ -114,25 +114,25 @@ classDiagram
     CloudDriveBaseService <|-- BaiduCloudDriveService
     CloudDriveBaseService <|-- AliCloudDriveService
     CloudDriveBaseService <|-- QuarkCloudDriveService
-    CloudDriveBaseService <|-- LanzouCloudDriveService
+    CloudDriveBaseService <|-- LanzouCloudDriveFacade
     CloudDriveBaseService <|-- Pan123CloudDriveService
     
     CloudDriveFileService <|-- BaiduCloudDriveService
     CloudDriveFileService <|-- AliCloudDriveService
     CloudDriveFileService <|-- QuarkCloudDriveService
-    CloudDriveFileService <|-- LanzouCloudDriveService
+    CloudDriveFileService <|-- LanzouCloudDriveFacade
     CloudDriveFileService <|-- Pan123CloudDriveService
     
     CloudDriveOperationService <|-- BaiduCloudDriveService
     CloudDriveOperationService <|-- AliCloudDriveService
     CloudDriveOperationService <|-- QuarkCloudDriveService
-    CloudDriveOperationService <|-- LanzouCloudDriveService
+    CloudDriveOperationService <|-- LanzouCloudDriveFacade
     CloudDriveOperationService <|-- Pan123CloudDriveService
 
     CloudDriveAccountService <|-- BaiduCloudDriveService
     CloudDriveAccountService <|-- AliCloudDriveService
     CloudDriveAccountService <|-- QuarkCloudDriveService
-    CloudDriveAccountService <|-- LanzouCloudDriveService
+    CloudDriveAccountService <|-- LanzouCloudDriveFacade
     CloudDriveAccountService <|-- Pan123CloudDriveService
 ```
 
@@ -194,10 +194,10 @@ graph TD
 
 ## 5. 蓝奏云模块示例路径
 
-- `services/lanzou/api/`：`lanzou_api_client.dart`, `lanzou_request_builder.dart`, `lanzou_vei_service.dart`
-- `services/lanzou/models/`：`lanzou_request_models.dart`, `lanzou_response_models.dart`, `lanzou_direct_link_models.dart`, `lanzou_result.dart`
-- `services/lanzou/repository/`：`lanzou_repository.dart`, `lanzou_direct_link_repository.dart`
-- `services/lanzou/facade/`：`lanzou_cloud_drive_service.dart`, `lanzou_direct_link_service.dart`
+- `services/lanzou/api/`：`lanzou_api_client.dart`, `lanzou_request_builder.dart`, `lanzou_vei_provider.dart`
+- `services/lanzou/models/`：请求(`models/requests/...`)、响应(`models/responses/...`)、直链(`lanzou_direct_link_models.dart`)、结果(`lanzou_result.dart`)
+- `services/lanzou/repository/`：`lanzou_repository.dart`
+- `services/lanzou/facade/`：`lanzou_cloud_drive_facade.dart`
 - `services/lanzou/utils/`：`lanzou_utils.dart`
 - `services/lanzou/exceptions/`：`lanzou_api_exception.dart`
 

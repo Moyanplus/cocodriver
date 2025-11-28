@@ -6,6 +6,8 @@ import '../../../data/models/cloud_drive_entities.dart';
 import '../../../base/cloud_drive_file_service.dart';
 import '../../../base/cloud_drive_operation_service.dart';
 import '../../../data/cache/file_list_cache.dart'; // 导入缓存管理器
+import '../../../core/result.dart';
+import '../../utils/operation_guard.dart';
 import '../operation/operation.dart';
 import '../file_detail/file_detail.dart';
 import '../../../../../../core/logging/log_manager.dart';
@@ -366,6 +368,12 @@ class _FileOperationBottomSheetState
 
   /// 构建操作按钮区域
   Widget _buildOperationButtons() {
+    final downloadSupported = _isOperationSupported('download');
+    final shareSupported = _isOperationSupported('share');
+    final copySupported = _isOperationSupported('copy');
+    final moveSupported = _isOperationSupported('move');
+    final deleteSupported = _isOperationSupported('delete');
+
     return Padding(
       padding: EdgeInsets.all(CloudDriveUIConfig.spacingM),
       child: OperationButtons(
@@ -380,6 +388,11 @@ class _FileOperationBottomSheetState
         onRename: null, // 重命名功能已整合到文件名点击
         onMove: _moveFile,
         onDelete: _deleteFile,
+        downloadEnabled: downloadSupported,
+        shareEnabled: shareSupported,
+        copyEnabled: copySupported,
+        moveEnabled: moveSupported,
+        deleteEnabled: deleteSupported,
         onFileDetail: null, // 不再需要详情按钮
       ),
     );
@@ -551,51 +564,57 @@ class _FileOperationBottomSheetState
   /// 执行重命名操作
   Future<void> _executeRenameOperation(String newName) async {
     LogManager().cloudDrive('开始重命名文件: ${widget.file.name} -> $newName');
-
-    // 【优化】乐观更新：先更新UI，再执行实际操作
-    // 1. 先更新本地状态（立即生效）
-    ref
-        .read(cloudDriveEventHandlerProvider)
-        .updateFileInState(widget.file.id, newName);
-
-    // 2. 保存回调引用（在 try 外部，确保 catch 能访问）
+    final originalName = widget.file.name;
+    final eventHandler = ref.read(cloudDriveEventHandlerProvider);
     final onClose = widget.onClose;
     final onOperationResult = widget.onOperationResult;
     final account = widget.account;
     final file = widget.file;
+    final cacheManager = FileListCacheManager();
+    final folderId = file.folderId ?? '/';
 
-    // 3. 立即关闭弹窗
     onClose?.call();
     onOperationResult?.call('正在重命名...', true);
 
     try {
-      // 4. 后台执行实际操作
-      final success = await CloudDriveFileService.renameFile(
-        account: account,
-        file: file,
-        newName: newName,
+      final success = await OperationGuard.run<bool>(
+        optimisticUpdate: () {
+          eventHandler.updateFileInState(file.id, newName);
+        },
+        rollback: () {
+          eventHandler.updateFileInState(file.id, originalName);
+          cacheManager.updateFileInCache(
+            account.id,
+            folderId,
+            file.id,
+            originalName,
+          );
+        },
+        action: () => CloudDriveFileService.renameFile(
+          account: account,
+          file: file,
+          newName: newName,
+        ),
+        rollbackWhen: (result) => !result,
       );
 
       if (success) {
         LogManager().cloudDrive('重命名成功: ${file.name} -> $newName');
-
-        // 【优化】更新缓存中的文件名
-        FileListCacheManager().updateFileInCache(
+        cacheManager.updateFileInCache(
           account.id,
-          file.folderId ?? '/',
+          folderId,
           file.id,
           newName,
         );
-
         onOperationResult?.call('文件重命名成功', true);
       } else {
         LogManager().cloudDrive('重命名失败，需要回滚');
-        // 失败时回滚 - 但此时 ref 可能已失效，通过回调通知父组件刷新
         onOperationResult?.call('文件重命名失败，请刷新页面', false);
       }
     } catch (e) {
-      LogManager().error('重命名异常: $e');
-      onOperationResult?.call('文件重命名失败: $e', false);
+      final errorMessage = _extractErrorMessage(e);
+      LogManager().error('重命名异常: $errorMessage');
+      onOperationResult?.call('文件重命名失败: $errorMessage', false);
     }
   }
 
@@ -644,56 +663,70 @@ class _FileOperationBottomSheetState
   /// 执行删除操作
   Future<void> _executeDeleteOperation() async {
     LogManager().cloudDrive('开始删除文件: ${widget.file.name}');
-
-    // 【优化】乐观更新：先更新UI，再执行实际操作
-    // 1. 先从本地状态移除文件（立即生效）
-    if (widget.file.isFolder) {
-      ref
-          .read(cloudDriveEventHandlerProvider)
-          .removeFolderFromState(widget.file.id);
-    } else {
-      ref
-          .read(cloudDriveEventHandlerProvider)
-          .removeFileFromState(widget.file.id);
-    }
-
-    // 2. 保存回调引用（在 try 外部，确保 catch 能访问）
+    final eventHandler = ref.read(cloudDriveEventHandlerProvider);
     final onClose = widget.onClose;
     final onOperationResult = widget.onOperationResult;
     final account = widget.account;
     final file = widget.file;
+    final cacheManager = FileListCacheManager();
+    final folderId = file.folderId ?? '/';
 
-    // 3. 立即关闭弹窗
     onClose?.call();
     onOperationResult?.call('正在删除...', true);
 
     try {
-      // 4. 后台执行实际操作
-      final success = await CloudDriveFileService.deleteFile(
-        account: account,
-        file: file,
+      final success = await OperationGuard.run<bool>(
+        optimisticUpdate: () {
+          if (file.isFolder) {
+            eventHandler.removeFolderFromState(file.id);
+          } else {
+            eventHandler.removeFileFromState(file.id);
+          }
+        },
+        rollback: () {
+          eventHandler.addFileToState(file);
+          cacheManager.addFileToCache(account.id, folderId, file);
+        },
+        action: () => CloudDriveFileService.deleteFile(
+          account: account,
+          file: file,
+        ),
+        rollbackWhen: (result) => !result,
       );
 
       if (success) {
         LogManager().cloudDrive('删除成功: ${file.name}');
-
-        // 【优化】从缓存中移除该文件
-        FileListCacheManager().removeFileFromCache(
-          account.id,
-          file.folderId ?? '/',
-          file.id,
-        );
-
+        cacheManager.removeFileFromCache(account.id, folderId, file.id);
         onOperationResult?.call('文件删除成功', true);
       } else {
         LogManager().cloudDrive('删除失败，需要回滚');
-        // 失败时回滚 - 但此时 ref 可能已失效，通过回调通知父组件刷新
         onOperationResult?.call('文件删除失败，请刷新页面', false);
       }
     } catch (e) {
-      LogManager().error('删除异常: $e');
-      onOperationResult?.call('文件删除失败: $e', false);
+      final errorMessage = _extractErrorMessage(e);
+      LogManager().error('删除异常: $errorMessage');
+      onOperationResult?.call('文件删除失败: $errorMessage', false);
     }
+  }
+
+  bool _isOperationSupported(String operation) =>
+      CloudDriveOperationService.isOperationSupported(
+        widget.account,
+        operation,
+      );
+
+  /// 提取更友好的错误提示，兼容各云盘自定义异常
+  String _extractErrorMessage(Object error) {
+    if (error is CloudDriveException) {
+      return error.userFriendlyMessage;
+    }
+
+    final raw = error.toString();
+    final separatorIndex = raw.indexOf(':');
+    if (separatorIndex == -1) {
+      return raw;
+    }
+    return raw.substring(separatorIndex + 1).trim();
   }
 }
 

@@ -1,15 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../infrastructure/logging/cloud_drive_logger_adapter.dart';
 import '../state/cloud_drive_state_manager.dart';
 import '../state/cloud_drive_state_model.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import '../../utils/file_type_utils.dart';
+import '../state/handlers/account_state_handler.dart';
+import '../state/handlers/folder_state_handler.dart';
+import '../state/handlers/batch_operation_handler.dart';
+
+typedef _HandlerBuilder<T> = T Function(CloudDriveStateManager manager);
+
+final cloudDriveLoggerProvider = Provider<CloudDriveLoggerAdapter>(
+  (ref) => DefaultCloudDriveLoggerAdapter(),
+);
+
+final accountHandlerBuilderProvider =
+    Provider<_HandlerBuilder<AccountStateHandler>>((ref) {
+      final logger = ref.watch(cloudDriveLoggerProvider);
+      return (manager) => AccountStateHandler(manager, logger: logger);
+    });
+
+final folderHandlerBuilderProvider =
+    Provider<_HandlerBuilder<FolderStateHandler>>((ref) {
+      final logger = ref.watch(cloudDriveLoggerProvider);
+      return (manager) => FolderStateHandler(manager, logger: logger);
+    });
+
+final batchHandlerBuilderProvider =
+    Provider<_HandlerBuilder<BatchOperationHandler>>((ref) {
+      final logger = ref.watch(cloudDriveLoggerProvider);
+      return (manager) => BatchOperationHandler(manager, logger: logger);
+    });
+
+final pendingHandlerBuilderProvider =
+    Provider<_HandlerBuilder<PendingOperationHandler>>(
+      (ref) => (manager) => PendingOperationHandler(manager),
+    );
 
 /// 云盘状态管理器 Provider
 final cloudDriveStateManagerProvider =
     StateNotifierProvider<CloudDriveStateManager, CloudDriveState>(
-      (ref) => CloudDriveStateManager(),
+      (ref) => CloudDriveStateManager(
+        logger: ref.watch(cloudDriveLoggerProvider),
+        accountHandlerBuilder: ref.watch(accountHandlerBuilderProvider),
+        folderHandlerBuilder: ref.watch(folderHandlerBuilderProvider),
+        batchHandlerBuilder: ref.watch(batchHandlerBuilderProvider),
+        pendingHandlerBuilder: ref.watch(pendingHandlerBuilderProvider),
+      ),
     );
 
 /// 云盘状态 Provider - 简化访问
@@ -131,6 +170,14 @@ class CloudDriveEventHandler {
 
   /// 清除错误
   void clearError() => _stateManager.handleEvent(const ClearErrorEvent());
+
+  /// 更新排序选项
+  void updateSortOption(CloudDriveSortField field, bool ascending) =>
+      _stateManager.handleEvent(UpdateSortOptionEvent(field, ascending));
+
+  /// 更新视图模式
+  void updateViewMode(CloudDriveViewMode mode) =>
+      _stateManager.handleEvent(UpdateViewModeEvent(mode));
 }
 
 /// 文件类型图标缓存 Provider

@@ -1,11 +1,8 @@
 import '../base/cloud_drive_operation_service.dart';
+import '../config/cloud_drive_capabilities.dart' show registerCapabilities;
 import '../data/models/cloud_drive_entities.dart';
-import 'ali/ali_operation_strategy.dart';
-import 'baidu/baidu_operation_strategy.dart';
-import 'china_mobile/china_mobile_operation_strategy.dart';
-import 'lanzou/lanzou_operation_strategy.dart';
-import 'pan123/pan123_operation_strategy.dart';
-import 'quark/strategy/quark_operation_strategy.dart';
+import 'provider/cloud_drive_provider_registry.dart';
+import 'provider/default_cloud_drive_providers.dart';
 
 /// 策略注册器
 ///
@@ -39,15 +36,12 @@ class StrategyRegistry {
 
   /// 初始化并注册所有策略
   static void initialize() {
-    register(CloudDriveType.baidu, BaiduCloudDriveOperationStrategy());
-    register(CloudDriveType.lanzou, LanzouCloudDriveOperationStrategy());
-    register(CloudDriveType.pan123, Pan123CloudDriveOperationStrategy());
-    register(CloudDriveType.ali, AliCloudDriveOperationStrategy());
-    register(CloudDriveType.quark, QuarkCloudDriveOperationStrategy());
-    register(
-      CloudDriveType.chinaMobile,
-      ChinaMobileCloudDriveOperationStrategy(),
-    );
+    CloudDriveProviderRegistry.initializeDefaults(defaultCloudDriveProviders);
+    CloudDriveProviderRegistry.descriptors.forEach((descriptor) {
+      register(descriptor.type, descriptor.strategyFactory());
+      // 将能力表注册到全局，供业务/规则使用
+      registerCapabilities(descriptor.type, descriptor.capabilities);
+    });
   }
 
   /// 清空所有策略（用于测试）

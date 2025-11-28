@@ -6,7 +6,7 @@ class PendingOperationHandler {
   final CloudDriveStateManager _manager;
 
   CloudDriveState get _state => _manager.state;
-  CloudDriveLoggerAdapter get _logger => _manager._logger;
+  CloudDriveLoggerAdapter get _logger => _manager.logger;
   FolderStateHandler get _folderHandler => _manager.folderHandler;
 
   Future<bool> executePendingOperation() async {
@@ -14,70 +14,101 @@ class PendingOperationHandler {
     final operationType = _state.pendingOperationType;
     final currentAccount = _state.currentAccount;
     final currentFolderId = _state.currentFolder?.id;
+    final sourceFolderId = pendingFile?.folderId ?? '/';
 
     if (pendingFile == null ||
         operationType == null ||
         currentAccount == null) {
       _logger.error('执行待操作失败: 缺少必要参数');
-      clearPendingOperation();
       return false;
     }
 
     try {
+      bool success = false;
+
       if (operationType == 'move') {
         _logger.info('执行移动操作: ${pendingFile.name} -> $currentFolderId');
-        final success = await _folderHandler.moveFile(
-          account: currentAccount,
-          file: pendingFile,
-          targetFolderId: currentFolderId,
+        final isSameFolder =
+            (pendingFile.folderId ?? '/') == (currentFolderId ?? '/');
+        CloudDriveFile? optimisticFile;
+
+        success = await OperationGuard.run<bool>(
+          optimisticUpdate: () {
+            if (isSameFolder) {
+              _removeItemFromState(pendingFile);
+            }
+            if (currentFolderId != null) {
+              optimisticFile =
+                  pendingFile.copyWith(folderId: currentFolderId);
+              addFileToState(optimisticFile!);
+            }
+          },
+          rollback: () {
+            if (optimisticFile != null) {
+              _removeItemFromState(optimisticFile!);
+            }
+            if (isSameFolder) {
+              addFileToState(pendingFile);
+            }
+          },
+          action: () => _folderHandler.moveFile(
+            account: currentAccount,
+            file: pendingFile,
+            targetFolderId: currentFolderId,
+          ),
+          rollbackWhen: (result) => !result,
         );
 
         if (success && currentFolderId != null) {
-          final movedFile = pendingFile.copyWith(folderId: currentFolderId);
-          removeFileFromState(pendingFile.id);
-          addFileToState(movedFile);
           _invalidateCaches(
             accountId: currentAccount.id,
-            sourceFolderId: pendingFile.folderId ?? '/',
+            sourceFolderId: sourceFolderId,
             targetFolderId: currentFolderId,
           );
           unawaited(_folderHandler.loadFolder(forceRefresh: true));
         }
-
-        clearPendingOperation();
-        return success;
       } else if (operationType == 'copy') {
         _logger.info('执行复制操作: ${pendingFile.name} -> $currentFolderId');
-        final success = await _folderHandler.copyFile(
-          account: currentAccount,
-          file: pendingFile,
-          targetFolderId: currentFolderId,
+        CloudDriveFile? optimisticFile;
+
+        success = await OperationGuard.run<bool>(
+          optimisticUpdate: () {
+            optimisticFile = pendingFile.copyWith(
+              id:
+                  '${pendingFile.id}_${DateTime.now().microsecondsSinceEpoch}',
+              folderId: currentFolderId,
+            );
+            addFileToState(optimisticFile!);
+          },
+          rollback: () {
+            if (optimisticFile != null) {
+              _removeItemFromState(optimisticFile!);
+            }
+          },
+          action: () => _folderHandler.copyFile(
+            account: currentAccount,
+            file: pendingFile,
+            targetFolderId: currentFolderId,
+          ),
+          rollbackWhen: (result) => !result,
         );
 
         if (success && currentFolderId != null) {
-          final copiedFile = pendingFile.copyWith(
-            id: '${pendingFile.id}_${DateTime.now().microsecondsSinceEpoch}',
-            folderId: currentFolderId,
-          );
-          addFileToState(copiedFile);
           _invalidateCaches(
             accountId: currentAccount.id,
-            sourceFolderId: pendingFile.folderId ?? '/',
+            sourceFolderId: sourceFolderId,
             targetFolderId: currentFolderId,
           );
           unawaited(_folderHandler.loadFolder(forceRefresh: true));
         }
-
-        clearPendingOperation();
-        return success;
       }
 
-      clearPendingOperation();
-      return false;
+      return success;
     } catch (e) {
       _logger.error('执行待操作失败: $e');
-      clearPendingOperation();
       return false;
+    } finally {
+      clearPendingOperation();
     }
   }
 
@@ -113,10 +144,19 @@ class PendingOperationHandler {
       pendingOperationFile: null,
       pendingOperationType: null,
       showFloatingActionButton: current.showFloatingActionButton,
+      sortField: current.sortField,
+      isSortAscending: current.isSortAscending,
+      viewMode: current.viewMode,
     );
   }
 
   void addFileToState(CloudDriveFile file) {
+    if (file.isFolder) {
+      final currentFolders = List<CloudDriveFile>.from(_state.folders)..add(file);
+      _manager.state = _state.copyWith(folders: currentFolders);
+      return;
+    }
+
     final currentFiles = List<CloudDriveFile>.from(_state.files)..add(file);
     _manager.state = _state.copyWith(files: currentFiles);
   }
@@ -131,6 +171,14 @@ class PendingOperationHandler {
     final currentFolders =
         _state.folders.where((folder) => folder.id != folderId).toList();
     _manager.state = _state.copyWith(folders: currentFolders);
+  }
+
+  void _removeItemFromState(CloudDriveFile file) {
+    if (file.isFolder) {
+      removeFolderFromState(file.id);
+    } else {
+      removeFileFromState(file.id);
+    }
   }
 
   void updateFileInState(String fileId, String newName) {

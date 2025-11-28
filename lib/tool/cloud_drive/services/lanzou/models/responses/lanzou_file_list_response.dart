@@ -1,8 +1,4 @@
-/// 蓝奏云 API 基础响应模型集合。
-///
-/// 这些模型用于 Repository 层解析接口返回的数据，避免在业务逻辑中
-/// 直接操作 Map 结构。
-
+/// 文件/文件夹列表响应
 class LanzouFilesResponse {
   const LanzouFilesResponse({
     required this.success,
@@ -64,22 +60,6 @@ class LanzouFoldersResponse {
   }
 }
 
-class LanzouOperationResponse {
-  const LanzouOperationResponse({
-    required this.success,
-    this.info,
-  });
-
-  final bool success;
-  final String? info;
-
-  factory LanzouOperationResponse.fromMap(Map<String, dynamic> map) =>
-      LanzouOperationResponse(
-        success: (map['zt'] ?? 0) == 1,
-        info: map['info']?.toString(),
-      );
-}
-
 class LanzouRawFile {
   const LanzouRawFile({
     required this.id,
@@ -116,35 +96,22 @@ class LanzouRawFile {
   final String? bakDownload;
 
   factory LanzouRawFile.fromMap(Map<String, dynamic> map) => LanzouRawFile(
-    id: map['id']?.toString() ?? '',
-    name: map['name']?.toString() ?? '',
-    displayName: map['name_all']?.toString(),
-    size: map['size']?.toString(),
-    time: map['time']?.toString(),
-    icon: map['icon']?.toString(),
-    downloads: _tryParseInt(map['downs']),
-    isLock: _parseFlag(map['is_lock']),
-    fileLock: _parseFlag(map['filelock']),
-    isBakDownload: _parseFlag(map['is_bakdownload']),
-    isCopyright: _parseFlag(map['is_copyright']),
-    isDescription: _parseFlag(map['is_des']),
-    isIcon: _parseFlag(map['is_ico']),
-    onOff: map['onof']?.toString(),
-    bakDownload: map['bakdownload']?.toString(),
-  );
-
-  static int? _tryParseInt(dynamic value) {
-    if (value == null) return null;
-    return int.tryParse(value.toString());
-  }
-
-  static bool? _parseFlag(dynamic value) {
-    if (value == null) return null;
-    final str = value.toString().trim().toLowerCase();
-    if (str == '1' || str == 'true') return true;
-    if (str == '0' || str == 'false') return false;
-    return null;
-  }
+        id: map['id']?.toString() ?? '',
+        name: map['name']?.toString() ?? '',
+        displayName: map['name_all']?.toString(),
+        size: map['size']?.toString(),
+        time: map['time']?.toString(),
+        icon: map['icon']?.toString(),
+        downloads: _asInt(map['downs']),
+        isLock: _asBool(map['is_lock']),
+        fileLock: _asBool(map['f_l']),
+        isBakDownload: _asBool(map['is_bakdown']),
+        isCopyright: _asBool(map['is_copyright']),
+        isDescription: _asBool(map['is_des']),
+        isIcon: _asBool(map['is_icon']),
+        onOff: map['onof']?.toString(),
+        bakDownload: map['bakdown']?.toString(),
+      );
 }
 
 class LanzouRawFolder {
@@ -158,13 +125,21 @@ class LanzouRawFolder {
   final String name;
   final String? time;
 
-  factory LanzouRawFolder.fromMap(Map<String, dynamic> map) {
-    final rawId = map['fol_id'] ?? map['id'];
-    final rawName = map['name'] ?? map['name_all'];
-    return LanzouRawFolder(
-      id: rawId?.toString() ?? '',
-      name: rawName?.toString() ?? '',
-      time: map['time']?.toString(),
-    );
-  }
+  factory LanzouRawFolder.fromMap(Map<String, dynamic> map) => LanzouRawFolder(
+        id: map['folderid']?.toString() ?? '',
+        name: map['name']?.toString() ?? '',
+        time: map['t']?.toString(),
+      );
+}
+
+int? _asInt(dynamic value) {
+  if (value == null) return null;
+  return int.tryParse(value.toString());
+}
+
+bool? _asBool(dynamic value) {
+  if (value == null) return null;
+  if (value is bool) return value;
+  final str = value.toString();
+  return str == '1' || str.toLowerCase() == 'true';
 }

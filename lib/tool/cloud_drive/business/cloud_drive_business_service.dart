@@ -1,4 +1,4 @@
-import '../../services/lanzou/facade/lanzou_cloud_drive_service.dart';
+import '../../services/lanzou/facade/lanzou_cloud_drive_facade.dart';
 
 import '../data/models/cloud_drive_entities.dart';
 
@@ -132,7 +132,7 @@ class CloudDriveBusinessService {
     required String shareUrl,
     String? password,
   }) async {
-    final result = await LanzouCloudDriveService.parseDirectLink(
+    final result = await LanzouCloudDriveFacade.parseDirectLink(
       shareUrl: shareUrl,
       password: password,
     );

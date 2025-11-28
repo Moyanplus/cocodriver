@@ -4,14 +4,23 @@ import '../../../data/models/cloud_drive_entities.dart';
 import '../../../utils/file_type_utils.dart';
 
 /// 文件信息区域组件
-class FileInfoSection extends StatelessWidget {
+class FileInfoSection extends StatefulWidget {
   final CloudDriveFile file;
   final Map<String, dynamic>? fileDetail;
 
   const FileInfoSection({super.key, required this.file, this.fileDetail});
 
   @override
+  State<FileInfoSection> createState() => _FileInfoSectionState();
+}
+
+class _FileInfoSectionState extends State<FileInfoSection>
+    with SingleTickerProviderStateMixin {
+  bool _detailsExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
+    final file = widget.file;
     final fileTypeInfo = FileTypeUtils.getFileTypeInfo(file.name);
     final theme = Theme.of(context);
 
@@ -94,24 +103,77 @@ class FileInfoSection extends StatelessWidget {
 
           SizedBox(height: CloudDriveUIConfig.spacingM),
 
-          // 详细信息卡片 - 使用网格布局
-          Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(12),
+          // 详细信息卡片（可折叠）
+          _buildCollapsibleInfoCard(theme, file),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCollapsibleInfoCard(ThemeData theme, CloudDriveFile file) {
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () => setState(() => _detailsExpanded = !_detailsExpanded),
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: CloudDriveUIConfig.spacingM,
+                vertical: CloudDriveUIConfig.spacingM,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 18,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  SizedBox(width: CloudDriveUIConfig.spacingM),
+                  Text(
+                    '文件详情',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  Spacer(),
+                  Text(
+                    _detailsExpanded ? '收起' : '展开',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  Icon(
+                    _detailsExpanded
+                        ? Icons.expand_less_rounded
+                        : Icons.expand_more_rounded,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
             ),
-            child: Column(
+          ),
+          AnimatedCrossFade(
+            firstChild: SizedBox.shrink(),
+            secondChild: Column(
               children: [
                 if (file.modifiedTime != null)
                   _buildInfoItem(
-                    context,
+                    theme,
                     icon: Icons.access_time_rounded,
                     label: '修改时间',
                     value: _formatDateTime(file.modifiedTime!),
                     isFirst: true,
                   ),
                 _buildInfoItem(
-                  context,
+                  theme,
                   icon: Icons.download_outlined,
                   label: '下载次数',
                   value: file.downloadCount >= 0
@@ -121,7 +183,7 @@ class FileInfoSection extends StatelessWidget {
                   isLast: false,
                 ),
                 _buildInfoItem(
-                  context,
+                  theme,
                   icon: Icons.share_outlined,
                   label: '分享次数',
                   value:
@@ -132,7 +194,7 @@ class FileInfoSection extends StatelessWidget {
                   isLast: false,
                 ),
                 _buildInfoItem(
-                  context,
+                  theme,
                   icon: Icons.tag_rounded,
                   label: '文件ID',
                   value:
@@ -144,6 +206,11 @@ class FileInfoSection extends StatelessWidget {
                 ),
               ],
             ),
+            crossFadeState:
+                _detailsExpanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 200),
           ),
         ],
       ),
@@ -152,15 +219,13 @@ class FileInfoSection extends StatelessWidget {
 
   /// 构建信息项
   Widget _buildInfoItem(
-    BuildContext context, {
+    ThemeData theme, {
     required IconData icon,
     required String label,
     required String value,
     bool isFirst = false,
     bool isLast = false,
   }) {
-    final theme = Theme.of(context);
-
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: CloudDriveUIConfig.spacingM,

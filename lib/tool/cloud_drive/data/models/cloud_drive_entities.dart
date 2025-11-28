@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'cloud_drive_configs.dart';
 import 'cloud_drive_dtos.dart';
+import '../../services/provider/cloud_drive_provider_registry.dart';
+import '../../services/provider/cloud_drive_provider_descriptor.dart';
 
 /// 云盘核心数据模型
 ///
@@ -10,7 +12,11 @@ import 'cloud_drive_dtos.dart';
 class CloudDriveTypeHelper {
   /// 获取所有可用的云盘类型
   static List<CloudDriveType> get availableTypes {
-    return CloudDriveType.values.where((type) => type.isAvailable).toList();
+    // 只依赖注册表，新增云盘需注册描述后才会出现在列表
+    return CloudDriveProviderRegistry.descriptors
+        .map((d) => d.type)
+        .where((t) => t.isAvailable)
+        .toList();
   }
 }
 
@@ -75,106 +81,49 @@ enum CloudDriveType {
 ///
 /// 为 CloudDriveType 枚举提供显示名称、图标、颜色等扩展功能。
 extension CloudDriveTypeExtension on CloudDriveType {
-  String get displayName {
-    switch (this) {
-      case CloudDriveType.baidu:
-        return '百度网盘';
-      case CloudDriveType.lanzou:
-        return '蓝奏云';
-      case CloudDriveType.pan123:
-        return '123云盘';
-      case CloudDriveType.ali:
-        return '阿里云盘';
-      case CloudDriveType.quark:
-        return '夸克云盘';
-      case CloudDriveType.chinaMobile:
-        return '中国移动云盘';
+  CloudDriveProviderDescriptor _requireDescriptor() {
+    final descriptor = CloudDriveProviderRegistry.get(this);
+    if (descriptor == null) {
+      throw StateError('未在 CloudDriveProviderRegistry 注册 $this');
     }
+    return descriptor;
+  }
+
+  String get displayName {
+    final descriptor = _requireDescriptor();
+    return descriptor.displayName ?? name;
   }
 
   IconData get iconData {
-    switch (this) {
-      case CloudDriveType.baidu:
-        return Icons.cloud;
-      case CloudDriveType.lanzou:
-        return Icons.link;
-      case CloudDriveType.pan123:
-        return Icons.storage;
-      case CloudDriveType.ali:
-        return Icons.cloud_done;
-      case CloudDriveType.quark:
-        return Icons.cloud_queue;
-      case CloudDriveType.chinaMobile:
-        return Icons.phone_android;
-    }
+    final descriptor = _requireDescriptor();
+    return descriptor.iconData ?? Icons.cloud_outlined;
   }
 
   Color get color {
-    switch (this) {
-      case CloudDriveType.baidu:
-        return Colors.blue;
-      case CloudDriveType.lanzou:
-        return Colors.orange;
-      case CloudDriveType.pan123:
-        return Colors.green;
-      case CloudDriveType.ali:
-        return Colors.red;
-      case CloudDriveType.quark:
-        return Colors.purple;
-      case CloudDriveType.chinaMobile:
-        return Colors.blueGrey;
-    }
+    final descriptor = _requireDescriptor();
+    return descriptor.color ?? Colors.blueGrey;
   }
 
   String get icon {
-    switch (this) {
-      case CloudDriveType.baidu:
-        return 'assets/icons/baidu.png';
-      case CloudDriveType.lanzou:
-        return 'assets/icons/lanzou.png';
-      case CloudDriveType.pan123:
-        return 'assets/icons/pan123.png';
-      case CloudDriveType.ali:
-        return 'assets/icons/ali.png';
-      case CloudDriveType.quark:
-        return 'assets/icons/quark.png';
-      case CloudDriveType.chinaMobile:
-        return 'assets/icons/china_mobile.png';
-    }
+    final descriptor = _requireDescriptor();
+    return descriptor.iconAsset ?? 'assets/icons/default_cloud.png';
   }
 
   AuthType get authType {
-    switch (this) {
-      case CloudDriveType.ali:
-      case CloudDriveType.lanzou:
-        return AuthType.web;
-      case CloudDriveType.baidu:
-      case CloudDriveType.pan123:
-      case CloudDriveType.quark:
-        return AuthType.cookie;
-      case CloudDriveType.chinaMobile:
-        return AuthType.authorization;
-    }
+    final supported = supportedAuthTypes;
+    return supported.isNotEmpty ? supported.first : AuthType.cookie;
   }
 
   /// 获取支持的认证方式列表
   ///
   /// Authorization 和 Cookie 是互斥的，只会返回其中一个
   List<AuthType> get supportedAuthTypes {
-    switch (this) {
-      case CloudDriveType.ali:
-        return [AuthType.web, AuthType.qrCode];
-      case CloudDriveType.baidu:
-        return [AuthType.cookie, AuthType.qrCode];
-      case CloudDriveType.lanzou:
-        return [AuthType.web, AuthType.cookie];
-      case CloudDriveType.pan123:
-        return [AuthType.cookie, AuthType.qrCode];
-      case CloudDriveType.quark:
-        return [AuthType.cookie, AuthType.qrCode];
-      case CloudDriveType.chinaMobile:
-        return [AuthType.authorization, AuthType.qrCode];
+    final descriptor = _requireDescriptor();
+    if (descriptor.supportedAuthTypes == null ||
+        descriptor.supportedAuthTypes!.isEmpty) {
+      throw StateError('$this 未声明 supportedAuthTypes，请在描述中补充。');
     }
+    return descriptor.supportedAuthTypes!;
   }
 
   CloudDriveWebViewConfig get webViewConfig {

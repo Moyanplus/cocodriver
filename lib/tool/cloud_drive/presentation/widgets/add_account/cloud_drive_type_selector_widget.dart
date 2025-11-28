@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../../services/provider/cloud_drive_provider_registry.dart';
 import 'add_account_form_constants.dart';
 
 /// 云盘类型选择器组件
@@ -19,6 +20,9 @@ class CloudDriveTypeSelectorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final descriptors = CloudDriveProviderRegistry.descriptors;
+    final hasDescriptor = descriptors.isNotEmpty;
+
     return DropdownButtonFormField<CloudDriveType>(
       value: selectedType,
       decoration: InputDecoration(
@@ -33,23 +37,43 @@ class CloudDriveTypeSelectorWidget extends StatelessWidget {
           vertical: AddAccountFormConstants.contentPaddingVertical.h,
         ),
       ),
-      items:
-          CloudDriveTypeHelper.availableTypes.map((type) {
-            return DropdownMenuItem(
-              value: type,
-              child: Row(
-                children: [
-                  Icon(
-                    type.iconData,
-                    color: type.color,
-                    size: AddAccountFormConstants.iconSizeLarge.w,
+      items: hasDescriptor
+          ? descriptors
+              .map(
+                (descriptor) => DropdownMenuItem(
+                  value: descriptor.type,
+                  child: Row(
+                    children: [
+                      Icon(
+                        descriptor.iconData ?? descriptor.type.iconData,
+                        color: descriptor.color ?? descriptor.type.color,
+                        size: AddAccountFormConstants.iconSizeLarge.w,
+                      ),
+                      SizedBox(width: AddAccountFormConstants.smallSpacing.w),
+                      Text(descriptor.displayName ?? descriptor.type.displayName),
+                    ],
                   ),
-                  SizedBox(width: AddAccountFormConstants.smallSpacing.w),
-                  Text(type.displayName),
-                ],
-              ),
-            );
-          }).toList(),
+                ),
+              )
+              .toList()
+          : CloudDriveTypeHelper.availableTypes
+              .map(
+                (type) => DropdownMenuItem(
+                  value: type,
+                  child: Row(
+                    children: [
+                      Icon(
+                        type.iconData,
+                        color: type.color,
+                        size: AddAccountFormConstants.iconSizeLarge.w,
+                      ),
+                      SizedBox(width: AddAccountFormConstants.smallSpacing.w),
+                      Text(type.displayName),
+                    ],
+                  ),
+                ),
+              )
+              .toList(),
       onChanged: (value) {
         if (value != null) {
           onTypeChanged(value);

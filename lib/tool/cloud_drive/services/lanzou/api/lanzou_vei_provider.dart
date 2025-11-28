@@ -6,7 +6,7 @@ import '../lanzou_config.dart';
 /// 蓝奏云 vei 参数管理服务
 ///
 /// 专门负责 vei 参数的获取、存储和管理。
-class LanzouVeiService {
+class LanzouVeiProvider {
   static final Dio _dio = Dio(
     BaseOptions(
       baseUrl: LanzouConfig.baseUrl,

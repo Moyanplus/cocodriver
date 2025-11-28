@@ -57,12 +57,13 @@ void main() {
 
     group('Cloud Drive Type Tests', () {
       test('should have correct enum values', () {
-        expect(CloudDriveType.values, hasLength(5));
+        expect(CloudDriveType.values, hasLength(6));
         expect(CloudDriveType.values, contains(CloudDriveType.baidu));
         expect(CloudDriveType.values, contains(CloudDriveType.ali));
         expect(CloudDriveType.values, contains(CloudDriveType.lanzou));
         expect(CloudDriveType.values, contains(CloudDriveType.pan123));
         expect(CloudDriveType.values, contains(CloudDriveType.quark));
+        expect(CloudDriveType.values, contains(CloudDriveType.chinaMobile));
       });
 
       test('should have correct display names', () {
@@ -71,13 +72,15 @@ void main() {
         expect(CloudDriveType.lanzou.displayName, equals('蓝奏云'));
         expect(CloudDriveType.pan123.displayName, equals('123云盘'));
         expect(CloudDriveType.quark.displayName, equals('夸克云盘'));
+        expect(CloudDriveType.chinaMobile.displayName, equals('中国移动云盘'));
       });
     });
 
     group('Auth Type Tests', () {
       test('should have correct enum values', () {
-        expect(AuthType.values, hasLength(3));
+        expect(AuthType.values, hasLength(4));
         expect(AuthType.values, contains(AuthType.cookie));
+        expect(AuthType.values, contains(AuthType.authorization));
         expect(AuthType.values, contains(AuthType.web));
         expect(AuthType.values, contains(AuthType.qrCode));
       });

@@ -1,0 +1,57 @@
+# 云盘模块重构（可插拔 + 目录规范）
+
+> 目标：新增云盘时只改各自目录，公共层无需散落修改；目录结构清晰、接口对齐。
+
+## 核心思路
+- **可插拔注册**：每个云盘通过 `CloudDriveProviderDescriptor` 暴露 `type + strategyFactory + capabilities`，注册到 `CloudDriveProviderRegistry`。
+- **统一接口**：仓库继承 `BaseCloudDriveRepository`，策略实现 `CloudDriveOperationStrategy`；上层只依赖这两个接口。
+- **能力集中**：能力/上限由各云盘 descriptor 提供并在初始化时 `registerCapabilities`，`CloudDriveBusinessRules` 统一读取。
+- **目录自包含**：请求/响应/配置/仓库/策略尽量放在云盘子目录内，公共层只做注册和接口定义。
+
+## 目录规范（tool/cloud_drive）
+- `base/`：接口与基类（`CloudDriveOperationStrategy`、`BaseCloudDriveRepository`、`CloudDriveFileService` 等）。
+- `config/`：全局配置与能力注册（`cloud_drive_capabilities.dart`）。
+- `services/`
+  - `provider/`：可插拔注册（`cloud_drive_provider_descriptor.dart`、`cloud_drive_provider_registry.dart`、`default_cloud_drive_providers.dart`）。
+  - `<provider>/`（示例 lanzou/ali/...）：
+    - `config/`：该云盘 API 常量、任务映射。
+    - `api/`：请求构建、客户端封装。
+    - `models/requests/`、`models/responses/`、`models/common/`：按功能拆分 DTO。
+    - `repository/`：继承 `BaseCloudDriveRepository`，实现 CRUD/分享/直链等。
+    - `..._operation_strategy.dart`：实现 `CloudDriveOperationStrategy`。
+    - （可选）`facade/`：复杂组合逻辑/聚合服务。
+- `business/`：规则/业务服务，避免硬编码云盘类型，统一走 Strategy + Capabilities。
+- `presentation/`：UI/状态层，能力/按钮显隐统一从 Strategy 或 Capabilities 读取。
+
+## 接入新云盘 Checklist
+1. **定义能力与策略**  
+   - 新建 `<provider>/descriptor.dart`，返回 `CloudDriveProviderDescriptor(type, strategyFactory, capabilities)`。  
+   - 在启动时注册：`CloudDriveProviderRegistry.register(descriptor);`（或加入默认列表）。
+2. **实现仓库**  
+   - 继承 `BaseCloudDriveRepository`，实现 `listFiles/delete/rename/move/copy/createFolder/createShareLink/getDirectLink`。  
+   - 拆分请求/响应模型至 `models/requests` / `models/responses`。
+3. **策略实现**  
+   - 实现 `CloudDriveOperationStrategy`，内部调用仓库，无需改公共 switch。
+4. **配置与常量**  
+   - `<provider>/config/` 定义 baseUrl、端点、任务 key、默认参数。
+5. **账号/UI 元数据**  
+   - 统一在 descriptor 中提供显示名/图标/认证方式（后续可扩展 descriptor 增加这些字段），UI 从注册表读取。
+6. **业务规则/能力**  
+   - 将能力通过 `registerCapabilities` 注册，`CloudDriveBusinessRules` 直接生效。
+
+## 待完成事项（迁移清单）
+- 为每个云盘补充 descriptor，必要时扩展 descriptor 字段（图标、认证方式等）。
+- 迁移其他云盘的仓库到 `BaseCloudDriveRepository` 接口，减少策略差异。
+- UI/账号添加/选择处的云盘列表改为从 `CloudDriveProviderRegistry` 读取，去掉硬编码 `CloudDriveType`。
+- 默认能力迁移到各云盘 descriptor 中，`cloud_drive_capabilities.dart` 仅保留注册与兜底。
+- 补充直链/分享等操作的占位/异常提示，避免返回 null/false 时 UI 无反馈。
+
+## 已完成
+- 可插拔策略注册（ProviderDescriptor + Registry + 默认列表）。
+- 蓝奏云请求/响应模型拆分；蓝奏仓库实现 BaseCloudDriveRepository 并内聚直链解析。
+- 能力表支持动态注册，默认能力作为兜底。
+
+## 参考
+- `lib/tool/cloud_drive/services/provider/default_cloud_drive_providers.dart`
+- `lib/tool/cloud_drive/base/base_cloud_drive_repository.dart`
+- 蓝奏示例：`services/lanzou/`（仓库 + 拆分后的 requests/responses）。

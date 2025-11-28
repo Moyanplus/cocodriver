@@ -1,239 +1,153 @@
-# 蓝奏云盘服务优化总结
+# Lanzou 模块 README
 
-## 优化概述
+蓝奏云模块负责在 Flutter 应用中对接蓝奏云盘的所有 API，包括文件列表、上传、移动和直链解析等功能。代码遵循“配置 ➜ API 客户端 ➜ Repository ➜ Facade ➜ Operation Strategy”的分层架构，便于独立维护与扩展。
 
-本次优化主要解决了蓝奏云盘服务中的架构问题、代码重复问题，并提高了代码的可维护性和一致性。
+## 依赖与上下文
 
-## 已完成的优化
+- 依赖 `tool/cloud_drive/data/models` 中的 `CloudDriveAccount`、`CloudDriveFile` 等通用实体。
+- 需要合法的蓝奏云 Cookie（尤其是 `ylogin` 字段）来创建仓库对象，并由 `LanzouUtils.extractUid` 提取 UID。
+- 蓝奏云接口要求提供 VEI 参数，模块通过 `LanzouVeiProvider` 自动获取/缓存，无需业务层操心。
+- 日志统一通过 `LogManager().cloudDrive(...)` 写入，方便全局定位问题。
 
-### 1. 创建基础服务
-- ✅ 创建了LanzouBaseService统一Dio创建和配置
-- ✅ 添加了统一的响应处理方法
-- ✅ 添加了统一的请求头创建方法
+## 目录结构
 
-### 2. 修复编译错误
-- ✅ 修复了CloudDriveFile构造函数参数类型问题
-- ✅ 统一了日志记录方式
-- ✅ 添加了统一的错误处理方法
+```text
+lib/tool/cloud_drive/services/lanzou
+├── api/
+│   ├── lanzou_dio_factory.dart     # Dio 统一配置、拦截器
+│   ├── lanzou_api_client.dart       # 带 Cookie/UID 的 API 客户端
+│   ├── lanzou_request_builder.dart  # 链式构造标准请求体
+│   └── lanzou_vei_provider.dart      # VEI 参数抓取与缓存
+├── exceptions/
+│   └── lanzou_exceptions.dart       # 自定义异常
+├── facade/
+│   └── lanzou_cloud_drive_facade.dart  # 业务可直接调用的服务集合（含直链解析）
+├── models/
+│   ├── lanzou_direct_link_models.dart
+│   ├── models/
+│   │   ├── requests/lanzou_file_requests.dart
+│   │   ├── responses/...
+│   └── lanzou_result.dart           # 统一 Result/Failure
+├── repository/
+│   ├── lanzou_repository.dart       # 核心仓库，封装文件相关 API
+│   ├── lanzou_direct_link_repository.dart
+│   └── lanzou_share_repository.dart # 分享能力占位
+├── utils/
+│   └── lanzou_utils.dart            # UID/文件大小等通用工具
+├── lanzou_config.dart               # 所有 URL、请求头、task id、超时配置
+├── lanzou_operation_strategy.dart   # 接入 CloudDriveOperationStrategy
+└── README.md                        # 当前文档
+```
 
-### 3. 代码结构优化
-- ✅ 添加了统一的日志记录方法
-- ✅ 添加了统一的错误处理机制
-- ✅ 优化了getFiles和getFolders方法
-- ✅ 优化了validateCookies、getFileDetail、uploadFile、moveFile方法
-- ✅ 移除了重复的Dio创建代码
+## 调用流程
 
-### 4. 架构改进
-- ✅ 统一了错误处理机制
-- ✅ 标准化了日志记录格式
-- ✅ 简化了代码结构
-- ✅ 统一使用LanzouBaseService创建Dio实例
+```
+CloudDriveOperationStrategy
+        │
+        ▼
+LanzouCloudDriveFacade (Facade)
+        │
+        ▼
+    LanzouRepository
+        │
+        ▼
+LanzouApiClient + LanzouDioFactory + LanzouVeiProvider
+        │
+        ▼
+蓝奏云官方接口 (doupload.php / html5up.php 等)
+```
 
-## 优化前后对比
+## 核心组件说明
 
-### 优化前的问题
+### 配置（`lanzou_config.dart`）
+- 统一维护 base URL、任务 ID、默认请求头、超时与日志配置。
+- 提供 `getTaskId`、`getFolderId`、`getMimeType` 等便捷方法，避免在业务代码中硬编码。
+
+### API 层（`api/`）
+- `LanzouDioFactory`：集中创建带拦截器的 Dio，负责记录每次请求/响应。
+- `LanzouApiClient`：基于账号 Cookie、UID 执行 POST，提供简单的重试机制。
+- `LanzouVeiProvider`：拉取 mydisk 页面分析 VEI 参数，并写入 `LanzouConfig` 缓存。
+- `LanzouRequestBuilder`：以链式方式拼装必要字段，保证 key、顺序与 folder/vei 逻辑统一。
+
+### Repository 层（`repository/`）
+- `LanzouRepository` 将 API 返回的 Map 映射为 `CloudDriveFile`，同时封装 cookie 校验、VEI 缓存、上传等逻辑。
+- `LanzouRepository` 统一处理目录操作、上传、以及直链解析。直链解析在仓库内通过 HTML + Ajax 请求完成。
+- `LanzouRepository.createShareLink` 暂不支持 API 分享，统一返回空。
+
+### Facade（`facade/`）
+- `LanzouCloudDriveFacade`：业务层常用入口，例如 `getFiles`、`uploadFile`、`moveFile`、直链解析等，内部统一捕获异常并返回 `LanzouResult`。
+
+### Operation Strategy（`lanzou_operation_strategy.dart`）
+- 实现 `CloudDriveOperationStrategy`，把蓝奏云能力接入通用的“云盘操作”框架。
+- 根据平台特性标注支持/不支持的操作，并转调 Facade。
+
+### 模型与工具（`models/`, `utils/`）
+- 请求/响应模型解耦 Map 解析，`LanzouResult` 负责统一的成功/失败返回。
+- `LanzouUtils` 暴露 UID 提取、临时账号创建、文件大小解析等跨层使用的工具方法。
+
+## 已实现能力
+
+- 列表：`getFiles`、`getFolders`、`getFileList`（合并文件/文件夹）。
+- 文件操作：`moveFile`、`uploadFile`（multipart）、`getFileDetail`。
+- 账号：`validateCookies`、`getAccountDetails`（基于 UID 推断）。
+- 分享：直链解析支持公开/带密码的分享页，并自动处理重定向。
+- 错误与日志：所有入口都在 Facade/Strategy 层抓取异常并输出 LogManager 日志。
+
+未实现或受限能力：删除、重命名、复制、创建文件夹、API 下载/高速下载、搜索、刷新鉴权。`lanzou_operation_strategy.dart` 中保留了 TODO 以供后续扩展。
+
+## 使用示例
+
 ```dart
-// ❌ 重复的Dio创建代码
-static final Dio _dio = Dio(BaseOptions(...));
+final cookies = account.cookies ?? '';
+final uid = LanzouCloudDriveFacade.extractUidFromCookies(cookies);
+if (uid == null) throw Exception('Cookie 缺少 ylogin');
 
-// ❌ 不一致的日志记录
-DebugService.log('📁 蓝奏云 - 获取文件列表开始...');
-DebugService.log('📡 蓝奏云 - 请求数据: $data');
-
-// ❌ 错误的参数类型
-return CloudDriveFile(
-  size: size, // String类型，应该是int?
-  modifiedTime: time, // String类型，应该是DateTime?
+final filesResult = await LanzouCloudDriveFacade.getFiles(
+  cookies: cookies,
+  uid: uid,
+  folderId: LanzouConfig.rootFolderId,
 );
 
-// ❌ 重复的Dio使用
-final response = await _dio.post(...);
+if (filesResult.isSuccess) {
+  final files = filesResult.data!;
+  // 展示文件列表
+} else {
+  LogManager().cloudDrive('获取文件失败: ${filesResult.error?.message}');
+}
 ```
 
-### 优化后的改进
+上传文件需要完整账号对象：
+
 ```dart
-// ✅ 统一的Dio创建
-static Dio _createDio(CloudDriveAccount account) {
-  return LanzouBaseService.createDio(account);
-}
-
-// ✅ 统一的日志记录
-_logInfo('📁 获取文件列表: 文件夹ID=$folderId');
-_logSuccess('成功获取 ${files.length} 个文件');
-_logError('获取文件列表失败', '响应状态: zt=${responseData['zt']}');
-
-// ✅ 正确的参数类型
-return CloudDriveFile(
-  size: int.tryParse(file['size']?.toString() ?? '0') ?? 0, // int? 类型
-  modifiedTime: time != null ? DateTime.tryParse(time) : null, // DateTime? 类型
+final uploadResult = await LanzouCloudDriveFacade.uploadFile(
+  account: account,
+  filePath: '/tmp/demo.pdf',
+  fileName: 'demo.pdf',
+  folderId: '-1',
 );
-
-// ✅ 统一的Dio使用
-final response = await _createDio(account).post(...);
 ```
 
-## 新增的统一方法
+## 日志与错误处理
 
-### 1. 统一错误处理
-```dart
-static void _handleError(String operation, dynamic error, StackTrace? stackTrace) {
-  DebugService.log(
-    '❌ 蓝奏云盘 - $operation 失败: $error',
-    category: DebugCategory.tools,
-    subCategory: LanzouConfig.logSubCategory,
-  );
-  if (stackTrace != null) {
-    DebugService.log(
-      '📄 错误堆栈: $stackTrace',
-      category: DebugCategory.tools,
-      subCategory: LanzouConfig.logSubCategory,
-    );
-  }
-}
+- Facade/Strategy 层提供 `_logInfo/_logSuccess/_logError` 统一入口，所有异常都会记录堆栈，方便链路追踪。
+- Repository 层在遇到 `zt != 1` 或响应格式异常时，会抛出 `LanzouApiException`，上层自动转换为 `LanzouResult.failure`。
+- 直链解析流程中既会捕获蓝奏返回的错误，也会处理 HTML 结构变化导致的解析失败。
+
+## 测试
+
+现有单元测试位于 `test/tool/cloud_drive/lanzou_repository_test.dart`，覆盖 `LanzouResult` 基础行为。
+
+```bash
+flutter test test/tool/cloud_drive/lanzou_repository_test.dart
 ```
 
-### 2. 统一日志记录
-```dart
-static void _logInfo(String message, {Map<String, dynamic>? params}) {
-  DebugService.log(
-    message,
-    category: DebugCategory.tools,
-    subCategory: LanzouConfig.logSubCategory,
-  );
-}
+如需为 Repository/Fascade 增加更多测试，可使用 `package:mockito` 或 `fake_async` 对 Dio 与日志进行替身模拟。
 
-static void _logSuccess(String message, {Map<String, dynamic>? details}) {
-  DebugService.log(
-    '✅ 蓝奏云盘 - $message',
-    category: DebugCategory.tools,
-    subCategory: LanzouConfig.logSubCategory,
-  );
-}
+## 扩展建议
 
-static void _logError(String message, dynamic error) {
-  DebugService.log(
-    '❌ 蓝奏云盘 - $message: $error',
-    category: DebugCategory.tools,
-    subCategory: LanzouConfig.logSubCategory,
-  );
-}
-```
+1. **API 能力补齐**：补充删除、重命名、复制、创建文件夹、搜索等操作，建议在 `lanzou_repository.dart` 中新增对应请求模型，再暴露到 Facade/Strategy。
+2. **依赖注入**：将 `LogManager`、`Dio` 等依赖通过构造函数注入，便于单元测试。
+3. **错误码枚举化**：将蓝奏云常见错误信息映射为更友好的 `LanzouFailure.code`，方便 UI 精确展示。
+4. **更多测试**：为直链解析、上传、VEI 缓存等核心流程补齐单测，防止蓝奏云页面结构变动导致回归。
 
-### 3. 辅助方法
-```dart
-/// 创建临时账号对象
-static CloudDriveAccount _createTempAccount(String cookies) {
-  return CloudDriveAccount(
-    id: 'temp',
-    name: 'temp',
-    type: CloudDriveType.lanzou,
-    createdAt: DateTime.now(),
-    cookies: cookies,
-  );
-}
-```
-
-## 新增的基础服务
-
-### LanzouBaseService
-```dart
-class LanzouBaseService {
-  // 创建dio实例
-  static Dio createDio(CloudDriveAccount account) {
-    // 统一的Dio配置和拦截器
-  }
-
-  // 验证响应状态
-  static bool isSuccessResponse(Map<String, dynamic> response) {
-    return response['zt'] == 1;
-  }
-
-  // 获取响应数据
-  static Map<String, dynamic>? getResponseData(Map<String, dynamic> response) {
-    return response['text'] as Map<String, dynamic>?;
-  }
-
-  // 获取响应消息
-  static String getResponseMessage(Map<String, dynamic> response) {
-    return response['info']?.toString() ?? '未知错误';
-  }
-}
-```
-
-## 优化效果
-
-### 代码质量提升
-- **编译错误**: 从多个错误减少到0个
-- **代码重复**: 减少了约35%的重复代码
-- **日志一致性**: 100%统一使用DebugService
-- **类型安全**: 100%正确的参数类型
-- **Dio使用**: 100%统一使用基础服务
-
-### 可维护性提升
-- **错误处理**: 统一的错误处理机制
-- **日志记录**: 标准化的日志格式
-- **代码结构**: 更清晰的职责分离
-- **依赖管理**: 简化的依赖关系
-- **方法复用**: 更好的代码复用
-
-### 性能优化
-- **Dio实例**: 统一的基础服务，减少重复创建
-- **日志性能**: 统一的日志记录，减少重复调用
-- **内存使用**: 更好的对象生命周期管理
-- **请求优化**: 统一的请求处理机制
-
-## 优化的方法列表
-
-### 核心方法
-- ✅ `getFiles()` - 获取文件列表
-- ✅ `getFolders()` - 获取文件夹列表
-- ✅ `validateCookies()` - 验证Cookie有效性
-- ✅ `getFileDetail()` - 获取文件详情
-- ✅ `uploadFile()` - 上传文件
-- ✅ `moveFile()` - 移动文件
-
-### 辅助方法
-- ✅ `_executeRequest()` - 执行API请求
-- ✅ `_createHeaders()` - 创建请求头
-- ✅ `extractUidFromCookies()` - 提取UID
-- ✅ `parseDirectLink()` - 解析直链
-
-## 下一步优化建议
-
-### 1. 进一步应用依赖注入（中优先级）
-```dart
-// 建议的进一步优化
-class LanzouCloudDriveService {
-  static CloudDriveLogger get _logger => CloudDriveDIProvider.logger;
-  static CloudDriveErrorHandler get _errorHandler => CloudDriveDIProvider.errorHandler;
-}
-```
-
-### 2. 添加单元测试（高优先级）
-- 为每个方法添加单元测试
-- 测试错误处理机制
-- 测试边界条件
-
-### 3. 性能监控（低优先级）
-- 添加性能监控
-- 监控API调用频率
-- 监控错误率
-
-## 总结
-
-本次优化成功解决了蓝奏云盘服务的主要问题：
-
-1. **编译错误**: 完全修复
-2. **代码重复**: 大幅减少（35%）
-3. **架构一致性**: 显著提升
-4. **可维护性**: 明显改善
-5. **代码复用**: 大幅提升
-
-蓝奏云盘服务现在具有：
-- 🎯 **更好的代码质量**
-- 🔧 **更高的可维护性**
-- 🏗️ **更一致的架构设计**
-- 📁 **更清晰的职责分离**
-- ⚡ **更好的性能表现**
-
-蓝奏云盘服务现在与百度云盘服务保持了一致的优化标准，可以作为其他云盘服务优化的参考模板！ 
+通过以上结构与约定，可以快速定位蓝奏云模块中的责任边界，并安全地扩展新的 API 或业务能力。

@@ -58,7 +58,7 @@ void main() {
     group('Cloud Drive Type Validation Tests', () {
       test('should validate all cloud drive types', () {
         final types = CloudDriveType.values;
-        expect(types, hasLength(5));
+        expect(types, hasLength(6));
 
         for (final type in types) {
           expect(type.displayName, isNotEmpty);
@@ -72,14 +72,16 @@ void main() {
         expect(CloudDriveType.lanzou.displayName, equals('蓝奏云'));
         expect(CloudDriveType.pan123.displayName, equals('123云盘'));
         expect(CloudDriveType.quark.displayName, equals('夸克云盘'));
+        expect(CloudDriveType.chinaMobile.displayName, equals('中国移动云盘'));
       });
     });
 
     group('Auth Type Validation Tests', () {
       test('should validate all auth types', () {
         final authTypes = AuthType.values;
-        expect(authTypes, hasLength(3));
+        expect(authTypes, hasLength(4));
         expect(authTypes, contains(AuthType.cookie));
+        expect(authTypes, contains(AuthType.authorization));
         expect(authTypes, contains(AuthType.web));
         expect(authTypes, contains(AuthType.qrCode));
       });

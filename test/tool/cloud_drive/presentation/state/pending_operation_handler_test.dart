@@ -55,10 +55,11 @@ class _FakeFolderHandler extends FolderStateHandler {
 
 void main() {
   group('PendingOperationHandler', () {
-    const account = CloudDriveAccount(
+    final account = CloudDriveAccount(
       id: 'acc1',
       name: 'TestAccount',
       type: CloudDriveType.lanzou,
+      createdAt: DateTime.now(),
     );
 
     final rootFolder = CloudDriveFile(id: '/', name: 'root', isFolder: true);
@@ -81,7 +82,7 @@ void main() {
       );
 
       manager.setState(
-        const CloudDriveState(
+        CloudDriveState(
           accounts: [account],
           currentAccount: account,
           currentFolder: rootFolder,
@@ -113,7 +114,7 @@ void main() {
       );
 
       manager.setState(
-        const CloudDriveState(
+        CloudDriveState(
           accounts: [account],
           currentAccount: account,
           currentFolder: rootFolder,

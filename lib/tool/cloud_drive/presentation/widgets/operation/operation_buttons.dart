@@ -17,6 +17,11 @@ class OperationButtons extends StatelessWidget {
   final VoidCallback? onMove;
   final VoidCallback? onDelete;
   final VoidCallback? onFileDetail;
+  final bool downloadEnabled;
+  final bool shareEnabled;
+  final bool copyEnabled;
+  final bool moveEnabled;
+  final bool deleteEnabled;
 
   const OperationButtons({
     super.key,
@@ -32,6 +37,11 @@ class OperationButtons extends StatelessWidget {
     this.onMove,
     this.onDelete,
     this.onFileDetail,
+    this.downloadEnabled = true,
+    this.shareEnabled = true,
+    this.copyEnabled = true,
+    this.moveEnabled = true,
+    this.deleteEnabled = true,
   });
 
   @override
@@ -88,6 +98,7 @@ class OperationButtons extends StatelessWidget {
                       label: '下载',
                       onPressed: onDownload!,
                       color: CloudDriveUIConfig.successColor,
+                      enabled: downloadEnabled,
                     ),
                   ),
                   SizedBox(width: CloudDriveUIConfig.spacingS),
@@ -108,6 +119,7 @@ class OperationButtons extends StatelessWidget {
                       label: '分享',
                       onPressed: onShare!,
                       color: CloudDriveUIConfig.warningColor,
+                      enabled: shareEnabled,
                     ),
                   ),
                 ],
@@ -121,6 +133,7 @@ class OperationButtons extends StatelessWidget {
                 label: '下载文件',
                 onPressed: onDownload!,
                 color: CloudDriveUIConfig.successColor,
+                enabled: downloadEnabled,
               ),
             if (onHighSpeedDownload != null)
               _buildOperationButton(
@@ -135,6 +148,7 @@ class OperationButtons extends StatelessWidget {
                 label: '分享文件',
                 onPressed: onShare!,
                 color: CloudDriveUIConfig.warningColor,
+                enabled: shareEnabled,
               ),
           ],
         ],
@@ -186,6 +200,7 @@ class OperationButtons extends StatelessWidget {
                       label: '复制',
                       onPressed: onCopy!,
                       color: CloudDriveUIConfig.infoColor,
+                      enabled: copyEnabled,
                     ),
                   ),
                   SizedBox(width: CloudDriveUIConfig.spacingS),
@@ -196,6 +211,7 @@ class OperationButtons extends StatelessWidget {
                       label: '移动',
                       onPressed: onMove!,
                       color: CloudDriveUIConfig.warningColor,
+                      enabled: moveEnabled,
                     ),
                   ),
                   SizedBox(width: CloudDriveUIConfig.spacingS),
@@ -206,6 +222,7 @@ class OperationButtons extends StatelessWidget {
                       label: '删除',
                       onPressed: onDelete!,
                       color: CloudDriveUIConfig.errorColor,
+                      enabled: deleteEnabled,
                     ),
                   ),
                 ],
@@ -219,6 +236,7 @@ class OperationButtons extends StatelessWidget {
                 label: '复制文件',
                 onPressed: onCopy!,
                 color: CloudDriveUIConfig.infoColor,
+                enabled: copyEnabled,
               ),
             if (onMove != null)
               _buildOperationButton(
@@ -226,6 +244,7 @@ class OperationButtons extends StatelessWidget {
                 label: '移动文件',
                 onPressed: onMove!,
                 color: CloudDriveUIConfig.warningColor,
+                enabled: moveEnabled,
               ),
             if (onDelete != null)
               _buildOperationButton(
@@ -233,6 +252,7 @@ class OperationButtons extends StatelessWidget {
                 label: '删除文件',
                 onPressed: onDelete!,
                 color: CloudDriveUIConfig.errorColor,
+                enabled: deleteEnabled,
               ),
           ],
         ],
@@ -244,18 +264,22 @@ class OperationButtons extends StatelessWidget {
   Widget _buildOperationButton({
     required IconData icon,
     required String label,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     required Color color,
+    bool enabled = true,
   }) {
+    final displayColor = enabled ? color : Colors.grey;
+    final backgroundColor =
+        enabled ? color.withOpacity(0.1) : Colors.grey.withOpacity(0.15);
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: CloudDriveUIConfig.spacingS),
       child: CloudDriveCommonWidgets.buildSecondaryButton(
         text: label,
-        onPressed: onPressed,
-        textColor: color,
-        backgroundColor: color,
-        icon: Icon(icon, color: color),
+        onPressed: enabled ? onPressed : null,
+        textColor: displayColor,
+        backgroundColor: backgroundColor,
+        icon: Icon(icon, color: displayColor),
       ),
     );
   }
@@ -264,14 +288,18 @@ class OperationButtons extends StatelessWidget {
   Widget _buildCompactButton({
     required IconData icon,
     required String label,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     required Color color,
+    bool enabled = true,
   }) {
+    final displayColor = enabled ? color : Colors.grey;
+    final backgroundColor =
+        enabled ? color.withOpacity(0.1) : Colors.grey.withOpacity(0.15);
     return Material(
-      color: color.withOpacity(0.1),
+      color: backgroundColor,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        onTap: onPressed,
+        onTap: enabled ? onPressed : null,
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: EdgeInsets.symmetric(
@@ -281,13 +309,13 @@ class OperationButtons extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: color, size: 24),
+              Icon(icon, color: displayColor, size: 24),
               SizedBox(height: CloudDriveUIConfig.spacingXS),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 12,
-                  color: color,
+                  color: displayColor,
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,

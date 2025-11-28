@@ -3,6 +3,19 @@ import '../../data/models/cloud_drive_entities.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 // import '../../core/result.dart'; // 未使用
 
+enum CloudDriveSortField {
+  name,
+  createdTime,
+  modifiedTime,
+  size,
+  downloadCount,
+}
+
+enum CloudDriveViewMode {
+  list,
+  grid,
+}
+
 /// 云盘状态模型 - 使用 freezed 风格设计
 class CloudDriveState {
   final List<CloudDriveAccount> accounts;
@@ -27,6 +40,9 @@ class CloudDriveState {
   final CloudDriveFile? pendingOperationFile;
   final String? pendingOperationType;
   final bool showFloatingActionButton;
+  final CloudDriveSortField sortField;
+  final bool isSortAscending;
+  final CloudDriveViewMode viewMode;
 
   const CloudDriveState({
     this.accounts = const [],
@@ -51,6 +67,9 @@ class CloudDriveState {
     this.pendingOperationFile,
     this.pendingOperationType,
     this.showFloatingActionButton = false,
+    this.sortField = CloudDriveSortField.name,
+    this.isSortAscending = true,
+    this.viewMode = CloudDriveViewMode.list,
   });
 
   /// 复制并更新状态
@@ -77,6 +96,9 @@ class CloudDriveState {
     CloudDriveFile? pendingOperationFile,
     String? pendingOperationType,
     bool? showFloatingActionButton,
+    CloudDriveSortField? sortField,
+    bool? isSortAscending,
+    CloudDriveViewMode? viewMode,
   }) => CloudDriveState(
     accounts: accounts ?? this.accounts,
     currentAccount: currentAccount ?? this.currentAccount,
@@ -101,6 +123,9 @@ class CloudDriveState {
     pendingOperationType: pendingOperationType ?? this.pendingOperationType,
     showFloatingActionButton:
         showFloatingActionButton ?? this.showFloatingActionButton,
+    sortField: sortField ?? this.sortField,
+    isSortAscending: isSortAscending ?? this.isSortAscending,
+    viewMode: viewMode ?? this.viewMode,
   );
 
   /// 获取所有项目（文件夹+文件）
@@ -168,9 +193,12 @@ class CloudDriveState {
           isFromCache == other.isFromCache &&
           lastRefreshTime == other.lastRefreshTime &&
           showAccountSelector == other.showAccountSelector &&
-          pendingOperationFile == other.pendingOperationFile &&
-          pendingOperationType == other.pendingOperationType &&
-          showFloatingActionButton == other.showFloatingActionButton;
+      pendingOperationFile == other.pendingOperationFile &&
+      pendingOperationType == other.pendingOperationType &&
+      showFloatingActionButton == other.showFloatingActionButton &&
+      sortField == other.sortField &&
+      isSortAscending == other.isSortAscending &&
+      viewMode == other.viewMode;
 
   @override
   int get hashCode =>
@@ -193,7 +221,10 @@ class CloudDriveState {
       showAccountSelector.hashCode ^
       pendingOperationFile.hashCode ^
       pendingOperationType.hashCode ^
-      showFloatingActionButton.hashCode;
+      showFloatingActionButton.hashCode ^
+      sortField.hashCode ^
+      isSortAscending.hashCode ^
+      viewMode.hashCode;
 
   @override
   String toString() =>
@@ -205,7 +236,10 @@ class CloudDriveState {
       'isLoading: $isLoading, '
       'error: $error, '
       'isBatchMode: $isBatchMode, '
-      'selectedItems: ${selectedItems.length}'
+      'selectedItems: ${selectedItems.length}, '
+      'sortField: $sortField, '
+      'isSortAscending: $isSortAscending, '
+      'viewMode: $viewMode'
       '}';
 }
 
@@ -360,6 +394,19 @@ class ClearErrorEvent extends CloudDriveEvent {
 /// 刷新事件
 class RefreshEvent extends CloudDriveEvent {
   const RefreshEvent();
+}
+
+/// 更新排序选项事件
+class UpdateSortOptionEvent extends CloudDriveEvent {
+  final CloudDriveSortField field;
+  final bool ascending;
+  const UpdateSortOptionEvent(this.field, this.ascending);
+}
+
+/// 更新视图模式事件
+class UpdateViewModeEvent extends CloudDriveEvent {
+  final CloudDriveViewMode mode;
+  const UpdateViewModeEvent(this.mode);
 }
 
 /// 批量删除事件

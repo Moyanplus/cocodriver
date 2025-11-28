@@ -2,17 +2,18 @@ import 'package:coco_cloud_drive/tool/cloud_drive/data/models/cloud_drive_entiti
 
 import '../../../../../core/logging/log_manager.dart';
 import '../lanzou_config.dart';
-import 'lanzou_direct_link_service.dart';
+import '../models/lanzou_response_models.dart';
 import '../repository/lanzou_repository.dart';
 import '../models/lanzou_result.dart';
 import '../models/lanzou_direct_link_models.dart';
+import '../models/responses/lanzou_operation_response.dart';
 import '../utils/lanzou_utils.dart';
 
 /// 蓝奏云盘 API 服务 Facade。
 ///
 /// 对外暴露文件列表、直链解析、上传、移动等能力，内部全部委托给
 /// Repository/Utils，使上层无需关心底层实现细节。
-class LanzouCloudDriveService {
+class LanzouCloudDriveFacade {
   /// 统一错误处理
   static void _handleError(
     String operation,
@@ -94,9 +95,9 @@ class LanzouCloudDriveService {
       _logInfo('验证 Cookie 有效性');
 
       final repository = LanzouRepository(cookies: cookies, uid: uid);
-      final isValid = await repository.validateCookies();
-      _logInfo('Cookie 验证结果: ${isValid ? '有效' : '无效'}');
-      return LanzouResult.success(isValid);
+      final response = await repository.validateCookies();
+      _logInfo('Cookie 验证结果: ${response.success ? '有效' : '无效'}');
+      return LanzouResult.success(response.success);
     } catch (e) {
       _logError('Cookie 验证异常', e);
       return LanzouResult.failure(LanzouFailure(message: e.toString()));
@@ -113,15 +114,15 @@ class LanzouCloudDriveService {
       _logInfo('获取文件详情: file_id=$fileId');
 
       final repository = LanzouRepository(cookies: cookies, uid: uid);
-      final responseData = await repository.fetchFileDetail(fileId);
+      final response = await repository.fetchFileDetail(fileId);
 
-      if (responseData != null) {
+      if (response.detail != null) {
         _logSuccess('成功获取文件详情');
-        _logInfo('文件详情: $responseData');
+        _logInfo('文件详情: ${response.detail}');
       } else {
-        _logError('获取文件详情失败', '未返回信息');
+        _logError('获取文件详情失败', response.message ?? '未返回信息');
       }
-      return responseData;
+      return response.detail;
     } catch (e) {
       _logError('获取文件详情异常', e);
       return null;
@@ -135,10 +136,14 @@ class LanzouCloudDriveService {
     String? password,
   }) async {
     try {
-      return await LanzouDirectLinkService.parseDirectLink(
+      final result = await LanzouRepository.parseDirectLink(
         shareUrl: shareUrl,
         password: password,
       );
+      if (!result.isSuccess) {
+        _logError('解析直链失败', result.error?.message ?? '未知错误');
+      }
+      return result;
     } catch (e) {
       _logError('解析直链失败', e);
       return LanzouResult.failure(LanzouFailure(message: e.toString()));
@@ -147,7 +152,7 @@ class LanzouCloudDriveService {
 
   /// 上传文件到蓝奏云
   /// 上传文件到指定文件夹。
-  static Future<LanzouResult<Map<String, dynamic>>> uploadFile({
+  static Future<LanzouResult<LanzouUploadResponse>> uploadFile({
     required CloudDriveAccount account,
     required String filePath,
     required String fileName,
@@ -162,7 +167,7 @@ class LanzouCloudDriveService {
         folderId: folderId,
       );
       _logSuccess('文件上传成功');
-      return LanzouResult.success(result);
+      return LanzouResult.success(result as LanzouUploadResponse);
     } catch (e) {
       _logError('文件上传异常', e);
       return LanzouResult.failure(LanzouFailure(message: e.toString()));
@@ -194,6 +199,41 @@ class LanzouCloudDriveService {
       return LanzouResult.success(true);
     } catch (e) {
       _logError('移动文件异常', e);
+      return LanzouResult.failure(LanzouFailure(message: e.toString()));
+    }
+  }
+
+  /// 重命名文件
+  static Future<LanzouResult<bool>> renameFile({
+    required CloudDriveAccount account,
+    required CloudDriveFile file,
+    required String newName,
+  }) async {
+    try {
+      _logInfo('开始重命名文件: ${file.name} -> $newName');
+      final repository = LanzouRepository.fromAccount(account);
+      await repository.renameFile(fileId: file.id, newName: newName);
+      _logSuccess('文件重命名成功');
+      return LanzouResult.success(true);
+    } catch (e) {
+      _logError('重命名文件异常', e);
+      return LanzouResult.failure(LanzouFailure(message: e.toString()));
+    }
+  }
+
+  /// 删除文件
+  static Future<LanzouResult<bool>> deleteFile({
+    required CloudDriveAccount account,
+    required CloudDriveFile file,
+  }) async {
+    try {
+      _logInfo('开始删除文件: ${file.name} (${file.id})');
+      final repository = LanzouRepository.fromAccount(account);
+      await repository.deleteFile(fileId: file.id);
+      _logSuccess('文件删除成功');
+      return LanzouResult.success(true);
+    } catch (e) {
+      _logError('删除文件异常', e);
       return LanzouResult.failure(LanzouFailure(message: e.toString()));
     }
   }

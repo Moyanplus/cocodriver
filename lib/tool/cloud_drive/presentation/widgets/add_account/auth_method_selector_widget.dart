@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../../services/provider/cloud_drive_provider_registry.dart';
 import 'add_account_form_constants.dart';
 
 /// 认证方式选择器组件
@@ -23,7 +24,9 @@ class AuthMethodSelectorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 获取支持的认证方式
-    final supportedAuthTypes = cloudDriveType.supportedAuthTypes;
+    final descriptor = CloudDriveProviderRegistry.get(cloudDriveType);
+    final supportedAuthTypes =
+        descriptor?.supportedAuthTypes ?? cloudDriveType.supportedAuthTypes;
 
     return FormField<AuthType>(
       initialValue: selectedAuthType,

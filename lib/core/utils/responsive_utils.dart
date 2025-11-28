@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'platform_utils.dart';
+import 'responsive_spec.dart';
 
 /// 响应式布局工具类
 ///
@@ -42,6 +43,93 @@ class ResponsiveUtils {
 
   /// 获取屏幕方向
   static Orientation get orientation => ScreenUtil().orientation;
+
+  /// 获取上下文对应的响应式规格
+  static ResponsiveSpec specOf(BuildContext context) {
+    final mediaQuery = MediaQuery.maybeOf(context);
+    if (mediaQuery == null) {
+      return _fallbackSpec();
+    }
+    return ResponsiveSpec.resolve(mediaQuery.size, mediaQuery.viewPadding);
+  }
+
+  static ResponsiveSpec _fallbackSpec() {
+    final width = ScreenUtil().screenWidth;
+    final height = ScreenUtil().screenHeight;
+    if (width > 0 && height > 0) {
+      return ResponsiveSpec.resolve(Size(width, height), EdgeInsets.zero);
+    }
+    final dispatcher = WidgetsBinding.instance.platformDispatcher;
+    if (dispatcher.views.isNotEmpty) {
+      final view = dispatcher.views.first;
+      final logicalSize = view.physicalSize / view.devicePixelRatio;
+      return ResponsiveSpec.resolve(logicalSize, EdgeInsets.zero);
+    }
+    return ResponsiveSpec.resolve(const Size(375, 812), EdgeInsets.zero);
+  }
+
+  // ==================== 新版响应式辅助 ====================
+
+  /// 当前断点的最大内容宽度
+  static double contentMaxWidth(BuildContext context) =>
+      specOf(context).maxContentWidth;
+
+  /// 当前断点的默认内边距
+  static EdgeInsets contentPadding(
+    BuildContext context, {
+    double? vertical,
+  }) => specOf(context).contentPadding(vertical: vertical);
+
+  /// 当前断点的默认间距
+  static double spacingOf(BuildContext context) => specOf(context).spacing;
+
+  /// 当前断点的按钮高度
+  static double buttonHeightOf(BuildContext context) =>
+      specOf(context).buttonHeight;
+
+  /// 当前断点的圆角
+  static double cardRadiusOf(BuildContext context) =>
+      specOf(context).cardRadius;
+
+  /// 根据断点缩放字体大小
+  static double fontSizeOf(BuildContext context, double base) =>
+      specOf(context).scaleFont(base);
+
+  /// 根据断点缩放图标大小
+  static double iconSizeOf(BuildContext context, double base) =>
+      specOf(context).scaleIcon(base);
+
+  /// 当前断点的AppBar高度
+  static double navigationBarHeightOf(BuildContext context) =>
+      specOf(context).appBarHeight;
+
+  /// 根据断点选择不同的取值
+  static T responsiveValue<T>({
+    required BuildContext context,
+    required T compact,
+    T? medium,
+    T? expanded,
+    T? large,
+    T? extraLarge,
+  }) {
+    final spec = specOf(context);
+    switch (spec.sizeClass) {
+      case ResponsiveSizeClass.compact:
+        return compact;
+      case ResponsiveSizeClass.medium:
+        return medium ?? compact;
+      case ResponsiveSizeClass.expanded:
+        return expanded ?? medium ?? compact;
+      case ResponsiveSizeClass.large:
+        return large ?? expanded ?? medium ?? compact;
+      case ResponsiveSizeClass.extraLarge:
+        return extraLarge ??
+            large ??
+            expanded ??
+            medium ??
+            compact;
+    }
+  }
 
   // ==================== 设备类型检测 ====================
 
@@ -69,70 +157,39 @@ class ResponsiveUtils {
   // ==================== 响应式布局方法 ====================
 
   /// 根据屏幕类型获取列数
-  static int getGridColumns() {
-    if (isMobile) return 2;
-    if (isTablet) return 3;
-    return 4;
-  }
+  static int getGridColumns() => _fallbackSpec().gridColumns;
 
   /// 根据屏幕类型获取最大宽度
-  static double getMaxWidth() {
-    if (isMobile) return screenWidth;
-    if (isTablet) return 800.w;
-    return 1200.w;
-  }
+  static double getMaxWidth() => _fallbackSpec().maxContentWidth;
 
   /// 根据屏幕类型获取内边距
   static EdgeInsets getPadding() {
-    if (isMobile) return EdgeInsets.all(16.w);
-    if (isTablet) return EdgeInsets.all(24.w);
-    return EdgeInsets.all(32.w);
+    final spec = _fallbackSpec();
+    return EdgeInsets.all(spec.horizontalPadding);
   }
 
   /// 根据屏幕类型获取间距
-  static double getSpacing() {
-    if (isMobile) return 12.w;
-    if (isTablet) return 16.w;
-    return 20.w;
-  }
+  static double getSpacing() => _fallbackSpec().spacing;
 
   /// 根据屏幕类型获取字体大小
-  static double getFontSize(double baseSize) {
-    if (isSmallScreen) return baseSize * 0.9;
-    if (isLargeScreen) return baseSize * 1.1;
-    return baseSize;
-  }
+  static double getFontSize(double baseSize) =>
+      _fallbackSpec().scaleFont(baseSize);
 
   /// 根据屏幕类型获取图标大小
-  static double getIconSize(double baseSize) {
-    if (isMobile) return baseSize;
-    if (isTablet) return baseSize * 1.2;
-    return baseSize * 1.4;
-  }
+  static double getIconSize(double baseSize) =>
+      _fallbackSpec().scaleIcon(baseSize);
 
   /// 根据屏幕类型获取按钮高度
-  static double getButtonHeight() {
-    if (isMobile) return 52.h;
-    if (isTablet) return 56.h;
-    return 60.h;
-  }
+  static double getButtonHeight() => _fallbackSpec().buttonHeight;
 
   /// 根据屏幕类型获取卡片圆角
-  static double getCardRadius() {
-    if (isMobile) return 8.r;
-    if (isTablet) return 12.r;
-    return 16.r;
-  }
+  static double getCardRadius() => _fallbackSpec().cardRadius;
 
   // ==================== 平台特定适配 ====================
 
   /// 获取平台特定的导航栏高度
-  static double getNavigationBarHeight(BuildContext context) {
-    final baseHeight = PlatformUtils.getNavigationBarHeight(context);
-    if (isTablet) return baseHeight * 1.2;
-    if (isDesktop) return baseHeight * 0.8;
-    return baseHeight;
-  }
+  static double getNavigationBarHeight(BuildContext context) =>
+      specOf(context).appBarHeight;
 
   /// 获取平台特定的底部安全区域
   static double getBottomSafeArea(BuildContext context) {
@@ -177,8 +234,10 @@ class ResponsiveUtils {
     double? bottom,
     double? left,
     double? right,
+    BuildContext? context,
   }) {
-    final scale = isMobile ? 1.0 : (isTablet ? 1.2 : 1.4);
+    final spec = context != null ? specOf(context) : _fallbackSpec();
+    final scale = _scaleForSpec(spec);
 
     return EdgeInsets.only(
       top: (top ?? vertical ?? all ?? 0) * scale,
@@ -197,8 +256,10 @@ class ResponsiveUtils {
     double? bottom,
     double? left,
     double? right,
+    BuildContext? context,
   }) {
-    final scale = isMobile ? 1.0 : (isTablet ? 1.2 : 1.4);
+    final spec = context != null ? specOf(context) : _fallbackSpec();
+    final scale = _scaleForSpec(spec);
 
     return EdgeInsets.only(
       top: (top ?? vertical ?? all ?? 0) * scale,
@@ -229,32 +290,35 @@ class ResponsiveUtils {
 
   /// 响应式布局构建器
   static Widget responsiveBuilder({
+    required BuildContext context,
     required Widget mobile,
     Widget? tablet,
+    Widget? expanded,
     Widget? desktop,
+    Widget? extraLarge,
   }) {
-    if (isDesktop && desktop != null) {
-      return desktop;
-    } else if (isTablet && tablet != null) {
-      return tablet;
-    } else {
-      return mobile;
-    }
-  }
-
-  /// 响应式数值选择器
-  static T responsiveValue<T>({required T mobile, T? tablet, T? desktop}) {
-    if (isDesktop && desktop != null) {
-      return desktop;
-    } else if (isTablet && tablet != null) {
-      return tablet;
-    } else {
-      return mobile;
+    final spec = specOf(context);
+    switch (spec.sizeClass) {
+      case ResponsiveSizeClass.compact:
+        return mobile;
+      case ResponsiveSizeClass.medium:
+        return tablet ?? mobile;
+      case ResponsiveSizeClass.expanded:
+        return expanded ?? tablet ?? mobile;
+      case ResponsiveSizeClass.large:
+        return desktop ?? expanded ?? tablet ?? mobile;
+      case ResponsiveSizeClass.extraLarge:
+        return extraLarge ??
+            desktop ??
+            expanded ??
+            tablet ??
+            mobile;
     }
   }
 
   /// 响应式列布局
   static Widget responsiveColumn({
+    required BuildContext context,
     required List<Widget> children,
     int? mobileColumns,
     int? tabletColumns,
@@ -263,9 +327,12 @@ class ResponsiveUtils {
     double? runSpacing,
   }) {
     final columns = responsiveValue<int>(
-      mobile: mobileColumns ?? 1,
-      tablet: tabletColumns ?? 2,
-      desktop: desktopColumns ?? 3,
+      context: context,
+      compact: mobileColumns ?? 1,
+      medium: tabletColumns ?? mobileColumns ?? 2,
+      expanded: desktopColumns ?? tabletColumns ?? 3,
+      large: desktopColumns ?? 3,
+      extraLarge: desktopColumns ?? 4,
     );
 
     return Wrap(
@@ -277,6 +344,7 @@ class ResponsiveUtils {
 
   /// 响应式网格布局
   static Widget responsiveGrid({
+    required BuildContext context,
     required List<Widget> children,
     int? mobileColumns,
     int? tabletColumns,
@@ -285,9 +353,12 @@ class ResponsiveUtils {
     double? runSpacing,
   }) {
     final columns = responsiveValue<int>(
-      mobile: mobileColumns ?? 2,
-      tablet: tabletColumns ?? 3,
-      desktop: desktopColumns ?? 4,
+      context: context,
+      compact: mobileColumns ?? 2,
+      medium: tabletColumns ?? mobileColumns ?? 3,
+      expanded: desktopColumns ?? tabletColumns ?? 4,
+      large: desktopColumns ?? 5,
+      extraLarge: desktopColumns ?? 6,
     );
 
     return GridView.builder(
@@ -299,5 +370,20 @@ class ResponsiveUtils {
       itemCount: children.length,
       itemBuilder: (context, index) => children[index],
     );
+  }
+
+  static double _scaleForSpec(ResponsiveSpec spec) {
+    switch (spec.sizeClass) {
+      case ResponsiveSizeClass.compact:
+        return 1.0;
+      case ResponsiveSizeClass.medium:
+        return 1.1;
+      case ResponsiveSizeClass.expanded:
+        return 1.15;
+      case ResponsiveSizeClass.large:
+        return 1.2;
+      case ResponsiveSizeClass.extraLarge:
+        return 1.25;
+    }
   }
 }

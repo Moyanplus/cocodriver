@@ -10,7 +10,10 @@ class BatchOperationHandler {
   final CloudDriveStateManager _stateManager;
   final CloudDriveLoggerAdapter _logger;
 
-  BatchOperationHandler(this._stateManager) : _logger = _stateManager.logger;
+  BatchOperationHandler(
+    this._stateManager, {
+    CloudDriveLoggerAdapter? logger,
+  }) : _logger = logger ?? _stateManager.logger;
 
   /// 进入批量操作模式
   ///

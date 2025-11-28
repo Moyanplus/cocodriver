@@ -8,6 +8,7 @@ import '../../../../../core/utils/responsive_utils.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../providers/cloud_drive_provider.dart';
 import 'account/account_detail_bottom_sheet.dart';
+import '../../services/provider/cloud_drive_provider_registry.dart';
 
 /// 云盘账号选择器组件
 ///
@@ -154,7 +155,7 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                             maxLines: 1,
                                           ),
                                           Text(
-                                            account.type.displayName,
+                                            _getTypeLabel(account.type),
                                             style: TextStyle(
                                               fontSize:
                                                   ResponsiveUtils.getResponsiveFontSize(
@@ -285,9 +286,9 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                       ),
                     ),
                   ],
-                ),
-              ),
-            ),
+                                        ),
+                                      ),
+                                    ),
           ],
         ],
       ),
@@ -350,5 +351,11 @@ class CloudDriveAccountSelector extends ConsumerWidget {
       color: account.type.color,
       size: ResponsiveUtils.getIconSize(24.sp),
     );
+  }
+
+  String _getTypeLabel(CloudDriveType type) {
+    final descriptor = CloudDriveProviderRegistry.get(type);
+    if (descriptor == null) return type.displayName;
+    return descriptor.description ?? descriptor.displayName ?? type.displayName;
   }
 }

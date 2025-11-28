@@ -33,6 +33,7 @@ import '../../../shared/widgets/common/bottom_sheet_widget.dart';
 // 云盘功能导入
 import '../../../tool/cloud_drive/presentation/providers/cloud_drive_provider.dart';
 import '../../../tool/cloud_drive/presentation/widgets/add_account_form_widget.dart';
+import '../../../tool/cloud_drive/presentation/state/cloud_drive_state_model.dart';
 
 /// 主屏幕Widget
 ///
@@ -102,7 +103,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         title: Text(l10n.appTitle),
-        toolbarHeight: ResponsiveUtils.getNavigationBarHeight(context) * 0.8,
+        toolbarHeight: ResponsiveUtils.navigationBarHeightOf(context),
         floating: true,
         pinned: false,
         snap: false,
@@ -153,22 +154,116 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     : const SizedBox.shrink();
               },
             ),
-            // 刷新按钮
+            // 搜索按钮
             IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed:
-                  () => ref
-                      .read(cloudDriveEventHandlerProvider)
-                      .loadFolder(forceRefresh: true),
-              tooltip: '刷新',
-            ),
-            // 设置按钮
-            IconButton(
-              icon: const Icon(Icons.settings),
+              icon: const Icon(Icons.search),
               onPressed: () {
-                // TODO: 打开设置页面
+                // TODO: 搜索功能
               },
-              tooltip: '设置',
+              tooltip: '搜索',
+            ),
+            // 排序按钮
+            Consumer(
+              builder: (context, ref, child) {
+                final sortState = ref.watch(
+                  cloudDriveProvider.select(
+                    (state) => (
+                      state.sortField,
+                      state.isSortAscending,
+                      state.viewMode,
+                    ),
+                  ),
+                );
+                final handler = ref.read(cloudDriveEventHandlerProvider);
+                return PopupMenuButton<_SortMenuValue>(
+                  tooltip: '排序',
+                  icon: const Icon(Icons.sort),
+                  onSelected: (value) {
+                    if (value.toggleOrder) {
+                      handler.updateSortOption(sortState.$1, !sortState.$2);
+                    } else if (value.field != null) {
+                      handler.updateSortOption(value.field!, sortState.$2);
+                    } else if (value.viewMode != null) {
+                      handler.updateViewMode(value.viewMode!);
+                    }
+                  },
+                  itemBuilder:
+                      (context) => [
+                        PopupMenuItem<_SortMenuValue>(
+                          value: const _SortMenuValue.view(
+                            CloudDriveViewMode.list,
+                          ),
+                          child: Row(
+                            children: [
+                              if (sortState.$3 == CloudDriveViewMode.list)
+                                const Icon(Icons.check, size: 18)
+                              else
+                                const SizedBox(width: 18),
+                              const SizedBox(width: 8),
+                              const Expanded(child: Text('列表视图')),
+                              const Icon(Icons.view_list, size: 18),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem<_SortMenuValue>(
+                          value: const _SortMenuValue.view(
+                            CloudDriveViewMode.grid,
+                          ),
+                          child: Row(
+                            children: [
+                              if (sortState.$3 == CloudDriveViewMode.grid)
+                                const Icon(Icons.check, size: 18)
+                              else
+                                const SizedBox(width: 18),
+                              const SizedBox(width: 8),
+                              const Expanded(child: Text('图标视图')),
+                              const Icon(Icons.grid_view, size: 18),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuDivider(),
+                        ...CloudDriveSortField.values.map(
+                          (field) => PopupMenuItem<_SortMenuValue>(
+                            value: _SortMenuValue.field(field),
+                            child: Row(
+                              children: [
+                                if (sortState.$1 == field)
+                                  const Icon(Icons.check, size: 18)
+                                else
+                                  const SizedBox(width: 18),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text(_sortFieldLabel(field))),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const PopupMenuDivider(),
+                        PopupMenuItem<_SortMenuValue>(
+                          value: const _SortMenuValue.toggleOrder(),
+                          child: Row(
+                            children: [
+                              Icon(
+                                sortState.$2
+                                    ? Icons.arrow_upward
+                                    : Icons.arrow_downward,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(sortState.$2 ? '升序' : '降序'),
+                            ],
+                          ),
+                        ),
+                      ],
+                );
+              },
+            ),
+            // 更多按钮
+            IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {
+                // TODO: 更多操作
+              },
+              tooltip: '更多操作',
             ),
           ] else ...[
             // 其他页面的通知按钮
@@ -208,7 +303,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     AppLocalizations l10n,
   ) => Center(
     child: ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: ResponsiveUtils.getMaxWidth()),
+      constraints: BoxConstraints(
+        maxWidth: ResponsiveUtils.contentMaxWidth(context),
+      ),
       child: PageView(
         controller: pageController,
         physics: const ClampingScrollPhysics(),
@@ -225,68 +322,53 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     int currentIndex,
     PageNavigation pageNavigation,
     AppLocalizations l10n,
-  ) => SafeArea(
-    bottom: false, // iOS优化：底部不需要额外的安全区域
-    child: Container(
-      // 动态计算高度：按钮高度 + 底部安全区域高度（iOS上是Home Indicator的高度）
-      height:
-          ResponsiveUtils.getButtonHeight() + ResponsiveUtils.bottomBarHeight,
-      // 让导航栏在垂直方向居中显示，避免太靠上
-      alignment: Alignment.center,
-      child: NavigationBarTheme(
-        data: NavigationBarThemeData(
-          // 调整图标和标签之间的间距
-          iconTheme: WidgetStateProperty.all(IconThemeData(size: 25.w)),
-          labelTextStyle: WidgetStateProperty.resolveWith((states) {
-            return TextStyle(
-              fontSize: 12.sp,
-              height: 0.5, // 减小行高，让标签更靠近图标
-            );
-          }),
-        ),
-        child: NavigationBar(
-          selectedIndex: currentIndex,
-          onDestinationSelected: (index) => pageNavigation.switchToPage(index),
-          height: ResponsiveUtils.getButtonHeight(),
-          destinations: [
-            NavigationDestination(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 0.h), // 减小图标底部间距
-                child: Icon(PhosphorIcons.house(), size: 25.w),
-              ),
-              selectedIcon: Padding(
-                padding: EdgeInsets.only(bottom: 0.h),
-                child: Icon(PhosphorIcons.house(), size: 25.w),
-              ),
-              label: l10n.home,
+  ) {
+    final spec = ResponsiveUtils.specOf(context);
+    final navIconSize = spec.scaleIcon(24);
+    return SafeArea(
+      top: false,
+      bottom: true,
+      child: Container(
+        height: spec.buttonHeight,
+        alignment: Alignment.center,
+        child: NavigationBarTheme(
+          data: NavigationBarThemeData(
+            iconTheme: WidgetStateProperty.all(
+              IconThemeData(size: navIconSize),
             ),
-            NavigationDestination(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 0.h),
-                child: Icon(PhosphorIcons.cloud(), size: 25.w),
+            labelTextStyle: WidgetStateProperty.resolveWith((states) {
+              return TextStyle(
+                fontSize: spec.scaleFont(12),
+                height: 0.5,
+              );
+            }),
+          ),
+          child: NavigationBar(
+            selectedIndex: currentIndex,
+            onDestinationSelected: (index) => pageNavigation.switchToPage(index),
+            height: spec.buttonHeight,
+            destinations: [
+              NavigationDestination(
+                icon: Icon(PhosphorIcons.house(), size: navIconSize),
+                selectedIcon: Icon(PhosphorIcons.house(), size: navIconSize),
+                label: l10n.home,
               ),
-              selectedIcon: Padding(
-                padding: EdgeInsets.only(bottom: 0.h),
-                child: Icon(PhosphorIcons.cloud(), size: 25.w),
+              NavigationDestination(
+                icon: Icon(PhosphorIcons.cloud(), size: navIconSize),
+                selectedIcon: Icon(PhosphorIcons.cloud(), size: navIconSize),
+                label: l10n.files,
               ),
-              label: l10n.files,
-            ),
-            NavigationDestination(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 0.h),
-                child: Icon(PhosphorIcons.user(), size: 25.w),
+              NavigationDestination(
+                icon: Icon(PhosphorIcons.user(), size: navIconSize),
+                selectedIcon: Icon(PhosphorIcons.user(), size: navIconSize),
+                label: l10n.profile,
               ),
-              selectedIcon: Padding(
-                padding: EdgeInsets.only(bottom: 0.h),
-                child: Icon(PhosphorIcons.user(), size: 25.w),
-              ),
-              label: l10n.profile,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   /// 处理添加账号
   void _handleAddAccount() {
@@ -337,4 +419,38 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       );
     }
   }
+
+  String _sortFieldLabel(CloudDriveSortField field) {
+    switch (field) {
+      case CloudDriveSortField.name:
+        return '名称';
+      case CloudDriveSortField.createdTime:
+        return '创建时间';
+      case CloudDriveSortField.modifiedTime:
+        return '修改时间';
+      case CloudDriveSortField.size:
+        return '文件大小';
+      case CloudDriveSortField.downloadCount:
+        return '下载量';
+    }
+  }
+}
+
+class _SortMenuValue {
+  const _SortMenuValue.field(this.field)
+    : toggleOrder = false,
+      viewMode = null;
+
+  const _SortMenuValue.toggleOrder()
+    : field = null,
+      toggleOrder = true,
+      viewMode = null;
+
+  const _SortMenuValue.view(this.viewMode)
+    : field = null,
+      toggleOrder = false;
+
+  final CloudDriveSortField? field;
+  final CloudDriveViewMode? viewMode;
+  final bool toggleOrder;
 }

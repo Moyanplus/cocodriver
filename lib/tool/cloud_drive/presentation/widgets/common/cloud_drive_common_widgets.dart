@@ -105,7 +105,7 @@ class CloudDriveCommonWidgets {
   /// 构建次要按钮
   static Widget buildSecondaryButton({
     required String text,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     Color? backgroundColor,
     Color? textColor,
     EdgeInsets? padding,

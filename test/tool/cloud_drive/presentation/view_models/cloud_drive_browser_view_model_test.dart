@@ -16,8 +16,14 @@ void main() {
     });
 
     test('returns selectAccount when accounts exist but none selected', () {
-      const state = CloudDriveState(
-        accounts: [CloudDriveAccount(id: '1', name: 'A', type: CloudDriveType.lanzou)],
+      final account = CloudDriveAccount(
+        id: '1',
+        name: 'A',
+        type: CloudDriveType.lanzou,
+        createdAt: DateTime.now(),
+      );
+      final state = CloudDriveState(
+        accounts: [account],
         currentAccount: null,
       );
       expect(
@@ -27,8 +33,13 @@ void main() {
     });
 
     test('returns content when current account is set', () {
-      const account = CloudDriveAccount(id: '1', name: 'A', type: CloudDriveType.lanzou);
-      const state = CloudDriveState(accounts: [account], currentAccount: account);
+      final account = CloudDriveAccount(
+        id: '1',
+        name: 'A',
+        type: CloudDriveType.lanzou,
+        createdAt: DateTime.now(),
+      );
+      final state = CloudDriveState(accounts: [account], currentAccount: account);
       expect(
         viewModel.resolveBody(state),
         CloudDriveBrowserBodyType.content,

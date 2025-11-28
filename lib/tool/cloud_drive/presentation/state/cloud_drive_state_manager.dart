@@ -10,6 +10,7 @@ import 'cloud_drive_state_model.dart';
 import 'handlers/account_state_handler.dart';
 import 'handlers/folder_state_handler.dart';
 import 'handlers/batch_operation_handler.dart';
+import '../utils/operation_guard.dart';
 part 'handlers/pending_operation_handler.dart';
 
 /// 云盘状态管理器
@@ -109,6 +110,15 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
           await batchHandler.batchDelete();
         case ToggleAccountSelectorEvent():
           toggleAccountSelector();
+        case UpdateSortOptionEvent():
+          await folderHandler.updateSortOption(
+            event.field,
+            event.ascending,
+          );
+        case UpdateViewModeEvent():
+          updateState(
+            (state) => state.copyWith(viewMode: event.mode),
+          );
         case SetPendingOperationEvent():
           pendingHandler.setPendingOperation(event.file, event.operationType);
         case ClearPendingOperationEvent():

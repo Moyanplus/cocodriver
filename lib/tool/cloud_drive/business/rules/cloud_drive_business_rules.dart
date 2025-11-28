@@ -1,4 +1,7 @@
 import '../../data/models/cloud_drive_entities.dart';
+import '../../base/cloud_drive_operation_service.dart';
+import '../../config/cloud_drive_capabilities.dart';
+import '../../services/provider/cloud_drive_provider_registry.dart';
 
 /// 云盘业务规则
 ///
@@ -28,20 +31,7 @@ class CloudDriveBusinessRules {
 
   /// 获取最大文件大小限制
   static int _getMaxFileSize(CloudDriveType type) {
-    switch (type) {
-      case CloudDriveType.baidu:
-        return 2 * 1024 * 1024 * 1024; // 2GB
-      case CloudDriveType.lanzou:
-        return 100 * 1024 * 1024; // 100MB
-      case CloudDriveType.pan123:
-        return 5 * 1024 * 1024 * 1024; // 5GB
-      case CloudDriveType.ali:
-        return 20 * 1024 * 1024 * 1024; // 20GB
-      case CloudDriveType.quark:
-        return 5 * 1024 * 1024 * 1024; // 5GB
-      case CloudDriveType.chinaMobile:
-        return 5 * 1024 * 1024 * 1024; // 5GB
-    }
+    return getCapabilities(type).maxUploadSize;
   }
 
   /// 验证文件操作权限
@@ -56,7 +46,7 @@ class CloudDriveBusinessRules {
     }
 
     // 检查操作是否被支持
-    if (!_isOperationSupported(account.type, operation)) {
+    if (!_isOperationSupported(account, operation)) {
       return false;
     }
 
@@ -69,76 +59,11 @@ class CloudDriveBusinessRules {
   }
 
   /// 检查操作是否被支持
-  static bool _isOperationSupported(CloudDriveType type, String operation) {
-    final supportedOperations = _getSupportedOperations(type);
-    return supportedOperations.containsKey(operation) &&
-        supportedOperations[operation] == true;
-  }
-
-  /// 获取支持的操作列表
-  static Map<String, bool> _getSupportedOperations(CloudDriveType type) {
-    switch (type) {
-      case CloudDriveType.baidu:
-        return {
-          'upload': true,
-          'download': true,
-          'delete': true,
-          'rename': true,
-          'move': true,
-          'copy': true,
-          'share': true,
-        };
-      case CloudDriveType.lanzou:
-        return {
-          'upload': true,
-          'download': true,
-          'delete': true,
-          'rename': false,
-          'move': false,
-          'copy': false,
-          'share': true,
-        };
-      case CloudDriveType.pan123:
-        return {
-          'upload': true,
-          'download': true,
-          'delete': true,
-          'rename': true,
-          'move': true,
-          'copy': true,
-          'share': true,
-        };
-      case CloudDriveType.ali:
-        return {
-          'upload': true,
-          'download': true,
-          'delete': true,
-          'rename': true,
-          'move': true,
-          'copy': true,
-          'share': true,
-        };
-      case CloudDriveType.quark:
-        return {
-          'upload': true,
-          'download': true,
-          'delete': true,
-          'rename': true,
-          'move': true,
-          'copy': true,
-          'share': true,
-        };
-      case CloudDriveType.chinaMobile:
-        return {
-          'upload': true,
-          'download': true,
-          'delete': true,
-          'rename': true,
-          'move': true,
-          'copy': true,
-          'share': true,
-        };
-    }
+  static bool _isOperationSupported(
+    CloudDriveAccount account,
+    String operation,
+  ) {
+    return CloudDriveOperationService.isOperationSupported(account, operation);
   }
 
   /// 验证批量操作
@@ -175,20 +100,7 @@ class CloudDriveBusinessRules {
 
   /// 获取最大批量操作大小
   static int _getMaxBatchSize(CloudDriveType type, String operation) {
-    switch (type) {
-      case CloudDriveType.baidu:
-        return operation == 'delete' ? 100 : 50;
-      case CloudDriveType.lanzou:
-        return 10; // 蓝奏云批量操作限制较严格
-      case CloudDriveType.pan123:
-        return 50;
-      case CloudDriveType.ali:
-        return 100;
-      case CloudDriveType.quark:
-        return 50;
-      case CloudDriveType.chinaMobile:
-        return 50;
-    }
+    return getCapabilities(type).getBatchLimit(operation);
   }
 
   /// 验证分享链接
@@ -238,38 +150,12 @@ class CloudDriveBusinessRules {
 
   /// 获取最大分享文件大小
   static int _getMaxShareFileSize(CloudDriveType type) {
-    switch (type) {
-      case CloudDriveType.baidu:
-        return 2 * 1024 * 1024 * 1024; // 2GB
-      case CloudDriveType.lanzou:
-        return 100 * 1024 * 1024; // 100MB
-      case CloudDriveType.pan123:
-        return 5 * 1024 * 1024 * 1024; // 5GB
-      case CloudDriveType.ali:
-        return 20 * 1024 * 1024 * 1024; // 20GB
-      case CloudDriveType.quark:
-        return 5 * 1024 * 1024 * 1024; // 5GB
-      case CloudDriveType.chinaMobile:
-        return 5 * 1024 * 1024 * 1024; // 5GB
-    }
+    return getCapabilities(type).maxShareFileSize;
   }
 
   /// 获取最大过期天数
   static int _getMaxExpireDays(CloudDriveType type) {
-    switch (type) {
-      case CloudDriveType.baidu:
-        return 7; // 7天
-      case CloudDriveType.lanzou:
-        return 30; // 30天
-      case CloudDriveType.pan123:
-        return 7; // 7天
-      case CloudDriveType.ali:
-        return 7; // 7天
-      case CloudDriveType.quark:
-        return 7; // 7天
-      case CloudDriveType.chinaMobile:
-        return 7; // 7天
-    }
+    return getCapabilities(type).maxExpireDays;
   }
 
   /// 验证下载权限
@@ -297,20 +183,7 @@ class CloudDriveBusinessRules {
 
   /// 获取最大下载文件大小
   static int _getMaxDownloadSize(CloudDriveType type) {
-    switch (type) {
-      case CloudDriveType.baidu:
-        return 2 * 1024 * 1024 * 1024; // 2GB
-      case CloudDriveType.lanzou:
-        return 100 * 1024 * 1024; // 100MB
-      case CloudDriveType.pan123:
-        return 5 * 1024 * 1024 * 1024; // 5GB
-      case CloudDriveType.ali:
-        return 20 * 1024 * 1024 * 1024; // 20GB
-      case CloudDriveType.quark:
-        return 5 * 1024 * 1024 * 1024; // 5GB
-      case CloudDriveType.chinaMobile:
-        return 5 * 1024 * 1024 * 1024; // 5GB
-    }
+    return getCapabilities(type).maxDownloadSize;
   }
 
   /// 格式化文件大小
@@ -331,13 +204,22 @@ class CloudDriveBusinessRules {
 
   /// 获取云盘类型显示信息
   static Map<String, dynamic> getCloudDriveTypeInfo(CloudDriveType type) {
+    final descriptor = CloudDriveProviderRegistry.get(type);
+    if (descriptor == null) {
+      throw StateError('未在 CloudDriveProviderRegistry 注册 $type');
+    }
+    final supportedAuth = descriptor.supportedAuthTypes ?? <AuthType>[];
+    final authTypeName = supportedAuth.isNotEmpty
+        ? supportedAuth.first.name
+        : type.authType.name;
     return {
-      'displayName': type.displayName,
-      'iconData': type.iconData,
-      'color': type.color,
+      'displayName': descriptor.displayName ?? type.name,
+      'iconData': descriptor.iconData ?? type.iconData,
+      'color': descriptor.color ?? type.color,
       'icon': type.icon,
-      'authType': type.authType.name,
-      'supportedAuthTypes': type.supportedAuthTypes.map((e) => e.name).toList(),
+      'authType': authTypeName,
+      'supportedAuthTypes':
+          supportedAuth.map((e) => e.name).toList(),
     };
   }
 }

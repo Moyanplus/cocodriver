@@ -6,7 +6,7 @@ import '../lanzou_config.dart';
 /// 蓝奏云盘基础服务
 ///
 /// 提供 Dio 配置和通用方法，包括请求拦截、响应处理等。
-class LanzouBaseService {
+class LanzouDioFactory {
   /// 创建 Dio 实例
   static Dio createDio(CloudDriveAccount account) {
     final dio = Dio(
@@ -71,24 +71,23 @@ class LanzouBaseService {
   static String getResponseMessage(Map<String, dynamic> response) =>
       LanzouConfig.getResponseMessage(response);
 
-  /// 处理API响应
-  static Map<String, dynamic> handleApiResponse(Map<String, dynamic> response) {
-    if (isSuccessResponse(response)) {
-      return response;
-    } else {
-      final message = getResponseMessage(response);
-      throw Exception('蓝奏云盘API错误: $message');
-    }
-  }
-
   /// 创建请求头
-  static Map<String, String> createHeaders(CloudDriveAccount account) {
-    return {
+  static Map<String, String> createHeaders(
+    CloudDriveAccount account, {
+    Map<String, String>? extra,
+  }) {
+    final headers = {
       ...LanzouConfig.defaultHeaders,
       'User-Agent':
           account.type.webViewConfig.userAgent ??
           LanzouConfig.defaultHeaders['User-Agent']!,
       ...account.authHeaders,
     };
+
+    if (extra != null) {
+      headers.addAll(extra);
+    }
+
+    return headers;
   }
 }

@@ -31,10 +31,9 @@ services/
 │   └── baidu_task_service.dart    # 任务服务
 ├── lanzou/                 # 蓝奏云盘服务
 │   ├── lanzou_config.dart         # 配置
-│   ├── lanzou_cloud_drive_service.dart # 云盘服务
+│   ├── lanzou_cloud_drive_facade.dart # 云盘服务（包含直链解析）
 │   ├── lanzou_operation_strategy.dart # 操作策略
-│   ├── lanzou_direct_link_service.dart # 直链服务
-│   └── lanzou_vei_service.dart    # VEI服务
+│   └── lanzou_vei_provider.dart    # VEI服务
 ├── pan123/                 # 123云盘服务
 │   ├── pan123_base_service.dart   # 基础服务
 │   ├── pan123_config.dart         # 配置

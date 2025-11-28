@@ -15,7 +15,10 @@ class FolderStateHandler {
   final FileListCacheManager _cacheManager = FileListCacheManager();
   final CloudDriveLoggerAdapter _logger;
 
-  FolderStateHandler(this._stateManager) : _logger = _stateManager.logger;
+  FolderStateHandler(
+    this._stateManager, {
+    CloudDriveLoggerAdapter? logger,
+  }) : _logger = logger ?? _stateManager.logger;
 
   /// 加载文件夹内容，使用缓存机制提升性能
   ///
@@ -37,6 +40,9 @@ class FolderStateHandler {
       if (!forceRefresh) {
         final cachedData = _cacheManager.get(account.id, folderId);
         if (cachedData != null) {
+          final cachedFolders = List<CloudDriveFile>.from(cachedData.folders);
+          final cachedFiles = List<CloudDriveFile>.from(cachedData.files);
+          _sortLists(cachedFolders, cachedFiles);
           // 使用缓存数据
           _logger.info(
             '⚡ 使用缓存数据 (${cachedData.files.length} 文件, ${cachedData.folders.length} 文件夹, '
@@ -45,8 +51,8 @@ class FolderStateHandler {
 
           _stateManager.updateState(
             (state) => state.copyWith(
-              files: List.from(cachedData.files),
-              folders: List.from(cachedData.folders),
+              files: cachedFiles,
+              folders: cachedFolders,
               isLoading: false,
               isFromCache: true, // 标记为来自缓存
               error: null,
@@ -72,6 +78,7 @@ class FolderStateHandler {
 
       final newFiles = List<CloudDriveFile>.from(result['files'] ?? []);
       final newFolders = List<CloudDriveFile>.from(result['folders'] ?? []);
+      _sortLists(newFolders, newFiles);
 
       _logger.info(
         '✅ 网络数据获取成功: ${newFiles.length} 文件, ${newFolders.length} 文件夹',
@@ -219,6 +226,9 @@ class FolderStateHandler {
           pendingOperationFile: currentState.pendingOperationFile,
           pendingOperationType: currentState.pendingOperationType,
           showFloatingActionButton: currentState.showFloatingActionButton,
+          sortField: currentState.sortField,
+          isSortAscending: currentState.isSortAscending,
+          viewMode: currentState.viewMode,
         ),
       );
 
@@ -299,6 +309,9 @@ class FolderStateHandler {
           pendingOperationFile: currentState.pendingOperationFile,
           pendingOperationType: currentState.pendingOperationType,
           showFloatingActionButton: currentState.showFloatingActionButton,
+          sortField: currentState.sortField,
+          isSortAscending: currentState.isSortAscending,
+          viewMode: currentState.viewMode,
         ),
       );
 
@@ -343,10 +356,14 @@ class FolderStateHandler {
       final newFiles = result['files'] ?? [];
       final newFolders = result['folders'] ?? [];
 
+      final mergedFiles = [...currentState.files, ...newFiles];
+      final mergedFolders = [...currentState.folders, ...newFolders];
+      _sortLists(mergedFolders, mergedFiles);
+
       _stateManager.updateState(
         (state) => state.copyWith(
-          files: [...currentState.files, ...newFiles],
-          folders: [...currentState.folders, ...newFolders],
+          files: mergedFiles,
+          folders: mergedFolders,
           currentPage: currentPage + 1,
           hasMoreData: newFiles.length >= 50, // 假设如果返回的文件数等于页面大小，还有更多数据
           isLoadingMore: false,
@@ -366,6 +383,122 @@ class FolderStateHandler {
         ),
       );
     }
+  }
+
+  Future<void> updateSortOption(
+    CloudDriveSortField field,
+    bool ascending,
+  ) async {
+    _stateManager.updateState(
+      (state) => state.copyWith(
+        sortField: field,
+        isSortAscending: ascending,
+      ),
+    );
+    _applySortingToCurrentState();
+    _logger.info('更新排序: $field, 升序: $ascending');
+  }
+
+  void _applySortingToCurrentState() {
+    final currentState = _stateManager.getCurrentState();
+    final folders = List<CloudDriveFile>.from(currentState.folders);
+    final files = List<CloudDriveFile>.from(currentState.files);
+    _sortLists(folders, files);
+    _stateManager.updateState(
+      (state) => state.copyWith(
+        folders: folders,
+        files: files,
+      ),
+    );
+  }
+
+  void _sortLists(
+    List<CloudDriveFile> folders,
+    List<CloudDriveFile> files,
+  ) {
+    final state = _stateManager.getCurrentState();
+    final comparator = (CloudDriveFile a, CloudDriveFile b) =>
+        _compareFiles(a, b, state.sortField, state.isSortAscending);
+    folders.sort(comparator);
+    files.sort(comparator);
+  }
+
+  int _compareFiles(
+    CloudDriveFile a,
+    CloudDriveFile b,
+    CloudDriveSortField field,
+    bool ascending,
+  ) {
+    int result;
+    switch (field) {
+      case CloudDriveSortField.name:
+        result = a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        break;
+      case CloudDriveSortField.createdTime:
+        result = _compareDateTime(
+          _getCreatedTime(a) ?? a.modifiedTime,
+          _getCreatedTime(b) ?? b.modifiedTime,
+        );
+        break;
+      case CloudDriveSortField.modifiedTime:
+        result = _compareDateTime(a.modifiedTime, b.modifiedTime);
+        break;
+      case CloudDriveSortField.size:
+        result = _compareInt(a.size ?? 0, b.size ?? 0);
+        break;
+      case CloudDriveSortField.downloadCount:
+        result = _compareInt(a.downloadCount, b.downloadCount);
+        break;
+    }
+    return ascending ? result : -result;
+  }
+
+  int _compareDateTime(DateTime? a, DateTime? b) {
+    if (a == null && b == null) return 0;
+    if (a == null) return 1;
+    if (b == null) return -1;
+    return a.compareTo(b);
+  }
+
+  int _compareInt(int a, int b) => a.compareTo(b);
+
+  DateTime? _getCreatedTime(CloudDriveFile file) {
+    final meta = file.metadata;
+    if (meta == null) return null;
+    final keys = ['createdTime', 'createTime', 'created_at', 'createdAt', 'ctime'];
+    for (final key in keys) {
+      if (meta.containsKey(key)) {
+        final dt = _parseDateTime(meta[key]);
+        if (dt != null) return dt;
+      }
+    }
+    return null;
+  }
+
+  DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    if (value is int) {
+      // assume milliseconds since epoch if length > 10
+      if (value > 1000000000000) {
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      }
+      return DateTime.fromMillisecondsSinceEpoch(value * 1000);
+    }
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) return null;
+      final parsed = DateTime.tryParse(trimmed);
+      if (parsed != null) return parsed;
+      final seconds = int.tryParse(trimmed);
+      if (seconds != null) {
+        if (trimmed.length > 11) {
+          return DateTime.fromMillisecondsSinceEpoch(seconds);
+        }
+        return DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
+      }
+    }
+    return null;
   }
 
   /// 刷新当前文件夹，忽略缓存重新获取数据

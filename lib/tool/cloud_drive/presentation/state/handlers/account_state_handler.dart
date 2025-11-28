@@ -10,7 +10,8 @@ class AccountStateHandler {
   final CloudDriveStateManager _stateManager;
   final CloudDriveLoggerAdapter _logger;
 
-  AccountStateHandler(this._stateManager) : _logger = _stateManager.logger;
+  AccountStateHandler(this._stateManager, {CloudDriveLoggerAdapter? logger})
+    : _logger = logger ?? _stateManager.logger;
 
   /// 加载账号列表
   Future<void> loadAccounts() async {

@@ -26,7 +26,7 @@ class LanzouConfig {
     'getFolders': '47', // 获取文件夹列表
     'moveFile': '20', // 移动文件
     'deleteFile': '6', // 删除文件
-    'renameFile': '4', // 重命名文件
+    'renameFile': '46', // 重命名文件
     'createFolder': '2', // 创建文件夹
     'uploadFile': '1', // 上传文件
     'getFileDetail': '22', // 获取文件详情

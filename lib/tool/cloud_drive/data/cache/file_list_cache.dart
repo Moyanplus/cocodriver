@@ -260,6 +260,44 @@ class FileListCacheManager {
     LogManager().cloudDrive('🗑️ 文件已从缓存移除: $key (文件ID: $fileId)');
   }
 
+  /// 将文件重新放回缓存（如删除失败需要回滚）
+  void addFileToCache(
+    String accountId,
+    String folderId,
+    CloudDriveFile file, {
+    int? index,
+  }) {
+    final key = _buildKey(accountId, folderId);
+    final entry = _cache[key];
+
+    if (entry == null) return;
+
+    final updatedFiles = entry.files.toList();
+    final updatedFolders = entry.folders.toList();
+
+    if (file.isFolder) {
+      if (!updatedFolders.any((f) => f.id == file.id)) {
+        if (index != null && index >= 0 && index <= updatedFolders.length) {
+          updatedFolders.insert(index, file);
+        } else {
+          updatedFolders.add(file);
+        }
+      }
+    } else {
+      if (!updatedFiles.any((f) => f.id == file.id)) {
+        if (index != null && index >= 0 && index <= updatedFiles.length) {
+          updatedFiles.insert(index, file);
+        } else {
+          updatedFiles.add(file);
+        }
+      }
+    }
+
+    set(accountId, folderId, updatedFiles, updatedFolders, ttl: entry.ttl);
+
+    LogManager().cloudDrive('↩️ 文件已回滚到缓存: $key (文件ID: ${file.id})');
+  }
+
   /// 获取缓存统计信息
   Map<String, dynamic> getStats() {
     int totalFiles = 0;

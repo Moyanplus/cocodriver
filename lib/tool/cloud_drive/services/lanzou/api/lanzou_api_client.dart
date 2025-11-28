@@ -2,7 +2,7 @@ import 'package:coco_cloud_drive/tool/cloud_drive/data/models/cloud_drive_entiti
 import 'package:dio/dio.dart';
 
 import '../../../../../core/logging/log_manager.dart';
-import 'lanzou_base_service.dart';
+import 'lanzou_dio_factory.dart';
 import '../lanzou_config.dart';
 import '../exceptions/lanzou_exceptions.dart';
 import '../utils/lanzou_utils.dart';
@@ -17,7 +17,7 @@ class LanzouApiClient {
     required this.uid,
     this.maxRetries = 1,
     this.retryDelay = const Duration(milliseconds: 200),
-  }) : _dio = LanzouBaseService.createDio(account);
+  }) : _dio = LanzouDioFactory.createDio(account);
 
   /// 从 Cookie 创建临时账号对象
   factory LanzouApiClient.fromCookies({

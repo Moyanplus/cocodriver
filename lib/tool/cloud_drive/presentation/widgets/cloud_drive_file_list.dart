@@ -1,8 +1,12 @@
+import 'package:azlistview/azlistview.dart';
+import 'package:characters/characters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/utils/responsive_utils.dart';
+import '../../config/cloud_drive_ui_config.dart';
 import '../../data/models/cloud_drive_entities.dart';
+import '../../utils/file_type_utils.dart';
 import 'cloud_drive_file_item.dart';
 import '../state/cloud_drive_state_model.dart';
 
@@ -50,6 +54,7 @@ class CloudDriveFileList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // 当首次进入或刷新时会短暂展示骨架屏，避免空白闪烁
     final bool showSkeleton = state.isLoading && !state.hasData;
     final bool showEmpty =
         !showSkeleton && state.folders.isEmpty && state.files.isEmpty;
@@ -68,42 +73,10 @@ class CloudDriveFileList extends StatelessWidget {
     } else {
       child = RefreshIndicator(
         onRefresh: onRefresh,
-        child: ListView.builder(
-          key: ValueKey('${state.currentFolder?.id}_${state.allItems.length}'),
-          controller: scrollController,
-          padding: EdgeInsets.zero,
-          itemCount: state.allItems.length + (state.isLoadingMore ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index >= state.allItems.length) {
-              return Container(
-                padding: EdgeInsets.all(16.w),
-                child: const Center(child: CircularProgressIndicator()),
-              );
-            }
-
-            final item = state.allItems[index];
-            final isFolder = state.folders.contains(item);
-
-            return _AnimatedFileEntry(
-              key: ValueKey('${state.currentFolder?.id}_${item.id}'),
-              position: index,
-              child: CloudDriveFileItem(
-                file: item,
-                account: account,
-                isFolder: isFolder,
-                isSelected: state.selectedItems.contains(item.id),
-                isBatchMode: state.isBatchMode,
-                onTap:
-                    () => state.isBatchMode
-                        ? onToggleSelection(item.id)
-                        : isFolder
-                            ? onFolderTap(item)
-                            : onFileTap(item),
-                onLongPress: () => onLongPress(item.id),
-              ),
-            );
-          },
-        ),
+        child:
+            state.viewMode == CloudDriveViewMode.grid
+                ? _buildGridView(context)
+                : _buildListView(context),
       );
     }
 
@@ -112,12 +85,457 @@ class CloudDriveFileList extends StatelessWidget {
       switchInCurve: Curves.easeOut,
       switchOutCurve: Curves.easeIn,
       child: Container(
+        // key 中带上 folderId，切换文件夹时能触发 AnimatedSwitcher 动画
         key: ValueKey('$showSkeleton-$showEmpty-${state.currentFolder?.id}'),
         decoration: BoxDecoration(color: theme.colorScheme.surface),
         child: child,
       ),
     );
   }
+
+  /// 经典列表视图
+  Widget _buildListView(BuildContext context) {
+    if (_shouldUseIndexedList) {
+      return _buildIndexedListView(context);
+    }
+
+    final items = state.allItems;
+    final totalCount = items.length + (state.isLoadingMore ? 1 : 0);
+    return ListView.builder(
+      key: PageStorageKey<String>(
+        'cloud_drive_list_${state.currentAccount?.id ?? 'no_account'}_${state.currentFolder?.id ?? 'root'}',
+      ),
+      controller: scrollController,
+      padding: EdgeInsets.zero,
+      itemCount: totalCount,
+      itemBuilder: (context, index) {
+        if (index >= items.length) {
+          return Padding(
+            padding: EdgeInsets.all(16.w),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final item = items[index];
+        final isFolder = state.folders.contains(item);
+
+        return _AnimatedFileEntry(
+          key: ValueKey('${state.currentFolder?.id}_${item.id}'),
+          position: index,
+          child: CloudDriveFileItem(
+            file: item,
+            account: account,
+            isFolder: isFolder,
+            isSelected: state.selectedItems.contains(item.id),
+            isBatchMode: state.isBatchMode,
+            onTap:
+                () =>
+                    state.isBatchMode
+                        ? onToggleSelection(item.id)
+                        : isFolder
+                        ? onFolderTap(item)
+                        : onFileTap(item),
+            onLongPress: () => onLongPress(item.id),
+          ),
+        );
+      },
+    );
+  }
+
+  /// 图标视图：按当前宽度自适应列数，便于在不同屏幕一次展示更多文件
+  Widget _buildGridView(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) {
+          final width =
+              constraints.maxWidth == double.infinity
+                  ? MediaQuery.of(context).size.width
+                  : constraints.maxWidth;
+          // 根据容器宽度动态计算列数，保证小屏也至少两列，大屏可展示更多
+          var crossAxisCount = (width / 120).floor();
+          if (crossAxisCount < 2) crossAxisCount = 2;
+          if (crossAxisCount > 6) crossAxisCount = 6;
+          final gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 6.w,
+            mainAxisSpacing: 6.w,
+            childAspectRatio: 1,
+          );
+
+          final items = state.allItems;
+          final totalCount = items.length + (state.isLoadingMore ? 1 : 0);
+          return GridView.builder(
+            key: PageStorageKey<String>(
+              'cloud_drive_grid_${state.currentAccount?.id ?? 'no_account'}_${state.currentFolder?.id ?? 'root'}',
+            ),
+            controller: scrollController,
+            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 6.h),
+            gridDelegate: gridDelegate,
+            itemCount: totalCount,
+            itemBuilder: (context, index) {
+              if (index >= items.length) {
+                return Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: const Center(child: CircularProgressIndicator()),
+                );
+              }
+              return _buildGridTile(items[index]);
+            },
+          );
+        },
+      );
+
+  Widget _buildGridTile(CloudDriveFile item) {
+    final isFolder = state.folders.contains(item);
+    final isSelected = state.selectedItems.contains(item.id);
+    return _GridFileTile(
+      file: item,
+      isFolder: isFolder,
+      isSelected: isSelected,
+      isBatchMode: state.isBatchMode,
+      onTap:
+          () => state.isBatchMode
+              ? onToggleSelection(item.id)
+              : isFolder
+                  ? onFolderTap(item)
+                  : onFileTap(item),
+      onLongPress: () => onLongPress(item.id),
+    );
+  }
+
+  bool get _shouldUseIndexedList {
+    if (state.viewMode != CloudDriveViewMode.list) return false;
+    final supportsIndex =
+        state.sortField == CloudDriveSortField.name ||
+        state.sortField == CloudDriveSortField.createdTime ||
+        state.sortField == CloudDriveSortField.modifiedTime;
+    return supportsIndex && state.allItems.length >= 10;
+  }
+
+  Widget _buildIndexedListView(BuildContext context) {
+    final entries = _buildIndexedEntries();
+    final theme = Theme.of(context);
+    final indexData = _buildIndexBarData(entries);
+    final baseStyle = TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w600,
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
+    return AzListView(
+      data: entries,
+      padding: EdgeInsets.zero,
+      indexHintBuilder:
+          (context, hint) => Container(
+            width: 72,
+            height: 72,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Text(
+              hint,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+              ),
+            ),
+          ),
+      indexBarData: indexData,
+      indexBarMargin: EdgeInsets.only(right: 6.w),
+      indexBarOptions: IndexBarOptions(
+        needRebuild: true,
+        decoration: const BoxDecoration(color: Colors.transparent),
+        textStyle: baseStyle,
+        downTextStyle: baseStyle.copyWith(
+          color: theme.colorScheme.primary,
+        ),
+        selectTextStyle: const TextStyle(
+          fontSize: 11,
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+        selectItemDecoration: BoxDecoration(
+          color: theme.colorScheme.primary.withOpacity(0.85),
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      susItemBuilder: null,
+      itemCount: entries.length,
+      itemBuilder: (context, index) {
+        final entry = entries[index];
+        if (entry.isLoader) {
+          return Padding(
+            padding: EdgeInsets.all(16.w),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
+        final file = entry.file!;
+        final isFolder = state.folders.contains(file);
+        return _AnimatedFileEntry(
+          key: ValueKey('indexed_${state.currentFolder?.id}_${file.id}'),
+          position: index,
+          child: CloudDriveFileItem(
+            file: file,
+            account: account,
+            isFolder: isFolder,
+            isSelected: state.selectedItems.contains(file.id),
+            isBatchMode: state.isBatchMode,
+            onTap:
+                () =>
+                    state.isBatchMode
+                        ? onToggleSelection(file.id)
+                        : isFolder
+                        ? onFolderTap(file)
+                        : onFileTap(file),
+            onLongPress: () => onLongPress(file.id),
+          ),
+        );
+      },
+    );
+  }
+
+  List<_IndexedEntry> _buildIndexedEntries() {
+    final entries = <_IndexedEntry>[];
+    for (final file in state.allItems) {
+      final tag = _deriveIndexTag(file);
+      entries.add(_IndexedEntry(file: file, tag: tag));
+    }
+
+    if (state.isLoadingMore) {
+      entries.add(_IndexedEntry.loader());
+    }
+
+    return entries;
+  }
+
+  String _deriveIndexTag(CloudDriveFile file) {
+    if (file.isFolder) return '@';
+    if (state.sortField == CloudDriveSortField.name) {
+      final name = file.name;
+      if (name.isEmpty) return '#';
+      final first = name.characters.first.toUpperCase();
+      final code = first.codeUnitAt(0);
+      final isLetter = code >= 65 && code <= 90;
+      return isLetter ? first : '#';
+    }
+
+    final time = _resolveTimeForIndex(file);
+    if (time == null) return '#';
+    return '${time.month}月';
+  }
+
+  List<String> _buildIndexBarData(List<_IndexedEntry> entries) {
+    final tags = <String>[];
+    final seen = <String>{};
+    for (final entry in entries) {
+      if (entry.isLoader || entry.isFolder) continue;
+      final tag = entry.tag;
+      if (seen.add(tag)) {
+        tags.add(tag);
+      }
+    }
+    return tags.isEmpty ? ['#'] : tags;
+  }
+
+  DateTime? _resolveTimeForIndex(CloudDriveFile file) {
+    const createdKeys = ['createdTime', 'createTime', 'created_at', 'createdAt', 'ctime'];
+    const modifiedKeys = ['modifiedTime', 'updateTime', 'updated_at', 'updatedAt', 'mtime'];
+
+    switch (state.sortField) {
+      case CloudDriveSortField.createdTime:
+        return _extractTimeFromMetadata(file, createdKeys) ??
+            file.modifiedTime ??
+            _extractTimeFromMetadata(file, modifiedKeys);
+      case CloudDriveSortField.modifiedTime:
+        return file.modifiedTime ??
+            _extractTimeFromMetadata(file, modifiedKeys) ??
+            _extractTimeFromMetadata(file, createdKeys);
+      default:
+        return null;
+    }
+  }
+
+  DateTime? _extractTimeFromMetadata(
+    CloudDriveFile file,
+    List<String> keys,
+  ) {
+    final meta = file.metadata;
+    if (meta == null) return null;
+    for (final key in keys) {
+      if (!meta.containsKey(key)) continue;
+      final value = meta[key];
+      final parsed = _parseDateTimeValue(value);
+      if (parsed != null) return parsed;
+    }
+    return null;
+  }
+
+  DateTime? _parseDateTimeValue(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    if (value is int) {
+      final millis = value > 1000000000000 ? value : value * 1000;
+      return DateTime.fromMillisecondsSinceEpoch(millis);
+    }
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) return null;
+      final parsed = DateTime.tryParse(trimmed);
+      if (parsed != null) return parsed;
+      final secs = int.tryParse(trimmed);
+      if (secs != null) {
+        final millis = trimmed.length > 11 ? secs : secs * 1000;
+        return DateTime.fromMillisecondsSinceEpoch(millis);
+      }
+    }
+    return null;
+  }
+}
+
+/// 网格模式下的单个文件卡片，负责展示图标 / 名称 / 大小 / 时间等信息
+class _GridFileTile extends StatelessWidget {
+  const _GridFileTile({
+    required this.file,
+    required this.isFolder,
+    required this.isSelected,
+    required this.isBatchMode,
+    required this.onTap,
+    required this.onLongPress,
+  });
+
+  final CloudDriveFile file;
+  final bool isFolder;
+  final bool isSelected;
+  final bool isBatchMode;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final typeColor =
+        isFolder ? Colors.orange : FileTypeUtils.getFileTypeColor(file.name);
+    final typeIcon =
+        isFolder
+            ? Icons.folder_rounded
+            : FileTypeUtils.getFileTypeIcon(file.name);
+
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        padding: EdgeInsets.all(8.w),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color:
+              isSelected
+                  ? theme.colorScheme.primaryContainer.withOpacity(0.4)
+                  : theme.colorScheme.surface,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              // 批量模式下显示选中图标，非批量模式则留空保持布局一致
+              child:
+                  isBatchMode
+                      ? Icon(
+                        isSelected
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
+                        size: 18,
+                        color:
+                            isSelected
+                                ? typeColor
+                                : theme.colorScheme.onSurfaceVariant,
+                      )
+                      : SizedBox(height: 2),
+            ),
+            Container(
+              width: 46.w,
+              height: 46.w,
+              margin: EdgeInsets.only(bottom: 6.w),
+              // 通过类型颜色营造统一视觉，文件类型越多越容易辨认
+              decoration: BoxDecoration(
+                color: typeColor.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(typeIcon, color: typeColor, size: 26.w),
+            ),
+
+            // SizedBox(height: 6.h),
+            Text(
+              file.name,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: CloudDriveUIConfig.bodyTextStyle.copyWith(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+            const Spacer(),
+
+            Text(
+              isFolder ? '文件夹' : file.formattedSize,
+              style: CloudDriveUIConfig.smallTextStyle.copyWith(
+                fontSize: 8,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.access_time, size: 8, color: typeColor),
+                SizedBox(width: 2.w),
+                Text(
+                  _formatTime(file.modifiedTime),
+                  style: CloudDriveUIConfig.smallTextStyle.copyWith(
+                    fontSize: 8,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatTime(DateTime? time) {
+    if (time == null) return '--';
+    return '${time.month.toString().padLeft(2, '0')}/${time.day.toString().padLeft(2, '0')} '
+        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  }
+}
+
+class _IndexedEntry extends ISuspensionBean {
+  _IndexedEntry({
+    required this.file,
+    required String tag,
+  })  : _tag = tag,
+        isLoader = false,
+        isFolder = file?.isFolder ?? false;
+
+  _IndexedEntry.loader()
+      : file = null,
+        _tag = '~',
+        isLoader = true,
+        isFolder = false;
+
+  final CloudDriveFile? file;
+  final bool isLoader;
+  final bool isFolder;
+  String _tag;
+  String get tag => _tag;
+
+  @override
+  String getSuspensionTag() => _tag;
 }
 
 /// 空状态组件
@@ -253,9 +671,10 @@ class _SkeletonItemState extends State<_SkeletonItem>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return FadeTransition(
-      opacity: Tween<double>(begin: 0.4, end: 0.9).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-      ),
+      opacity: Tween<double>(
+        begin: 0.4,
+        end: 0.9,
+      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut)),
       child: Container(
         height: 60.h,
         decoration: BoxDecoration(
@@ -330,10 +749,7 @@ class _AnimatedFileEntry extends StatelessWidget {
       builder: (context, value, child) {
         return Transform.translate(
           offset: Offset(0, value * 12),
-          child: Opacity(
-            opacity: 1 - value * 0.4,
-            child: child,
-          ),
+          child: Opacity(opacity: 1 - value * 0.4, child: child),
         );
       },
       child: child,
