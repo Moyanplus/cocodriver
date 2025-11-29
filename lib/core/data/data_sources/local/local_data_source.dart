@@ -2,7 +2,6 @@ import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../error/exceptions.dart';
-import '../../models/base_model.dart';
 
 /// 本地数据源基类
 abstract class LocalDataSource {

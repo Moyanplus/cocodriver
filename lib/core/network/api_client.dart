@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 
-import '../error/failures.dart';
 import 'api_endpoints.dart';
 import 'network_interceptor.dart';
 
@@ -126,10 +125,8 @@ class ApiClientFactory {
 
 /// 网络服务基类
 abstract class NetworkService {
-  final ApiClient _apiClient;
 
-  NetworkService({ApiClient? apiClient})
-    : _apiClient = apiClient ?? ApiClientFactory.getInstance();
+  NetworkService({ApiClient? apiClient});
 
   /// 处理网络请求
   Future<T> handleRequest<T>(

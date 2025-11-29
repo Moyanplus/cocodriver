@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../data/models/cloud_drive_entities.dart';
-import '../../../services/provider/cloud_drive_provider_registry.dart';
+import '../../../services/registry/cloud_drive_provider_registry.dart';
 import '../add_account/cookie_auth_form_widget.dart';
 import '../add_account/authorization_auth_form_widget.dart';
 import '../add_account/auth_method_selector_widget.dart';

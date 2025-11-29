@@ -213,14 +213,11 @@ class PerformanceMetrics {
   void _logMetric(PerformanceMetric metric) {
     final status = metric.error != null ? 'ERROR' : 'OK';
     final duration = '${metric.duration.inMilliseconds}ms';
-    print('$status ${metric.category}/${metric.operation}: $duration');
 
     if (metric.error != null) {
-      print('   Error: ${metric.error}');
     }
 
     if (metric.metadata.isNotEmpty) {
-      print('   Metadata: ${metric.metadata}');
     }
   }
 

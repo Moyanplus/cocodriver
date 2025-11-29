@@ -9,7 +9,7 @@ import '../../providers/cloud_drive_provider.dart';
 import '../../../../../core/logging/log_manager.dart';
 import '../../../../../shared/widgets/common/bottom_sheet_widget.dart';
 import 'edit_account_form_widget.dart';
-import '../../../services/provider/cloud_drive_provider_registry.dart';
+import '../../../services/registry/cloud_drive_provider_registry.dart';
 
 /// 账号详情底部弹窗组件
 ///

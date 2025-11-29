@@ -9,7 +9,7 @@
 /// 注意：文件详情已整合到 FileOperationBottomSheet 底部弹窗中
 library;
 
-export 'cloud_drive_browser_page.dart';
-export 'cloud_drive_direct_link_page.dart';
-export 'cloud_drive_login_page.dart';
-export 'cloud_drive_upload_page.dart';
+export 'browser/cloud_drive_browser_page.dart';
+export 'direct_link/cloud_drive_direct_link_page.dart';
+export 'auth/cloud_drive_login_page.dart';
+export 'upload/cloud_drive_upload_page.dart';

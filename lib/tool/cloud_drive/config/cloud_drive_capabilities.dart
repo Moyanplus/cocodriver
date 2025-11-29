@@ -1,5 +1,5 @@
 import '../data/models/cloud_drive_entities.dart';
-import '../services/provider/cloud_drive_provider_registry.dart';
+import '../services/registry/cloud_drive_provider_registry.dart';
 
 /// 云盘能力与配额配置，集中管理各云盘的操作上限与默认能力。
 class CloudDriveCapabilities {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../data/models/cloud_drive_entities.dart';
-import '../../../services/provider/cloud_drive_provider_registry.dart';
+import '../../../services/registry/cloud_drive_provider_registry.dart';
 import 'add_account_form_constants.dart';
 
 /// 认证方式选择器组件

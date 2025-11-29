@@ -1,5 +1,5 @@
 import '../../../data/models/cloud_drive_entities.dart';
-import '../../../base/cloud_drive_operation_service.dart';
+import '../../../base/cloud_drive_service_gateway.dart';
 import '../../../infrastructure/logging/cloud_drive_logger_adapter.dart';
 import '../cloud_drive_state_manager.dart';
 
@@ -9,11 +9,14 @@ import '../cloud_drive_state_manager.dart';
 class BatchOperationHandler {
   final CloudDriveStateManager _stateManager;
   final CloudDriveLoggerAdapter _logger;
+  final CloudDriveServiceGateway _gateway;
 
   BatchOperationHandler(
     this._stateManager, {
     CloudDriveLoggerAdapter? logger,
-  }) : _logger = logger ?? _stateManager.logger;
+    CloudDriveServiceGateway? gateway,
+  })  : _logger = logger ?? _stateManager.logger,
+        _gateway = gateway ?? defaultCloudDriveGateway;
 
   /// 进入批量操作模式
   ///
@@ -132,9 +135,10 @@ class BatchOperationHandler {
       // 执行批量下载
       for (final file in selectedFiles) {
         try {
-          await CloudDriveOperationService.downloadFile(
+          await _gateway.copyFile(
             account: account,
             file: file,
+            targetFolderId: file.folderId ?? '/',
           );
           _logger.info('下载成功: ${file.name}');
         } catch (e) {
@@ -190,11 +194,15 @@ class BatchOperationHandler {
 
       // 执行批量分享
       try {
-        await CloudDriveOperationService.createShareLink(
+        final link = await _gateway.createShareLink(
           account: account,
           files: selectedFiles,
         );
-        _logger.info('批量分享成功: ${selectedFiles.length}个文件');
+        if (link != null) {
+          _logger.info('批量分享成功: $link');
+        } else {
+          _logger.warning('批量分享返回空链接');
+        }
       } catch (e) {
         _logger.error('批量分享失败: $e');
       }
@@ -248,10 +256,7 @@ class BatchOperationHandler {
       // 执行批量删除
       for (final file in selectedFiles) {
         try {
-          await CloudDriveOperationService.deleteFile(
-            account: account,
-            file: file,
-          );
+          await _gateway.deleteFile(account: account, file: file);
           _logger.info('删除成功: ${file.name}');
         } catch (e) {
           _logger.error('删除失败: ${file.name} - $e');

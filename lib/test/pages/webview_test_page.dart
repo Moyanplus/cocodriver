@@ -14,10 +14,10 @@
 /// 作者: Flutter开发团队
 /// 版本: 1.0.0
 /// 创建时间: 2024年
+library;
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -41,6 +41,8 @@ import '../../core/logging/log_manager.dart';
 /// 版本: 1.0.0
 /// 创建时间: 2024年
 class WebViewTestPage extends StatefulWidget {
+  const WebViewTestPage({super.key});
+
   @override
   State<WebViewTestPage> createState() => _WebViewTestPageState();
 }

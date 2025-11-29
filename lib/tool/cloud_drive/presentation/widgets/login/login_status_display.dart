@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../common/cloud_drive_common_widgets.dart';
 import '../../../data/models/cloud_drive_entities.dart';
-import '../../../services/provider/cloud_drive_provider_registry.dart';
+import '../../../services/registry/cloud_drive_provider_registry.dart';
 
 /// 登录状态显示组件
 class LoginStatusDisplay extends StatelessWidget {

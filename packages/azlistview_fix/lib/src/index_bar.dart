@@ -223,7 +223,7 @@ class IndexBarController {
 
 /// IndexBar.
 class IndexBar extends StatefulWidget {
-  IndexBar({
+  const IndexBar({
     Key? key,
     this.data = kIndexBarData,
     this.width = kIndexBarWidth,
@@ -478,7 +478,7 @@ class _IndexBarState extends State<IndexBar> {
 }
 
 class BaseIndexBar extends StatefulWidget {
-  BaseIndexBar({
+  const BaseIndexBar({
     Key? key,
     this.data = kIndexBarData,
     this.width = kIndexBarWidth,
@@ -529,7 +529,7 @@ class _BaseIndexBarState extends State<BaseIndexBar> {
             action == IndexBarDragDetails.actionUpdate)) {
       HapticFeedback.vibrate();
     }
-    widget.indexBarDragNotifier?.dragDetails?.value = IndexBarDragDetails(
+    widget.indexBarDragNotifier?.dragDetails.value = IndexBarDragDetails(
       action: action,
       index: lastIndex,
       tag: widget.data[lastIndex],

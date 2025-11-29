@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../../../data/models/cloud_drive_entities.dart';
-import '../../../base/cloud_drive_file_service.dart';
-import '../../../base/cloud_drive_operation_service.dart';
+import '../../../base/cloud_drive_service_gateway.dart';
 import '../../../data/cache/file_list_cache.dart'; // 导入缓存管理器
 import '../../../core/result.dart';
 import '../../utils/operation_guard.dart';
 import '../operation/operation.dart';
 import '../file_detail/file_detail.dart';
 import '../../../../../../core/logging/log_manager.dart';
-import '../authenticated_network_image.dart';
+import '../common/authenticated_network_image.dart';
 import '../../../utils/file_type_utils.dart';
 import '../../providers/cloud_drive_provider.dart';
+import '../../../../download/services/download_config_service.dart';
+import '../../../../download/services/download_service.dart';
 
 /// 文件操作和详情底部弹窗
 ///
@@ -42,11 +42,12 @@ class FileOperationBottomSheet extends ConsumerStatefulWidget {
 class _FileOperationBottomSheetState
     extends ConsumerState<FileOperationBottomSheet>
     with SingleTickerProviderStateMixin {
-  bool _isLoading = false;
+  final bool _isLoading = false;
   String? _loadingMessage;
   bool _wasLoading = false;
   late final AnimationController _controller;
   late final Animation<Offset> _offsetAnimation;
+  late final CloudDriveServiceGateway _gateway;
   // 【已移除】_fileDetail - UI不需要此数据
 
   @override
@@ -63,6 +64,7 @@ class _FileOperationBottomSheetState
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
     _controller.forward();
+    _gateway = defaultCloudDriveGateway;
     // 【优化】移除不必要的文件详情加载
     // UI不需要账号详情信息，只需要文件本身的属性
     // _loadFileDetail();
@@ -422,11 +424,23 @@ class _FileOperationBottomSheetState
     try {
       LogManager().cloudDrive('开始下载文件: ${widget.file.name}');
 
-      // 调用批量下载服务（支持单个文件）
-      await CloudDriveFileService.batchDownloadFiles(
+      final downloadUrl = await _gateway.getDownloadUrl(
         account: widget.account,
-        files: [widget.file],
-        folders: [],
+        file: widget.file,
+      );
+      if (downloadUrl == null) {
+        throw Exception('无法获取下载链接');
+      }
+      final config = await DownloadConfigService().loadConfig();
+      await DownloadService().createDownloadTask(
+        url: downloadUrl,
+        fileName: widget.file.name,
+        downloadDir: config.downloadDirectory,
+        showNotification: config.showNotification,
+        openFileFromNotification: config.openFileFromNotification,
+        isExternalStorage: false,
+        customHeaders: widget.account.authHeaders,
+        thumbnailUrl: widget.file.thumbnailUrl,
       );
 
       if (!mounted) return;
@@ -448,14 +462,25 @@ class _FileOperationBottomSheetState
     try {
       LogManager().cloudDrive('开始高速下载: ${widget.file.name}');
 
-      // TODO: 高速下载功能暂未实现，暂时使用普通下载
-      LogManager().cloudDrive('高速下载功能暂未实现，使用普通下载');
-
-      // 调用批量下载服务
-      await CloudDriveFileService.batchDownloadFiles(
+      final downloadUrl = await _gateway.getDownloadUrl(
         account: widget.account,
-        files: [widget.file],
-        folders: [],
+        file: widget.file,
+      );
+      if (downloadUrl == null) {
+        throw Exception('无法获取下载链接');
+      }
+
+      // TODO: 替换成统一 DownloadService 注入，这里先复用现有批量下载逻辑
+      await DownloadService().createDownloadTask(
+        url: downloadUrl,
+        fileName: widget.file.name,
+        downloadDir: (await DownloadConfigService().loadConfig())
+            .downloadDirectory,
+        showNotification: true,
+        openFileFromNotification: false,
+        isExternalStorage: false,
+        customHeaders: widget.account.authHeaders,
+        thumbnailUrl: widget.file.thumbnailUrl,
       );
 
       if (!mounted) return;
@@ -493,8 +518,7 @@ class _FileOperationBottomSheetState
     try {
       LogManager().cloudDrive('开始创建分享链接: ${widget.file.name}');
 
-      // 调用统一的操作服务接口（自动根据云盘类型选择对应的实现）
-      final shareUrl = await CloudDriveOperationService.createShareLink(
+      final shareUrl = await _gateway.createShareLink(
         account: widget.account,
         files: [widget.file],
         password: password,
@@ -590,7 +614,7 @@ class _FileOperationBottomSheetState
             originalName,
           );
         },
-        action: () => CloudDriveFileService.renameFile(
+        action: () => _gateway.renameFile(
           account: account,
           file: file,
           newName: newName,
@@ -687,10 +711,7 @@ class _FileOperationBottomSheetState
           eventHandler.addFileToState(file);
           cacheManager.addFileToCache(account.id, folderId, file);
         },
-        action: () => CloudDriveFileService.deleteFile(
-          account: account,
-          file: file,
-        ),
+        action: () => _gateway.deleteFile(account: account, file: file),
         rollbackWhen: (result) => !result,
       );
 
@@ -709,11 +730,10 @@ class _FileOperationBottomSheetState
     }
   }
 
-  bool _isOperationSupported(String operation) =>
-      CloudDriveOperationService.isOperationSupported(
-        widget.account,
-        operation,
-      );
+  bool _isOperationSupported(String operation) {
+    final support = _gateway.getSupportedOperations(widget.account);
+    return support[operation] ?? false;
+  }
 
   /// 提取更友好的错误提示，兼容各云盘自定义异常
   String _extractErrorMessage(Object error) {

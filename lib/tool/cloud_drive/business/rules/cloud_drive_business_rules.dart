@@ -1,7 +1,7 @@
 import '../../data/models/cloud_drive_entities.dart';
-import '../../base/cloud_drive_operation_service.dart';
+import '../../base/cloud_drive_service_gateway.dart';
 import '../../config/cloud_drive_capabilities.dart';
-import '../../services/provider/cloud_drive_provider_registry.dart';
+import '../../services/registry/cloud_drive_provider_registry.dart';
 
 /// 云盘业务规则
 ///
@@ -63,7 +63,8 @@ class CloudDriveBusinessRules {
     CloudDriveAccount account,
     String operation,
   ) {
-    return CloudDriveOperationService.isOperationSupported(account, operation);
+    final support = defaultCloudDriveGateway.getSupportedOperations(account);
+    return support[operation] ?? false;
   }
 
   /// 验证批量操作

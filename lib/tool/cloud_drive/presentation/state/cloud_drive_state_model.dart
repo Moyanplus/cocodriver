@@ -414,6 +414,13 @@ class BatchDeleteEvent extends CloudDriveEvent {
   const BatchDeleteEvent();
 }
 
+/// 创建文件夹事件
+class CreateFolderEvent extends CloudDriveEvent {
+  final String name;
+  final String parentId;
+  const CreateFolderEvent({required this.name, required this.parentId});
+}
+
 /// 文件列表状态
 class FileListState {
   final List<CloudDriveFile> folders;

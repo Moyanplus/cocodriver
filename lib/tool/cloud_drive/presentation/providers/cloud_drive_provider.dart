@@ -9,6 +9,7 @@ import '../../utils/file_type_utils.dart';
 import '../state/handlers/account_state_handler.dart';
 import '../state/handlers/folder_state_handler.dart';
 import '../state/handlers/batch_operation_handler.dart';
+import '../../base/cloud_drive_service_gateway.dart';
 
 typedef _HandlerBuilder<T> = T Function(CloudDriveStateManager manager);
 
@@ -25,19 +26,35 @@ final accountHandlerBuilderProvider =
 final folderHandlerBuilderProvider =
     Provider<_HandlerBuilder<FolderStateHandler>>((ref) {
       final logger = ref.watch(cloudDriveLoggerProvider);
-      return (manager) => FolderStateHandler(manager, logger: logger);
+      final gateway = ref.watch(cloudDriveGatewayProvider);
+      return (manager) => FolderStateHandler(
+        manager,
+        logger: logger,
+        gateway: gateway,
+      );
     });
 
 final batchHandlerBuilderProvider =
     Provider<_HandlerBuilder<BatchOperationHandler>>((ref) {
       final logger = ref.watch(cloudDriveLoggerProvider);
-      return (manager) => BatchOperationHandler(manager, logger: logger);
+      final gateway = ref.watch(cloudDriveGatewayProvider);
+      return (manager) => BatchOperationHandler(
+        manager,
+        logger: logger,
+        gateway: gateway,
+      );
     });
 
 final pendingHandlerBuilderProvider =
-    Provider<_HandlerBuilder<PendingOperationHandler>>(
-      (ref) => (manager) => PendingOperationHandler(manager),
-    );
+    Provider<_HandlerBuilder<PendingOperationHandler>>((ref) {
+      final gateway = ref.watch(cloudDriveGatewayProvider);
+      return (manager) => PendingOperationHandler(manager, gateway: gateway);
+    });
+
+/// 云盘服务网关 Provider（可在测试/特定环境替换）
+final cloudDriveGatewayProvider = Provider<CloudDriveServiceGateway>(
+  (ref) => defaultCloudDriveGateway,
+);
 
 /// 云盘状态管理器 Provider
 final cloudDriveStateManagerProvider =

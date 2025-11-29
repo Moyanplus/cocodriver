@@ -1,6 +1,7 @@
 /// 更新详情页面
 ///
 /// 显示详细的更新信息和管理更新
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

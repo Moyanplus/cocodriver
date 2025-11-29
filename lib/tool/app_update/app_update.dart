@@ -1,6 +1,7 @@
 /// 应用更新模块导出文件
 ///
 /// 统一导出更新功能的所有公共接口
+library;
 
 // 模型
 export 'models/update_models.dart';

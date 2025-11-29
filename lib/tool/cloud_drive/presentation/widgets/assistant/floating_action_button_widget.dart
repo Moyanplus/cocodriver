@@ -52,7 +52,7 @@ class FloatingActionButtonWidget extends ConsumerWidget {
 
     LogManager().cloudDrive('悬浮按钮点击事件开始');
     LogManager().cloudDrive('待操作文件: ${file.name}');
-    LogManager().cloudDrive('操作类型: ${operationType}');
+    LogManager().cloudDrive('操作类型: $operationType');
 
     try {
       // 执行操作

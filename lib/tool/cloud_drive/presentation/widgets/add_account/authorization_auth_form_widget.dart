@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../data/models/cloud_drive_entities.dart';
-import '../../../services/common/authorization_validation_service.dart';
+import '../../../services/shared/authorization_validation_service.dart';
 import 'add_account_form_constants.dart';
 
 /// Authorization Token 认证表单组件

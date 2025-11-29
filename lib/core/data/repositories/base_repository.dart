@@ -1,7 +1,5 @@
 import 'package:dio/dio.dart';
 
-import '../../error/exceptions.dart';
-import '../../error/failures.dart';
 import '../../error/error_handler.dart';
 import '../data_sources/local/local_data_source.dart';
 import '../data_sources/remote/remote_data_source.dart';

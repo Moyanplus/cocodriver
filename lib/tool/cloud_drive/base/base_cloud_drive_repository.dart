@@ -1,3 +1,4 @@
+import '../../../core/logging/log_manager.dart';
 import '../data/models/cloud_drive_entities.dart';
 
 /// 各云盘 Repository 的统一接口定义。
@@ -61,4 +62,57 @@ abstract class BaseCloudDriveRepository {
     String? shareUrl,
     String? password,
   });
+
+  /// 统一的列表结果日志，避免各云盘重复实现。
+  void logListSummary(
+    String provider,
+    List<CloudDriveFile> files, {
+    String? folderId,
+    int sampleCount = 2,
+  }) {
+    if (files.isEmpty) {
+      LogManager()
+          .cloudDrive('$provider 列表为空${folderId != null ? ' folder=$folderId' : ''}');
+      return;
+    }
+
+    String fmt(dynamic v) => v?.toString() ?? 'null';
+
+    // 只展示一个文件夹和一个文件（如果存在）
+    final samplesList = <CloudDriveFile>{};
+    final folderSample =
+        files.firstWhere((f) => f.isFolder, orElse: () => files.first);
+    samplesList.add(folderSample);
+    final fileSample =
+        files.firstWhere((f) => !f.isFolder, orElse: () => folderSample);
+    samplesList.add(fileSample);
+
+    final samples = samplesList.map((f) {
+      final kind = f.isFolder ? 'folder' : 'file';
+      return [
+        'id=${fmt(f.id)}',
+        'name=${fmt(f.name)}',
+        'type=$kind',
+        'size=${fmt(f.size)}',
+        'createdAt=${fmt(f.createdAt)}',
+        'updatedAt=${fmt(f.updatedAt)}',
+        'parent=${fmt(f.folderId)}',
+        'path=${fmt(f.path)}',
+        'downloadUrl=${fmt(f.downloadUrl)}',
+        'thumbnailUrl=${fmt(f.thumbnailUrl)}',
+        'bigThumbnailUrl=${fmt(f.bigThumbnailUrl)}',
+        'previewUrl=${fmt(f.previewUrl)}',
+        'description=${fmt(f.description)}',
+        'category=${fmt(f.category?.name)}',
+        'downloadCount=${f.downloadCount}',
+        'shareCount=${f.shareCount}',
+      ].join(', ');
+    }).join('\n  - ');
+
+    LogManager().cloudDrive(
+      '$provider 列表: total=${files.length}'
+      '${folderId != null ? ', folder=$folderId' : ''}'
+      ', sample:\n  - $samples',
+    );
+  }
 }

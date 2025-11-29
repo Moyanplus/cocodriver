@@ -1,9 +1,13 @@
 part of cloud_drive_state_manager;
 
 class PendingOperationHandler {
-  PendingOperationHandler(this._manager);
+  PendingOperationHandler(
+    this._manager, {
+    CloudDriveServiceGateway? gateway,
+  }) : _gateway = gateway ?? defaultCloudDriveGateway;
 
   final CloudDriveStateManager _manager;
+  final CloudDriveServiceGateway _gateway;
 
   CloudDriveState get _state => _manager.state;
   CloudDriveLoggerAdapter get _logger => _manager.logger;

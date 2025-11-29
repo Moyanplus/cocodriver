@@ -1,4 +1,4 @@
-library azlistview;
+library;
 
 export 'src/az_common.dart';
 export 'src/az_listview.dart';

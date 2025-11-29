@@ -1,6 +1,5 @@
+import 'package:coco_cloud_drive/tool/cloud_drive/services/providers/lanzou/models/lanzou_result.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:coco_cloud_drive/tool/cloud_drive/services/lanzou/repository/lanzou_repository.dart';
-import 'package:coco_cloud_drive/tool/cloud_drive/services/lanzou/models/lanzou_result.dart';
 
 void main() {
   test('LanzouResult success helper', () {

@@ -326,7 +326,7 @@ class ResponsiveUtils {
     double? spacing,
     double? runSpacing,
   }) {
-    final columns = responsiveValue<int>(
+    responsiveValue<int>(
       context: context,
       compact: mobileColumns ?? 1,
       medium: tabletColumns ?? mobileColumns ?? 2,

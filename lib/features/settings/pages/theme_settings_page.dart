@@ -13,6 +13,7 @@
 /// 作者: Flutter开发团队
 /// 版本: 1.0.0
 /// 创建时间: 2024年
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,7 +25,6 @@ import '../../../core/theme/theme_models.dart';
 import '../../../core/navigation/navigation_providers.dart';
 import '../../../core/services/theme_service.dart';
 import '../../../core/utils/responsive_utils.dart';
-import '../../../core/utils/adaptive_utils.dart';
 
 /// 主题设置页面Widget
 ///

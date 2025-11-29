@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:coco_cloud_drive/tool/cloud_drive/data/cache/file_list_cache.dart';
-import 'package:coco_cloud_drive/tool/cloud_drive/data/models/cloud_drive_entities.dart';
 import 'package:coco_cloud_drive/tool/cloud_drive/config/cloud_drive_cache_config.dart';
 
 void main() {

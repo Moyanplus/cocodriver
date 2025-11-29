@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/di/injection_container.dart'
-    as CloudDriveProviderRegistry;
+import '../../../services/registry/cloud_drive_provider_registry.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 

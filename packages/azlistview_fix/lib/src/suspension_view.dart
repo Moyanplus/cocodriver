@@ -7,8 +7,8 @@ const double kSusItemHeight = 40;
 
 /// SuspensionView.
 class SuspensionView extends StatefulWidget {
-  SuspensionView({
-    Key? key,
+  const SuspensionView({
+    super.key,
     required this.data,
     required this.itemCount,
     required this.itemBuilder,
@@ -19,7 +19,7 @@ class SuspensionView extends StatefulWidget {
     this.susPosition,
     this.physics,
     this.padding,
-  }) : super(key: key);
+  });
 
   /// Suspension data.
   final List<ISuspensionBean> data;

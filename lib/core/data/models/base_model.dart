@@ -13,6 +13,7 @@
 /// 作者: Flutter开发团队
 /// 版本: 1.0.0
 /// 创建时间: 2024年
+library;
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 

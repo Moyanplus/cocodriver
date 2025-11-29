@@ -1,11 +1,8 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../error/error_handler.dart';
-import '../error/exceptions.dart';
 import '../logging/log_manager.dart';
-import '../logging/log_category.dart';
 import '../logging/log_formatter.dart';
 
 /// 网络拦截器

@@ -16,64 +16,42 @@ import '../data/models/cloud_drive_entities.dart';
 /// 负责云盘账号的增删改查和持久化存储
 /// 使用SharedPreferences进行本地存储，支持账号的序列化和反序列化
 class CloudDriveAccountService {
+  /// 是否输出详细调试日志（默认关闭，避免噪音）
+  static const bool _verboseLogging = false;
+
   // SharedPreferences存储键
   static const String _storageKey = 'cloud_drive_accounts';
+
+  static List<CloudDriveAccount>? _cache;
 
   /// 加载所有账号
   static Future<List<CloudDriveAccount>> loadAccounts() async {
     try {
-      LogManager().cloudDrive(
-        '加载云盘账号',
-        className: 'CloudDriveAccountService',
-        methodName: 'loadAccounts',
-      );
+      if (_cache != null) {
+        return List<CloudDriveAccount>.from(_cache!);
+      }
+      _debugLog('加载云盘账号');
       final prefs = await SharedPreferences.getInstance();
       final accountsJson = prefs.getString(_storageKey);
 
       if (accountsJson != null) {
-        LogManager().cloudDrive(
-          '从存储读取JSON',
-          className: 'CloudDriveAccountService',
-          methodName: 'loadAccounts',
-          data: {'jsonLength': accountsJson.length},
-        );
+        _debugLog('从存储读取JSON', data: {'jsonLength': accountsJson.length});
 
         final List<dynamic> accountsList = jsonDecode(accountsJson);
         final accounts =
             accountsList
                 .map((json) => CloudDriveAccount.fromJson(json))
                 .toList();
+        _cache = accounts;
 
         // 调试：检查每个加载的账号的cookies情况
-        for (final account in accounts) {
-          LogManager().cloudDrive(
-            '已加载账号: ${account.name}',
-            className: 'CloudDriveAccountService',
-            methodName: 'loadAccounts',
-            data: {
-              'accountId': account.id,
-              'accountType': account.type.name,
-              'isLoggedIn': account.isLoggedIn,
-              'hasCookies':
-                  account.cookies != null && account.cookies!.isNotEmpty,
-              'cookiesLength': account.cookies?.length ?? 0,
-              'hasAuthToken':
-                  account.authorizationToken != null &&
-                  account.authorizationToken!.isNotEmpty,
-              'hasQrToken':
-                  account.qrCodeToken != null &&
-                  account.qrCodeToken!.isNotEmpty,
-            },
-          );
-        }
+        _debugLogAccounts(accounts);
 
-        LogManager().cloudDrive(
-          '成功加载 ${accounts.length} 个账号',
-          className: 'CloudDriveAccountService',
-          methodName: 'loadAccounts',
+        _debugLog(
+          '成功加载账号',
           data: {'count': accounts.length},
         );
-        return accounts;
+        return List<CloudDriveAccount>.from(accounts);
       }
       return [];
     } catch (e) {
@@ -90,46 +68,18 @@ class CloudDriveAccountService {
   /// 保存所有账号
   static Future<void> saveAccounts(List<CloudDriveAccount> accounts) async {
     try {
-      LogManager().cloudDrive(
-        '保存云盘账号: ${accounts.length} 个',
-        className: 'CloudDriveAccountService',
-        methodName: 'saveAccounts',
-        data: {'count': accounts.length},
-      );
-
-      // 调试：检查每个账号的cookies情况
-      for (final account in accounts) {
-        LogManager().cloudDrive(
-          '准备序列化账号: ${account.name}',
-          className: 'CloudDriveAccountService',
-          methodName: 'saveAccounts',
-          data: {
-            'accountId': account.id,
-            'isLoggedIn': account.isLoggedIn,
-            'hasCookies':
-                account.cookies != null && account.cookies!.isNotEmpty,
-            'cookiesLength': account.cookies?.length ?? 0,
-          },
-        );
-      }
+      _debugLog('保存云盘账号', data: {'count': accounts.length});
+      _debugLogAccounts(accounts, prefix: '准备序列化账号');
 
       final prefs = await SharedPreferences.getInstance();
       final accountsJson = jsonEncode(accounts.map((a) => a.toJson()).toList());
+      _cache = List<CloudDriveAccount>.from(accounts);
 
       // 调试：打印JSON长度
-      LogManager().cloudDrive(
-        'JSON序列化完成',
-        className: 'CloudDriveAccountService',
-        methodName: 'saveAccounts',
-        data: {'jsonLength': accountsJson.length},
-      );
+      _debugLog('JSON序列化完成', data: {'jsonLength': accountsJson.length});
 
       await prefs.setString(_storageKey, accountsJson);
-      LogManager().cloudDrive(
-        '账号保存成功',
-        className: 'CloudDriveAccountService',
-        methodName: 'saveAccounts',
-      );
+      _debugLog('账号保存成功');
     } catch (e) {
       LogManager().error(
         '保存云盘账号失败',
@@ -143,25 +93,16 @@ class CloudDriveAccountService {
   /// 添加账号
   static Future<void> addAccount(CloudDriveAccount account) async {
     try {
-      LogManager().cloudDrive(
-        '开始保存账号到本地存储: ${account.name}',
-        className: 'CloudDriveAccountService',
-        methodName: 'addAccount',
+      _debugLog(
+        '开始保存账号到本地存储',
         data: {
           'accountName': account.name,
           'accountType': account.type,
           'isLoggedIn': account.isLoggedIn,
-          'hasCookies': account.cookies != null && account.cookies!.isNotEmpty,
-          'cookiesLength': account.cookies?.length ?? 0,
         },
       );
       final accounts = await loadAccounts();
-      LogManager().cloudDrive(
-        '当前已有账号数量: ${accounts.length}',
-        className: 'CloudDriveAccountService',
-        methodName: 'addAccount',
-        data: {'currentCount': accounts.length},
-      );
+      _debugLog('当前已有账号数量', data: {'currentCount': accounts.length});
 
       accounts.add(account);
       await saveAccounts(accounts);
@@ -169,16 +110,11 @@ class CloudDriveAccountService {
       // 验证保存后立即读取
       final savedAccounts = await loadAccounts();
       final savedAccount = savedAccounts.firstWhere((a) => a.id == account.id);
-      LogManager().cloudDrive(
-        '账号保存成功，验证读取: ${account.name}',
-        className: 'CloudDriveAccountService',
-        methodName: 'addAccount',
+      _debugLog(
+        '账号保存成功，验证读取',
         data: {
           'accountName': savedAccount.name,
           'isLoggedIn': savedAccount.isLoggedIn,
-          'hasCookies':
-              savedAccount.cookies != null && savedAccount.cookies!.isNotEmpty,
-          'cookiesLength': savedAccount.cookies?.length ?? 0,
         },
       );
     } catch (e) {
@@ -201,10 +137,8 @@ class CloudDriveAccountService {
       if (index != -1) {
         accounts[index] = updatedAccount;
         await saveAccounts(accounts);
-        LogManager().cloudDrive(
-          '更新账号成功: ${updatedAccount.name}',
-          className: 'CloudDriveAccountService',
-          methodName: 'updateAccount',
+        _debugLog(
+          '更新账号成功',
           data: {
             'accountName': updatedAccount.name,
             'accountId': updatedAccount.id,
@@ -229,12 +163,7 @@ class CloudDriveAccountService {
       final accounts = await loadAccounts();
       accounts.removeWhere((a) => a.id == accountId);
       await saveAccounts(accounts);
-      LogManager().cloudDrive(
-        '删除账号成功: $accountId',
-        className: 'CloudDriveAccountService',
-        methodName: 'deleteAccount',
-        data: {'accountId': accountId},
-      );
+      _debugLog('删除账号成功', data: {'accountId': accountId});
     } catch (e) {
       LogManager().error(
         '删除账号失败',
@@ -294,5 +223,42 @@ class CloudDriveAccountService {
   /// 获取所有账号（别名方法）
   static Future<List<CloudDriveAccount>> getAllAccounts() async {
     return await loadAccounts();
+  }
+
+  static void _debugLog(
+    String message, {
+    Map<String, dynamic>? data,
+  }) {
+    if (!_verboseLogging) return;
+    LogManager().cloudDrive(
+      message,
+      className: 'CloudDriveAccountService',
+      data: data,
+    );
+  }
+
+  static void _debugLogAccounts(
+    List<CloudDriveAccount> accounts, {
+    String prefix = '已加载账号',
+  }) {
+    if (!_verboseLogging) return;
+    for (final account in accounts) {
+      LogManager().cloudDrive(
+        '$prefix: ${account.name}',
+        className: 'CloudDriveAccountService',
+        data: {
+          'accountId': account.id,
+          'accountType': account.type.name,
+          'isLoggedIn': account.isLoggedIn,
+          'hasCookies': account.cookies != null && account.cookies!.isNotEmpty,
+          'cookiesLength': account.cookies?.length ?? 0,
+          'hasAuthToken':
+              account.authorizationToken != null &&
+              account.authorizationToken!.isNotEmpty,
+          'hasQrToken':
+              account.qrCodeToken != null && account.qrCodeToken!.isNotEmpty,
+        },
+      );
+    }
   }
 }

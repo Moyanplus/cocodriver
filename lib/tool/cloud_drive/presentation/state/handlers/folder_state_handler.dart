@@ -1,6 +1,6 @@
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../../data/models/cloud_drive_dtos.dart'; // 导入 PathInfo
-import '../../../base/cloud_drive_file_service.dart';
+import '../../../base/cloud_drive_service_gateway.dart';
 import '../../../data/cache/file_list_cache.dart'; // 导入缓存管理器
 import '../../../infrastructure/logging/cloud_drive_logger_adapter.dart';
 import '../../../utils/cloud_drive_error_utils.dart';
@@ -15,11 +15,14 @@ class FolderStateHandler {
   final CloudDriveStateManager _stateManager;
   final FileListCacheManager _cacheManager = FileListCacheManager();
   final CloudDriveLoggerAdapter _logger;
+  final CloudDriveServiceGateway _gateway;
 
   FolderStateHandler(
     this._stateManager, {
     CloudDriveLoggerAdapter? logger,
-  }) : _logger = logger ?? _stateManager.logger;
+    CloudDriveServiceGateway? gateway,
+  })  : _logger = logger ?? _stateManager.logger,
+        _gateway = gateway ?? defaultCloudDriveGateway;
 
   /// 加载文件夹内容，使用缓存机制提升性能
   ///
@@ -71,14 +74,13 @@ class FolderStateHandler {
 
       _logger.info('🌐 从网络获取数据...');
 
-      final result = await CloudDriveFileService.getFileList(
+      final items = await _gateway.listFiles(
         account: account,
         folderId: folderId,
-        forceRefresh: forceRefresh,
+        page: 1,
+        pageSize: 50,
       );
-
-      final newFiles = List<CloudDriveFile>.from(result['files'] ?? []);
-      final newFolders = List<CloudDriveFile>.from(result['folders'] ?? []);
+      final (newFolders, newFiles) = _splitFoldersAndFiles(items);
       _sortLists(newFolders, newFiles);
 
       _logger.info(
@@ -347,15 +349,13 @@ class FolderStateHandler {
 
       final folderId = currentState.currentFolder?.id ?? '/';
       final currentPage = currentState.currentPage;
-      final result = await CloudDriveFileService.getFileList(
+      final items = await _gateway.listFiles(
         account: account,
         folderId: folderId,
         page: currentPage + 1,
         pageSize: 50,
       );
-
-      final newFiles = result['files'] ?? [];
-      final newFolders = result['folders'] ?? [];
+      final (newFolders, newFiles) = _splitFoldersAndFiles(items);
 
       final mergedFiles = [...currentState.files, ...newFiles];
       final mergedFolders = [...currentState.folders, ...newFolders];
@@ -517,10 +517,10 @@ class FolderStateHandler {
     try {
       _logger.info('移动文件: ${file.name} -> $targetFolderId');
 
-      final success = await CloudDriveFileService.moveFile(
+      final success = await _gateway.moveFile(
         account: account,
         file: file,
-        targetFolderId: targetFolderId,
+        targetFolderId: targetFolderId ?? file.folderId ?? '/',
       );
 
       if (success) {
@@ -545,10 +545,10 @@ class FolderStateHandler {
     try {
       _logger.info('复制文件: ${file.name} -> $targetFolderId');
 
-      final success = await CloudDriveFileService.copyFile(
+      final success = await _gateway.copyFile(
         account: account,
         file: file,
-        destPath: targetFolderId ?? '',
+        targetFolderId: targetFolderId ?? file.folderId ?? '/',
       );
 
       if (success) {
@@ -585,7 +585,7 @@ class FolderStateHandler {
       metadata: const {'temporary': true},
     );
 
-    final result = await OperationGuard.run<Map<String, dynamic>?>(
+    final result = await OperationGuard.run<CloudDriveFile?>(
       optimisticUpdate: () {
         _stateManager.updateState((state) {
           final folders = List<CloudDriveFile>.from(state.folders)
@@ -594,10 +594,10 @@ class FolderStateHandler {
         });
       },
       action: () async {
-        return await CloudDriveFileService.createFolder(
+        return await _gateway.createFolder(
           account: account,
-          folderName: name,
-          parentFolderId: normalizedParent,
+          name: name,
+          parentId: normalizedParent,
         );
       },
       rollback: () {
@@ -608,8 +608,7 @@ class FolderStateHandler {
         });
       },
       rollbackWhen: (data) => data == null,
-      onSuccess: (data) async {
-        final createdFolder = data?['folder'] as CloudDriveFile?;
+      onSuccess: (createdFolder) async {
         if (createdFolder != null) {
           _stateManager.updateState((state) {
             final folders = List<CloudDriveFile>.from(state.folders)
@@ -639,5 +638,19 @@ class FolderStateHandler {
       _logger.warning('文件夹创建失败');
     }
     return success;
+  }
+
+  (List<CloudDriveFile> folders, List<CloudDriveFile> files)
+  _splitFoldersAndFiles(List<CloudDriveFile> items) {
+    final folders = <CloudDriveFile>[];
+    final files = <CloudDriveFile>[];
+    for (final item in items) {
+      if (item.isFolder) {
+        folders.add(item);
+      } else {
+        files.add(item);
+      }
+    }
+    return (folders, files);
   }
 }

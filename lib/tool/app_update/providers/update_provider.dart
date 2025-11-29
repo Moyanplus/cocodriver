@@ -1,6 +1,7 @@
 /// 更新功能的状态管理
 ///
 /// 使用 Riverpod 管理更新检查、下载、安装等状态
+library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

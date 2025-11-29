@@ -1,3 +1,6 @@
+
+import '../../../providers/china_mobile/models/responses/china_mobile_base_response.dart';
+
 /// 中国移动云盘分享响应
 class ChinaMobileShareResponse {
   /// 分享链接
@@ -27,9 +30,8 @@ class ChinaMobileShareResponse {
   ///
   /// 根据实际API响应格式解析分享链接信息
   factory ChinaMobileShareResponse.fromJson(Map<String, dynamic> json) {
-    // API响应可能是空的 {}，或者包含分享信息
-    // 根据实际响应结构解析
-    final data = json['data'] as Map<String, dynamic>? ?? json;
+    final base = ChinaMobileBaseResponse.fromJson(json);
+    final data = base.data ?? json;
 
     // 尝试从不同可能的字段中提取分享链接
     String? shareUrl;

@@ -161,7 +161,7 @@ class WebViewToolbar extends StatelessWidget {
     VoidCallback? onPressed,
     required String tooltip,
   }) {
-    return Container(
+    return SizedBox(
       width: 40.w,
       height: 40.h,
       child: IconButton(

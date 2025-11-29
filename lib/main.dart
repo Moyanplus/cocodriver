@@ -6,6 +6,7 @@
 /// 作者: Flutter开发团队
 /// 版本: 1.0.0
 /// 创建时间: 2024年
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -33,7 +34,7 @@ import 'l10n/app_localizations.dart';
 import 'test/pages/webview_test_page.dart';
 
 // 云盘服务注册（策略 + Provider）
-import 'tool/cloud_drive/services/strategy_registry.dart';
+import 'tool/cloud_drive/services/registry/strategy_registry.dart';
 
 // 下载管理器
 import 'tool/download/pages/download_manager_page.dart';

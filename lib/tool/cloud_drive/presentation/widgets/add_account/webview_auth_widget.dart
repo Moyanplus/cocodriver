@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../data/models/cloud_drive_entities.dart';
-import '../../pages/cloud_drive_login_page.dart';
+import '../../pages/auth/cloud_drive_login_page.dart';
 
 /// WebView登录组件
 class WebViewAuthWidget extends StatelessWidget {

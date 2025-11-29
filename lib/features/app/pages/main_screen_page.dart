@@ -15,6 +15,7 @@
 /// 作者: Flutter开发团队
 /// 版本: 1.0.0
 /// 创建时间: 2024年
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,7 +33,7 @@ import '../../../shared/widgets/common/bottom_sheet_widget.dart';
 
 // 云盘功能导入
 import '../../../tool/cloud_drive/presentation/providers/cloud_drive_provider.dart';
-import '../../../tool/cloud_drive/presentation/widgets/add_account_form_widget.dart';
+import '../../../tool/cloud_drive/presentation/widgets/add_account/add_account_form_widget.dart';
 import '../../../tool/cloud_drive/presentation/state/cloud_drive_state_model.dart';
 
 /// 主屏幕Widget

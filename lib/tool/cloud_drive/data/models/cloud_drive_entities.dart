@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'cloud_drive_configs.dart';
 import 'cloud_drive_dtos.dart';
-import '../../services/provider/cloud_drive_provider_registry.dart';
-import '../../services/provider/cloud_drive_provider_descriptor.dart';
+import '../../services/registry/cloud_drive_provider_registry.dart';
+import '../../services/registry/cloud_drive_provider_descriptor.dart';
 
 /// 云盘核心数据模型
 ///
@@ -383,8 +383,14 @@ class CloudDriveFile {
   /// 文件大小（字节），文件夹通常为空
   final int? size;
 
-  /// 最后修改时间
-  final DateTime? modifiedTime;
+  /// 创建时间
+  final DateTime? createdAt;
+
+  /// 更新时间
+  final DateTime? updatedAt;
+
+  /// 描述
+  final String? description;
 
   /// 所属文件夹 ID（可能为根目录 `/`）
   final String? folderId;
@@ -421,7 +427,10 @@ class CloudDriveFile {
     required this.name,
     required this.isFolder,
     this.size,
-    this.modifiedTime,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? modifiedTime,
+    this.description,
     this.folderId,
     this.path,
     this.downloadUrl,
@@ -432,7 +441,11 @@ class CloudDriveFile {
     this.category,
     this.downloadCount = -1,
     this.shareCount = -1,
-  });
+  })  : createdAt = createdAt ?? modifiedTime,
+        updatedAt = updatedAt ?? modifiedTime;
+
+  /// 兼容旧字段
+  DateTime? get modifiedTime => updatedAt ?? createdAt;
 
   /// 是否为目录
   bool get isDirectory => isFolder;
@@ -505,10 +518,16 @@ class CloudDriveFile {
     name: json['name']?.toString() ?? '',
     isFolder: json['isFolder'] as bool? ?? false,
     size: json['size'] as int?,
-    modifiedTime:
-        json['modifiedTime'] != null
-            ? DateTime.tryParse(json['modifiedTime'].toString())
-            : null,
+    createdAt: json['createdAt'] != null
+        ? DateTime.tryParse(json['createdAt'].toString())
+        : null,
+    updatedAt: json['updatedAt'] != null
+        ? DateTime.tryParse(json['updatedAt'].toString())
+        : null,
+    modifiedTime: json['modifiedTime'] != null
+        ? DateTime.tryParse(json['modifiedTime'].toString())
+        : null,
+    description: json['description']?.toString(),
     folderId: json['folderId']?.toString(),
     path: json['path']?.toString(),
     downloadUrl: json['downloadUrl']?.toString(),
@@ -531,7 +550,10 @@ class CloudDriveFile {
     'name': name,
     'isFolder': isFolder,
     'size': size,
-    'modifiedTime': modifiedTime?.toIso8601String(),
+    'createdAt': createdAt?.toIso8601String(),
+    'updatedAt': updatedAt?.toIso8601String(),
+    'modifiedTime': modifiedTime?.toIso8601String(), // 兼容旧字段
+    'description': description,
     'folderId': folderId,
     'path': path,
     'downloadUrl': downloadUrl,
@@ -550,7 +572,10 @@ class CloudDriveFile {
     String? name,
     bool? isFolder,
     int? size,
+    DateTime? createdAt,
+    DateTime? updatedAt,
     DateTime? modifiedTime,
+    String? description,
     String? folderId,
     String? path,
     String? downloadUrl,
@@ -566,7 +591,9 @@ class CloudDriveFile {
     name: name ?? this.name,
     isFolder: isFolder ?? this.isFolder,
     size: size ?? this.size,
-    modifiedTime: modifiedTime ?? this.modifiedTime,
+    createdAt: createdAt ?? modifiedTime ?? this.createdAt,
+    updatedAt: updatedAt ?? modifiedTime ?? this.updatedAt,
+    description: description ?? this.description,
     folderId: folderId ?? this.folderId,
     path: path ?? this.path,
     downloadUrl: downloadUrl ?? this.downloadUrl,

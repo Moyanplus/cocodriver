@@ -90,6 +90,7 @@ sealed class Result<T> {
 
 /// 成功结果类
 class Success<T> extends Result<T> {
+  @override
   final T data;
 
   const Success(this.data);
@@ -110,7 +111,9 @@ class Success<T> extends Result<T> {
 
 /// 失败结果类
 class Failure<T> extends Result<T> {
+  @override
   final String error;
+  @override
   final CloudDriveError? errorDetail;
 
   const Failure(this.error, [this.errorDetail]);

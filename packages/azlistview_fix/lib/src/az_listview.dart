@@ -7,8 +7,8 @@ import 'suspension_view.dart';
 
 /// AzListView
 class AzListView extends StatefulWidget {
-  AzListView({
-    Key? key,
+  const AzListView({
+    super.key,
     required this.data,
     required this.itemCount,
     required this.itemBuilder,
@@ -28,7 +28,7 @@ class AzListView extends StatefulWidget {
     this.indexBarAlignment = Alignment.centerRight,
     this.indexBarMargin,
     this.indexBarOptions = const IndexBarOptions(),
-  }) : super(key: key);
+  });
 
   /// with  ISuspensionBean Data
   final List<ISuspensionBean> data;

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../data/models/cloud_drive_dtos.dart';
 import '../../data/models/cloud_drive_entities.dart';
-import '../provider/cloud_drive_provider_registry.dart';
+import '../registry/cloud_drive_provider_registry.dart';
 
 /// 二维码登录服务抽象基类
 ///

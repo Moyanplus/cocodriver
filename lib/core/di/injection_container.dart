@@ -26,7 +26,6 @@ import '../utils/performance_monitor.dart';
 import '../utils/app_utils.dart';
 
 // 网络和数据层导入
-import '../network/api_client.dart';
 import '../data/data_sources/local/local_data_source.dart';
 import '../data/data_sources/remote/remote_data_source.dart';
 import '../data/repositories/base_repository.dart';
@@ -59,7 +58,7 @@ Future<void> init() async {
 
   // Hive数据库 - 用于存储复杂对象数据
   await Hive.initFlutter();
-  final documentsDirectory = await getApplicationDocumentsDirectory();
+  await getApplicationDocumentsDirectory();
   final hiveBox = await Hive.openBox('app_data');
   sl.registerLazySingleton<Box>(() => hiveBox);
 

@@ -1,20 +1,3 @@
-/// 平台检测工具类
-///
-/// 提供统一的平台检测和设备信息获取方法
-/// 支持Android、iOS、Web、Windows、macOS、Linux等平台
-///
-/// 主要功能：
-/// - 平台类型检测
-/// - 设备信息获取
-/// - 平台特性判断
-/// - 设备能力检测
-/// - 平台适配工具
-///
-/// 作者: Flutter开发团队
-/// 版本: 1.0.0
-/// 创建时间: 2024年
-
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
