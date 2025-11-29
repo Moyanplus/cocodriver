@@ -1,4 +1,3 @@
-
 import '../../base/cloud_drive_operation_service.dart';
 import '../../config/cloud_drive_capabilities.dart';
 import '../../data/models/cloud_drive_entities.dart';
@@ -87,9 +86,6 @@ class StrategyRegistry {
       if (descriptor.supportedAuthTypes == null ||
           descriptor.supportedAuthTypes!.isEmpty) {
         errors.add('未配置认证方式: $providerId');
-      }
-      if (descriptor.capabilities == null) {
-        errors.add('未配置能力: $providerId');
       }
     }
 

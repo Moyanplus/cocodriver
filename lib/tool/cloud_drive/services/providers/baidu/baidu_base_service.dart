@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
+
 import '../../../../../../core/logging/log_manager.dart';
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../base/cloud_drive_api_logger.dart';
 import 'baidu_config.dart';
 
 /// 百度云盘基础服务
@@ -27,28 +29,12 @@ class BaiduBaseService {
       ),
     );
 
-    // 添加请求拦截器
     dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          LogManager().cloudDrive(
-            '百度网盘 - 请求: ${options.method} ${options.uri}',
-          );
-          if (options.data != null) {
-            LogManager().cloudDrive('百度网盘 - 请求体: ${options.data}');
-          }
-          handler.next(options);
-        },
-        onResponse: (response, handler) {
-          LogManager().cloudDrive('百度网盘 - 响应: ${response.statusCode}');
-          handler.next(response);
-        },
-        onError: (error, handler) {
-          LogManager().cloudDrive(
-            '百度网盘 - 请求错误: ${error.message} (${error.response?.statusCode ?? 'no status'})',
-          );
-          handler.next(error);
-        },
+      CloudDriveLoggingInterceptor(
+        logger: CloudDriveApiLogger(
+          provider: '百度网盘',
+          verbose: BaiduConfig.verboseLogging,
+        ),
       ),
     );
 

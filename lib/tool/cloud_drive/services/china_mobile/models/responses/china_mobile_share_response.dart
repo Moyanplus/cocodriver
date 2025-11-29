@@ -1,4 +1,3 @@
-
 import '../../../providers/china_mobile/models/responses/china_mobile_base_response.dart';
 
 /// 中国移动云盘分享响应
@@ -74,12 +73,12 @@ class ChinaMobileShareResponse {
 
   /// 转换为JSON
   Map<String, dynamic> toJson() => {
-    if (shareUrl != null) 'shareUrl': shareUrl,
-    if (shareId != null) 'shareId': shareId,
-    if (password != null) 'password': password,
-    if (expiration != null) 'expiration': expiration,
-    if (extraData != null) ...extraData!,
-  };
+        if (shareUrl != null) 'shareUrl': shareUrl,
+        if (shareId != null) 'shareId': shareId,
+        if (password != null) 'password': password,
+        if (expiration != null) 'expiration': expiration,
+        if (extraData != null) ...extraData!,
+      };
 
   /// 是否有有效的分享链接
   bool get hasValidShareUrl => shareUrl != null && shareUrl!.isNotEmpty;

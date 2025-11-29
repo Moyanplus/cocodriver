@@ -494,6 +494,7 @@ class QuarkConfig {
     'delete': true, // 已实现
     'rename': true, // 已实现
     'createFolder': true, // 已实现
+    'preview': false,
   };
 
   // ==================== 二维码登录相关方法 ====================
@@ -582,4 +583,6 @@ class QuarkConfig {
   static bool isQRLoginSuccess(int? statusCode) {
     return statusCode == responseStatus['qrLoginSuccess'];
   }
+
+  static bool verboseLogging = true;
 }

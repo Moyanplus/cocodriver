@@ -21,8 +21,8 @@ class FolderStateHandler {
     this._stateManager, {
     CloudDriveLoggerAdapter? logger,
     CloudDriveServiceGateway? gateway,
-  })  : _logger = logger ?? _stateManager.logger,
-        _gateway = gateway ?? defaultCloudDriveGateway;
+  }) : _logger = logger ?? _stateManager.logger,
+       _gateway = gateway ?? defaultCloudDriveGateway;
 
   /// 加载文件夹内容，使用缓存机制提升性能
   ///
@@ -60,6 +60,9 @@ class FolderStateHandler {
               isLoading: false,
               isFromCache: true, // 标记为来自缓存
               error: null,
+              currentPage: 1,
+              hasMoreData: _supportsPagination(account),
+              isLoadingMore: false,
             ),
           );
 
@@ -91,6 +94,7 @@ class FolderStateHandler {
       _cacheManager.set(account.id, folderId, newFiles, newFolders);
 
       // 更新状态
+      final supportsPaging = _supportsPagination(account);
       _stateManager.updateState(
         (state) => state.copyWith(
           files: newFiles,
@@ -99,6 +103,9 @@ class FolderStateHandler {
           isFromCache: false, // 标记为来自网络
           lastRefreshTime: DateTime.now(),
           error: null,
+          currentPage: 1,
+          hasMoreData: supportsPaging && _hasMoreData(newFolders, newFiles),
+          isLoadingMore: false,
         ),
       );
 
@@ -151,6 +158,10 @@ class FolderStateHandler {
           selectedItems: {}, // 清空选中项
           isInBatchMode: false, // 退出批量模式
           error: null, // 清空错误信息
+          files: const [],
+          folders: const [],
+          isLoading: true,
+          isFromCache: false,
         ),
       );
 
@@ -210,10 +221,10 @@ class FolderStateHandler {
           accounts: currentState.accounts,
           currentAccount: currentState.currentAccount,
           currentFolder: targetFolder, // 目标文件夹
-          folders: currentState.folders,
-          files: currentState.files,
+          folders: const [],
+          files: const [],
           folderPath: newPath, // 截断后的路径链
-          isLoading: currentState.isLoading,
+          isLoading: true,
           isRefreshing: currentState.isRefreshing,
           error: null, // 清空错误信息
           isBatchMode: currentState.isBatchMode,
@@ -293,10 +304,10 @@ class FolderStateHandler {
           accounts: currentState.accounts,
           currentAccount: currentState.currentAccount,
           currentFolder: parentFolder, // 可能为 null（根目录）或父文件夹
-          folders: currentState.folders,
-          files: currentState.files,
+          folders: const [],
+          files: const [],
           folderPath: newPath, // 更新后的路径链
-          isLoading: currentState.isLoading,
+          isLoading: true,
           isRefreshing: currentState.isRefreshing,
           error: null, // 清空错误信息
           isBatchMode: currentState.isBatchMode,
@@ -338,11 +349,22 @@ class FolderStateHandler {
       _logger.warning('没有当前账号，无法加载更多');
       return;
     }
+    if (!_supportsPagination(account)) {
+      _logger.info('当前账号不支持分页加载');
+      return;
+    }
+    if (!currentState.hasMoreData) {
+      _logger.info('没有更多数据可加载');
+      return;
+    }
+    if (currentState.isLoadingMore) {
+      _logger.info('已有加载更多任务进行中');
+      return;
+    }
 
     _logger.info('加载更多内容');
 
     try {
-      final currentState = _stateManager.getCurrentState();
       _stateManager.updateState(
         (state) => state.copyWith(isLoadingMore: true, error: null),
       );
@@ -357,8 +379,19 @@ class FolderStateHandler {
       );
       final (newFolders, newFiles) = _splitFoldersAndFiles(items);
 
-      final mergedFiles = [...currentState.files, ...newFiles];
-      final mergedFolders = [...currentState.folders, ...newFolders];
+      if (newFolders.isEmpty && newFiles.isEmpty) {
+        _stateManager.updateState(
+          (state) => state.copyWith(isLoadingMore: false, hasMoreData: false),
+        );
+        _logger.info('无更多数据，结束分页');
+        return;
+      }
+
+      final mergedFiles = _mergeWithoutDuplicates(currentState.files, newFiles);
+      final mergedFolders = _mergeWithoutDuplicates(
+        currentState.folders,
+        newFolders,
+      );
       _sortLists(mergedFolders, mergedFiles);
 
       _stateManager.updateState(
@@ -366,15 +399,14 @@ class FolderStateHandler {
           files: mergedFiles,
           folders: mergedFolders,
           currentPage: currentPage + 1,
-          hasMoreData: newFiles.length >= 50, // 假设如果返回的文件数等于页面大小，还有更多数据
+          hasMoreData: _hasMoreData(newFolders, newFiles),
           isLoadingMore: false,
           error: null,
         ),
       );
+      _cacheManager.set(account.id, folderId, mergedFiles, mergedFolders);
 
-      _logger.info(
-        '加载更多内容成功: ${newFiles.length}个文件, ${newFolders.length}个文件夹',
-      );
+      _logger.info('加载更多内容成功: ${newFiles.length}个文件, ${newFolders.length}个文件夹');
     } catch (e) {
       _logger.error('加载更多内容失败: $e');
       _stateManager.updateState(
@@ -391,10 +423,7 @@ class FolderStateHandler {
     bool ascending,
   ) async {
     _stateManager.updateState(
-      (state) => state.copyWith(
-        sortField: field,
-        isSortAscending: ascending,
-      ),
+      (state) => state.copyWith(sortField: field, isSortAscending: ascending),
     );
     _applySortingToCurrentState();
     _logger.info('更新排序: $field, 升序: $ascending');
@@ -406,19 +435,13 @@ class FolderStateHandler {
     final files = List<CloudDriveFile>.from(currentState.files);
     _sortLists(folders, files);
     _stateManager.updateState(
-      (state) => state.copyWith(
-        folders: folders,
-        files: files,
-      ),
+      (state) => state.copyWith(folders: folders, files: files),
     );
   }
 
-  void _sortLists(
-    List<CloudDriveFile> folders,
-    List<CloudDriveFile> files,
-  ) {
+  void _sortLists(List<CloudDriveFile> folders, List<CloudDriveFile> files) {
     final state = _stateManager.getCurrentState();
-    final comparator = (CloudDriveFile a, CloudDriveFile b) =>
+    int comparator(CloudDriveFile a, CloudDriveFile b) =>
         _compareFiles(a, b, state.sortField, state.isSortAscending);
     folders.sort(comparator);
     files.sort(comparator);
@@ -437,12 +460,15 @@ class FolderStateHandler {
         break;
       case CloudDriveSortField.createdTime:
         result = _compareDateTime(
-          _getCreatedTime(a) ?? a.modifiedTime,
-          _getCreatedTime(b) ?? b.modifiedTime,
+          _getCreatedTime(a) ?? a.updatedAt ?? a.createdAt,
+          _getCreatedTime(b) ?? b.updatedAt ?? b.createdAt,
         );
         break;
       case CloudDriveSortField.modifiedTime:
-        result = _compareDateTime(a.modifiedTime, b.modifiedTime);
+        result = _compareDateTime(
+          a.updatedAt ?? a.createdAt,
+          b.updatedAt ?? b.createdAt,
+        );
         break;
       case CloudDriveSortField.size:
         result = _compareInt(a.size ?? 0, b.size ?? 0);
@@ -463,10 +489,47 @@ class FolderStateHandler {
 
   int _compareInt(int a, int b) => a.compareTo(b);
 
+  // TODO
+  bool _supportsPagination(CloudDriveAccount? account) =>
+      account?.type == CloudDriveType.lanzou;
+
+  bool _hasMoreData(
+    List<CloudDriveFile> folders,
+    List<CloudDriveFile> files, {
+    int pageSize = 50,
+  }) {
+    final account = _stateManager.getCurrentState().currentAccount;
+    if (account?.type == CloudDriveType.lanzou) {
+      return folders.isNotEmpty || files.isNotEmpty;
+    }
+    return (folders.length + files.length) >= pageSize;
+  }
+
+  List<CloudDriveFile> _mergeWithoutDuplicates(
+    List<CloudDriveFile> existing,
+    List<CloudDriveFile> incoming,
+  ) {
+    if (incoming.isEmpty) return existing;
+    final result = List<CloudDriveFile>.from(existing);
+    final existingIds = existing.map((e) => e.id).toSet();
+    for (final item in incoming) {
+      if (existingIds.add(item.id)) {
+        result.add(item);
+      }
+    }
+    return result;
+  }
+
   DateTime? _getCreatedTime(CloudDriveFile file) {
     final meta = file.metadata;
     if (meta == null) return null;
-    final keys = ['createdTime', 'createTime', 'created_at', 'createdAt', 'ctime'];
+    final keys = [
+      'createdTime',
+      'createTime',
+      'created_at',
+      'createdAt',
+      'ctime',
+    ];
     for (final key in keys) {
       if (meta.containsKey(key)) {
         final dt = _parseDateTime(meta[key]);
@@ -611,9 +674,10 @@ class FolderStateHandler {
       onSuccess: (createdFolder) async {
         if (createdFolder != null) {
           _stateManager.updateState((state) {
-            final folders = List<CloudDriveFile>.from(state.folders)
-              ..removeWhere((f) => f.id == tempId)
-              ..insert(0, createdFolder);
+            final folders =
+                List<CloudDriveFile>.from(state.folders)
+                  ..removeWhere((f) => f.id == tempId)
+                  ..insert(0, createdFolder);
             return state.copyWith(folders: folders);
           });
           final updated = _stateManager.getCurrentState();

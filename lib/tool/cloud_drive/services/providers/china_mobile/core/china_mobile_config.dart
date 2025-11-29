@@ -28,17 +28,18 @@ class ChinaMobileConfig {
     'batchTrash': '/hcy/recyclebin/batchTrash', // 删除文件
     'getTask': '/hcy/task/get', // 查询任务状态
     'searchFile': '/search/SearchFile', // 搜索文件
+    'getPreviewInfo': '/hcy/videoPreview/getPreviewInfo', // 获取预览信息
   };
 
   // 请求头配置
   static const Map<String, String> defaultHeaders = {
     'User-Agent':
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0',
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Connection': 'keep-alive',
-    'Content-Type': 'application/json',
+    // 'Accept': 'application/json, text/plain, */*',
+    // 'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    // 'Accept-Encoding': 'gzip, deflate, br',
+    // 'Connection': 'keep-alive',
+    // 'Content-Type': 'application/json',
     'Referer': '$baseUrl/',
     'Origin': baseUrl,
     'x-yun-api-version': 'v1',
@@ -62,7 +63,7 @@ class ChinaMobileConfig {
 
   // 日志配置
   static const String logSubCategory = 'cloudDrive.chinaMobile';
-  
+
   // 详细日志配置 - 控制是否打印请求头等详细信息
   static bool verboseLogging = true;
 
@@ -218,5 +219,6 @@ class ChinaMobileConfig {
     'rename': true, // 已实现
     'share': true, // 已实现
     'search': true, // 已实现
+    'preview': true,
   };
 }

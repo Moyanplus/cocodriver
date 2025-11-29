@@ -8,6 +8,7 @@ import '../../../../../../core/logging/log_manager.dart';
 import '../../../base/cloud_drive_operation_service.dart';
 import '../../../data/models/cloud_drive_dtos.dart';
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../../utils/cloud_drive_log_utils.dart' show CloudDriveLogUtils;
 import 'core/china_mobile_config.dart';
 import 'china_mobile_repository.dart';
 import 'api/china_mobile_operations.dart';
@@ -34,16 +35,22 @@ class ChinaMobileCloudDriveOperationStrategy
     try {
       LogManager().cloudDrive('中国移动云盘 - 获取文件列表: folderId=$folderId');
 
-      final files = await _repository.listFiles(
+      final items = await _repository.listFiles(
         account: account,
         folderId: folderId,
         page: page,
         pageSize: pageSize,
       );
 
-      LogManager().cloudDrive('中国移动云盘 - 文件列表获取完成: ${files.length} 个文件');
+      final folders = items.where((f) => f.isFolder).toList();
+      final files = items.where((f) => !f.isFolder).toList();
+      CloudDriveLogUtils.logFileListSummary(
+        provider: '中国移动云盘',
+        files: files,
+        folders: folders,
+      );
 
-      return files;
+      return items;
     } catch (e, stackTrace) {
       LogManager().cloudDrive('中国移动云盘 - 获取文件列表异常: $e');
       LogManager().cloudDrive('错误堆栈: $stackTrace');
@@ -149,6 +156,29 @@ class ChinaMobileCloudDriveOperationStrategy
       return downloadUrl;
     } catch (e, stackTrace) {
       LogManager().cloudDrive('中国移动云盘 - 获取下载链接异常: $e');
+      LogManager().cloudDrive('错误堆栈: $stackTrace');
+      return null;
+    }
+  }
+
+  @override
+  Future<CloudDrivePreviewResult?> getPreviewInfo({
+    required CloudDriveAccount account,
+    required CloudDriveFile file,
+  }) async {
+    try {
+      final preview = await _repository.getPreviewInfo(
+        account: account,
+        file: file,
+      );
+      if (preview == null) {
+        LogManager().cloudDrive('中国移动云盘 - 暂无可用预览: ${file.name}');
+      } else {
+        LogManager().cloudDrive('中国移动云盘 - 预览信息获取成功: ${preview.previewUrl}');
+      }
+      return preview;
+    } catch (e, stackTrace) {
+      LogManager().cloudDrive('中国移动云盘 - 获取预览信息异常: $e');
       LogManager().cloudDrive('错误堆栈: $stackTrace');
       return null;
     }
@@ -355,6 +385,11 @@ class ChinaMobileCloudDriveOperationStrategy
         };
       }
       final initData = initResult.data!;
+      if (initData.exist) {
+        LogManager().cloudDrive('中国移动云盘 - 命中秒传: ${initData.fileName}');
+        final existingFile = _mapRawToFile(initData.raw, fileName);
+        return {'success': true, 'file': existingFile};
+      }
       if (initData.partInfos.isEmpty ||
           initData.partInfos.first.uploadUrl == null) {
         return {'success': false, 'message': '未获取到上传链接'};
@@ -394,13 +429,15 @@ class ChinaMobileCloudDriveOperationStrategy
         };
       }
       final data = completeResult.data!;
+      final timestamp = _parseDate(data['updatedAt'] ?? data['createdAt']);
       final uploadedFile = CloudDriveFile(
-        id: data['fileId'] as String? ?? initData.fileId,
-        name: data['name'] as String? ?? fileName,
+        id: data['fileId']?.toString() ?? initData.fileId,
+        name: data['name']?.toString() ?? fileName,
         isFolder: false,
         size: (data['size'] as num?)?.toInt(),
-        modifiedTime: _parseDate(data['updatedAt'] ?? data['createdAt']),
-        folderId: data['parentFileId'] as String?,
+        updatedAt: timestamp,
+        createdAt: _parseDate(data['createdAt']) ?? timestamp,
+        folderId: data['parentFileId']?.toString(),
         metadata: data,
       );
 
@@ -421,6 +458,7 @@ class ChinaMobileCloudDriveOperationStrategy
     'rename': true,
     'copy': true,
     'createFolder': false,
+    'preview': true,
   };
 
   @override
@@ -455,6 +493,19 @@ class ChinaMobileCloudDriveOperationStrategy
       return DateTime.tryParse(value);
     }
     return null;
+  }
+
+  CloudDriveFile _mapRawToFile(Map<String, dynamic> raw, String fallbackName) {
+    return CloudDriveFile(
+      id: raw['fileId']?.toString() ?? '',
+      name: raw['fileName']?.toString() ?? fallbackName,
+      isFolder: false,
+      size: (raw['size'] as num?)?.toInt(),
+      updatedAt: _parseDate(raw['updatedAt'] ?? raw['createdAt']),
+      createdAt: _parseDate(raw['createdAt']),
+      folderId: raw['parentFileId']?.toString(),
+      metadata: raw,
+    );
   }
 
   @override

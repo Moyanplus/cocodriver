@@ -255,22 +255,4 @@ class _CloudDriveLoginPageState extends State<CloudDriveLoginPage> {
       _currentZoom = newZoom;
     });
   }
-
-  /// 获取云盘名称
-  String _getCloudDriveName() {
-    switch (widget.cloudDriveType) {
-      case CloudDriveType.ali:
-        return '阿里云盘';
-      case CloudDriveType.baidu:
-        return '百度网盘';
-      case CloudDriveType.quark:
-        return '夸克云盘';
-      case CloudDriveType.lanzou:
-        return '蓝奏云';
-      case CloudDriveType.pan123:
-        return '123云盘';
-      case CloudDriveType.chinaMobile:
-        return '中国移动云盘';
-    }
-  }
 }

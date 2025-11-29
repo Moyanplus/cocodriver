@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 
 import '../../../../../../core/logging/log_manager.dart';
-import '../../../../../../core/logging/log_category.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
+import '../../../base/cloud_drive_api_logger.dart';
 import 'ali_config.dart';
 
 /// 阿里云盘基础服务
@@ -34,7 +34,7 @@ abstract class AliBaseService {
       ),
     );
 
-    _addInterceptors(dio);
+    _addInterceptors(dio, providerLabel: '阿里云盘');
     return dio;
   }
 
@@ -54,7 +54,7 @@ abstract class AliBaseService {
       ),
     );
 
-    _addInterceptors(dio);
+    _addInterceptors(dio, providerLabel: '阿里云盘API');
     return dio;
   }
 
@@ -81,51 +81,16 @@ abstract class AliBaseService {
   /// 为Dio实例添加请求、响应和错误拦截器
   ///
   /// [dio] Dio实例
-  static void _addInterceptors(Dio dio) {
+  static void _addInterceptors(
+    Dio dio, {
+    String providerLabel = '阿里云盘',
+  }) {
     dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          LogManager().network(
-            '阿里云盘请求: ${options.method} ${options.uri}',
-            className: 'AliBaseService',
-            methodName: 'onRequest',
-            data: {
-              'method': options.method,
-              'uri': options.uri.toString(),
-              'headers': options.headers,
-              'data': options.data?.toString(),
-            },
-          );
-          handler.next(options);
-        },
-        onResponse: (response, handler) {
-          LogManager().network(
-            '阿里云盘响应: ${response.statusCode} ${response.requestOptions.uri}',
-            className: 'AliBaseService',
-            methodName: 'onResponse',
-            data: {
-              'statusCode': response.statusCode,
-              'uri': response.requestOptions.uri.toString(),
-              'data': response.data?.toString(),
-            },
-          );
-          handler.next(response);
-        },
-        onError: (error, handler) {
-          LogManager().error(
-            '阿里云盘请求错误: ${error.message}',
-            category: LogCategory.network,
-            className: 'AliBaseService',
-            methodName: 'onError',
-            data: {
-              'errorType': error.type.toString(),
-              'message': error.message,
-              'uri': error.requestOptions.uri.toString(),
-            },
-            exception: error,
-          );
-          handler.next(error);
-        },
+      CloudDriveLoggingInterceptor(
+        logger: CloudDriveApiLogger(
+          provider: providerLabel,
+          verbose: AliConfig.verboseLogging,
+        ),
       ),
     );
   }
@@ -189,7 +154,7 @@ abstract class AliBaseService {
         id: fileId,
         name: name,
         size: size,
-        modifiedTime: updatedAt,
+        updatedAt: updatedAt,
         isFolder: isFolder,
         folderId: parentId,
       );

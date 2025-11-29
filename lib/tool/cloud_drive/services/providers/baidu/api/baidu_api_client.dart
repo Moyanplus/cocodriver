@@ -38,13 +38,15 @@ class BaiduApiClient {
     for (final item in list) {
       if (item is Map<String, dynamic>) {
         final isDir = (item['isdir']?.toString() ?? '0') == '1';
+        final timestamp = item['server_mtime'] is int
+            ? DateTime.fromMillisecondsSinceEpoch((item['server_mtime'] as int) * 1000)
+            : null;
         final file = CloudDriveFile(
           id: item['fs_id']?.toString() ?? '',
           name: item['server_filename']?.toString() ?? '',
           size: item['size'] is int ? item['size'] as int : int.tryParse('${item['size'] ?? ''}'),
-          modifiedTime: item['server_mtime'] is int
-              ? DateTime.fromMillisecondsSinceEpoch((item['server_mtime'] as int) * 1000)
-              : null,
+          updatedAt: timestamp,
+          createdAt: timestamp,
           isFolder: isDir,
           folderId: request.folderId,
         );

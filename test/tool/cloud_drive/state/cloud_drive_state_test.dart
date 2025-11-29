@@ -22,7 +22,7 @@ void main() {
         size: 1024,
         isFolder: false,
         folderId: '0',
-        modifiedTime: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
     });
 
@@ -51,7 +51,7 @@ void main() {
       });
 
       test('should handle file operations', () {
-        expect(testFile.modifiedTime, isA<DateTime>());
+        expect(testFile.updatedAt, isA<DateTime>());
       });
     });
 

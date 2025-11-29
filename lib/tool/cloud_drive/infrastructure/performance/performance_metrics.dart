@@ -211,14 +211,9 @@ class PerformanceMetrics {
   }
 
   void _logMetric(PerformanceMetric metric) {
-    final status = metric.error != null ? 'ERROR' : 'OK';
-    final duration = '${metric.duration.inMilliseconds}ms';
+    if (metric.error != null) {}
 
-    if (metric.error != null) {
-    }
-
-    if (metric.metadata.isNotEmpty) {
-    }
+    if (metric.metadata.isNotEmpty) {}
   }
 
   Future<double> _getCpuUsage() async {

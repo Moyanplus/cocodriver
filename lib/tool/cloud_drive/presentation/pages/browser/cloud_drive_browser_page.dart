@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../../core/utils/responsive_utils.dart';
+import '../../../../../core/logging/log_manager.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../../base/cloud_drive_service_gateway.dart';
@@ -14,6 +15,7 @@ import '../../widgets/browser/cloud_drive_file_list.dart';
 import '../../widgets/browser/cloud_drive_account_selector.dart';
 import '../../widgets/browser/cloud_drive_batch_action_bar.dart';
 import '../../widgets/browser/cloud_drive_path_navigator.dart';
+import '../../widgets/common/snack_bar_helper.dart';
 import '../../widgets/sheets/file_operation_bottom_sheet.dart';
 import '../../widgets/sheets/create_folder_bottom_sheet.dart';
 
@@ -48,6 +50,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   final ScrollController _scrollController = ScrollController();
   bool _showScrollToTop = false;
   bool _isLoadMorePending = false;
+  double _lastScrollOffset = 0;
   final CloudDriveBrowserViewModel _viewModel =
       const CloudDriveBrowserViewModel();
 
@@ -72,60 +75,55 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
     final selectedCreateFolder = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) => SafeArea(
-        child: Container(
-          margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-          decoration: BoxDecoration(
-            color: Theme.of(sheetContext).colorScheme.surface,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                '创建',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+      builder:
+          (sheetContext) => SafeArea(
+            child: Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+              decoration: BoxDecoration(
+                color: Theme.of(sheetContext).colorScheme.surface,
+                borderRadius: BorderRadius.circular(24),
               ),
-              const SizedBox(height: 18),
-              Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildCreateActionButton(
-                    icon: Icons.insert_drive_file_rounded,
-                    label: '选择文件',
-                    onTap: () {
-                      Navigator.pop(sheetContext, false);
-                      _pickAndUploadFile(
-                        type: FileType.any,
-                        label: '文件',
-                      );
-                    },
+                  const Text(
+                    '创建',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
-                  const SizedBox(width: 12),
-                  _buildCreateActionButton(
-                    icon: Icons.photo_library_rounded,
-                    label: '选择媒体',
-                    onTap: () {
-                      Navigator.pop(sheetContext, false);
-                      _pickAndUploadFile(
-                        type: FileType.media,
-                        label: '媒体',
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 12),
-                  _buildCreateActionButton(
-                    icon: Icons.create_new_folder_rounded,
-                    label: '新建文件夹',
-                    onTap: () => Navigator.pop(sheetContext, true),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      _buildCreateActionButton(
+                        icon: Icons.insert_drive_file_rounded,
+                        label: '选择文件',
+                        onTap: () {
+                          Navigator.pop(sheetContext, false);
+                          _pickAndUploadFile(type: FileType.any, label: '文件');
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      _buildCreateActionButton(
+                        icon: Icons.photo_library_rounded,
+                        label: '选择媒体',
+                        onTap: () {
+                          Navigator.pop(sheetContext, false);
+                          _pickAndUploadFile(type: FileType.media, label: '媒体');
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      _buildCreateActionButton(
+                        icon: Icons.create_new_folder_rounded,
+                        label: '新建文件夹',
+                        onTap: () => Navigator.pop(sheetContext, true),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
 
     if (selectedCreateFolder == true) {
@@ -145,7 +143,9 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.25),
+          color: Theme.of(
+            context,
+          ).colorScheme.primaryContainer.withOpacity(0.25),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -192,12 +192,14 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
         _showSnack('无法获取文件路径', success: false);
         return;
       }
+      final now = DateTime.now();
       tempFile = CloudDriveFile(
         id: tempId,
         name: file.name,
         isFolder: false,
         size: file.size,
-        modifiedTime: DateTime.now(),
+        createdAt: now,
+        updatedAt: now,
         folderId: folderId,
         metadata: {
           'temporary': true,
@@ -214,15 +216,12 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
         fileName: file.name,
         folderId: folderId,
         onProgress: (progress) {
-          _eventHandler.updateFileMetadata(
-            tempId,
-            (metadata) {
-              final map = Map<String, dynamic>.from(metadata ?? {});
-              map['uploadProgress'] = progress.clamp(0.0, 1.0);
-              map['isUploading'] = true;
-              return map;
-            },
-          );
+          _eventHandler.updateFileMetadata(tempId, (metadata) {
+            final map = Map<String, dynamic>.from(metadata ?? {});
+            map['uploadProgress'] = progress.clamp(0.0, 1.0);
+            map['isUploading'] = true;
+            return map;
+          });
         },
       );
       final success = uploadResult['success'] == true;
@@ -252,15 +251,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
 
   void _showSnack(String message, {bool success = true}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor:
-            success
-                ? Colors.green
-                : Theme.of(context).colorScheme.error,
-      ),
-    );
+    SnackBarHelper.show(context, message: message, success: success);
   }
 
   Future<void> _showCreateFolderSheet() async {
@@ -268,30 +259,35 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => CreateFolderBottomSheet(
-        onSubmit: (name) async {
-          final currentState = ref.read(cloudDriveProvider);
-          final currentAccount = currentState.currentAccount;
-          final currentFolderId = currentState.currentFolder?.id ?? '/';
-          if (currentAccount == null) {
-            return '请选择账号';
-          }
-          try {
-            final created = await _eventHandler.createFolder(
-              name: name,
-              parentId: currentFolderId,
-            );
-            return created ? null : '文件夹创建失败';
-          } catch (e) {
-            return '文件夹创建失败: $e';
-          }
-        },
-      ),
+      builder:
+          (_) => CreateFolderBottomSheet(
+            onSubmit: (name) async {
+              final currentState = ref.read(cloudDriveProvider);
+              final currentAccount = currentState.currentAccount;
+              final currentFolderId = currentState.currentFolder?.id ?? '/';
+              if (currentAccount == null) {
+                return '请选择账号';
+              }
+              try {
+                final created = await _eventHandler.createFolder(
+                  name: name,
+                  parentId: currentFolderId,
+                );
+                return created ? null : '文件夹创建失败';
+              } catch (e) {
+                return '文件夹创建失败: $e';
+              }
+            },
+          ),
     );
 
     if (!mounted || result != true) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('文件夹创建成功')),
+      SnackBar(
+        content: const Text('文件夹创建成功'),
+        backgroundColor: Colors.green,
+        duration: const Duration(milliseconds: 1500),
+      ),
     );
   }
 
@@ -305,12 +301,30 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
     if (!_scrollController.hasClients) return;
 
     final offset = _scrollController.offset;
-    final showButton = offset > 200;
+    final delta = offset - _lastScrollOffset;
+    final scrollingDown = delta > 5;
+    final scrollingUp = delta < -5;
+
+    LogManager().cloudDrive(
+      '[CloudDriveBrowser] offset=$offset, delta=$delta, down=$scrollingDown, up=$scrollingUp',
+    );
+
+    bool showButton = _showScrollToTop;
+    if (scrollingDown && offset > 200) {
+      showButton = true;
+    } else if (scrollingUp || offset <= 100) {
+      showButton = false;
+    }
+
     if (showButton != _showScrollToTop) {
+      LogManager().cloudDrive(
+        '[CloudDriveBrowser] 切换FAB: showScrollToTop=$showButton (old=$_showScrollToTop)',
+      );
       setState(() {
         _showScrollToTop = showButton;
       });
     }
+    _lastScrollOffset = offset;
 
     final position = _scrollController.position;
     final isNearBottom = position.maxScrollExtent - offset <= 200;
@@ -376,21 +390,23 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
       case CloudDriveBrowserBodyType.noAccount:
         return _buildEmptyState(key: const ValueKey('no-accounts'));
       case CloudDriveBrowserBodyType.selectAccount:
-        return _buildNoAccountSelectedState(key: const ValueKey('select-account'));
+        return _buildNoAccountSelectedState(
+          key: const ValueKey('select-account'),
+        );
       case CloudDriveBrowserBodyType.content:
         return _buildContent(state, handler);
     }
   }
 
-  Widget _buildContent(
-    CloudDriveState state,
-    CloudDriveEventHandler handler,
-  ) {
+  Widget _buildContent(CloudDriveState state, CloudDriveEventHandler handler) {
     // ========== 正常显示：路径导航器 + 文件列表 ==========
     // 布局结构：
     // Column (紧凑布局，无多余间距)
     //   ├── CloudDrivePathNavigator (路径导航器 - 显示面包屑导航)
     //   └── Expanded(CloudDriveFileList) (文件列表 - 占据剩余空间，无上边距)
+    final supportsLoadMore =
+        state.currentAccount?.type == CloudDriveType.lanzou;
+
     return Column(
       key: ValueKey(
         'content-${state.currentAccount?.id}-${state.currentFolder?.id}',
@@ -413,6 +429,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
             onFileTap: (file) => _showFileOptions(file, state.currentAccount!),
             onLongPress: handler.enterBatchMode,
             onToggleSelection: handler.toggleSelection,
+            onLoadMore: supportsLoadMore ? handler.loadMore : null,
           ),
         ),
       ],
@@ -576,23 +593,21 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 220),
-      transitionBuilder: (child, animation) => ScaleTransition(
-        scale: animation,
-        child: FadeTransition(opacity: animation, child: child),
-      ),
+      transitionBuilder:
+          (child, animation) => ScaleTransition(
+            scale: animation,
+            child: FadeTransition(opacity: animation, child: child),
+          ),
       child: fab,
     );
   }
 
   // 显示文件操作选项
-  void _showFileOptions(
-    CloudDriveFile file,
-    CloudDriveAccount? account,
-  ) {
+  void _showFileOptions(CloudDriveFile file, CloudDriveAccount? account) {
     if (account == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('账号信息不可用')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('账号信息不可用')));
       return;
     }
 
@@ -609,9 +624,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => Navigator.pop(context),
-                  child: Container(
-                    color: Colors.black.withOpacity(0.2),
-                  ),
+                  child: Container(color: Colors.black.withOpacity(0.2)),
                 ),
               ),
               DraggableScrollableSheet(

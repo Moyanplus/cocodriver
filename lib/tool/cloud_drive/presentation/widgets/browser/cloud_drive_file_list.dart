@@ -39,6 +39,7 @@ class CloudDriveFileList extends StatelessWidget {
   final void Function(CloudDriveFile file) onFileTap;
   final void Function(String itemId) onLongPress;
   final void Function(String itemId) onToggleSelection;
+  final Future<void> Function()? onLoadMore;
 
   const CloudDriveFileList({
     super.key,
@@ -50,6 +51,7 @@ class CloudDriveFileList extends StatelessWidget {
     required this.onFileTap,
     required this.onLongPress,
     required this.onToggleSelection,
+    this.onLoadMore,
   });
 
   @override
@@ -81,6 +83,8 @@ class CloudDriveFileList extends StatelessWidget {
       );
     }
 
+    child = _wrapWithLoadMore(child);
+
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 250),
       switchInCurve: Curves.easeOut,
@@ -91,6 +95,24 @@ class CloudDriveFileList extends StatelessWidget {
         decoration: BoxDecoration(color: theme.colorScheme.surface),
         child: child,
       ),
+    );
+  }
+
+  Widget _wrapWithLoadMore(Widget child) {
+    if (onLoadMore == null) return child;
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (!state.hasMoreData || state.isLoadingMore) {
+          return false;
+        }
+        final metrics = notification.metrics;
+        if (metrics.maxScrollExtent <= 0) return false;
+        if (metrics.pixels >= metrics.maxScrollExtent - 200) {
+          onLoadMore?.call();
+        }
+        return false;
+      },
+      child: child,
     );
   }
 
@@ -343,14 +365,15 @@ class CloudDriveFileList extends StatelessWidget {
   DateTime? _resolveTimeForIndex(CloudDriveFile file) {
     const createdKeys = ['createdTime', 'createTime', 'created_at', 'createdAt', 'ctime'];
     const modifiedKeys = ['modifiedTime', 'updateTime', 'updated_at', 'updatedAt', 'mtime'];
+    final updatedOrCreated = file.updatedAt ?? file.createdAt;
 
     switch (state.sortField) {
       case CloudDriveSortField.createdTime:
         return _extractTimeFromMetadata(file, createdKeys) ??
-            file.modifiedTime ??
+            updatedOrCreated ??
             _extractTimeFromMetadata(file, modifiedKeys);
       case CloudDriveSortField.modifiedTime:
-        return file.modifiedTime ??
+        return updatedOrCreated ??
             _extractTimeFromMetadata(file, modifiedKeys) ??
             _extractTimeFromMetadata(file, createdKeys);
       default:
@@ -487,7 +510,7 @@ class _GridFileTile extends StatelessWidget {
                 Icon(Icons.access_time, size: 8, color: typeColor),
                 SizedBox(width: 2.w),
                 Text(
-                  _formatTime(file.modifiedTime),
+                  _formatTime(file.updatedAt ?? file.createdAt),
                   style: CloudDriveUIConfig.smallTextStyle.copyWith(
                     fontSize: 8,
                     color: theme.colorScheme.onSurfaceVariant,

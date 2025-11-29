@@ -22,6 +22,7 @@ class _FileInfoSectionState extends State<FileInfoSection>
   Widget build(BuildContext context) {
     final file = widget.file;
     final fileTypeInfo = FileTypeUtils.getFileTypeInfo(file.name);
+    final lastModified = file.updatedAt ?? file.createdAt;
     final theme = Theme.of(context);
 
     return Padding(
@@ -111,6 +112,7 @@ class _FileInfoSectionState extends State<FileInfoSection>
   }
 
   Widget _buildCollapsibleInfoCard(ThemeData theme, CloudDriveFile file) {
+    final lastModified = file.updatedAt ?? file.createdAt;
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLow,
@@ -158,18 +160,18 @@ class _FileInfoSectionState extends State<FileInfoSection>
                   ),
                 ],
               ),
-            ),
           ),
-          AnimatedCrossFade(
+        ),
+        AnimatedCrossFade(
             firstChild: SizedBox.shrink(),
             secondChild: Column(
               children: [
-                if (file.modifiedTime != null)
+                if (lastModified != null)
                   _buildInfoItem(
                     theme,
                     icon: Icons.access_time_rounded,
                     label: '修改时间',
-                    value: _formatDateTime(file.modifiedTime!),
+                    value: _formatDateTime(lastModified),
                     isFirst: true,
                   ),
                 _buildInfoItem(
@@ -179,7 +181,7 @@ class _FileInfoSectionState extends State<FileInfoSection>
                   value: file.downloadCount >= 0
                       ? file.downloadCount.toString()
                       : '暂不提供',
-                  isFirst: file.modifiedTime == null,
+                  isFirst: lastModified == null,
                   isLast: false,
                 ),
                 _buildInfoItem(

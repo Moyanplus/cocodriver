@@ -224,7 +224,7 @@ class IndexBarController {
 /// IndexBar.
 class IndexBar extends StatefulWidget {
   const IndexBar({
-    Key? key,
+    super.key,
     this.data = kIndexBarData,
     this.width = kIndexBarWidth,
     this.height,
@@ -234,8 +234,7 @@ class IndexBar extends StatefulWidget {
     IndexBarDragListener? indexBarDragListener,
     this.options = const IndexBarOptions(),
     this.controller,
-  })  : indexBarDragNotifier = indexBarDragListener as IndexBarDragNotifier?,
-        super(key: key);
+  }) : indexBarDragNotifier = indexBarDragListener as IndexBarDragNotifier?;
 
   /// Index data.
   final List<String> data;
@@ -320,7 +319,7 @@ class _IndexBarState extends State<IndexBar> {
   void dispose() {
     widget.controller?._detach();
     _removeOverlay();
-    widget.indexBarDragNotifier?.dragDetails?.removeListener(_valueChanged);
+    widget.indexBarDragNotifier?.dragDetails.removeListener(_valueChanged);
     super.dispose();
   }
 
@@ -353,7 +352,6 @@ class _IndexBarState extends State<IndexBar> {
   /// add overlay.
   void _addOverlay(BuildContext context) {
     OverlayState? overlayState = Overlay.of(context);
-    if (overlayState == null) return;
     if (overlayEntry == null) {
       overlayEntry = OverlayEntry(builder: (BuildContext ctx) {
         double left;
@@ -479,7 +477,7 @@ class _IndexBarState extends State<IndexBar> {
 
 class BaseIndexBar extends StatefulWidget {
   const BaseIndexBar({
-    Key? key,
+    super.key,
     this.data = kIndexBarData,
     this.width = kIndexBarWidth,
     this.itemHeight = kIndexBarItemHeight,
@@ -487,7 +485,7 @@ class BaseIndexBar extends StatefulWidget {
     this.textStyle = const TextStyle(fontSize: 12.0, color: Color(0xFF666666)),
     this.itemBuilder,
     this.indexBarDragNotifier,
-  }) : super(key: key);
+  });
 
   /// index data.
   final List<String> data;

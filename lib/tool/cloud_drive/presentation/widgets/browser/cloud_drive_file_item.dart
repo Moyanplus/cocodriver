@@ -57,9 +57,11 @@ class CloudDriveFileItem extends StatelessWidget {
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOut,
             decoration: BoxDecoration(
-              color: highlight
-                  ? theme.colorScheme.primary.withValues(alpha: 0.08)
-                  : theme.colorScheme.surface,
+              color:
+                  highlight
+                      ? theme.colorScheme.primary.withValues(alpha: 0.08)
+                      : theme.colorScheme.surface,  // 保持系统默认背景
+
               borderRadius: borderRadius,
               border:
                   highlight
@@ -72,10 +74,7 @@ class CloudDriveFileItem extends StatelessWidget {
             constraints: BoxConstraints(
               minHeight: ResponsiveUtils.getResponsiveHeight(52.h),
             ),
-            padding: ResponsiveUtils.getResponsivePadding(
-              horizontal: 12.w,
-              vertical: 8.h,
-            ),
+            padding: EdgeInsets.zero,
             child: Stack(
               children: [
                 if (isUploading && uploadProgress != null)
@@ -86,13 +85,20 @@ class CloudDriveFileItem extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         widthFactor: uploadProgress.clamp(0.0, 1.0),
                         child: Container(
-                          color: theme.colorScheme.primary.withOpacity(0.12),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.12,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                Row(
-                  children: [
+                Padding(
+                  padding: ResponsiveUtils.getResponsivePadding(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
+                  child: Row(
+                    children: [
                     AnimatedScale(
                       scale: highlight ? 1.05 : 1,
                       duration: const Duration(milliseconds: 180),
@@ -132,6 +138,7 @@ class CloudDriveFileItem extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
                 ),
               ],
             ),
@@ -232,7 +239,7 @@ class CloudDriveFileItem extends StatelessWidget {
       return '上传中 · $percent%';
     }
     if (isFolder) {
-      return _formatTime(file.modifiedTime ?? file.updatedAt ?? file.createdAt);
+      return _formatTime(file.updatedAt ?? file.createdAt);
     }
     return _buildFileInfoText(file);
   }
@@ -242,7 +249,7 @@ class CloudDriveFileItem extends StatelessWidget {
     final parts = <String>[];
 
     // 添加时间信息（如果有）
-    final time = item.modifiedTime ?? item.updatedAt ?? item.createdAt;
+    final time = item.updatedAt ?? item.createdAt;
     if (time != null) {
       parts.add(_formatTime(time));
     }

@@ -2,6 +2,7 @@ import '../../../../../../core/logging/log_manager.dart';
 import '../../../../base/cloud_drive_operation_service.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
 import '../../../../data/models/cloud_drive_dtos.dart';
+import '../../../../utils/cloud_drive_log_utils.dart';
 import '../api/pan123_config.dart';
 import '../repository/pan123_repository.dart';
 
@@ -64,6 +65,15 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       LogManager().cloudDrive('123云盘 - 错误堆栈: $stackTrace');
       return null;
     }
+  }
+
+  @override
+  Future<CloudDrivePreviewResult?> getPreviewInfo({
+    required CloudDriveAccount account,
+    required CloudDriveFile file,
+  }) async {
+    LogManager().cloudDrive('123云盘 - 暂未实现预览接口');
+    return null;
   }
 
   @override
@@ -291,6 +301,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     'rename': true, // 已实现重命名功能
     'copy': true, // 已实现复制功能
     'createFolder': true, // 通过仓库实现
+    'preview': false,
   };
 
   @override
@@ -321,7 +332,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
       if (created != null) {
         LogManager().cloudDrive('123云盘 - 创建文件夹成功');
-        return {'success': true, 'file': created};
+        return {'success': true, 'folder': created};
       }
       LogManager().cloudDrive('123云盘 - 创建文件夹失败');
       return {'success': false};
@@ -373,15 +384,21 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         '123云盘 - 账号信息: ${account.name} (${account.type.displayName})',
       );
 
-      final files = await _repository.listFiles(
+      final items = await _repository.listFiles(
         account: account,
         folderId: folderId,
         page: page,
         pageSize: pageSize,
       );
 
-      LogManager().cloudDrive('123云盘 - 文件列表获取完成: ${files.length} 个文件');
-      return files;
+      final folders = items.where((f) => f.isFolder).toList();
+      final files = items.where((f) => !f.isFolder).toList();
+      CloudDriveLogUtils.logFileListSummary(
+        provider: '123云盘',
+        files: files,
+        folders: folders,
+      );
+      return items;
     } catch (e, stackTrace) {
       LogManager().cloudDrive('123云盘 - 获取文件列表异常: $e');
       LogManager().cloudDrive('错误堆栈: $stackTrace');

@@ -513,4 +513,6 @@ class BaiduConfig {
 
     return {'path': fullPath, 'isdir': '1', 'block_list': '[]'};
   }
+
+  static bool verboseLogging = true;
 }

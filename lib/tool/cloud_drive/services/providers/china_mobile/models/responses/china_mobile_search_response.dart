@@ -107,7 +107,7 @@ class ChinaMobileSearchResponse {
         id: fileId,
         name: name,
         size: sizeBytes,
-        modifiedTime: updatedAt,
+        updatedAt: updatedAt,
         isFolder: isFolder,
         folderId: fileData['parentFileId']?.toString() ?? '/',
       );

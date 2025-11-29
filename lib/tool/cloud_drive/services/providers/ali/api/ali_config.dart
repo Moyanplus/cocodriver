@@ -146,4 +146,6 @@ class AliConfig {
         'drive_id': driveId,
         'file_id': fileId,
       };
+
+  static bool verboseLogging = true;
 }

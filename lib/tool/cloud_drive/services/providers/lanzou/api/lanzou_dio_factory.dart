@@ -1,6 +1,6 @@
 import 'package:coco_cloud_drive/tool/cloud_drive/data/models/cloud_drive_entities.dart';
 import 'package:dio/dio.dart';
-import '../../../../../../core/logging/log_manager.dart';
+import '../../../base/cloud_drive_api_logger.dart';
 import '../lanzou_config.dart';
 
 /// 蓝奏云盘基础服务
@@ -28,36 +28,12 @@ class LanzouDioFactory {
       ),
     );
 
-    // 添加请求拦截器
     dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          LogManager().cloudDrive(
-            '蓝奏云盘 - 请求: ${options.method} ${options.uri}',
-          );
-          if (options.data is FormData) {
-            final form = options.data as FormData;
-            LogManager().cloudDrive(
-              '蓝奏云盘 - 请求体 fields: ${form.fields}',
-            );
-            LogManager().cloudDrive(
-              '蓝奏云盘 - 请求体 files: ${form.files.map((f) => f.value.filename).toList()}',
-            );
-          } else if (options.data != null) {
-            LogManager().cloudDrive('蓝奏云盘 - 请求体: ${options.data}');
-          }
-          handler.next(options);
-        },
-        onResponse: (response, handler) {
-          LogManager().cloudDrive('蓝奏云盘 - 响应: ${response.statusCode}');
-          handler.next(response);
-        },
-        onError: (error, handler) {
-          LogManager().cloudDrive(
-            '蓝奏云盘 - 请求错误: ${error.message} (${error.response?.statusCode ?? 'no status'})',
-          );
-          handler.next(error);
-        },
+      CloudDriveLoggingInterceptor(
+        logger: CloudDriveApiLogger(
+          provider: '蓝奏云盘',
+          verbose: LanzouConfig.verboseLogging,
+        ),
       ),
     );
 

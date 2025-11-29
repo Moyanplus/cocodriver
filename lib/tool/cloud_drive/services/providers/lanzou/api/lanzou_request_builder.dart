@@ -18,6 +18,19 @@ class LanzouRequestBuilder {
     return this;
   }
 
+  /// 设置分页页码。
+  LanzouRequestBuilder page(int page) {
+    _data['pg'] = page;
+    return this;
+  }
+
+  LanzouRequestBuilder maybePage(int? page) {
+    if (page != null) {
+      _data['pg'] = page;
+    }
+    return this;
+  }
+
   /// 设置文件 ID。
   LanzouRequestBuilder file(String fileId) {
     _data['file_id'] = fileId;

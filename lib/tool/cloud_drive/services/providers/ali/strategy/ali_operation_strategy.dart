@@ -2,6 +2,7 @@ import '../../../../../../core/logging/log_manager.dart';
 import '../../../../base/cloud_drive_operation_service.dart';
 import '../../../../data/models/cloud_drive_dtos.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
+import '../../../../utils/cloud_drive_log_utils.dart';
 import '../repository/ali_repository.dart';
 import '../api/ali_api_client.dart';
 
@@ -24,6 +25,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     'download': true,
     'upload': false,
     'share': false,
+    'preview': false,
   };
 
   @override
@@ -37,16 +39,22 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     try {
       LogManager().cloudDrive('阿里云盘 - 获取文件列表: path=$path, folderId=$folderId');
 
-      final files = await _repository.listFiles(
+      final items = await _repository.listFiles(
         account: account,
         folderId: folderId ?? 'root',
         page: page,
         pageSize: pageSize,
       );
 
-      LogManager().cloudDrive('阿里云盘 - 文件列表获取完成: ${files.length} 个文件');
+      final folders = items.where((f) => f.isFolder).toList();
+      final files = items.where((f) => !f.isFolder).toList();
+      CloudDriveLogUtils.logFileListSummary(
+        provider: '阿里云盘',
+        files: files,
+        folders: folders,
+      );
 
-      return files;
+      return items;
     } catch (e) {
       LogManager().cloudDrive('阿里云盘 - 获取文件列表异常: $e');
       return [];
@@ -90,13 +98,7 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         // 返回创建成功的文件夹信息
         return {
           'success': true,
-          'file': {
-            'id': createdFolder.id,
-            'name': createdFolder.name,
-            'isFolder': createdFolder.isFolder,
-            'folderId': createdFolder.folderId,
-            'modifiedTime': createdFolder.modifiedTime,
-          },
+          'folder': createdFolder,
         };
       } else {
         LogManager().cloudDrive('阿里云盘 - 文件夹创建操作失败: $folderName');
@@ -235,6 +237,15 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }
 
   @override
+  Future<CloudDrivePreviewResult?> getPreviewInfo({
+    required CloudDriveAccount account,
+    required CloudDriveFile file,
+  }) async {
+    LogManager().cloudDrive('阿里云盘 - 暂未实现预览接口');
+    return null;
+  }
+
+  @override
   Future<List<String>?> getHighSpeedDownloadUrls({
     required CloudDriveAccount account,
     required CloudDriveFile file,
@@ -291,9 +302,20 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       id: file.id,
       name: file.name,
       size: file.size,
-      modifiedTime: file.modifiedTime,
       isFolder: file.isFolder,
       folderId: targetPath, // 使用targetPath作为新的folderId
+      createdAt: file.createdAt,
+      updatedAt: file.updatedAt,
+      description: file.description,
+      path: targetPath,
+      downloadUrl: file.downloadUrl,
+      thumbnailUrl: file.thumbnailUrl,
+      bigThumbnailUrl: file.bigThumbnailUrl,
+      previewUrl: file.previewUrl,
+      metadata: file.metadata,
+      category: file.category,
+      downloadCount: file.downloadCount,
+      shareCount: file.shareCount,
     );
   }
 

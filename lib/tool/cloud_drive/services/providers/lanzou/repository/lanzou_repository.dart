@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import '../../../../../../core/logging/log_manager.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
 import '../../../../base/base_cloud_drive_repository.dart';
+import '../../../base/cloud_drive_api_logger.dart';
 import '../api/lanzou_api_client.dart';
 import '../api/lanzou_dio_factory.dart';
 import '../lanzou_config.dart';
@@ -48,7 +49,20 @@ class LanzouRepository extends BaseCloudDriveRepository {
     sendTimeout: LanzouConfig.sendTimeout,
     headers: LanzouConfig.directLinkHeaders,
   );
-  static final Dio _directLinkDio = Dio(_directLinkOptions);
+  static final Dio _directLinkDio = _createDirectLinkDio();
+
+  static Dio _createDirectLinkDio() {
+    final dio = Dio(_directLinkOptions);
+    dio.interceptors.add(
+      CloudDriveLoggingInterceptor(
+        logger: CloudDriveApiLogger(
+          provider: '蓝奏云直链',
+          verbose: LanzouConfig.verboseLogging,
+        ),
+      ),
+    );
+    return dio;
+  }
 
   /// 获取当前账号指定文件夹下的文件/文件夹列表。
   /// [account] 蓝奏云账号
@@ -62,8 +76,9 @@ class LanzouRepository extends BaseCloudDriveRepository {
     int pageSize = 50,
   }) async {
     final targetFolderId = folderId ?? '-1';
-    final files = await fetchFiles(targetFolderId);
-    final folders = await fetchFolders(targetFolderId);
+    final files = await fetchFiles(targetFolderId, page: page);
+    final folders =
+        page == 1 ? await fetchFolders(targetFolderId) : const <CloudDriveFile>[];
     final all = [...folders, ...files];
     logListSummary('蓝奏云', all, folderId: targetFolderId);
     return all;
@@ -71,10 +86,14 @@ class LanzouRepository extends BaseCloudDriveRepository {
 
   /// 请求文件列表，返回蓝奏云文件实体。
   /// [folderId] 目标文件夹ID
-  Future<List<CloudDriveFile>> fetchFiles(String folderId) async {
+  Future<List<CloudDriveFile>> fetchFiles(
+    String folderId, {
+    int page = 1,
+  }) async {
     final request = LanzouFolderRequest(
       folderId: folderId,
       taskKey: 'getFiles',
+      page: page,
     );
     final response = await _postWithVei(request);
 
@@ -87,10 +106,14 @@ class LanzouRepository extends BaseCloudDriveRepository {
 
   /// 请求文件夹列表。
   /// [folderId] 目标文件夹ID
-  Future<List<CloudDriveFile>> fetchFolders(String folderId) async {
+  Future<List<CloudDriveFile>> fetchFolders(
+    String folderId, {
+    int? page,
+  }) async {
     final request = LanzouFolderRequest(
       folderId: folderId,
       taskKey: 'getFolders',
+      page: page,
     );
     final response = await _postWithVei(request, allowFolderMeta: true);
 
@@ -650,21 +673,21 @@ class LanzouRepository extends BaseCloudDriveRepository {
   }
 
   CloudDriveFile _mapFile(LanzouRawFile raw) => CloudDriveFile(
-    id: raw.id,
-    name: raw.name,
-    size: LanzouUtils.parseFileSize(raw.size),
-    modifiedTime: _tryParseTime(raw.time),
-    isFolder: false,
-    metadata: _buildFileMetadata(raw),
-    downloadCount: raw.downloads ?? -1,
-  );
+        id: raw.id,
+        name: raw.name,
+        size: LanzouUtils.parseFileSize(raw.size),
+        updatedAt: _tryParseTime(raw.time),
+        isFolder: false,
+        metadata: _buildFileMetadata(raw),
+        downloadCount: raw.downloads ?? -1,
+      );
 
   CloudDriveFile _mapFolder(LanzouRawFolder raw) => CloudDriveFile(
-    id: raw.id,
-    name: raw.name,
-    modifiedTime: _tryParseTime(raw.time),
-    isFolder: true,
-  );
+        id: raw.id,
+        name: raw.name,
+        updatedAt: _tryParseTime(raw.time),
+        isFolder: true,
+      );
 
   Map<String, dynamic>? _buildFileMetadata(LanzouRawFile raw) {
     final data = <String, dynamic>{};

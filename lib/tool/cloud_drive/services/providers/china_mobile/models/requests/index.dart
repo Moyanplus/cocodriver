@@ -7,3 +7,4 @@ export 'china_mobile_task_request.dart';
 export 'china_mobile_create_folder_request.dart';
 export 'china_mobile_upload_request.dart';
 export 'china_mobile_request.dart';
+export 'china_mobile_preview_request.dart';

@@ -208,17 +208,7 @@ class FileListCacheManager {
     final updatedFiles =
         entry.files.map((file) {
           if (file.id == fileId) {
-            return CloudDriveFile(
-              id: file.id,
-              name: newName,
-              size: file.size,
-              modifiedTime: file.modifiedTime,
-              isFolder: file.isFolder,
-              folderId: file.folderId,
-              thumbnailUrl: file.thumbnailUrl,
-              bigThumbnailUrl: file.bigThumbnailUrl,
-              previewUrl: file.previewUrl,
-            );
+            return file.copyWith(name: newName);
           }
           return file;
         }).toList();
@@ -227,14 +217,7 @@ class FileListCacheManager {
     final updatedFolders =
         entry.folders.map((folder) {
           if (folder.id == fileId) {
-            return CloudDriveFile(
-              id: folder.id,
-              name: newName,
-              size: folder.size,
-              modifiedTime: folder.modifiedTime,
-              isFolder: folder.isFolder,
-              folderId: folder.folderId,
-            );
+            return folder.copyWith(name: newName);
           }
           return folder;
         }).toList();

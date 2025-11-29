@@ -77,17 +77,17 @@ CloudDriveFile? _mapFile(Map<String, dynamic> fileData) {
   final type = fileData['Type'] as int? ?? 0;
   final isFolder = type == 1;
   final size = int.tryParse(fileData['Size']?.toString() ?? '');
-  DateTime? modified;
+  DateTime? updated;
   final updateAt = fileData['UpdateAt']?.toString();
   if (updateAt != null && updateAt.isNotEmpty) {
-    modified = DateTime.tryParse(updateAt);
+    updated = DateTime.tryParse(updateAt);
   }
   final parentId = fileData['ParentFileId']?.toString() ?? '0';
   return CloudDriveFile(
     id: id,
     name: name,
     size: size,
-    modifiedTime: modified,
+    updatedAt: updated,
     isFolder: isFolder,
     folderId: parentId,
   );

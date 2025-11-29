@@ -63,6 +63,20 @@ abstract class BaseCloudDriveRepository {
     String? password,
   });
 
+  /// 获取预览信息，默认返回 null，由具体云盘按需实现。
+  Future<CloudDrivePreviewResult?> getPreviewInfo({
+    required CloudDriveAccount account,
+    required CloudDriveFile file,
+  }) async {
+    LogManager().cloudDrive(
+      '${account.type.displayName} 尚未实现预览接口',
+      className: runtimeType.toString(),
+      methodName: 'getPreviewInfo',
+      data: {'fileId': file.id, 'fileName': file.name},
+    );
+    return null;
+  }
+
   /// 统一的列表结果日志，避免各云盘重复实现。
   void logListSummary(
     String provider,

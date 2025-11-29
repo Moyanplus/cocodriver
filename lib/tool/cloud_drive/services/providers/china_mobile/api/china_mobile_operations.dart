@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../../../data/models/cloud_drive_entities.dart';
 import '../core/china_mobile_base_service.dart';
 import '../core/china_mobile_config.dart';
@@ -18,10 +20,8 @@ class ChinaMobileOperations {
         '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint('getFileList')}',
       );
 
-      ChinaMobileLogger.network('POST', url: url.toString());
-      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
-
       final response = await dio.postUri(url, data: request.toRequestBody());
+      _logResponse('POST', url, response);
 
       final result =
           ChinaMobileResponseParser.parse<ChinaMobileFileListResponse>(
@@ -60,10 +60,8 @@ class ChinaMobileOperations {
         '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint('updateFile')}',
       );
 
-      ChinaMobileLogger.network('POST', url: uri.toString());
-      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
-
       final response = await dio.postUri(uri, data: request.toRequestBody());
+      _logResponse('POST', uri, response);
       if (ChinaMobileBaseService.isHttpSuccess(response.statusCode) &&
           ChinaMobileBaseService.isApiSuccess(response.data)) {
         ChinaMobileLogger.success('重命名文件完成');
@@ -130,10 +128,8 @@ class ChinaMobileOperations {
         '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint(endpointKey)}',
       );
 
-      ChinaMobileLogger.network('POST', url: uri.toString());
-      ChinaMobileLogger.debug('请求体', data: requestBody);
-
       final response = await dio.postUri(uri, data: requestBody);
+      _logResponse('POST', uri, response);
       if (ChinaMobileBaseService.isHttpSuccess(response.statusCode) &&
           ChinaMobileBaseService.isApiSuccess(response.data)) {
         ChinaMobileLogger.success('$opName 完成');
@@ -164,10 +160,8 @@ class ChinaMobileOperations {
         '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint('getDownloadUrl')}',
       );
 
-      ChinaMobileLogger.network('POST', url: url.toString());
-      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
-
       final response = await dio.postUri(url, data: request.toRequestBody());
+      _logResponse('POST', url, response);
 
       final result =
           ChinaMobileResponseParser.parse<ChinaMobileDownloadResponse>(
@@ -192,6 +186,42 @@ class ChinaMobileOperations {
     }
   }
 
+  static Future<ChinaMobileApiResult<ChinaMobilePreviewResponse>>
+  getPreviewInfo({
+    required CloudDriveAccount account,
+    required ChinaMobilePreviewRequest request,
+  }) async {
+    final startTime = DateTime.now();
+    try {
+      final dio = ChinaMobileBaseService.createDio(account);
+      final uri = Uri.parse(
+        '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint('getPreviewInfo')}',
+      );
+
+      final response = await dio.postUri(uri, data: request.toRequestBody());
+      _logResponse('POST', uri, response);
+
+      final result =
+          ChinaMobileResponseParser.parse<ChinaMobilePreviewResponse>(
+            response: response.data,
+            statusCode: response.statusCode,
+            dataParser: (data) => ChinaMobilePreviewResponse.fromJson(data),
+          );
+
+      if (result.isSuccess) {
+        ChinaMobileLogger.performance(
+          '获取预览信息完成',
+          duration: DateTime.now().difference(startTime),
+        );
+      }
+
+      return result;
+    } catch (e, stackTrace) {
+      ChinaMobileLogger.error('获取预览信息失败', error: e, stackTrace: stackTrace);
+      return ChinaMobileApiResult.fromException(e as Exception);
+    }
+  }
+
   static Future<ChinaMobileApiResult<Map<String, dynamic>>> createShareLink({
     required CloudDriveAccount account,
     required ChinaMobileShareRequest request,
@@ -204,10 +234,8 @@ class ChinaMobileOperations {
         '${ChinaMobileConfig.orchestrationUrl}${ChinaMobileConfig.getApiEndpoint('getShareLink')}',
       );
 
-      ChinaMobileLogger.network('POST', url: url.toString());
-      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
-
       final response = await dio.postUri(url, data: request.toRequestBody());
+      _logResponse('POST', url, response);
 
       if (ChinaMobileBaseService.isHttpSuccess(response.statusCode) &&
           ChinaMobileBaseService.isApiSuccess(response.data)) {
@@ -238,10 +266,9 @@ class ChinaMobileOperations {
       );
 
       ChinaMobileLogger.task('查询任务状态', taskId: request.taskId);
-      ChinaMobileLogger.network('POST', url: uri.toString());
-      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
 
       final response = await dio.postUri(uri, data: request.toRequestBody());
+      _logResponse('POST', uri, response);
 
       if (ChinaMobileBaseService.isHttpSuccess(response.statusCode) &&
           ChinaMobileBaseService.isApiSuccess(response.data)) {
@@ -272,10 +299,8 @@ class ChinaMobileOperations {
         '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint('createFolder')}',
       );
 
-      ChinaMobileLogger.network('POST', url: uri.toString());
-      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
-
       final response = await dio.postUri(uri, data: request.toRequestBody());
+      _logResponse('POST', uri, response);
       return ChinaMobileResponseParser.parse<ChinaMobileCreateFolderResponse>(
         response: response.data,
         statusCode: response.statusCode,
@@ -298,9 +323,8 @@ class ChinaMobileOperations {
       final uri = Uri.parse(
         '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint('createFile')}',
       );
-      ChinaMobileLogger.network('POST', url: uri.toString());
-      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
       final response = await dio.postUri(uri, data: request.toRequestBody());
+      _logResponse('POST', uri, response);
       return ChinaMobileResponseParser.parse<ChinaMobileUploadInitResponse>(
         response: response.data,
         statusCode: response.statusCode,
@@ -323,9 +347,8 @@ class ChinaMobileOperations {
       final uri = Uri.parse(
         '${ChinaMobileConfig.baseUrl}${ChinaMobileConfig.getApiEndpoint('completeUpload')}',
       );
-      ChinaMobileLogger.network('POST', url: uri.toString());
-      ChinaMobileLogger.debug('请求体', data: request.toRequestBody());
       final response = await dio.postUri(uri, data: request.toRequestBody());
+      _logResponse('POST', uri, response);
       return ChinaMobileResponseParser.parse<Map<String, dynamic>>(
         response: response.data,
         statusCode: response.statusCode,
@@ -336,5 +359,15 @@ class ChinaMobileOperations {
       ChinaMobileLogger.error('完成上传失败', error: e, stackTrace: stackTrace);
       return ChinaMobileApiResult.fromException(e as Exception);
     }
+  }
+
+  static void _logResponse(String method, Uri uri, Response response) {
+    if (!ChinaMobileConfig.verboseLogging) return;
+    ChinaMobileLogger.networkResponse(
+      method: method,
+      url: uri.toString(),
+      statusCode: response.statusCode,
+      data: response.data,
+    );
   }
 }

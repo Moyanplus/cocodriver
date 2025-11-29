@@ -13,11 +13,11 @@
 /// 作者: Flutter开发团队
 /// 版本: 1.0.0
 /// 创建时间: 2024年
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'platform_utils.dart';
-import 'responsive_utils.dart';
 
 /// 自适应UI工具类
 ///
@@ -318,13 +318,13 @@ class AdaptiveUtils {
       return CupertinoSwitch(
         value: value,
         onChanged: onChanged,
-        activeColor: activeColor ?? CupertinoColors.activeGreen,
+        activeTrackColor: activeColor ?? CupertinoColors.activeGreen,
       );
     } else {
       return Switch(
         value: value,
         onChanged: onChanged,
-        activeColor: activeColor,
+        activeThumbColor: activeColor,
         inactiveThumbColor: inactiveColor,
       );
     }

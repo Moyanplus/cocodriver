@@ -2,13 +2,22 @@ import '../../api/lanzou_request_builder.dart';
 
 /// 获取文件/文件夹列表请求
 class LanzouFolderRequest {
-  const LanzouFolderRequest({required this.folderId, required this.taskKey});
+  const LanzouFolderRequest({
+    required this.folderId,
+    required this.taskKey,
+    this.page,
+  });
 
   final String folderId;
   final String taskKey;
+  final int? page;
 
-  Map<String, dynamic> build(String vei) =>
-      LanzouRequestBuilder().task(taskKey).folder(folderId).vei(vei).build();
+  Map<String, dynamic> build(String vei) => LanzouRequestBuilder()
+      .task(taskKey)
+      .folder(folderId)
+      .maybePage(page)
+      .vei(vei)
+      .build();
 }
 
 /// 文件详情请求

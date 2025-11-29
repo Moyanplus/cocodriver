@@ -44,6 +44,11 @@ abstract class CloudDriveOperationStrategy {
     required CloudDriveFile file,
   });
 
+  Future<CloudDrivePreviewResult?> getPreviewInfo({
+    required CloudDriveAccount account,
+    required CloudDriveFile file,
+  });
+
   Future<Map<String, dynamic>?> createFolder({
     required CloudDriveAccount account,
     required String folderName,

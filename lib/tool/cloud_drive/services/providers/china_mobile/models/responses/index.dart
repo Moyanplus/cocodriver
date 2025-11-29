@@ -8,3 +8,4 @@ export 'china_mobile_create_folder_response.dart';
 export 'china_mobile_upload_response.dart';
 export 'china_mobile_base_response.dart';
 export 'parsing_utils.dart';
+export 'china_mobile_preview_response.dart';

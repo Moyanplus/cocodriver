@@ -156,9 +156,6 @@ class CloudDriveRepository implements CloudDriveRepositoryInterface {
           id: request.fileId,
           name: '文件详情',
           isFolder: false,
-          size: null,
-          modifiedTime: null,
-          folderId: null,
         );
 
         final result = FileDetailResult(

@@ -57,7 +57,7 @@ void main() {
           size: 1024,
           isFolder: false,
           folderId: '0',
-          modifiedTime: DateTime.now(),
+          updatedAt: DateTime.now(),
         );
 
         expect(testFile.id, equals('file_1'));
@@ -74,7 +74,7 @@ void main() {
           size: 0,
           isFolder: true,
           folderId: '0',
-          modifiedTime: DateTime.now(),
+          updatedAt: DateTime.now(),
         );
 
         expect(testFolder.id, equals('folder_1'));

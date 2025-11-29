@@ -22,7 +22,7 @@ void main() {
         size: 1024,
         isFolder: false,
         folderId: '0',
-        modifiedTime: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
     });
 
@@ -50,8 +50,8 @@ void main() {
       });
 
       test('should validate file timestamps', () {
-        expect(testFile.modifiedTime, isA<DateTime>());
-        expect(testFile.modifiedTime!.isBefore(DateTime.now()), isTrue);
+        expect(testFile.updatedAt, isA<DateTime>());
+        expect(testFile.updatedAt!.isBefore(DateTime.now()), isTrue);
       });
     });
 
@@ -95,7 +95,7 @@ void main() {
           size: 0,
           isFolder: false,
           folderId: '0',
-          modifiedTime: DateTime.now(),
+          updatedAt: DateTime.now(),
         );
 
         expect(zeroSizeFile.size, equals(0));
@@ -109,7 +109,7 @@ void main() {
           size: 1024 * 1024 * 1024, // 1GB
           isFolder: false,
           folderId: '0',
-          modifiedTime: DateTime.now(),
+          updatedAt: DateTime.now(),
         );
 
         expect(largeFile.size, equals(1024 * 1024 * 1024));

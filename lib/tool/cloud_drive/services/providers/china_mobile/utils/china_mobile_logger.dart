@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../../../../../core/logging/log_manager.dart';
 
 /// 中国移动云盘日志工具类
@@ -67,12 +69,12 @@ class ChinaMobileLogger {
     String? url,
     Map<String, dynamic>? data,
   }) {
-    LogManager().cloudDrive(
-      '中国移动云盘 - $method 请求: $url',
-      className: 'ChinaMobileLogger',
-      methodName: 'network',
-      data: {'method': method, 'url': url, 'data': data},
-    );
+    final buffer = StringBuffer()
+      ..writeln('请求: $method $url');
+    if (data != null && data.isNotEmpty) {
+      buffer.writeln('Body: ${_formatJson(data)}');
+    }
+    _logRaw('network', buffer.toString());
   }
 
   /// 记录详细的网络请求信息（包括请求头）
@@ -82,17 +84,30 @@ class ChinaMobileLogger {
     Map<String, dynamic>? headers,
     Map<String, dynamic>? data,
   }) {
-    LogManager().cloudDrive(
-      '中国移动云盘 - $method 请求: $url',
-      className: 'ChinaMobileLogger',
-      methodName: 'networkVerbose',
-      data: {
-        'method': method,
-        'url': url,
-        'headers': headers,
-        'data': data,
-      },
-    );
+    final buffer = StringBuffer()
+      ..writeln('请求: $method $url');
+    if (headers != null && headers.isNotEmpty) {
+      buffer.writeln('Headers: ${_formatJson(headers)}');
+    }
+    if (data != null && data.isNotEmpty) {
+      buffer.writeln('Body: ${_formatJson(data)}');
+    }
+    _logRaw('networkVerbose', buffer.toString());
+  }
+
+  /// 记录网络响应内容
+  static void networkResponse({
+    required String method,
+    String? url,
+    int? statusCode,
+    dynamic data,
+  }) {
+    final buffer = StringBuffer()
+      ..writeln('响应: $method $url (code: ${statusCode ?? '-'} )');
+    if (data != null) {
+      buffer.writeln('Body: ${_formatJson(data)}');
+    }
+    _logRaw('networkResponse', buffer.toString());
   }
 
   /// 记录性能指标
@@ -112,6 +127,23 @@ class ChinaMobileLogger {
       className: 'ChinaMobileLogger',
       methodName: 'task',
       data: taskId != null ? {'taskId': taskId} : {},
+    );
+  }
+
+  static String _formatJson(dynamic value) {
+    try {
+      final encoder = const JsonEncoder.withIndent('  ');
+      return value is String ? value : encoder.convert(value);
+    } catch (_) {
+      return value.toString();
+    }
+  }
+
+  static void _logRaw(String methodName, String content) {
+    LogManager().cloudDrive(
+      '中国移动云盘日志\n$content',
+      className: 'ChinaMobileLogger',
+      methodName: methodName,
     );
   }
 }

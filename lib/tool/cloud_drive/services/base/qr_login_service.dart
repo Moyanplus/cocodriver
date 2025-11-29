@@ -103,9 +103,6 @@ class QRLoginManager {
   }
 
   static Stream<QRLoginInfo> _startWithService(QRLoginService service) async* {
-    final typeLabel =
-        CloudDriveProviderRegistry.get(service.cloudDriveType)?.displayName ??
-            service.cloudDriveType.name;
     StreamController<QRLoginInfo>? streamController;
     Timer? timer;
 

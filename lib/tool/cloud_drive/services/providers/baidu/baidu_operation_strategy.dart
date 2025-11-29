@@ -6,6 +6,7 @@ import '../../../../../../core/logging/log_manager.dart';
 import '../../../base/cloud_drive_operation_service.dart';
 import '../../../data/models/cloud_drive_dtos.dart';
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../../utils/cloud_drive_log_utils.dart';
 import 'baidu_cloud_drive_service.dart';
 import 'baidu_repository.dart';
 // import 'baidu_config.dart'; // 未使用
@@ -17,6 +18,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   BaiduCloudDriveOperationStrategy();
 
   final BaiduRepository _repository = BaiduRepository();
+
   /// 获取文件下载链接
   ///
   /// [account] 百度网盘账号信息
@@ -53,6 +55,15 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       LogManager().error('百度网盘 - 获取下载链接异常');
       rethrow;
     }
+  }
+
+  @override
+  Future<CloudDrivePreviewResult?> getPreviewInfo({
+    required CloudDriveAccount account,
+    required CloudDriveFile file,
+  }) async {
+    LogManager().cloudDrive('百度网盘 - 暂未实现预览接口');
+    return null;
   }
 
   /// 获取高速下载链接
@@ -449,6 +460,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       'copy': true,
       'rename': true,
       'createFolder': true, // 已实现
+      'preview': false,
     };
     LogManager().cloudDrive('百度网盘 - 支持的操作: $operations');
     return operations;
@@ -546,7 +558,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       if (created != null) {
         LogManager().cloudDrive('百度网盘 - 文件夹创建成功: $folderName');
 
-        return {'success': true, 'message': '文件夹创建成功'};
+        return {'success': true, 'message': '文件夹创建成功', 'folder': created};
       } else {
         LogManager().cloudDrive('百度网盘 - 文件夹创建失败');
 
@@ -684,14 +696,15 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         pageSize: pageSize,
       );
 
-      // 合并文件和文件夹列表
-      final allFiles = <CloudDriveFile>[];
-      allFiles.addAll(result['folders'] ?? []);
-      allFiles.addAll(result['files'] ?? []);
+      final folders = (result['folders'] ?? <CloudDriveFile>[]);
+      final files = (result['files'] ?? <CloudDriveFile>[]);
+      CloudDriveLogUtils.logFileListSummary(
+        provider: '百度网盘',
+        files: files,
+        folders: folders,
+      );
 
-      LogManager().cloudDrive('百度网盘 - 文件列表获取完成: ${allFiles.length} 个文件');
-
-      return allFiles;
+      return [...folders, ...files];
     } catch (e) {
       LogManager().cloudDrive('百度网盘 - 获取文件列表异常: $e');
       return [];

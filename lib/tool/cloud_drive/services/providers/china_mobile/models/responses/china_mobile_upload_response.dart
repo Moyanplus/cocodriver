@@ -20,6 +20,8 @@ class ChinaMobileUploadInitResponse {
   final String parentFileId;
   final String fileName;
   final List<ChinaMobileUploadInitPartInfo> partInfos;
+  final bool exist;
+  final Map<String, dynamic> raw;
 
   ChinaMobileUploadInitResponse({
     required this.fileId,
@@ -27,6 +29,8 @@ class ChinaMobileUploadInitResponse {
     required this.parentFileId,
     required this.fileName,
     required this.partInfos,
+    required this.exist,
+    required this.raw,
   });
 
   factory ChinaMobileUploadInitResponse.fromJson(Map<String, dynamic> json) =>
@@ -39,6 +43,8 @@ class ChinaMobileUploadInitResponse {
             .whereType<Map<String, dynamic>>()
             .map(ChinaMobileUploadInitPartInfo.fromJson)
             .toList(),
+        exist: json['exist'] == true,
+        raw: json,
       );
 }
 

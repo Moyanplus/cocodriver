@@ -55,6 +55,15 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }
 
   @override
+  Future<CloudDrivePreviewResult?> getPreviewInfo({
+    required CloudDriveAccount account,
+    required CloudDriveFile file,
+  }) async {
+    QuarkLogger.info('夸克云盘 - 暂未实现预览接口');
+    return null;
+  }
+
+  @override
   Future<List<String>?> getHighSpeedDownloadUrls({
     required CloudDriveAccount account,
     required CloudDriveFile file,

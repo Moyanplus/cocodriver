@@ -87,7 +87,15 @@ class QuarkFileListResponse {
         sizeBytes = int.tryParse(size);
       }
 
-      // 5. 解析缩略图URL（仅文件有缩略图）
+      // 5. 解析时间
+      DateTime? createdAt;
+      final createdRaw = fileData[QuarkConfig.responseFields['createdAt']]
+          ?.toString();
+      if (createdRaw != null && createdRaw.isNotEmpty) {
+        createdAt = DateTime.tryParse(createdRaw);
+      }
+
+      // 6. 解析缩略图URL（仅文件有缩略图）
       String? thumbnailUrl;
       String? bigThumbnailUrl;
       String? previewUrl;
@@ -101,12 +109,13 @@ class QuarkFileListResponse {
             fileData[QuarkConfig.responseFields['previewUrl']]?.toString();
       }
 
-      // 6. 创建CloudDriveFile对象
+      // 7. 创建CloudDriveFile对象
       return CloudDriveFile(
         id: fid,
         name: name,
         size: sizeBytes,
-        modifiedTime: updatedAt,
+        updatedAt: updatedAt,
+        createdAt: createdAt,
         isFolder: isFolder,
         folderId: parentId,
         thumbnailUrl: thumbnailUrl,

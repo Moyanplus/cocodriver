@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 
 import '../../../../data/models/cloud_drive_entities.dart';
+import '../../../base/cloud_drive_api_logger.dart';
 import 'china_mobile_config.dart';
-import '../utils/china_mobile_logger.dart';
 
 /// 中国移动云盘基础服务
 ///
@@ -48,43 +48,12 @@ abstract class ChinaMobileBaseService {
 
   /// 添加请求拦截器
   static void _addInterceptors(Dio dio) {
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          // 根据配置决定是否打印详细信息
-          if (ChinaMobileConfig.verboseLogging) {
-            ChinaMobileLogger.networkVerbose(
-              method: options.method,
-              url: options.uri.toString(),
-              headers: options.headers.map((key, value) => MapEntry(key, value.toString())),
-              data: options.data,
-            );
-          } else {
-            ChinaMobileLogger.network(
-              options.method,
-              url: options.uri.toString(),
-            );
-          }
-          handler.next(options);
-        },
-        onResponse: (response, handler) {
-          ChinaMobileLogger.debug('收到响应: ${response.statusCode}');
-          ChinaMobileLogger.debug(
-            '响应内容长度: ${response.data?.toString().length ?? 0}',
-          );
-          handler.next(response);
-        },
-        onError: (error, handler) {
-          ChinaMobileLogger.debug('请求错误: ${error.message}');
-          if (error.response != null) {
-            ChinaMobileLogger.debug(
-              '错误响应: ${error.response?.statusCode} - ${error.response?.data}',
-            );
-          }
-          handler.next(error);
-        },
-      ),
+    final logger = CloudDriveApiLogger(
+      provider: '中国移动云盘',
+      verbose: ChinaMobileConfig.verboseLogging,
+      truncateLength: 800,
     );
+    dio.interceptors.add(CloudDriveLoggingInterceptor(logger: logger));
   }
 
   /// 验证HTTP响应状态

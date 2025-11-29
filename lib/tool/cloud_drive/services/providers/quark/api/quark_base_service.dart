@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../../../../data/models/cloud_drive_entities.dart';
+import '../../../base/cloud_drive_api_logger.dart';
 import 'quark_auth_service.dart';
 import 'quark_config.dart';
 import '../utils/quark_logger.dart';
@@ -20,7 +21,7 @@ abstract class QuarkBaseService {
       ),
     );
 
-    _addInterceptors(dio);
+    _addInterceptors(dio, providerLabel: '夸克云盘');
     return dio;
   }
 
@@ -39,7 +40,7 @@ abstract class QuarkBaseService {
         ),
       );
 
-      _addInterceptors(dio);
+      _addInterceptors(dio, providerLabel: '夸克云盘(授权)');
       return dio;
     } catch (e) {
       QuarkLogger.debug('创建Dio实例失败: $e');
@@ -48,27 +49,16 @@ abstract class QuarkBaseService {
   }
 
   /// 添加请求拦截器
-  static void _addInterceptors(Dio dio) {
-    // 添加请求拦截器
+  static void _addInterceptors(
+    Dio dio, {
+    String providerLabel = '夸克云盘',
+  }) {
     dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          QuarkLogger.network(options.method, url: options.uri.toString());
-          if (options.data != null) {
-            QuarkLogger.debug('请求体: ${options.data}');
-          }
-          handler.next(options);
-        },
-        onResponse: (response, handler) {
-          QuarkLogger.debug('响应: ${response.statusCode}');
-          handler.next(response);
-        },
-        onError: (error, handler) {
-          QuarkLogger.debug(
-            '请求错误: ${error.message} (${error.response?.statusCode ?? 'no status'})',
-          );
-          handler.next(error);
-        },
+      CloudDriveLoggingInterceptor(
+        logger: CloudDriveApiLogger(
+          provider: providerLabel,
+          verbose: QuarkConfig.verboseLogging,
+        ),
       ),
     );
   }
@@ -84,28 +74,7 @@ abstract class QuarkBaseService {
       ),
     );
 
-    // 添加请求拦截器
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          QuarkLogger.debug('请求: ${options.method} ${options.uri}');
-          if (options.data != null) {
-            QuarkLogger.debug('请求体: ${options.data}');
-          }
-          handler.next(options);
-        },
-        onResponse: (response, handler) {
-          QuarkLogger.debug('响应: ${response.statusCode}');
-          handler.next(response);
-        },
-        onError: (error, handler) {
-          QuarkLogger.debug(
-            '请求错误: ${error.message} (${error.response?.statusCode ?? 'no status'})',
-          );
-          handler.next(error);
-        },
-      ),
-    );
+    _addInterceptors(dio, providerLabel: '夸克云盘Pan');
 
     return dio;
   }

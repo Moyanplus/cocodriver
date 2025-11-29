@@ -6,6 +6,7 @@ import '../../../../../../core/logging/log_manager.dart';
 import '../../../base/cloud_drive_operation_service.dart';
 import '../../../data/models/cloud_drive_dtos.dart';
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../../utils/cloud_drive_log_utils.dart';
 import 'facade/lanzou_cloud_drive_facade.dart';
 // import 'lanzou_config.dart'; // 未使用
 
@@ -33,6 +34,15 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
       rethrow;
     }
+  }
+
+  @override
+  Future<CloudDrivePreviewResult?> getPreviewInfo({
+    required CloudDriveAccount account,
+    required CloudDriveFile file,
+  }) async {
+    LogManager().cloudDrive('蓝奏云 - 暂未实现预览接口');
+    return null;
   }
 
   @override
@@ -184,6 +194,7 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     'delete': true, // 支持删除
     'rename': true, // 暂不支持重命名
     'createFolder': true, // 暂不支持创建文件夹
+    'preview': false,
   };
 
   @override
@@ -225,6 +236,7 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         return {
           'success': true,
           'folderId': folder.id,
+          'folder': folder,
           'message': '创建成功',
         };
       }
@@ -323,57 +335,24 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       LogManager().cloudDrive('文件夹ID: ${folderId ?? '-1'}');
       LogManager().cloudDrive('账号: ${account.name}');
 
-      // 从Cookie中提取UID
-      final uid = LanzouCloudDriveFacade.extractUidFromCookies(
-        account.cookies ?? '',
+      final repository = LanzouRepository.fromAccount(account);
+      final items = await repository.listFiles(
+        account: account,
+        folderId: folderId,
+        page: page,
+        pageSize: pageSize,
       );
 
-      if (uid == null || uid.isEmpty) {
-        LogManager().cloudDrive('蓝奏云 - 无法从Cookie中提取UID');
-        return [];
-      }
+      final folders = items.where((e) => e.isFolder).toList();
+      final files = items.where((e) => !e.isFolder).toList();
 
-      LogManager().cloudDrive('蓝奏云 - UID提取成功: $uid');
-
-      // 获取文件和文件夹
-      final filesResult = await LanzouCloudDriveFacade.getFiles(
-        cookies: account.cookies ?? '',
-        uid: uid,
-        folderId: folderId ?? '-1',
+      CloudDriveLogUtils.logFileListSummary(
+        provider: '蓝奏云',
+        files: files,
+        folders: folders,
       );
 
-      final foldersResult = await LanzouCloudDriveFacade.getFolders(
-        cookies: account.cookies ?? '',
-        uid: uid,
-        folderId: folderId ?? '-1',
-      );
-
-      if (!filesResult.isSuccess || !foldersResult.isSuccess) {
-        throw Exception(
-          filesResult.error?.message ?? foldersResult.error?.message,
-        );
-      }
-
-      final files = filesResult.data ?? [];
-      final folders = foldersResult.data ?? [];
-
-      final allItems = [...folders, ...files];
-
-      LogManager().cloudDrive(
-        '蓝奏云 - 文件列表获取成功: ${files.length}个文件, ${folders.length}个文件夹',
-      );
-      for (final folder in folders.take(5)) {
-        LogManager().cloudDrive(
-          '蓝奏云 - 文件夹示例: name=${folder.name}, id=${folder.id}, folderId=${folder.folderId ?? ''}',
-        );
-      }
-      for (final file in files.take(5)) {
-        LogManager().cloudDrive(
-          '蓝奏云 - 文件示例: name=${file.name}, id=${file.id}, folderId=${file.folderId ?? ''}',
-        );
-      }
-
-      return allItems;
+      return items;
     } catch (e, stackTrace) {
       LogManager().cloudDrive('蓝奏云 - 获取文件列表异常: $e');
       LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');

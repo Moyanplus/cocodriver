@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import '../../../../../../core/logging/log_manager.dart';
 import '../../../../data/models/cloud_drive_dtos.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
+import '../../../base/cloud_drive_api_logger.dart';
 import '../../../base/qr_login_service.dart';
 import '../api/pan123_config.dart';
 
@@ -50,28 +50,11 @@ class Pan123QRLoginService extends QRLoginService {
           validateStatus: (code) => true,
         ),
       )..interceptors.add(
-          InterceptorsWrapper(
-            onRequest: (options, handler) {
-              LogManager().cloudDrive(
-                '123云盘二维码 - 请求: ${options.method} ${options.uri}',
-              );
-              if (options.data != null) {
-                LogManager().cloudDrive('123云盘二维码 - 请求体: ${options.data}');
-              }
-              handler.next(options);
-            },
-            onResponse: (response, handler) {
-              LogManager().cloudDrive(
-                '123云盘二维码 - 响应: ${response.statusCode} ${response.data}',
-              );
-              handler.next(response);
-            },
-            onError: (error, handler) {
-              LogManager().cloudDrive(
-                '123云盘二维码 - 请求错误: ${error.message} (${error.response?.statusCode ?? 'no status'})',
-              );
-              handler.next(error);
-            },
+          CloudDriveLoggingInterceptor(
+            logger: CloudDriveApiLogger(
+              provider: '123云盘二维码',
+              verbose: Pan123Config.enableDetailedLog,
+            ),
           ),
         );
 

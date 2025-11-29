@@ -429,7 +429,6 @@ class CloudDriveFile {
     this.size,
     DateTime? createdAt,
     DateTime? updatedAt,
-    DateTime? modifiedTime,
     this.description,
     this.folderId,
     this.path,
@@ -441,11 +440,8 @@ class CloudDriveFile {
     this.category,
     this.downloadCount = -1,
     this.shareCount = -1,
-  })  : createdAt = createdAt ?? modifiedTime,
-        updatedAt = updatedAt ?? modifiedTime;
-
-  /// 兼容旧字段
-  DateTime? get modifiedTime => updatedAt ?? createdAt;
+  })  : createdAt = createdAt ?? updatedAt,
+        updatedAt = updatedAt ?? createdAt;
 
   /// 是否为目录
   bool get isDirectory => isFolder;
@@ -523,10 +519,9 @@ class CloudDriveFile {
         : null,
     updatedAt: json['updatedAt'] != null
         ? DateTime.tryParse(json['updatedAt'].toString())
-        : null,
-    modifiedTime: json['modifiedTime'] != null
-        ? DateTime.tryParse(json['modifiedTime'].toString())
-        : null,
+        : json['modifiedTime'] != null
+            ? DateTime.tryParse(json['modifiedTime'].toString())
+            : null,
     description: json['description']?.toString(),
     folderId: json['folderId']?.toString(),
     path: json['path']?.toString(),
@@ -552,7 +547,6 @@ class CloudDriveFile {
     'size': size,
     'createdAt': createdAt?.toIso8601String(),
     'updatedAt': updatedAt?.toIso8601String(),
-    'modifiedTime': modifiedTime?.toIso8601String(), // 兼容旧字段
     'description': description,
     'folderId': folderId,
     'path': path,
@@ -574,7 +568,6 @@ class CloudDriveFile {
     int? size,
     DateTime? createdAt,
     DateTime? updatedAt,
-    DateTime? modifiedTime,
     String? description,
     String? folderId,
     String? path,
@@ -591,8 +584,8 @@ class CloudDriveFile {
     name: name ?? this.name,
     isFolder: isFolder ?? this.isFolder,
     size: size ?? this.size,
-    createdAt: createdAt ?? modifiedTime ?? this.createdAt,
-    updatedAt: updatedAt ?? modifiedTime ?? this.updatedAt,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
     description: description ?? this.description,
     folderId: folderId ?? this.folderId,
     path: path ?? this.path,
@@ -619,6 +612,56 @@ class CloudDriveFile {
   @override
   String toString() =>
       'CloudDriveFile{id: $id, name: $name, isFolder: $isFolder}';
+}
+
+/// 文件预览结果，统一封装各云盘的预览数据。
+class CloudDrivePreviewResult {
+  final CloudDriveFile file;
+  final String? previewUrl;
+  final String? status;
+  final DateTime? expiresAt;
+  final Map<String, dynamic>? meta;
+  final Map<String, dynamic>? extra;
+
+  const CloudDrivePreviewResult({
+    required this.file,
+    this.previewUrl,
+    this.status,
+    this.expiresAt,
+    this.meta,
+    this.extra,
+  });
+
+  bool get isReady {
+    final normalizedStatus = status?.toLowerCase();
+    final readyStatus =
+        normalizedStatus == null ||
+        normalizedStatus.isEmpty ||
+        normalizedStatus == 'finished' ||
+        normalizedStatus == 'success' ||
+        normalizedStatus == 'ready';
+    return readyStatus && (previewUrl?.isNotEmpty ?? false);
+  }
+
+  CloudDrivePreviewResult copyWith({
+    CloudDriveFile? file,
+    String? previewUrl,
+    String? status,
+    DateTime? expiresAt,
+    Map<String, dynamic>? meta,
+    Map<String, dynamic>? extra,
+  }) => CloudDrivePreviewResult(
+    file: file ?? this.file,
+    previewUrl: previewUrl ?? this.previewUrl,
+    status: status ?? this.status,
+    expiresAt: expiresAt ?? this.expiresAt,
+    meta: meta ?? this.meta,
+    extra: extra ?? this.extra,
+  );
+
+  @override
+  String toString() =>
+      'CloudDrivePreviewResult(file: ${file.id}, status: $status, url: $previewUrl)';
 }
 
 /// 云盘账号详情

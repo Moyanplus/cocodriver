@@ -1,10 +1,8 @@
-part of cloud_drive_state_manager;
+part of '../cloud_drive_state_manager.dart';
 
 class PendingOperationHandler {
-  PendingOperationHandler(
-    this._manager, {
-    CloudDriveServiceGateway? gateway,
-  }) : _gateway = gateway ?? defaultCloudDriveGateway;
+  PendingOperationHandler(this._manager, {CloudDriveServiceGateway? gateway})
+    : _gateway = gateway ?? defaultCloudDriveGateway;
 
   final CloudDriveStateManager _manager;
   final CloudDriveServiceGateway _gateway;
@@ -42,8 +40,7 @@ class PendingOperationHandler {
               _removeItemFromState(pendingFile);
             }
             if (currentFolderId != null) {
-              optimisticFile =
-                  pendingFile.copyWith(folderId: currentFolderId);
+              optimisticFile = pendingFile.copyWith(folderId: currentFolderId);
               addFileToState(optimisticFile!);
             }
           },
@@ -55,11 +52,12 @@ class PendingOperationHandler {
               addFileToState(pendingFile);
             }
           },
-          action: () => _folderHandler.moveFile(
-            account: currentAccount,
-            file: pendingFile,
-            targetFolderId: currentFolderId,
-          ),
+          action:
+              () => _folderHandler.moveFile(
+                account: currentAccount,
+                file: pendingFile,
+                targetFolderId: currentFolderId,
+              ),
           rollbackWhen: (result) => !result,
         );
 
@@ -78,8 +76,7 @@ class PendingOperationHandler {
         success = await OperationGuard.run<bool>(
           optimisticUpdate: () {
             optimisticFile = pendingFile.copyWith(
-              id:
-                  '${pendingFile.id}_${DateTime.now().microsecondsSinceEpoch}',
+              id: '${pendingFile.id}_${DateTime.now().microsecondsSinceEpoch}',
               folderId: currentFolderId,
             );
             addFileToState(optimisticFile!);
@@ -89,11 +86,12 @@ class PendingOperationHandler {
               _removeItemFromState(optimisticFile!);
             }
           },
-          action: () => _folderHandler.copyFile(
-            account: currentAccount,
-            file: pendingFile,
-            targetFolderId: currentFolderId,
-          ),
+          action:
+              () => _folderHandler.copyFile(
+                account: currentAccount,
+                file: pendingFile,
+                targetFolderId: currentFolderId,
+              ),
           rollbackWhen: (result) => !result,
         );
 
@@ -156,7 +154,8 @@ class PendingOperationHandler {
 
   void addFileToState(CloudDriveFile file) {
     if (file.isFolder) {
-      final currentFolders = List<CloudDriveFile>.from(_state.folders)..add(file);
+      final currentFolders = List<CloudDriveFile>.from(_state.folders)
+        ..add(file);
       _manager.state = _state.copyWith(folders: currentFolders);
       return;
     }

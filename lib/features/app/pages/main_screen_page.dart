@@ -33,8 +33,10 @@ import '../../../shared/widgets/common/bottom_sheet_widget.dart';
 
 // 云盘功能导入
 import '../../../tool/cloud_drive/presentation/providers/cloud_drive_provider.dart';
+import '../../../core/logging/log_manager.dart';
 import '../../../tool/cloud_drive/presentation/widgets/add_account/add_account_form_widget.dart';
 import '../../../tool/cloud_drive/presentation/state/cloud_drive_state_model.dart';
+import '../../../tool/cloud_drive/presentation/widgets/sheets/cloud_drive_search_bottom_sheet.dart';
 
 /// 主屏幕Widget
 ///
@@ -158,8 +160,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             // 搜索按钮
             IconButton(
               icon: const Icon(Icons.search),
-              onPressed: () {
-                // TODO: 搜索功能
+              onPressed: () async {
+                final config = await showCloudDriveSearchBottomSheet(context);
+                if (config == null) return;
+                LogManager().cloudDrive('云盘搜索条件: $config');
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '已提交${config.mode == CloudDriveSearchMode.strategy ? '云盘' : '本地'}搜索: ${config.keyword.isEmpty ? '（空关键词）' : config.keyword}',
+                    ),
+                    duration: const Duration(milliseconds: 1500),
+                  ),
+                );
               },
               tooltip: '搜索',
             ),

@@ -6,6 +6,17 @@ import 'api/china_mobile_operations.dart';
 
 /// 中国移动云盘仓库，适配统一仓库接口。
 class ChinaMobileRepository extends BaseCloudDriveRepository {
+  static const Set<String> _videoExtensions = {
+    'mp4',
+    'mov',
+    'mkv',
+    'avi',
+    'wmv',
+    'flv',
+    'ts',
+    'm4v',
+  };
+
   @override
   Future<List<CloudDriveFile>> listFiles({
     required CloudDriveAccount account,
@@ -64,11 +75,17 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
     );
     if (result.isSuccess && result.data != null) {
       final data = result.data!;
+      final now = DateTime.now();
       return CloudDriveFile(
         id: data.fileId,
         name: data.fileName,
         isFolder: true,
         folderId: data.parentFileId,
+        createdAt: now,
+        updatedAt: now,
+        metadata: {
+          'parentFileId': data.parentFileId,
+        },
       );
     }
     return null;
@@ -149,5 +166,35 @@ class ChinaMobileRepository extends BaseCloudDriveRepository {
       request: req,
     );
     return result.isSuccess && result.data != null ? result.data!.url : null;
+  }
+
+  @override
+  Future<CloudDrivePreviewResult?> getPreviewInfo({
+    required CloudDriveAccount account,
+    required CloudDriveFile file,
+  }) async {
+    final category = _resolvePreviewCategory(file);
+    if (category == null) {
+      return null;
+    }
+    final req = ChinaMobilePreviewRequest(
+      fileId: file.id,
+      category: category,
+    );
+    final result = await ChinaMobileOperations.getPreviewInfo(
+      account: account,
+      request: req,
+    );
+    if (result.isSuccess && result.data != null) {
+      return result.data!.toPreviewResult(file);
+    }
+    return null;
+  }
+
+  String? _resolvePreviewCategory(CloudDriveFile file) {
+    if (file.category == FileCategory.video) return 'video';
+    final extension = file.name.split('.').last.toLowerCase();
+    if (_videoExtensions.contains(extension)) return 'video';
+    return null;
   }
 }

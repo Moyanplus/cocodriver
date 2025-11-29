@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+
 import '../../../../../../core/logging/log_manager.dart';
+import '../../../base/cloud_drive_api_logger.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
 import 'pan123_config.dart';
 
@@ -25,37 +27,12 @@ class Pan123BaseService {
       ),
     );
 
-    // 添加请求拦截器
     dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          LogManager().cloudDrive(
-            '123云盘 - 请求: ${options.method} ${options.uri}',
-          );
-          if (Pan123Config.enableDetailedLog) {
-            LogManager().cloudDrive('123云盘 - 请求头: ${options.headers}');
-            if (options.data != null) {
-              LogManager().cloudDrive('123云盘 - 请求体: ${options.data}');
-            }
-          }
-          handler.next(options);
-        },
-        onResponse: (response, handler) {
-          LogManager().cloudDrive('123云盘 - 响应: ${response.statusCode}');
-          if (Pan123Config.enableDetailedLog) {
-            LogManager().cloudDrive('123云盘 - 响应体: ${response.data}');
-          }
-          handler.next(response);
-        },
-        onError: (error, handler) {
-          LogManager().cloudDrive(
-            '123云盘 - 请求错误: ${error.message} (${error.response?.statusCode ?? 'no status'})',
-          );
-          if (Pan123Config.enableDetailedLog && error.response != null) {
-            LogManager().cloudDrive('123云盘 - 错误响应体: ${error.response?.data}');
-          }
-          handler.next(error);
-        },
+      CloudDriveLoggingInterceptor(
+        logger: CloudDriveApiLogger(
+          provider: '123云盘',
+          verbose: Pan123Config.enableDetailedLog,
+        ),
       ),
     );
 

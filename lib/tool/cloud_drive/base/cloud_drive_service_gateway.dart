@@ -96,6 +96,15 @@ class CloudDriveServiceGateway {
     return strategy.getDownloadUrl(account: account, file: file);
   }
 
+  Future<CloudDrivePreviewResult?> getPreviewInfo({
+    required CloudDriveAccount account,
+    required CloudDriveFile file,
+  }) async {
+    final strategy = _strategyOrWarn(account);
+    if (strategy == null) return null;
+    return strategy.getPreviewInfo(account: account, file: file);
+  }
+
   Future<bool> deleteFile({
     required CloudDriveAccount account,
     required CloudDriveFile file,

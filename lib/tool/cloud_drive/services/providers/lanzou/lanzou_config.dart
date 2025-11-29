@@ -85,6 +85,7 @@ class LanzouConfig {
 
   // 日志配置
   static const String logSubCategory = 'cloudDrive.lanzou';
+  static bool verboseLogging = true;
 
   // MIME类型配置
   static const Map<String, String> mimeTypes = {
