@@ -7,8 +7,15 @@ class Pan123ListRequest {
     this.searchValue,
   });
 
+  /// 父级目录 ID
   final String parentId;
+
+  /// 页码
   final int page;
+
+  /// 单页数量
   final int pageSize;
+
+  /// 搜索关键词
   final String? searchValue;
 }

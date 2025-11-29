@@ -1,9 +1,10 @@
-library cloud_drive_state_manager;
+library;
 
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../base/cloud_drive_service_gateway.dart';
+import '../../core/result.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../../infrastructure/logging/cloud_drive_logger_adapter.dart';
 import 'cloud_drive_state_model.dart';

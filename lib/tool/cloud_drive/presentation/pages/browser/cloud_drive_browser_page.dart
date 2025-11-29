@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../../core/utils/responsive_utils.dart';
+import '../../../core/result.dart';
 import '../../../../../core/logging/log_manager.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../../../data/models/cloud_drive_entities.dart';
@@ -274,6 +275,8 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
                   parentId: currentFolderId,
                 );
                 return created ? null : '文件夹创建失败';
+              } on CloudDriveException catch (e) {
+                return e.message;
               } catch (e) {
                 return '文件夹创建失败: $e';
               }
@@ -557,13 +560,29 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
       fab = FloatingActionButton.extended(
         key: const ValueKey('fab-operation'),
         onPressed: () async {
-          await handler.executePendingOperation();
-
-          if (mounted) {
+          try {
+            final opResult = await handler.executePendingOperation();
+            final success = opResult == true;
+            if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(isMove ? '文件移动成功' : '文件复制成功'),
-                backgroundColor: Colors.green,
+                content: Text(
+                  success
+                      ? (isMove ? '文件移动成功' : '文件复制成功')
+                      : (isMove ? '文件移动失败' : '文件复制失败'),
+                ),
+                backgroundColor:
+                    success
+                        ? Colors.green
+                        : Theme.of(context).colorScheme.error,
+              ),
+            );
+          } on CloudDriveException catch (e) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(e.message),
+                backgroundColor: Theme.of(context).colorScheme.error,
               ),
             );
           }

@@ -1,5 +1,6 @@
 import '../../../../../data/models/cloud_drive_entities.dart';
 
+/// 百度网盘移动请求
 class BaiduMoveRequest {
   BaiduMoveRequest({
     required this.file,
@@ -10,6 +11,7 @@ class BaiduMoveRequest {
   final String targetFolderId;
 }
 
+/// 百度网盘复制请求
 class BaiduCopyRequest {
   BaiduCopyRequest({
     required this.file,
@@ -20,6 +22,7 @@ class BaiduCopyRequest {
   final String targetFolderId;
 }
 
+/// 百度网盘重命名请求
 class BaiduRenameRequest {
   BaiduRenameRequest({
     required this.file,
@@ -30,12 +33,14 @@ class BaiduRenameRequest {
   final String newName;
 }
 
+/// 百度网盘删除请求
 class BaiduDeleteRequest {
   BaiduDeleteRequest({required this.file});
 
   final CloudDriveFile file;
 }
 
+/// 百度网盘创建文件夹请求
 class BaiduCreateFolderRequest {
   BaiduCreateFolderRequest({
     required this.name,
@@ -46,6 +51,7 @@ class BaiduCreateFolderRequest {
   final String? parentId;
 }
 
+/// 百度网盘下载链接请求
 class BaiduDownloadRequest {
   BaiduDownloadRequest({
     required this.file,

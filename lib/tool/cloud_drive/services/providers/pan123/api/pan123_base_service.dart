@@ -1,16 +1,39 @@
+import 'dart:math';
+
 import 'package:dio/dio.dart';
+import 'package:meta/meta.dart';
 
 import '../../../../../../core/logging/log_manager.dart';
-import '../../../base/cloud_drive_api_logger.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
+import '../../../base/cloud_drive_api_logger.dart';
 import 'pan123_config.dart';
+import 'pan123_error_mapper.dart';
 
 /// 123云盘基础服务
 ///
 /// 提供 Dio 配置和通用方法，包括请求拦截、响应处理等。
 class Pan123BaseService {
+  static final Random _random = Random();
+  static Dio Function(CloudDriveAccount account) _dioFactory =
+      _defaultDioFactory;
+
+  /// 覆写用于测试的 Dio factory
+  @visibleForTesting
+  static set dioFactory(Dio Function(CloudDriveAccount account) factory) =>
+      _dioFactory = factory;
+
+  /// 重置为默认 factory
+  @visibleForTesting
+  static void resetDioFactory() => _dioFactory = _defaultDioFactory;
+
   /// 创建 Dio 实例
+  ///
+  /// [account] 当前账号（提供认证 headers 等）
   static Dio createDio(CloudDriveAccount account) {
+    return _dioFactory(account);
+  }
+
+  static Dio _defaultDioFactory(CloudDriveAccount account) {
     final dio = Dio(
       BaseOptions(
         baseUrl: Pan123Config.baseUrl,
@@ -46,21 +69,32 @@ class Pan123BaseService {
     return Pan123Config.getErrorMessage(code);
   }
 
-  /// 验证响应状态
+  /// 验证响应状态码是否代表成功
   static bool isSuccessResponse(Map<String, dynamic> response) =>
-      Pan123Config.isSuccessResponse(response);
+      response['code'] == 0;
 
-  /// 获取响应数据
-  static Map<String, dynamic>? getResponseData(Map<String, dynamic> response) =>
-      Pan123Config.getResponseData(response);
+  /// 获取响应中的 data 字段
+  static Map<String, dynamic>? getResponseData(
+    Map<String, dynamic> response,
+  ) {
+    if (isSuccessResponse(response)) {
+      return response['data'] as Map<String, dynamic>?;
+    }
+    return null;
+  }
 
-  /// 获取响应消息
+  /// 获取响应中的 message 文案
   static String getResponseMessage(Map<String, dynamic> response) =>
-      Pan123Config.getResponseMessage(response);
+      response['message'] as String? ??
+      getErrorMessage(response['code'] as int? ?? -1);
 
-  /// 处理API响应
-  static Map<String, dynamic> handleApiResponse(Map<String, dynamic> response) {
-    LogManager().cloudDrive('123云盘 - 处理API响应: code=${response['code']}');
+  /// 统一处理 API 响应，成功返回数据，失败抛出 [CloudDriveException]
+  static Map<String, dynamic> handleApiResponse(
+    Map<String, dynamic> response, {
+    String operation = '123云盘API',
+  }) {
+    final code = response['code'] is int ? response['code'] as int : -1;
+    LogManager().cloudDrive('123云盘 - 处理API响应: code=$code');
 
     if (isSuccessResponse(response)) {
       LogManager().cloudDrive('123云盘 - API请求成功');
@@ -68,11 +102,18 @@ class Pan123BaseService {
     } else {
       final message = getResponseMessage(response);
       LogManager().cloudDrive('123云盘 - API请求失败: $message');
-      throw Exception(message);
+      throw Pan123ErrorMapper.map(
+        code,
+        message,
+        operation: operation,
+        context: response,
+      );
     }
   }
 
   /// 构建请求参数（用于GET请求的查询参数）
+  ///
+  /// 根据 123 云盘前端实现生成随机 query，用于规避缓存。
   static Map<String, dynamic> buildRequestParams({
     required String parentId,
     int page = 1,
@@ -106,5 +147,13 @@ class Pan123BaseService {
     LogManager().cloudDrive('123云盘 - 构建GET请求参数: $params');
 
     return params;
+  }
+
+  /// 构建类似官方 JS 添加的时间戳参数，部分 POST 接口需要
+  static Map<String, String> buildNoiseQueryParams() {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final value =
+        '${_random.nextInt(1 << 31)}-${_random.nextInt(1 << 31)}-${timestamp ^ _random.nextInt(1 << 20)}';
+    return {timestamp.toString(): value};
   }
 }

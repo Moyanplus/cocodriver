@@ -171,8 +171,8 @@ class CloudDriveEventHandler {
       _stateManager.handleEvent(const ClearPendingOperationEvent());
 
   /// 执行待操作
-  Future<void> executePendingOperation() =>
-      _stateManager.handleEvent(const ExecutePendingOperationEvent());
+  Future<bool> executePendingOperation() =>
+      _stateManager.executePendingOperation();
 
   /// 添加文件到状态
   void addFileToState(CloudDriveFile file, {String? operationType}) =>

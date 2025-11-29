@@ -4,14 +4,33 @@ import 'package:dio/dio.dart';
 
 import '../../../../../core/logging/log_manager.dart';
 
+/// 全局日志配置
+class CloudDriveApiLoggerConfig {
+  static bool globalVerbose = false;
+  static int globalTruncateLength = 800;
+
+  /// 统一设置全局日志开关和截断长度
+  static void update({bool? verbose, int? truncateLength}) {
+    if (verbose != null) {
+      globalVerbose = verbose;
+    }
+    if (truncateLength != null) {
+      globalTruncateLength = truncateLength;
+    }
+  }
+}
+
 /// 通用 API 日志记录器，提供请求/响应/错误的统一输出。
 class CloudDriveApiLogger {
   CloudDriveApiLogger({
     required this.provider,
-    this.verbose = false,
-    this.truncateLength = 800,
+    bool? verbose,
+    int? truncateLength,
     LogManager? logManager,
-  }) : _logManager = logManager ?? LogManager();
+  })  : verbose = verbose ?? CloudDriveApiLoggerConfig.globalVerbose,
+        truncateLength =
+            truncateLength ?? CloudDriveApiLoggerConfig.globalTruncateLength,
+        _logManager = logManager ?? LogManager();
 
   final String provider;
   final bool verbose;

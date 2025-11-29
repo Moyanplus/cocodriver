@@ -1,9 +1,13 @@
 import '../../../../../../core/logging/log_manager.dart';
+import '../../../../core/result.dart';
 import '../../../../base/cloud_drive_operation_service.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
 import '../../../../data/models/cloud_drive_dtos.dart';
 import '../../../../utils/cloud_drive_log_utils.dart';
 import '../api/pan123_config.dart';
+import '../models/requests/pan123_offline_requests.dart';
+import '../models/responses/pan123_offline_responses.dart';
+import '../utils/pan123_utils.dart';
 import '../repository/pan123_repository.dart';
 
 /// 123云盘操作策略
@@ -15,6 +19,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   final Pan123Repository _repository = Pan123Repository();
 
   @override
+  /// 获取下载链接（不带加速）
   Future<String?> getDownloadUrl({
     required CloudDriveAccount account,
     required CloudDriveFile file,
@@ -27,7 +32,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
 
     try {
       // 使用配置中的文件大小解析方法
-      final fileSize = Pan123Config.parseFileSize(file.size?.toString());
+      final fileSize = Pan123Utils.parseFileSize(file.size?.toString());
 
       LogManager().cloudDrive('📏 123云盘 - 解析的文件大小: $fileSize bytes');
 
@@ -68,6 +73,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }
 
   @override
+  /// 获取预览信息（当前未实现）
   Future<CloudDrivePreviewResult?> getPreviewInfo({
     required CloudDriveAccount account,
     required CloudDriveFile file,
@@ -77,6 +83,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }
 
   @override
+  /// 请求高速下载链接（预留扩展）
   Future<List<String>?> getHighSpeedDownloadUrls({
     required CloudDriveAccount account,
     required CloudDriveFile file,
@@ -97,6 +104,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }
 
   @override
+  /// 创建分享链接（待实现，当前返回 null）
   Future<String?> createShareLink({
     required CloudDriveAccount account,
     required List<CloudDriveFile> files,
@@ -117,6 +125,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }
 
   @override
+  /// 移动文件
   Future<bool> moveFile({
     required CloudDriveAccount account,
     required CloudDriveFile file,
@@ -147,6 +156,8 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       }
 
       return success;
+    } on CloudDriveException {
+      rethrow;
     } catch (e, stackTrace) {
       LogManager().cloudDrive('123云盘 - 移动文件异常: $e');
       LogManager().cloudDrive('123云盘 - 错误堆栈: $stackTrace');
@@ -155,6 +166,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   }
 
   @override
+  /// 删除文件
   Future<bool> deleteFile({
     required CloudDriveAccount account,
     required CloudDriveFile file,
@@ -191,6 +203,8 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       }
 
       return success;
+    } on CloudDriveException {
+      rethrow;
     } catch (e, stackTrace) {
       LogManager().cloudDrive('123云盘 - 删除文件异常: $e');
       LogManager().cloudDrive('123云盘 - 错误堆栈: $stackTrace');
@@ -282,9 +296,20 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     LogManager().cloudDrive('文件夹ID: ${folderId ?? '0'}');
 
     try {
-      // TODO: 实现123云盘上传功能
-      LogManager().cloudDrive('123云盘 - 上传功能暂未实现');
-      return {'success': false, 'message': '123云盘上传功能暂未实现'};
+      final uploaded = await _repository.uploadFile(
+        account: account,
+        filePath: filePath,
+        fileName: fileName,
+        parentId: folderId,
+        onProgress: onProgress,
+      );
+      final success = uploaded != null;
+      if (success) {
+        LogManager().cloudDrive('123云盘 - 上传文件成功: ${uploaded!.name}');
+      } else {
+        LogManager().cloudDrive('123云盘 - 上传文件失败');
+      }
+      return {'success': success, 'file': uploaded};
     } catch (e, stackTrace) {
       LogManager().cloudDrive('123云盘 - 上传文件异常: $e');
       LogManager().cloudDrive('123云盘 - 错误堆栈: $stackTrace');
@@ -294,6 +319,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
 
   @override
   Map<String, bool> getSupportedOperations() => {
+    'upload': true,
     'download': true, // 已实现下载功能
     'share': false, // 暂未实现分享功能
     'move': true, // 已实现移动功能
@@ -302,6 +328,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     'copy': true, // 已实现复制功能
     'createFolder': true, // 通过仓库实现
     'preview': false,
+    'offlineDownload': true,
   };
 
   @override
@@ -339,8 +366,52 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     } catch (e, stackTrace) {
       LogManager().cloudDrive('123云盘 - 创建文件夹异常: $e');
       LogManager().cloudDrive('123云盘 - 错误堆栈: $stackTrace');
-      return null;
+      if (e is CloudDriveException) {
+        rethrow;
+      }
+      throw CloudDriveException(
+        e.toString(),
+        CloudDriveErrorType.unknown,
+        operation: '123云盘-创建文件夹',
+        context: {'stackTrace': stackTrace.toString()},
+      );
     }
+  }
+
+  /// 离线解析
+  Future<Pan123OfflineResolveResponse> resolveOffline({
+    required CloudDriveAccount account,
+    required String url,
+  }) {
+    return _repository.resolveOffline(account: account, url: url);
+  }
+
+  /// 提交离线任务
+  Future<Pan123OfflineSubmitResponse> submitOffline({
+    required CloudDriveAccount account,
+    required int resourceId,
+    required List<int> selectFileIds,
+  }) {
+    return _repository.submitOffline(
+      account: account,
+      resourceId: resourceId,
+      selectFileIds: selectFileIds,
+    );
+  }
+
+  /// 查询离线任务列表
+  Future<Pan123OfflineTaskListResponse> listOfflineTasks({
+    required CloudDriveAccount account,
+    int page = 1,
+    int pageSize = 15,
+    List<int> status = const [0, 1, 2, 3, 4],
+  }) {
+    return _repository.listOfflineTasks(
+      account: account,
+      page: page,
+      pageSize: pageSize,
+      status: status,
+    );
   }
 
   @override

@@ -1,5 +1,6 @@
 import '../../../../../data/models/cloud_drive_entities.dart';
 
+/// 123 云盘文件列表响应
 class Pan123FileListResponse {
   const Pan123FileListResponse({
     required this.code,
@@ -11,9 +12,13 @@ class Pan123FileListResponse {
   final String? message;
   final Pan123ListData? data;
 
+  /// 是否请求成功
   bool get success => code == 0 || code == 200;
+
+  /// 转换后的文件列表
   List<CloudDriveFile> get files => data?.files ?? const [];
 
+  /// 根据原始 map 构造响应对象
   factory Pan123FileListResponse.fromMap(Map<String, dynamic> map) {
     final code = map['code'] as int? ?? -1;
     final dataMap = map['data'] as Map<String, dynamic>?;
@@ -25,6 +30,7 @@ class Pan123FileListResponse {
   }
 }
 
+/// 123 云盘列表数据实体
 class Pan123ListData {
   const Pan123ListData({
     required this.next,
@@ -36,8 +42,10 @@ class Pan123ListData {
   final int total;
   final List<CloudDriveFile> items;
 
+  /// 文件列表
   List<CloudDriveFile> get files => items;
 
+  /// 根据原始数据构造列表对象
   factory Pan123ListData.fromMap(Map<String, dynamic> map) {
     final next = map['Next'] is int
         ? map['Next'] as int
@@ -70,6 +78,7 @@ class Pan123ListData {
   }
 }
 
+/// 将原始 JSON 映射为 [CloudDriveFile]
 CloudDriveFile? _mapFile(Map<String, dynamic> fileData) {
   final id = fileData['FileId']?.toString();
   final name = fileData['FileName']?.toString();

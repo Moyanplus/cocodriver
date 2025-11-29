@@ -738,7 +738,9 @@ class _FileOperationBottomSheetState
   /// 提取更友好的错误提示，兼容各云盘自定义异常
   String _extractErrorMessage(Object error) {
     if (error is CloudDriveException) {
-      return error.userFriendlyMessage;
+      return error.message.isNotEmpty
+          ? error.message
+          : error.userFriendlyMessage;
     }
 
     final raw = error.toString();

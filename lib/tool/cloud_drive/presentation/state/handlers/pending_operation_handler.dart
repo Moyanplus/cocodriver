@@ -1,11 +1,9 @@
 part of '../cloud_drive_state_manager.dart';
 
 class PendingOperationHandler {
-  PendingOperationHandler(this._manager, {CloudDriveServiceGateway? gateway})
-    : _gateway = gateway ?? defaultCloudDriveGateway;
+  PendingOperationHandler(this._manager, {CloudDriveServiceGateway? gateway});
 
   final CloudDriveStateManager _manager;
-  final CloudDriveServiceGateway _gateway;
 
   CloudDriveState get _state => _manager.state;
   CloudDriveLoggerAdapter get _logger => _manager.logger;
@@ -106,6 +104,9 @@ class PendingOperationHandler {
       }
 
       return success;
+    } on CloudDriveException catch (e) {
+      _logger.error('执行待操作失败: ${e.message}');
+      rethrow;
     } catch (e) {
       _logger.error('执行待操作失败: $e');
       return false;

@@ -39,6 +39,7 @@ class Pan123QRLoginService extends QRLoginService {
         qrExpireTime: 120,
       );
 
+  /// 构建带日志拦截器的 Dio
   Dio _createDio() => Dio(
         BaseOptions(
           baseUrl: _baseUrl,
@@ -59,6 +60,7 @@ class Pan123QRLoginService extends QRLoginService {
         );
 
   @override
+  /// 生成二维码并返回轮询信息
   Future<QRLoginInfo> generateQRCode() async {
     final dio = _createDio();
     final response = await dio.get(config.generateEndpoint);
@@ -99,6 +101,7 @@ class Pan123QRLoginService extends QRLoginService {
   }
 
   @override
+  /// 查询指定二维码的当前状态
   Future<QRLoginInfo> checkQRStatus(String qrId) async {
     final dio = _createDio();
     final response = await dio.get(
@@ -181,12 +184,14 @@ class Pan123QRLoginService extends QRLoginService {
   }
 
   @override
+  /// 123 云盘暂无取消接口，直接返回
   Future<void> cancelQRLogin(String qrId) async {
     // 官方未提供取消接口，标记为用户取消即可。
     return;
   }
 
   @override
+  /// 解析扫码登录返回的凭证
   Future<String> parseAuthData(QRLoginInfo loginInfo) async {
     // 123 云盘返回的 token 字段未明确，优先使用 loginToken，否则回退 uniID。
     return loginInfo.loginToken ?? loginInfo.qrId;

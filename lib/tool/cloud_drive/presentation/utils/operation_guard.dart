@@ -38,16 +38,7 @@ class OperationGuard {
     } catch (error, stackTrace) {
       rollback?.call();
       onError?.call(error);
-      FlutterError.reportError(
-        FlutterErrorDetails(
-          exception: error,
-          stack: stackTrace,
-          informationCollector: () sync* {
-            yield ErrorDescription('OperationGuard 捕获到未处理异常');
-          },
-        ),
-      );
-      rethrow;
+      Error.throwWithStackTrace(error, stackTrace);
     }
   }
 }

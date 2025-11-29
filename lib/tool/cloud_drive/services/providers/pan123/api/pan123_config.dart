@@ -1,6 +1,6 @@
 /// 123云盘配置类
 ///
-/// 集中管理 123 云盘的所有配置参数，包括 API 端点、请求头、超时设置等。
+/// 集中管理 123 云盘所有常量、端点与工具方法，其他模块只需依赖此类即可保持配置一致。
 class Pan123Config {
   // API 配置
   static const String baseUrl = 'https://www.123pan.com';
@@ -17,27 +17,30 @@ class Pan123Config {
     'move': '/file/mod_pid', // 移动文件
     'copy': '/restful/goapi/v1/file/copy/async', // 复制文件
     'rename': '/file/rename', // 重命名文件
-    'createFolder': '/file/create', // 创建文件夹
+    'createFolder': '/file/upload_request', // 创建文件夹 / 上传初始化
     'share': '/file/share', // 分享文件
     'search': '/file/search', // 搜索文件
     'recycle': '/file/trash', // 回收站
     'userInfo': '/user/info', // 用户信息
     'space': '/user/space', // 空间信息
+    // 上传相关
+    'uploadInit': '/file/upload_request',
+    'uploadAuth': '/file/s3_upload_object/auth',
+    'uploadComplete': '/file/upload_complete/v2',
+    // 离线下载
+    'offlineResolve': '/v2/offline_download/task/resolve',
+    'offlineSubmit': '/v2/offline_download/task/submit',
+    'offlineList': '/offline_download/task/list',
   };
 
   // 请求头配置
   static const Map<String, String> defaultHeaders = {
     'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Connection': 'keep-alive',
+    'App-Version': '3',
+    'Platform': 'web',
     'Referer': 'https://www.123pan.com/',
     'Origin': 'https://www.123pan.com',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-origin',
   };
 
   // 超时配置
@@ -64,15 +67,6 @@ class Pan123Config {
   // 分页配置
   static const int defaultPageSize = 100; // 默认每页数量
   static const int maxPageSize = 1000; // 最大每页数量
-
-  // 文件大小单位转换配置
-  static const Map<String, int> sizeUnits = {
-    'B': 1,
-    'KB': 1024,
-    'MB': 1024 * 1024,
-    'GB': 1024 * 1024 * 1024,
-    'TB': 1024 * 1024 * 1024 * 1024,
-  };
 
   // 错误码配置
   static const Map<int, String> errorMessages = {
@@ -138,115 +132,5 @@ class Pan123Config {
     }
 
     return folderId;
-  }
-
-  /// 解析文件大小字符串为字节数
-  static int? parseFileSize(String? sizeString) {
-    if (sizeString == null || sizeString.isEmpty || sizeString == '0 B') {
-      return null;
-    }
-
-    final sizeMatch = RegExp(
-      r'(\d+(?:\.\d+)?)\s*([KMGT]?B)',
-    ).firstMatch(sizeString);
-    if (sizeMatch != null) {
-      final sizeValue = double.parse(sizeMatch.group(1)!);
-      final sizeUnit = sizeMatch.group(2)!;
-      final unitMultiplier = sizeUnits[sizeUnit] ?? 1;
-      return (sizeValue * unitMultiplier).toInt();
-    }
-
-    return null;
-  }
-
-  /// 格式化文件大小为可读字符串
-  static String formatFileSize(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024) {
-      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-    }
-    if (bytes < 1024 * 1024 * 1024 * 1024) {
-      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
-    }
-    return '${(bytes / (1024 * 1024 * 1024 * 1024)).toStringAsFixed(1)} TB';
-  }
-
-  /// 验证文件类型是否支持
-  static bool isFileTypeSupported(String fileName) {
-    final extension = fileName.split('.').last.toLowerCase();
-    return supportedFileTypes.contains(extension);
-  }
-
-  /// 获取文件MIME类型
-  static String getMimeType(String fileName) {
-    final extension = fileName.split('.').last.toLowerCase();
-    switch (extension) {
-      case 'pdf':
-        return 'application/pdf';
-      case 'doc':
-      case 'docx':
-        return 'application/msword';
-      case 'xls':
-      case 'xlsx':
-        return 'application/vnd.ms-excel';
-      case 'ppt':
-      case 'pptx':
-        return 'application/vnd.ms-powerpoint';
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'mp4':
-        return 'video/mp4';
-      case 'mp3':
-        return 'audio/mpeg';
-      case 'zip':
-        return 'application/zip';
-      case 'rar':
-        return 'application/x-rar-compressed';
-      case 'txt':
-        return 'text/plain';
-      default:
-        return 'application/octet-stream';
-    }
-  }
-
-  /// 验证响应状态
-  static bool isSuccessResponse(Map<String, dynamic> response) =>
-      response['code'] == 0;
-
-  /// 获取响应数据
-  static Map<String, dynamic>? getResponseData(Map<String, dynamic> response) {
-    if (isSuccessResponse(response)) {
-      return response['data'] as Map<String, dynamic>?;
-    }
-    return null;
-  }
-
-  /// 获取响应消息
-  static String getResponseMessage(Map<String, dynamic> response) =>
-      response['message'] as String? ??
-      getErrorMessage(response['code'] as int? ?? -1);
-
-  /// 格式化日期时间
-  static String formatDateTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final year = dateTime.year;
-    final month = dateTime.month.toString().padLeft(2, '0');
-    final day = dateTime.day.toString().padLeft(2, '0');
-    final hour = dateTime.hour.toString().padLeft(2, '0');
-    final minute = dateTime.minute.toString().padLeft(2, '0');
-
-    // 如果是今年，只显示月-日 时:分
-    if (year == now.year) {
-      return '$month-$day $hour:$minute';
-    } else {
-      // 如果不是今年，显示年-月-日 时:分
-      return '$year-$month-$day $hour:$minute';
-    }
   }
 }

@@ -1,3 +1,4 @@
+import '../../../core/result.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../../data/models/cloud_drive_dtos.dart'; // 导入 PathInfo
 import '../../../base/cloud_drive_service_gateway.dart';
@@ -577,13 +578,23 @@ class FolderStateHandler {
     required CloudDriveFile file,
     String? targetFolderId,
   }) async {
+    final targetId = _normalizeFolderId(targetFolderId);
+    final sourceId = _normalizeFolderId(file.folderId);
+    if (targetId == sourceId) {
+      throw const CloudDriveException(
+        '文件已在目标文件夹中，请选择其他文件夹',
+        CloudDriveErrorType.clientError,
+        operation: '移动文件',
+      );
+    }
+
     try {
       _logger.info('移动文件: ${file.name} -> $targetFolderId');
 
       final success = await _gateway.moveFile(
         account: account,
         file: file,
-        targetFolderId: targetFolderId ?? file.folderId ?? '/',
+        targetFolderId: targetId,
       );
 
       if (success) {
@@ -605,13 +616,23 @@ class FolderStateHandler {
     required CloudDriveFile file,
     String? targetFolderId,
   }) async {
+    final targetId = _normalizeFolderId(targetFolderId);
+    final sourceId = _normalizeFolderId(file.folderId);
+    if (targetId == sourceId) {
+      throw const CloudDriveException(
+        '文件已在当前文件夹中，请选择其他文件夹',
+        CloudDriveErrorType.clientError,
+        operation: '复制文件',
+      );
+    }
+
     try {
       _logger.info('复制文件: ${file.name} -> $targetFolderId');
 
       final success = await _gateway.copyFile(
         account: account,
         file: file,
-        targetFolderId: targetFolderId ?? file.folderId ?? '/',
+        targetFolderId: targetId,
       );
 
       if (success) {
@@ -648,60 +669,73 @@ class FolderStateHandler {
       metadata: const {'temporary': true},
     );
 
-    final result = await OperationGuard.run<CloudDriveFile?>(
-      optimisticUpdate: () {
-        _stateManager.updateState((state) {
-          final folders = List<CloudDriveFile>.from(state.folders)
-            ..insert(0, tempFolder);
-          return state.copyWith(folders: folders);
-        });
-      },
-      action: () async {
-        return await _gateway.createFolder(
-          account: account,
-          name: name,
-          parentId: normalizedParent,
-        );
-      },
-      rollback: () {
-        _stateManager.updateState((state) {
-          final folders = List<CloudDriveFile>.from(state.folders)
-            ..removeWhere((f) => f.id == tempId);
-          return state.copyWith(folders: folders);
-        });
-      },
-      rollbackWhen: (data) => data == null,
-      onSuccess: (createdFolder) async {
-        if (createdFolder != null) {
+    try {
+      final result = await OperationGuard.run<CloudDriveFile?>(
+        optimisticUpdate: () {
           _stateManager.updateState((state) {
-            final folders =
-                List<CloudDriveFile>.from(state.folders)
-                  ..removeWhere((f) => f.id == tempId)
-                  ..insert(0, createdFolder);
+            final folders = List<CloudDriveFile>.from(state.folders)
+              ..insert(0, tempFolder);
             return state.copyWith(folders: folders);
           });
-          final updated = _stateManager.getCurrentState();
-          _cacheManager.set(
-            account.id,
-            normalizedParent,
-            updated.files,
-            updated.folders,
+        },
+        action: () async {
+          return await _gateway.createFolder(
+            account: account,
+            name: name,
+            parentId: normalizedParent,
           );
-        } else {
-          invalidateCache(account.id, normalizedParent);
-          await loadFolder(forceRefresh: true);
-        }
-      },
-      onError: (error) {
-        _logger.error('创建文件夹失败: $error');
-      },
-    );
+        },
+        rollback: () {
+          _stateManager.updateState((state) {
+            final folders = List<CloudDriveFile>.from(state.folders)
+              ..removeWhere((f) => f.id == tempId);
+            return state.copyWith(folders: folders);
+          });
+        },
+        rollbackWhen: (data) => data == null,
+        onSuccess: (createdFolder) async {
+          if (createdFolder != null) {
+            _stateManager.updateState((state) {
+              final folders =
+                  List<CloudDriveFile>.from(state.folders)
+                    ..removeWhere((f) => f.id == tempId)
+                    ..insert(0, createdFolder);
+              return state.copyWith(folders: folders);
+            });
+            final updated = _stateManager.getCurrentState();
+            _cacheManager.set(
+              account.id,
+              normalizedParent,
+              updated.files,
+              updated.folders,
+            );
+          } else {
+            invalidateCache(account.id, normalizedParent);
+            await loadFolder(forceRefresh: true);
+          }
+        },
+        onError: (error) {
+          _logger.error('创建文件夹失败: $error');
+        },
+      );
 
-    final success = result != null;
-    if (!success) {
-      _logger.warning('文件夹创建失败');
+      final success = result != null;
+      if (!success) {
+        _logger.warning('文件夹创建失败');
+        throw const CloudDriveException(
+          '文件夹创建失败',
+          CloudDriveErrorType.clientError,
+          operation: '创建文件夹',
+        );
+      }
+      return true;
+    } on CloudDriveException catch (e) {
+      _logger.error('创建文件夹失败: ${e.message}');
+      rethrow;
+    } catch (e) {
+      _logger.error('创建文件夹失败: $e');
+      rethrow;
     }
-    return success;
   }
 
   (List<CloudDriveFile> folders, List<CloudDriveFile> files)
@@ -717,4 +751,11 @@ class FolderStateHandler {
     }
     return (folders, files);
   }
+}
+
+String _normalizeFolderId(String? folderId) {
+  if (folderId == null || folderId.isEmpty || folderId == '/') {
+    return '/';
+  }
+  return folderId;
 }

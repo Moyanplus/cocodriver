@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'services/pan123_qr_login_service.dart';
 
 /// 123 云盘的可插拔描述符。
+/// 负责向注册表提供策略、能力、登录方式等信息。
 CloudDriveProviderDescriptor createPan123ProviderDescriptor() {
   return CloudDriveProviderDescriptor(
     type: CloudDriveType.pan123,
