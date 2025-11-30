@@ -18,8 +18,7 @@ enum CloudDriveViewMode {
 
 /// 云盘状态模型 - 使用 freezed 风格设计
 class CloudDriveState {
-  final List<CloudDriveAccount> accounts;
-  final CloudDriveAccount? currentAccount;
+  final AccountViewState accountState;
   final CloudDriveFile? currentFolder;
   final List<CloudDriveFile> folders;
   final List<CloudDriveFile> files;
@@ -36,7 +35,6 @@ class CloudDriveState {
   final bool isLoadingMore;
   final bool isFromCache;
   final DateTime? lastRefreshTime;
-  final bool showAccountSelector;
   final CloudDriveFile? pendingOperationFile;
   final String? pendingOperationType;
   final bool showFloatingActionButton;
@@ -45,8 +43,7 @@ class CloudDriveState {
   final CloudDriveViewMode viewMode;
 
   const CloudDriveState({
-    this.accounts = const [],
-    this.currentAccount,
+    this.accountState = const AccountViewState(),
     this.currentFolder,
     this.folders = const [],
     this.files = const [],
@@ -63,7 +60,6 @@ class CloudDriveState {
     this.isLoadingMore = false,
     this.isFromCache = false,
     this.lastRefreshTime,
-    this.showAccountSelector = false,
     this.pendingOperationFile,
     this.pendingOperationType,
     this.showFloatingActionButton = false,
@@ -74,7 +70,9 @@ class CloudDriveState {
 
   /// 复制并更新状态
   CloudDriveState copyWith({
+    AccountViewState? accountState,
     List<CloudDriveAccount>? accounts,
+    Map<String, CloudDriveAccountDetails>? accountDetails,
     CloudDriveAccount? currentAccount,
     CloudDriveFile? currentFolder,
     List<CloudDriveFile>? folders,
@@ -99,34 +97,55 @@ class CloudDriveState {
     CloudDriveSortField? sortField,
     bool? isSortAscending,
     CloudDriveViewMode? viewMode,
-  }) => CloudDriveState(
-    accounts: accounts ?? this.accounts,
-    currentAccount: currentAccount ?? this.currentAccount,
-    currentFolder: currentFolder ?? this.currentFolder,
-    folders: folders ?? this.folders,
-    files: files ?? this.files,
-    folderPath: folderPath ?? this.folderPath,
-    isLoading: isLoading ?? this.isLoading,
-    isRefreshing: isRefreshing ?? this.isRefreshing,
-    error: error ?? this.error,
-    isBatchMode: isBatchMode ?? this.isBatchMode,
-    isInBatchMode: isInBatchMode ?? this.isInBatchMode,
-    selectedItems: selectedItems ?? this.selectedItems,
-    isAllSelected: isAllSelected ?? this.isAllSelected,
-    currentPage: currentPage ?? this.currentPage,
-    hasMoreData: hasMoreData ?? this.hasMoreData,
-    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-    isFromCache: isFromCache ?? this.isFromCache,
-    lastRefreshTime: lastRefreshTime ?? this.lastRefreshTime,
-    showAccountSelector: showAccountSelector ?? this.showAccountSelector,
-    pendingOperationFile: pendingOperationFile ?? this.pendingOperationFile,
-    pendingOperationType: pendingOperationType ?? this.pendingOperationType,
-    showFloatingActionButton:
-        showFloatingActionButton ?? this.showFloatingActionButton,
-    sortField: sortField ?? this.sortField,
-    isSortAscending: isSortAscending ?? this.isSortAscending,
-    viewMode: viewMode ?? this.viewMode,
-  );
+  }) {
+    // 合并账号子状态，兼容旧参数（accounts/accountDetails/currentAccount/showAccountSelector）
+    AccountViewState mergedAccountState = accountState ?? this.accountState;
+    if (accounts != null ||
+        accountDetails != null ||
+        currentAccount != null ||
+        showAccountSelector != null) {
+      mergedAccountState = mergedAccountState.copyWith(
+        accounts: accounts,
+        accountDetails: accountDetails,
+        currentAccount: currentAccount,
+        showAccountSelector: showAccountSelector,
+      );
+    }
+
+    return CloudDriveState(
+      accountState: mergedAccountState,
+      currentFolder: currentFolder ?? this.currentFolder,
+      folders: folders ?? this.folders,
+      files: files ?? this.files,
+      folderPath: folderPath ?? this.folderPath,
+      isLoading: isLoading ?? this.isLoading,
+      isRefreshing: isRefreshing ?? this.isRefreshing,
+      error: error ?? this.error,
+      isBatchMode: isBatchMode ?? this.isBatchMode,
+      isInBatchMode: isInBatchMode ?? this.isInBatchMode,
+      selectedItems: selectedItems ?? this.selectedItems,
+      isAllSelected: isAllSelected ?? this.isAllSelected,
+      currentPage: currentPage ?? this.currentPage,
+      hasMoreData: hasMoreData ?? this.hasMoreData,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      isFromCache: isFromCache ?? this.isFromCache,
+      lastRefreshTime: lastRefreshTime ?? this.lastRefreshTime,
+      pendingOperationFile: pendingOperationFile ?? this.pendingOperationFile,
+      pendingOperationType: pendingOperationType ?? this.pendingOperationType,
+      showFloatingActionButton:
+          showFloatingActionButton ?? this.showFloatingActionButton,
+      sortField: sortField ?? this.sortField,
+      isSortAscending: isSortAscending ?? this.isSortAscending,
+      viewMode: viewMode ?? this.viewMode,
+    );
+  }
+
+  // 兼容旧字段访问
+  List<CloudDriveAccount> get accounts => accountState.accounts;
+  Map<String, CloudDriveAccountDetails> get accountDetails =>
+      accountState.accountDetails;
+  CloudDriveAccount? get currentAccount => accountState.currentAccount;
+  bool get showAccountSelector => accountState.showAccountSelector;
 
   /// 获取所有项目（文件夹+文件）
   List<CloudDriveFile> get allItems => [...folders, ...files];
@@ -176,8 +195,7 @@ class CloudDriveState {
       identical(this, other) ||
       other is CloudDriveState &&
           runtimeType == other.runtimeType &&
-          accounts == other.accounts &&
-          currentAccount == other.currentAccount &&
+          accountState == other.accountState &&
           folders == other.folders &&
           files == other.files &&
           folderPath == other.folderPath &&
@@ -192,7 +210,6 @@ class CloudDriveState {
           isLoadingMore == other.isLoadingMore &&
           isFromCache == other.isFromCache &&
           lastRefreshTime == other.lastRefreshTime &&
-          showAccountSelector == other.showAccountSelector &&
       pendingOperationFile == other.pendingOperationFile &&
       pendingOperationType == other.pendingOperationType &&
       showFloatingActionButton == other.showFloatingActionButton &&
@@ -202,8 +219,7 @@ class CloudDriveState {
 
   @override
   int get hashCode =>
-      accounts.hashCode ^
-      currentAccount.hashCode ^
+      accountState.hashCode ^
       folders.hashCode ^
       files.hashCode ^
       folderPath.hashCode ^
@@ -218,7 +234,6 @@ class CloudDriveState {
       isLoadingMore.hashCode ^
       isFromCache.hashCode ^
       lastRefreshTime.hashCode ^
-      showAccountSelector.hashCode ^
       pendingOperationFile.hashCode ^
       pendingOperationType.hashCode ^
       showFloatingActionButton.hashCode ^
@@ -243,182 +258,48 @@ class CloudDriveState {
       '}';
 }
 
-/// 云盘状态事件
-sealed class CloudDriveEvent {
-  const CloudDriveEvent();
-}
+/// 账号子状态
+class AccountViewState {
+  final List<CloudDriveAccount> accounts;
+  final Map<String, CloudDriveAccountDetails> accountDetails;
+  final CloudDriveAccount? currentAccount;
+  final bool showAccountSelector;
 
-/// 加载账号事件
-class LoadAccountsEvent extends CloudDriveEvent {
-  const LoadAccountsEvent();
-}
+  const AccountViewState({
+    this.accounts = const [],
+    this.accountDetails = const {},
+    this.currentAccount,
+    this.showAccountSelector = false,
+  });
 
-/// 切换账号事件
-class SwitchAccountEvent extends CloudDriveEvent {
-  final int accountIndex;
-  const SwitchAccountEvent(this.accountIndex);
-}
+  AccountViewState copyWith({
+    List<CloudDriveAccount>? accounts,
+    Map<String, CloudDriveAccountDetails>? accountDetails,
+    CloudDriveAccount? currentAccount,
+    bool? showAccountSelector,
+  }) => AccountViewState(
+    accounts: accounts ?? this.accounts,
+    accountDetails: accountDetails ?? this.accountDetails,
+    currentAccount: currentAccount ?? this.currentAccount,
+    showAccountSelector: showAccountSelector ?? this.showAccountSelector,
+  );
 
-/// 加载文件夹事件
-class LoadFolderEvent extends CloudDriveEvent {
-  final bool forceRefresh;
-  const LoadFolderEvent({this.forceRefresh = false});
-}
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AccountViewState &&
+          runtimeType == other.runtimeType &&
+          accounts == other.accounts &&
+          accountDetails == other.accountDetails &&
+          currentAccount == other.currentAccount &&
+          showAccountSelector == other.showAccountSelector;
 
-/// 进入文件夹事件
-class EnterFolderEvent extends CloudDriveEvent {
-  final CloudDriveFile folder;
-  const EnterFolderEvent(this.folder);
-}
-
-/// 返回上级事件
-class GoBackEvent extends CloudDriveEvent {
-  const GoBackEvent();
-}
-
-/// 进入批量模式事件
-class EnterBatchModeEvent extends CloudDriveEvent {
-  final String itemId;
-  const EnterBatchModeEvent(this.itemId);
-}
-
-/// 退出批量模式事件
-class ExitBatchModeEvent extends CloudDriveEvent {
-  const ExitBatchModeEvent();
-}
-
-/// 切换选择状态事件
-class ToggleSelectionEvent extends CloudDriveEvent {
-  final String itemId;
-  const ToggleSelectionEvent(this.itemId);
-}
-
-/// 切换全选状态事件
-class ToggleSelectAllEvent extends CloudDriveEvent {
-  const ToggleSelectAllEvent();
-}
-
-/// 批量下载事件
-class BatchDownloadEvent extends CloudDriveEvent {
-  const BatchDownloadEvent();
-}
-
-/// 批量分享事件
-class BatchShareEvent extends CloudDriveEvent {
-  const BatchShareEvent();
-}
-
-/// 加载更多事件
-class LoadMoreEvent extends CloudDriveEvent {
-  const LoadMoreEvent();
-}
-
-/// 添加账号事件
-class AddAccountEvent extends CloudDriveEvent {
-  final CloudDriveAccount account;
-  const AddAccountEvent(this.account);
-}
-
-/// 删除账号事件
-class DeleteAccountEvent extends CloudDriveEvent {
-  final String accountId;
-  const DeleteAccountEvent(this.accountId);
-}
-
-/// 更新账号事件
-class UpdateAccountEvent extends CloudDriveEvent {
-  final CloudDriveAccount account;
-  const UpdateAccountEvent(this.account);
-}
-
-/// 更新账号Cookie事件
-class UpdateAccountCookieEvent extends CloudDriveEvent {
-  final String accountId;
-  final String newCookies;
-  const UpdateAccountCookieEvent(this.accountId, this.newCookies);
-}
-
-/// 切换账号选择器事件
-class ToggleAccountSelectorEvent extends CloudDriveEvent {
-  const ToggleAccountSelectorEvent();
-}
-
-/// 设置待操作文件事件
-class SetPendingOperationEvent extends CloudDriveEvent {
-  final CloudDriveFile file;
-  final String operationType;
-  const SetPendingOperationEvent(this.file, this.operationType);
-}
-
-/// 清除待操作文件事件
-class ClearPendingOperationEvent extends CloudDriveEvent {
-  const ClearPendingOperationEvent();
-}
-
-/// 执行待操作事件
-class ExecutePendingOperationEvent extends CloudDriveEvent {
-  const ExecutePendingOperationEvent();
-}
-
-/// 添加文件到状态事件
-class AddFileToStateEvent extends CloudDriveEvent {
-  final CloudDriveFile file;
-  final String? operationType;
-  const AddFileToStateEvent(this.file, {this.operationType});
-}
-
-/// 从状态移除文件事件
-class RemoveFileFromStateEvent extends CloudDriveEvent {
-  final String fileId;
-  const RemoveFileFromStateEvent(this.fileId);
-}
-
-/// 从状态移除文件夹事件
-class RemoveFolderFromStateEvent extends CloudDriveEvent {
-  final String folderId;
-  const RemoveFolderFromStateEvent(this.folderId);
-}
-
-/// 更新文件信息事件
-class UpdateFileInStateEvent extends CloudDriveEvent {
-  final String fileId;
-  final String newName;
-  const UpdateFileInStateEvent(this.fileId, this.newName);
-}
-
-/// 清除错误事件
-class ClearErrorEvent extends CloudDriveEvent {
-  const ClearErrorEvent();
-}
-
-/// 刷新事件
-class RefreshEvent extends CloudDriveEvent {
-  const RefreshEvent();
-}
-
-/// 更新排序选项事件
-class UpdateSortOptionEvent extends CloudDriveEvent {
-  final CloudDriveSortField field;
-  final bool ascending;
-  const UpdateSortOptionEvent(this.field, this.ascending);
-}
-
-/// 更新视图模式事件
-class UpdateViewModeEvent extends CloudDriveEvent {
-  final CloudDriveViewMode mode;
-  const UpdateViewModeEvent(this.mode);
-}
-
-/// 批量删除事件
-class BatchDeleteEvent extends CloudDriveEvent {
-  const BatchDeleteEvent();
-}
-
-/// 创建文件夹事件
-class CreateFolderEvent extends CloudDriveEvent {
-  final String name;
-  final String parentId;
-  const CreateFolderEvent({required this.name, required this.parentId});
+  @override
+  int get hashCode =>
+      accounts.hashCode ^
+      accountDetails.hashCode ^
+      currentAccount.hashCode ^
+      showAccountSelector.hashCode;
 }
 
 /// 文件列表状态
@@ -510,69 +391,6 @@ class FileListState {
   @override
   String toString() =>
       'FileListState{folders: ${folders.length}, files: ${files.length}, isLoading: $isLoading}';
-}
-
-/// 账号状态
-class AccountState {
-  final List<CloudDriveAccount> accounts;
-  final int currentAccountIndex;
-  final bool isLoading;
-  final String? error;
-  final bool showAccountSelector;
-
-  const AccountState({
-    this.accounts = const [],
-    this.currentAccountIndex = -1,
-    this.isLoading = false,
-    this.error,
-    this.showAccountSelector = false,
-  });
-
-  /// 复制并更新状态
-  AccountState copyWith({
-    List<CloudDriveAccount>? accounts,
-    int? currentAccountIndex,
-    bool? isLoading,
-    String? error,
-    bool? showAccountSelector,
-  }) => AccountState(
-    accounts: accounts ?? this.accounts,
-    currentAccountIndex: currentAccountIndex ?? this.currentAccountIndex,
-    isLoading: isLoading ?? this.isLoading,
-    error: error ?? this.error,
-    showAccountSelector: showAccountSelector ?? this.showAccountSelector,
-  );
-
-  /// 获取当前账号
-  CloudDriveAccount? get currentAccount {
-    if (currentAccountIndex < 0 || currentAccountIndex >= accounts.length) {
-      return null;
-    }
-    return accounts[currentAccountIndex];
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is AccountState &&
-          runtimeType == other.runtimeType &&
-          accounts == other.accounts &&
-          currentAccountIndex == other.currentAccountIndex &&
-          isLoading == other.isLoading &&
-          error == other.error &&
-          showAccountSelector == other.showAccountSelector;
-
-  @override
-  int get hashCode =>
-      accounts.hashCode ^
-      currentAccountIndex.hashCode ^
-      isLoading.hashCode ^
-      error.hashCode ^
-      showAccountSelector.hashCode;
-
-  @override
-  String toString() =>
-      'AccountState{accounts: ${accounts.length}, currentAccountIndex: $currentAccountIndex}';
 }
 
 /// 批量操作状态

@@ -1,7 +1,9 @@
 import '../../../../base/cloud_drive_operation_service.dart';
-import '../../../../data/models/cloud_drive_dtos.dart' show CloudDriveQuotaInfo;
+import '../../../../data/models/cloud_drive_dtos.dart'
+    show CloudDriveAccountInfo, CloudDriveQuotaInfo;
 import '../../../../data/models/cloud_drive_entities.dart';
 import '../../../../base/base_cloud_drive_repository.dart';
+import '../../../../core/result.dart';
 import '../api/pan123_api_client.dart';
 import '../api/pan123_operations.dart';
 import '../models/requests/pan123_list_request.dart';
@@ -215,26 +217,49 @@ class Pan123Repository extends BaseCloudDriveRepository {
   Future<CloudDriveAccountDetails?> getAccountDetails({
     required CloudDriveAccount account,
   }) async {
-    final info = await _api.getUserInfo(account: account);
-    final used = info.used;
-    final total = info.total;
-    return CloudDriveAccountDetails(
-      id: account.id,
-      name: info.nickname.isNotEmpty ? info.nickname : account.name,
-      avatarUrl: info.avatar,
-      usedSpace: used,
-      totalSpace: total,
-      freeSpace: total - used,
-      isValid: true,
-      accountInfo: info.toAccountInfo(),
-      quotaInfo: CloudDriveQuotaInfo(
-        total: total,
-        used: used,
-        free: total - used,
+    try {
+      final info = await _api.getUserInfo(account: account);
+      final used = info.used;
+      final total = info.total;
+      return CloudDriveAccountDetails(
+        id: account.id,
+        name: info.nickname.isNotEmpty ? info.nickname : account.name,
+        avatarUrl: info.avatar,
+        usedSpace: used,
+        totalSpace: total,
+        freeSpace: total - used,
+        isValid: true,
+        accountInfo: info.toAccountInfo(),
+        quotaInfo: CloudDriveQuotaInfo(
+          total: total,
+          used: used,
+          free: total - used,
         expire: false,
         serverTime: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       ),
     );
+    } on CloudDriveException catch (e) {
+      final isAuthError =
+          e.type == CloudDriveErrorType.authentication || e.statusCode == 401;
+
+      if (isAuthError) {
+        return CloudDriveAccountDetails(
+          id: account.id,
+          name: account.name,
+          isValid: false,
+          accountInfo: CloudDriveAccountInfo(
+            username: account.name,
+            phone: null,
+            photo: account.avatarUrl,
+            uk: 0,
+            loginState: 0,
+          ),
+          quotaInfo: null,
+        );
+      }
+
+      rethrow;
+    }
   }
 
   /// 获取分享列表（免费/付费；付费列表 isPaid=true）

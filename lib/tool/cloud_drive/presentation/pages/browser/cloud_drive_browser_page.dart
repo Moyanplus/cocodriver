@@ -11,6 +11,7 @@ import '../../../data/models/cloud_drive_entities.dart';
 import '../../../base/cloud_drive_service_gateway.dart';
 import '../../providers/cloud_drive_provider.dart';
 import '../../state/cloud_drive_state_model.dart';
+import '../../state/cloud_drive_state_manager.dart';
 import '../../view_models/cloud_drive_browser_view_model.dart';
 import '../../widgets/browser/cloud_drive_file_list.dart';
 import '../../widgets/browser/cloud_drive_account_selector.dart';
@@ -56,8 +57,8 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
       const CloudDriveBrowserViewModel();
   ProviderSubscription<CloudDriveState>? _accountSub;
 
-  CloudDriveEventHandler get _eventHandler =>
-      ref.read(cloudDriveEventHandlerProvider);
+  CloudDriveStateManager get _manager =>
+      ref.read(cloudDriveStateManagerProvider.notifier);
   CloudDriveServiceGateway get _gateway => ref.read(cloudDriveGatewayProvider);
 
   @override
@@ -73,7 +74,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
         final prevId = previous?.currentAccount?.id;
         final nextId = next.currentAccount?.id;
         if (nextId != null && prevId != nextId) {
-          _eventHandler.loadFolder(forceRefresh: true);
+          _manager.loadFolder(forceRefresh: true);
         }
       },
     );
@@ -83,7 +84,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
       final state = ref.read(cloudDriveProvider);
       final hasAccount = state.currentAccount != null;
       if (hasAccount && state.files.isEmpty && state.folders.isEmpty) {
-        _eventHandler.loadFolder(forceRefresh: true);
+        _manager.loadFolder(forceRefresh: true);
       }
     });
   }
@@ -225,7 +226,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
           'uploadProgress': 0.0,
         },
       );
-      _eventHandler.addFileToState(tempFile);
+      _manager.addFileToState(tempFile);
 
       _showSnack('正在上传$label：${file.name}');
       final uploadResult = await _gateway.uploadFile(
@@ -234,7 +235,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
         fileName: file.name,
         folderId: folderId,
         onProgress: (progress) {
-          _eventHandler.updateFileMetadata(tempId, (metadata) {
+          _manager.updateFileMetadata(tempId, (metadata) {
             final map = Map<String, dynamic>.from(metadata ?? {});
             map['uploadProgress'] = progress.clamp(0.0, 1.0);
             map['isUploading'] = true;
@@ -245,15 +246,15 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
       final success = uploadResult['success'] == true;
       if (success) {
         final uploadedFile = uploadResult['file'] as CloudDriveFile?;
-        _eventHandler.removeFileFromState(tempId);
+        _manager.removeFileFromState(tempId);
         if (uploadedFile != null) {
-          _eventHandler.addFileToState(uploadedFile);
+          _manager.addFileToState(uploadedFile);
         } else {
-          await _eventHandler.loadFolder(forceRefresh: true);
+          await _manager.loadFolder(forceRefresh: true);
         }
         _showSnack('$label上传成功');
       } else {
-        _eventHandler.removeFileFromState(tempId);
+        _manager.removeFileFromState(tempId);
         _showSnack(
           uploadResult['message']?.toString() ?? '$label上传失败',
           success: false,
@@ -261,7 +262,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
       }
     } catch (e) {
       if (tempFile != null) {
-        _eventHandler.removeFileFromState(tempId);
+        _manager.removeFileFromState(tempId);
       }
       _showSnack('$label上传失败: $e', success: false);
     }
@@ -287,7 +288,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
                 return '请选择账号';
               }
               try {
-                final created = await _eventHandler.createFolder(
+                final created = await _manager.createFolder(
                   name: name,
                   parentId: currentFolderId,
                 );
@@ -355,7 +356,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
         return;
       }
       _isLoadMorePending = true;
-      _eventHandler.loadMore().whenComplete(() {
+      _manager.loadMore().whenComplete(() {
         _isLoadMorePending = false;
       });
     }
@@ -372,19 +373,18 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(cloudDriveProvider);
-    final eventHandler = _eventHandler;
 
     return Scaffold(
       backgroundColor: CloudDriveUIConfig.backgroundColor,
-      body: _buildBody(state, eventHandler),
+      body: _buildBody(state),
       bottomNavigationBar:
           state.isBatchMode ? const CloudDriveBatchActionBar() : null,
-      floatingActionButton: _buildFloatingActionButton(state, eventHandler),
+      floatingActionButton: _buildFloatingActionButton(state),
     );
   }
 
   /// 构建主体内容
-  Widget _buildBody(CloudDriveState state, CloudDriveEventHandler handler) {
+  Widget _buildBody(CloudDriveState state) {
     final bodyType = _viewModel.resolveBody(state);
     return Column(
       children: [
@@ -394,7 +394,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
             duration: const Duration(milliseconds: 250),
             switchInCurve: Curves.easeOut,
             switchOutCurve: Curves.easeIn,
-            child: _buildMainContent(state, handler, bodyType),
+            child: _buildMainContent(state, bodyType),
           ),
         ),
       ],
@@ -404,7 +404,6 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   /// 构建主要内容
   Widget _buildMainContent(
     CloudDriveState state,
-    CloudDriveEventHandler handler,
     CloudDriveBrowserBodyType bodyType,
   ) {
     switch (bodyType) {
@@ -415,11 +414,11 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
           key: const ValueKey('select-account'),
         );
       case CloudDriveBrowserBodyType.content:
-        return _buildContent(state, handler);
+        return _buildContent(state);
     }
   }
 
-  Widget _buildContent(CloudDriveState state, CloudDriveEventHandler handler) {
+  Widget _buildContent(CloudDriveState state) {
     // ========== 正常显示：路径导航器 + 文件列表 ==========
     // 布局结构：
     // Column (紧凑布局，无多余间距)
@@ -445,12 +444,12 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
             scrollController: _scrollController,
             state: state,
             account: state.currentAccount!,
-            onRefresh: () => handler.loadFolder(forceRefresh: true),
-            onFolderTap: handler.enterFolder,
+            onRefresh: () => _manager.loadFolder(forceRefresh: true),
+            onFolderTap: _manager.enterFolder,
             onFileTap: (file) => _showFileOptions(file, state.currentAccount!),
-            onLongPress: handler.enterBatchMode,
-            onToggleSelection: handler.toggleSelection,
-            onLoadMore: supportsLoadMore ? handler.loadMore : null,
+            onLongPress: _manager.enterBatchMode,
+            onToggleSelection: _manager.toggleSelection,
+            onLoadMore: supportsLoadMore ? _manager.loadMore : null,
           ),
         ),
       ],
@@ -565,7 +564,6 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   /// 构建悬浮按钮
   Widget? _buildFloatingActionButton(
     CloudDriveState state,
-    CloudDriveEventHandler handler,
   ) {
     if (state.isBatchMode) {
       return null;
@@ -579,7 +577,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
         key: const ValueKey('fab-operation'),
         onPressed: () async {
           try {
-            final opResult = await handler.executePendingOperation();
+            final opResult = await _manager.executePendingOperation();
             final success = opResult == true;
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(

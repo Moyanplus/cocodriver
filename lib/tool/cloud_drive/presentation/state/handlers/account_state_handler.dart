@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import '../../../base/cloud_drive_account_service.dart';
 import '../../../base/cloud_drive_operation_service.dart';
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../../core/result.dart';
 import '../../../infrastructure/logging/cloud_drive_logger_adapter.dart';
 import '../cloud_drive_state_manager.dart';
+import '../account_validation_service.dart';
 
 /// 账号管理状态处理器
 ///
@@ -10,9 +14,15 @@ import '../cloud_drive_state_manager.dart';
 class AccountStateHandler {
   final CloudDriveStateManager _stateManager;
   final CloudDriveLoggerAdapter _logger;
+  final AccountValidationService _validationService;
 
-  AccountStateHandler(this._stateManager, {CloudDriveLoggerAdapter? logger})
-    : _logger = logger ?? _stateManager.logger;
+  AccountStateHandler(
+    this._stateManager, {
+    CloudDriveLoggerAdapter? logger,
+    AccountValidationService? validationService,
+  })  : _logger = logger ?? _stateManager.logger,
+        _validationService =
+            validationService ?? AccountValidationService(logger ?? _stateManager.logger);
 
   /// 加载账号列表
   Future<void> loadAccounts() async {
@@ -26,9 +36,15 @@ class AccountStateHandler {
       final accounts = await CloudDriveAccountService.getAllAccounts();
 
       _stateManager.updateState(
-        (state) =>
-            state.copyWith(accounts: accounts, isLoading: false, error: null),
+        (state) => state.copyWith(
+          accounts: accounts,
+          accountDetails: {},
+          isLoading: false,
+          error: null,
+        ),
       );
+
+      await _refreshAccountDetails(accounts);
 
       _logger.info('账号列表加载成功: ${accounts.length}个账号');
     } catch (e) {
@@ -52,7 +68,7 @@ class AccountStateHandler {
       }
 
       final account = currentState.accounts[accountIndex];
-
+      // 先乐观切换，再异步校验，避免阻塞 UI
       _stateManager.updateState(
         (state) => state.copyWith(
           currentAccount: account,
@@ -64,6 +80,9 @@ class AccountStateHandler {
           error: null,
         ),
       );
+
+      // 异步校验有效性，结果写入状态
+      unawaited(_validateAndStoreAccount(account));
 
       // 不在此处自动加载文件列表，避免侧边栏切换账号时频繁触发文件接口。
       // 进入文件页时再按需加载。
@@ -246,4 +265,68 @@ class AccountStateHandler {
     }
   }
 
+  Future<void> _refreshAccountDetails(List<CloudDriveAccount> accounts) async {
+    for (final account in accounts) {
+      await _fetchAndStoreAccountDetails(account);
+    }
+  }
+
+  Future<CloudDriveAccountDetails?> _fetchAndStoreAccountDetails(
+    CloudDriveAccount account,
+  ) async {
+    try {
+      final details = await getAccountDetails(account);
+      if (details != null) {
+        _stateManager.updateState((state) {
+          final updated = Map<String, CloudDriveAccountDetails>.from(
+            state.accountDetails,
+          );
+          updated[account.id] = details;
+          return state.copyWith(accountDetails: updated);
+        });
+      }
+      return details;
+    } on CloudDriveException catch (e, stack) {
+      _logger.error('获取账号详情失败: $e\n$stack');
+      if (e.type == CloudDriveErrorType.authentication) {
+        final details = CloudDriveAccountDetails(
+          id: account.id,
+          name: account.name,
+          isValid: false,
+        );
+        _stateManager.updateState((state) {
+          final updated = Map<String, CloudDriveAccountDetails>.from(
+            state.accountDetails,
+          );
+          updated[account.id] = details;
+          return state.copyWith(accountDetails: updated);
+        });
+        return details;
+      }
+      return null;
+    } catch (e, stack) {
+      _logger.error('获取账号详情失败: $e\n$stack');
+      return null;
+    }
+  }
+
+  Future<void> _validateAndStoreAccount(CloudDriveAccount account) async {
+    final details = await _validationService.fetchDetails(account);
+    if (details == null) return;
+    _stateManager.updateState((state) {
+      final updated = Map<String, CloudDriveAccountDetails>.from(
+        state.accountDetails,
+      );
+      updated[account.id] = details;
+      return state.copyWith(accountDetails: updated);
+    });
+    if (!details.isValid) {
+      _stateManager.updateState(
+        (state) => state.copyWith(
+          error: '账号已失效，请重新登录或更新凭证',
+          showAccountSelector: true,
+        ),
+      );
+    }
+  }
 }

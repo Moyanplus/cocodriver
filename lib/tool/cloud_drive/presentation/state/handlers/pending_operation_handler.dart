@@ -125,8 +125,7 @@ class PendingOperationHandler {
   void clearPendingOperation() {
     final current = _manager.state;
     _manager.state = CloudDriveState(
-      accounts: current.accounts,
-      currentAccount: current.currentAccount,
+      accountState: current.accountState,
       currentFolder: current.currentFolder,
       folders: current.folders,
       files: current.files,
@@ -143,7 +142,6 @@ class PendingOperationHandler {
       isLoadingMore: current.isLoadingMore,
       isFromCache: current.isFromCache,
       lastRefreshTime: current.lastRefreshTime,
-      showAccountSelector: current.showAccountSelector,
       pendingOperationFile: null,
       pendingOperationType: null,
       showFloatingActionButton: current.showFloatingActionButton,

@@ -219,8 +219,7 @@ class FolderStateHandler {
       final currentState = _stateManager.getCurrentState();
       _stateManager.setState(
         CloudDriveState(
-          accounts: currentState.accounts,
-          currentAccount: currentState.currentAccount,
+          accountState: currentState.accountState,
           currentFolder: targetFolder, // 目标文件夹
           folders: const [],
           files: const [],
@@ -237,7 +236,6 @@ class FolderStateHandler {
           isLoadingMore: currentState.isLoadingMore,
           isFromCache: currentState.isFromCache,
           lastRefreshTime: currentState.lastRefreshTime,
-          showAccountSelector: currentState.showAccountSelector,
           pendingOperationFile: currentState.pendingOperationFile,
           pendingOperationType: currentState.pendingOperationType,
           showFloatingActionButton: currentState.showFloatingActionButton,
@@ -302,8 +300,7 @@ class FolderStateHandler {
       final currentState = _stateManager.getCurrentState();
       _stateManager.setState(
         CloudDriveState(
-          accounts: currentState.accounts,
-          currentAccount: currentState.currentAccount,
+          accountState: currentState.accountState,
           currentFolder: parentFolder, // 可能为 null（根目录）或父文件夹
           folders: const [],
           files: const [],
@@ -320,7 +317,6 @@ class FolderStateHandler {
           isLoadingMore: currentState.isLoadingMore,
           isFromCache: currentState.isFromCache,
           lastRefreshTime: currentState.lastRefreshTime,
-          showAccountSelector: currentState.showAccountSelector,
           pendingOperationFile: currentState.pendingOperationFile,
           pendingOperationType: currentState.pendingOperationType,
           showFloatingActionButton: currentState.showFloatingActionButton,

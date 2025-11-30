@@ -12,6 +12,7 @@ import 'handlers/account_state_handler.dart';
 import 'handlers/folder_state_handler.dart';
 import 'handlers/batch_operation_handler.dart';
 import '../utils/operation_guard.dart';
+import 'account_validation_service.dart';
 part 'handlers/pending_operation_handler.dart';
 
 /// 云盘状态管理器
@@ -28,7 +29,11 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
   }) : _logger = logger ?? DefaultCloudDriveLoggerAdapter(),
        super(const CloudDriveState()) {
     accountHandler =
-        accountHandlerBuilder?.call(this) ?? AccountStateHandler(this);
+        accountHandlerBuilder?.call(this) ??
+        AccountStateHandler(
+          this,
+          validationService: AccountValidationService(logger ?? DefaultCloudDriveLoggerAdapter()),
+        );
     folderHandler =
         folderHandlerBuilder?.call(this) ?? FolderStateHandler(this);
     batchHandler =
@@ -62,87 +67,6 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
 
   /// 获取当前状态
   CloudDriveState getCurrentState() => state;
-
-  /// 处理云盘事件，将事件分发到对应的处理器
-  ///
-  /// [event] 要处理的云盘事件
-  Future<void> handleEvent(CloudDriveEvent event) async {
-    _logger.info('处理事件: ${event.runtimeType}');
-
-    try {
-      switch (event) {
-        case LoadAccountsEvent():
-          await accountHandler.loadAccounts();
-        case SwitchAccountEvent():
-          await accountHandler.switchAccount(event.accountIndex);
-        case LoadFolderEvent():
-          await folderHandler.loadFolder(forceRefresh: event.forceRefresh);
-        case EnterFolderEvent():
-          await folderHandler.enterFolder(event.folder);
-        case GoBackEvent():
-          await folderHandler.goBack();
-        case EnterBatchModeEvent():
-          batchHandler.enterBatchMode(event.itemId);
-        case ExitBatchModeEvent():
-          batchHandler.exitBatchMode();
-        case ToggleSelectionEvent():
-          batchHandler.toggleSelection(event.itemId);
-        case ToggleSelectAllEvent():
-          batchHandler.toggleSelectAll();
-        case BatchDownloadEvent():
-          await batchHandler.batchDownload();
-        case BatchShareEvent():
-          await batchHandler.batchShare();
-        case LoadMoreEvent():
-          await folderHandler.loadMore();
-        case AddAccountEvent():
-          await accountHandler.addAccount(event.account);
-        case DeleteAccountEvent():
-          await accountHandler.deleteAccount(event.accountId);
-        case UpdateAccountEvent():
-          await accountHandler.updateAccount(event.account);
-        case UpdateAccountCookieEvent():
-          await accountHandler.updateAccountCookies(
-            event.accountId,
-            event.newCookies,
-          );
-        case RefreshEvent():
-          await folderHandler.refresh();
-        case ClearErrorEvent():
-          _clearError();
-        case BatchDeleteEvent():
-          await batchHandler.batchDelete();
-        case ToggleAccountSelectorEvent():
-          toggleAccountSelector();
-        case UpdateSortOptionEvent():
-          await folderHandler.updateSortOption(event.field, event.ascending);
-        case UpdateViewModeEvent():
-          updateState((state) => state.copyWith(viewMode: event.mode));
-        case SetPendingOperationEvent():
-          pendingHandler.setPendingOperation(event.file, event.operationType);
-        case ClearPendingOperationEvent():
-          pendingHandler.clearPendingOperation();
-        case ExecutePendingOperationEvent():
-          await executePendingOperation();
-        case AddFileToStateEvent():
-          pendingHandler.addFileToState(event.file);
-        case RemoveFileFromStateEvent():
-          pendingHandler.removeFileFromState(event.fileId);
-        case RemoveFolderFromStateEvent():
-          pendingHandler.removeFolderFromState(event.folderId);
-        case UpdateFileInStateEvent():
-          pendingHandler.updateFileInState(event.fileId, event.newName);
-        case CreateFolderEvent():
-          await folderHandler.createFolder(
-            name: event.name,
-            parentId: event.parentId,
-          );
-      }
-    } catch (e) {
-      _logger.error('处理事件失败: ${event.runtimeType} - $e');
-      state = state.copyWith(error: e.toString());
-    }
-  }
 
   /// 清除当前错误状态
   void _clearError() {
@@ -286,6 +210,11 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
     await accountHandler.updateAccount(account);
   }
 
+  /// 更新账号 Cookie
+  Future<void> updateAccountCookie(String accountId, String newCookies) async {
+    await accountHandler.updateAccountCookies(accountId, newCookies);
+  }
+
   /// 切换当前账号
   ///
   /// [accountIndex] 要切换到的账号索引
@@ -316,7 +245,11 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
 
   /// 切换账号选择器显示状态
   void toggleAccountSelector() {
-    state = state.copyWith(showAccountSelector: !state.showAccountSelector);
+    final next =
+        state.accountState.copyWith(
+          showAccountSelector: !state.showAccountSelector,
+        );
+    state = state.copyWith(accountState: next);
   }
 
   /// 创建文件夹
@@ -347,5 +280,50 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
     Map<String, dynamic>? Function(Map<String, dynamic>?) updater,
   ) {
     pendingHandler.updateFileMetadata(fileId, updater);
+  }
+
+  /// 设置待操作文件
+  void setPendingOperation(CloudDriveFile file, String operationType) {
+    pendingHandler.setPendingOperation(file, operationType);
+  }
+
+  /// 清除待操作文件
+  void clearPendingOperation() {
+    pendingHandler.clearPendingOperation();
+  }
+
+  /// 添加文件到状态
+  void addFileToState(CloudDriveFile file) {
+    pendingHandler.addFileToState(file);
+  }
+
+  /// 从状态移除文件
+  void removeFileFromState(String fileId) {
+    pendingHandler.removeFileFromState(fileId);
+  }
+
+  /// 从状态移除文件夹
+  void removeFolderFromState(String folderId) {
+    pendingHandler.removeFolderFromState(folderId);
+  }
+
+  /// 更新文件信息
+  void updateFileInState(String fileId, String newName) {
+    pendingHandler.updateFileInState(fileId, newName);
+  }
+
+  /// 更新排序选项
+  void updateSortOption(CloudDriveSortField field, bool ascending) async {
+    await folderHandler.updateSortOption(field, ascending);
+  }
+
+  /// 更新视图模式
+  void updateViewMode(CloudDriveViewMode mode) {
+    state = state.copyWith(viewMode: mode);
+  }
+
+  /// 清除错误
+  void clearError() {
+    state = state.copyWith(error: null);
   }
 }

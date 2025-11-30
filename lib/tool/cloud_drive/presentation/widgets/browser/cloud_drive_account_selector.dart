@@ -34,8 +34,13 @@ import '../../../services/registry/cloud_drive_provider_registry.dart';
 /// ```
 class CloudDriveAccountSelector extends ConsumerWidget {
   final Function(CloudDriveAccount)? onAccountTap;
+  final void Function(int index)? onAccountSelected;
 
-  const CloudDriveAccountSelector({super.key, this.onAccountTap});
+  const CloudDriveAccountSelector({
+    super.key,
+    this.onAccountTap,
+    this.onAccountSelected,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,12 +85,27 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final account = state.accounts[index];
                   final isSelected = index == state.currentAccountIndex;
+                  final details = state.accountDetails[account.id];
+                  final bool? isValid = details?.isValid;
+                  final statusText =
+                      isValid == null
+                          ? (account.isLoggedIn ? '未校验' : '未登录')
+                          : (isValid ? '有效' : '已失效');
+                  final statusColor =
+                      isValid == null
+                          ? Theme.of(context).colorScheme.onSurfaceVariant
+                          : isValid
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.error;
 
                   return GestureDetector(
-                    onTap:
-                        () => ref
-                            .read(cloudDriveProvider.notifier)
-                            .switchAccount(index),
+                    onTap: () {
+                      if (onAccountSelected != null) {
+                        onAccountSelected!(index);
+                      } else {
+                        ref.read(cloudDriveProvider.notifier).switchAccount(index);
+                      }
+                    },
                     onLongPress:
                         onAccountTap != null
                             ? () => onAccountTap!(account)
@@ -212,6 +232,8 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                           showModalBottomSheet(
                                             context: context,
                                             isScrollControlled: true,
+                                            isDismissible: false,
+                                            enableDrag: false,
                                             backgroundColor: Colors.transparent,
                                             builder:
                                                 (
@@ -240,16 +262,13 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                           ),
                           SizedBox(height: ResponsiveUtils.getSpacing() * 0.2),
                           Text(
-                            account.isLoggedIn ? '已登录' : '未登录',
+                            statusText,
                             style: TextStyle(
                               fontSize: ResponsiveUtils.getResponsiveFontSize(
                                 10.sp,
                               ),
                               fontWeight: FontWeight.w500,
-                              color:
-                                  account.isLoggedIn
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Colors.orange,
+                              color: statusColor,
                             ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,

@@ -28,6 +28,8 @@ class Pan123ErrorMapper {
   /// 将错误码映射到统一的 [CloudDriveErrorType]
   static CloudDriveErrorType _mapType(int code) {
     switch (code) {
+      case 401: // token 数量超限或未登录
+        return CloudDriveErrorType.authentication;
       case 5217: // 版本过低或流程不完整
       case -3: // 文件已在当前目录
       case 101010: // copy接口同目录

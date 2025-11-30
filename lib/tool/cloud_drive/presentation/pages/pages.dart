@@ -10,6 +10,5 @@
 library;
 
 export 'browser/cloud_drive_browser_page.dart';
-export 'direct_link/cloud_drive_direct_link_page.dart';
 export 'auth/cloud_drive_login_page.dart';
 export 'upload/cloud_drive_upload_page.dart';

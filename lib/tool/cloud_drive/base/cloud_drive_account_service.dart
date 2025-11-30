@@ -1,6 +1,7 @@
 /// 云盘账号管理服务
 ///
 /// 管理所有云盘账号的生命周期，提供账号的CRUD操作和本地持久化存储。
+library;
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +12,33 @@ import '../../../../../core/logging/log_manager.dart';
 // 云盘数据模型导入
 import '../data/models/cloud_drive_entities.dart';
 
+/// 账号存储抽象，便于测试/替换实现。
+abstract class CloudDriveAccountStore {
+  Future<List<Map<String, dynamic>>> load();
+  Future<void> save(List<Map<String, dynamic>> accounts);
+}
+
+/// SharedPreferences 版账号存储
+class SharedPrefsCloudDriveAccountStore implements CloudDriveAccountStore {
+  static const String storageKey = 'cloud_drive_accounts';
+
+  @override
+  Future<List<Map<String, dynamic>>> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accountsJson = prefs.getString(storageKey);
+    if (accountsJson == null) return const [];
+    final List<dynamic> decoded = jsonDecode(accountsJson);
+    return decoded.cast<Map<String, dynamic>>();
+  }
+
+  @override
+  Future<void> save(List<Map<String, dynamic>> accounts) async {
+    final prefs = await SharedPreferences.getInstance();
+    final accountsJson = jsonEncode(accounts);
+    await prefs.setString(storageKey, accountsJson);
+  }
+}
+
 /// 云盘账号管理服务类
 ///
 /// 负责云盘账号的增删改查和持久化存储
@@ -19,10 +47,15 @@ class CloudDriveAccountService {
   /// 是否输出详细调试日志（默认关闭，避免噪音）
   static const bool _verboseLogging = false;
 
-  // SharedPreferences存储键
-  static const String _storageKey = 'cloud_drive_accounts';
+  static CloudDriveAccountStore _store = SharedPrefsCloudDriveAccountStore();
 
   static List<CloudDriveAccount>? _cache;
+
+  /// 可注入的存储实现，便于测试/替换
+  static void setStore(CloudDriveAccountStore store) {
+    _store = store;
+    _cache = null;
+  }
 
   /// 加载所有账号
   static Future<List<CloudDriveAccount>> loadAccounts() async {
@@ -31,29 +64,17 @@ class CloudDriveAccountService {
         return List<CloudDriveAccount>.from(_cache!);
       }
       _debugLog('加载云盘账号');
-      final prefs = await SharedPreferences.getInstance();
-      final accountsJson = prefs.getString(_storageKey);
+      final accountsList = await _store.load();
+      final accounts = accountsList
+          .map(CloudDriveAccount.fromJson)
+          .toList(growable: false);
+      _cache = List<CloudDriveAccount>.from(accounts);
 
-      if (accountsJson != null) {
-        _debugLog('从存储读取JSON', data: {'jsonLength': accountsJson.length});
+      // 调试：检查每个加载的账号的cookies情况
+      _debugLogAccounts(accounts);
 
-        final List<dynamic> accountsList = jsonDecode(accountsJson);
-        final accounts =
-            accountsList
-                .map((json) => CloudDriveAccount.fromJson(json))
-                .toList();
-        _cache = accounts;
-
-        // 调试：检查每个加载的账号的cookies情况
-        _debugLogAccounts(accounts);
-
-        _debugLog(
-          '成功加载账号',
-          data: {'count': accounts.length},
-        );
-        return List<CloudDriveAccount>.from(accounts);
-      }
-      return [];
+      _debugLog('成功加载账号', data: {'count': accounts.length});
+      return List<CloudDriveAccount>.from(accounts);
     } catch (e) {
       LogManager().error(
         '加载云盘账号失败',
@@ -71,14 +92,13 @@ class CloudDriveAccountService {
       _debugLog('保存云盘账号', data: {'count': accounts.length});
       _debugLogAccounts(accounts, prefix: '准备序列化账号');
 
-      final prefs = await SharedPreferences.getInstance();
-      final accountsJson = jsonEncode(accounts.map((a) => a.toJson()).toList());
+      final raw = accounts.map((a) => a.toJson()).toList(growable: false);
       _cache = List<CloudDriveAccount>.from(accounts);
 
       // 调试：打印JSON长度
-      _debugLog('JSON序列化完成', data: {'jsonLength': accountsJson.length});
+      _debugLog('JSON序列化完成', data: {'jsonLength': raw.toString().length});
 
-      await prefs.setString(_storageKey, accountsJson);
+      await _store.save(raw);
       _debugLog('账号保存成功');
     } catch (e) {
       LogManager().error(
@@ -225,10 +245,7 @@ class CloudDriveAccountService {
     return await loadAccounts();
   }
 
-  static void _debugLog(
-    String message, {
-    Map<String, dynamic>? data,
-  }) {
+  static void _debugLog(String message, {Map<String, dynamic>? data}) {
     if (!_verboseLogging) return;
     LogManager().cloudDrive(
       message,
