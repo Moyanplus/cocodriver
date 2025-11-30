@@ -34,9 +34,9 @@ class AccountActionsSection extends StatelessWidget {
         children: [
           Text(
             '操作',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           SizedBox(height: CloudDriveUIConfig.spacingM),
 
