@@ -54,7 +54,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   double _lastScrollOffset = 0;
   final CloudDriveBrowserViewModel _viewModel =
       const CloudDriveBrowserViewModel();
-  ProviderSubscription? _accountSub;
+  ProviderSubscription<CloudDriveState>? _accountSub;
 
   CloudDriveEventHandler get _eventHandler =>
       ref.read(cloudDriveEventHandlerProvider);
@@ -67,13 +67,16 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
     _scrollController.addListener(_onScroll);
 
     // 账号切换后自动加载根目录
-    _accountSub = ref.listen(cloudDriveProvider, (previous, next) {
-      final prevId = previous?.currentAccount?.id;
-      final nextId = next.currentAccount?.id;
-      if (nextId != null && prevId != nextId) {
-        _eventHandler.loadFolder(forceRefresh: true);
-      }
-    });
+    _accountSub = ref.listenManual<CloudDriveState>(
+      cloudDriveProvider,
+      (previous, next) {
+        final prevId = previous?.currentAccount?.id;
+        final nextId = next.currentAccount?.id;
+        if (nextId != null && prevId != nextId) {
+          _eventHandler.loadFolder(forceRefresh: true);
+        }
+      },
+    );
 
     // 初次进入，如果已有账号但未加载文件，则拉取根目录
     WidgetsBinding.instance.addPostFrameCallback((_) {

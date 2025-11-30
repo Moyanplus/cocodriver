@@ -136,17 +136,17 @@ class CloudDriveBusinessService {
       password: password,
     );
 
-    if (result != null) {
+    if (result.isSuccess && result.data != null) {
       return DirectLinkParseResult(
         success: true,
         message: '解析成功',
-        fileInfo: result.toMap(),
+        fileInfo: result.data!.toMap(),
       );
     }
 
     return DirectLinkParseResult(
       success: false,
-      message: '解析失败，请检查链接或密码',
+      message: result.error?.message ?? '解析失败，请检查链接或密码',
     );
   }
 

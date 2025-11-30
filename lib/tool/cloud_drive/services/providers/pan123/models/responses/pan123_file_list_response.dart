@@ -92,12 +92,24 @@ CloudDriveFile? _mapFile(Map<String, dynamic> fileData) {
     updated = DateTime.tryParse(updateAt);
   }
   final parentId = fileData['ParentFileId']?.toString() ?? '0';
+  DateTime? created;
+  final createAt = fileData['CreateAt']?.toString();
+  if (createAt != null && createAt.isNotEmpty) {
+    created = DateTime.tryParse(createAt);
+  }
+  final downloadUrl = fileData['DownloadUrl']?.toString();
+  final thumbnail = fileData['Thumbnail']?.toString();
+
   return CloudDriveFile(
     id: id,
     name: name,
     size: size,
+    createdAt: created,
     updatedAt: updated,
     isFolder: isFolder,
     folderId: parentId,
+    downloadUrl: downloadUrl,
+    thumbnailUrl: thumbnail,
+    metadata: fileData,
   );
 }

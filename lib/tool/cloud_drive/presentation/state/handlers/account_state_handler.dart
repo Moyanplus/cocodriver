@@ -1,5 +1,6 @@
-import '../../../data/models/cloud_drive_entities.dart';
 import '../../../base/cloud_drive_account_service.dart';
+import '../../../base/cloud_drive_operation_service.dart';
+import '../../../data/models/cloud_drive_entities.dart';
 import '../../../infrastructure/logging/cloud_drive_logger_adapter.dart';
 import '../cloud_drive_state_manager.dart';
 
@@ -192,14 +193,14 @@ class AccountStateHandler {
   ) async {
     try {
       _logger.info('获取账号详情: ${account.name}');
-      final strategy = _stateManager.strategyRegistry.getStrategy(account.type);
+      final strategy = CloudDriveOperationService.getStrategy(account.type);
       if (strategy == null) {
         _logger.warning('未找到策略，无法获取账号详情: ${account.type}');
         return null;
       }
       return await strategy.getAccountDetails(account: account);
     } catch (e, stack) {
-      _logger.error('获取账号详情失败: $e', stackTrace: stack);
+      _logger.error('获取账号详情失败: $e\n$stack');
       return null;
     }
   }
@@ -245,22 +246,4 @@ class AccountStateHandler {
     }
   }
 
-  /// 获取账号详情
-  ///
-  /// [account] 要获取详情的云盘账号
-  Future<CloudDriveAccountDetails?> getAccountDetails(
-    CloudDriveAccount account,
-  ) async {
-    _logger.info('获取账号详情: ${account.name}');
-
-    try {
-      // final details = await CloudDriveAccountService.getAccountDetails(account);
-      final details = null;
-      _logger.info('账号详情获取成功: ${account.name}');
-      return details;
-    } catch (e) {
-      _logger.error('获取账号详情失败: ${account.name} - $e');
-      return null;
-    }
-  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../download/services/download_config_service.dart';
 import '../../../config/cloud_drive_ui_config.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../../base/cloud_drive_service_gateway.dart';
@@ -12,7 +13,6 @@ import '../../../../../../core/logging/log_manager.dart';
 import '../common/authenticated_network_image.dart';
 import '../../../utils/file_type_utils.dart';
 import '../../providers/cloud_drive_provider.dart';
-import '../../../../download/services/download_config_service.dart';
 import '../../../../download/services/download_service.dart';
 
 /// 文件操作和详情底部弹窗

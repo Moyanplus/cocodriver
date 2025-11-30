@@ -93,12 +93,76 @@ class Pan123DeleteRequest {
 
   /// 转换为删除接口参数
   Map<String, dynamic> toApiParams() => {
-    'fileIds': file.id,
     'driveId': 0,
+    'fileTrashInfoList': [_buildTrashInfo()],
+    'operation': true,
+    'event': 'intoRecycle',
     'operatePlace': 'bottom',
-    'event': 'fileDelete',
     'RequestSource': null,
+    'safeBox': false,
   };
+
+  Map<String, dynamic> _buildTrashInfo() {
+    final meta = Map<String, dynamic>.from(file.metadata ?? {});
+    int asInt(dynamic v, {int fallback = 0}) {
+      if (v == null) return fallback;
+      if (v is int) return v;
+      return int.tryParse(v.toString()) ?? fallback;
+    }
+
+    String? asString(dynamic v) => v?.toString();
+
+    return {
+      'FileId': asInt(meta['FileId'] ?? file.id, fallback: 0),
+      'FileName': file.name,
+      'Type': asInt(meta['Type'], fallback: file.isFolder ? 1 : 0),
+      'Size': asInt(meta['Size'], fallback: file.size ?? 0),
+      'ContentType': asString(meta['ContentType']) ?? '0',
+      'S3KeyFlag': asString(meta['S3KeyFlag']) ?? '',
+      'CreateAt':
+          asString(meta['CreateAt']) ?? file.createdAt?.toIso8601String(),
+      'UpdateAt':
+          asString(meta['UpdateAt']) ?? file.updatedAt?.toIso8601String(),
+      'Hidden': meta['Hidden'] ?? false,
+      'Etag': asString(meta['Etag'] ?? meta['etag']) ?? '',
+      'Status': asInt(meta['Status'], fallback: 0),
+      'ParentFileId': asInt(
+        meta['ParentFileId'] ?? file.folderId,
+        fallback: int.tryParse(file.folderId ?? '0') ?? 0,
+      ),
+      'Category': asInt(meta['Category'], fallback: 0),
+      'PunishFlag': asInt(meta['PunishFlag'], fallback: 0),
+      'ParentName': asString(meta['ParentName']) ?? '',
+      'DownloadUrl': asString(meta['DownloadUrl'] ?? file.downloadUrl) ?? '',
+      'AbnormalAlert': asInt(meta['AbnormalAlert'], fallback: 0),
+      'Trashed': meta['Trashed'] ?? false,
+      'TrashedExpire': asString(meta['TrashedExpire']),
+      'TrashedAt': asString(meta['TrashedAt']),
+      'StorageNode': asString(meta['StorageNode']) ?? '',
+      'DirectLink': asInt(meta['DirectLink'], fallback: 0),
+      'AbsPath': asString(meta['AbsPath']) ?? '',
+      'PinYin': asString(meta['PinYin']) ?? '',
+      'BusinessType': asInt(meta['BusinessType'], fallback: 0),
+      'Thumbnail': asString(meta['Thumbnail'] ?? file.thumbnailUrl) ?? '',
+      'Operable': meta['Operable'] ?? true,
+      'StarredStatus': asInt(meta['StarredStatus'], fallback: 0),
+      'HighLight': asString(meta['HighLight']) ?? '',
+      'NewParentName': asString(meta['NewParentName']) ?? '',
+      'LiveSize': asInt(meta['LiveSize'], fallback: 0),
+      'BaseSize': asInt(meta['BaseSize'], fallback: file.size ?? 0),
+      'UserId': asInt(meta['UserId'], fallback: 0),
+      'EnableAppeal': asInt(meta['EnableAppeal'], fallback: 0),
+      'ToolTip': asString(meta['ToolTip']) ?? '',
+      'RefuseReason': asInt(meta['RefuseReason'], fallback: 0),
+      'DirectTranscodeStatus':
+          asInt(meta['DirectTranscodeStatus'], fallback: 0),
+      'PreviewType': asInt(meta['PreviewType'], fallback: 0),
+      'IsLock': meta['IsLock'] ?? false,
+      // 123 删除接口需要 keys/checked 与前端一致，官方前端固定 keys=9/checked=true
+      'keys': 9,
+      'checked': true,
+    };
+  }
 }
 
 /// 123 云盘创建文件夹请求

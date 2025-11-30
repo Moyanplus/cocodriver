@@ -7,7 +7,7 @@ import '../../../../../core/logging/log_manager.dart';
 /// 全局日志配置
 class CloudDriveApiLoggerConfig {
   static bool globalVerbose = false;
-  static int globalTruncateLength = 800;
+  static int globalTruncateLength = 2000;
 
   /// 统一设置全局日志开关和截断长度
   static void update({bool? verbose, int? truncateLength}) {
@@ -49,7 +49,10 @@ class CloudDriveApiLogger {
       buffer.writeln('Body: ${_formatData(options.data)}');
     }
 
-    _logManager.cloudDrive(buffer.toString(), className: provider, methodName: 'request');
+    _logLarge(
+      buffer.toString(),
+      methodName: 'request',
+    );
   }
 
   void logResponse(Response response) {
@@ -60,7 +63,10 @@ class CloudDriveApiLogger {
       buffer.writeln('Body: ${_formatData(response.data)}');
     }
 
-    _logManager.cloudDrive(buffer.toString(), className: provider, methodName: 'response');
+    _logLarge(
+      buffer.toString(),
+      methodName: 'response',
+    );
   }
 
   void logError(DioException error) {
@@ -75,10 +81,10 @@ class CloudDriveApiLogger {
       buffer.writeln('Body: ${_formatData(error.response!.data)}');
     }
 
-    _logManager.error(
+    _logLarge(
       buffer.toString(),
-      className: provider,
       methodName: 'error',
+      isError: true,
       exception: error,
     );
   }
@@ -101,7 +107,8 @@ class CloudDriveApiLogger {
 
     if (data is Map || data is List) {
       try {
-        return _truncate(const JsonEncoder().convert(data));
+        final pretty = const JsonEncoder.withIndent('  ').convert(data);
+        return _truncate(pretty);
       } catch (_) {
         return _truncate(data.toString());
       }
@@ -113,6 +120,41 @@ class CloudDriveApiLogger {
   String _truncate(String value) {
     if (value.length <= truncateLength) return value;
     return '${value.substring(0, truncateLength)}...';
+  }
+
+  void _logLarge(
+    String message, {
+    String? methodName,
+    bool isError = false,
+    dynamic exception,
+  }) {
+    const chunkSize = 900; // 避免 logcat 单行截断
+    final totalChunks = (message.length / chunkSize).ceil();
+
+    for (int i = 0; i < totalChunks; i++) {
+      final start = i * chunkSize;
+      final end = (i + 1) * chunkSize > message.length
+          ? message.length
+          : (i + 1) * chunkSize;
+      final chunk = message.substring(start, end);
+      final suffix = totalChunks > 1 ? ' [${i + 1}/$totalChunks]' : '';
+      final text = '$chunk$suffix';
+
+      if (isError) {
+        _logManager.error(
+          text,
+          className: provider,
+          methodName: methodName,
+          exception: i == 0 ? exception : null,
+        );
+      } else {
+        _logManager.cloudDrive(
+          text,
+          className: provider,
+          methodName: methodName,
+        );
+      }
+    }
   }
 }
 
