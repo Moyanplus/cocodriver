@@ -41,18 +41,28 @@ class CloudDriveFileItem extends StatelessWidget {
     final double? uploadProgress =
         (file.metadata?['uploadProgress'] as num?)?.toDouble();
 
+    final overlay =
+        MaterialStateProperty.all(theme.colorScheme.primary.withOpacity(0.08));
+    final splashColor = theme.colorScheme.primary.withOpacity(0.16);
+    final highlightColor = theme.colorScheme.primary.withOpacity(0.06);
+
     return Padding(
       padding: EdgeInsets.symmetric(
         vertical: 1.h,
         horizontal: ResponsiveUtils.getSpacing() * 0.5,
       ),
       child: Material(
-        color: Colors.transparent,
+        // 使用实体背景让水波纹清晰可见
+        color: theme.colorScheme.surface,
         borderRadius: borderRadius,
         child: InkWell(
           borderRadius: borderRadius,
           onTap: onTap,
           onLongPress: onLongPress,
+          splashColor: splashColor,
+          highlightColor: highlightColor,
+          overlayColor: overlay,
+          splashFactory: InkRipple.splashFactory,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOut,

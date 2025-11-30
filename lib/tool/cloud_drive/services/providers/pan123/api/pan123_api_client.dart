@@ -3,8 +3,11 @@ import '../../../../data/models/cloud_drive_entities.dart';
 import '../models/requests/pan123_list_request.dart';
 import '../models/requests/pan123_offline_requests.dart';
 import '../models/requests/pan123_operation_requests.dart';
+import '../models/requests/pan123_share_requests.dart';
 import '../models/responses/pan123_file_list_response.dart';
 import '../models/responses/pan123_offline_responses.dart';
+import '../models/responses/pan123_share_list_response.dart';
+import '../models/responses/pan123_share_cancel_response.dart';
 import '../models/responses/pan123_user_info_response.dart';
 import 'pan123_base_service.dart';
 import 'pan123_operations.dart';
@@ -175,6 +178,34 @@ class Pan123ApiClient {
     return _safeCall(
       () => Pan123Operations.getDownloadUrl(account: account, request: request),
       operation: '123云盘-获取下载链接',
+    );
+  }
+
+  /// 分享列表（免费/付费）
+  Future<Pan123ShareListResponse> listShares({
+    required CloudDriveAccount account,
+    required Pan123ShareListRequest request,
+  }) {
+    return _safeCall(
+      () => Pan123Operations.listShares(
+        account: account,
+        request: request,
+      ),
+      operation: '123云盘-分享列表',
+    );
+  }
+
+  /// 取消分享
+  Future<Pan123ShareCancelResponse> cancelShare({
+    required CloudDriveAccount account,
+    required Pan123ShareCancelRequest request,
+  }) {
+    return _safeCall(
+      () => Pan123Operations.cancelShare(
+        account: account,
+        request: request,
+      ),
+      operation: '123云盘-取消分享',
     );
   }
 

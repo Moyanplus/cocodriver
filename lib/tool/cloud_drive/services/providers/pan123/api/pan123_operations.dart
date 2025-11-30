@@ -11,7 +11,10 @@ import '../../../../data/models/cloud_drive_entities.dart';
 import '../models/requests/pan123_offline_requests.dart';
 import '../models/requests/pan123_operation_requests.dart';
 import '../models/responses/pan123_offline_responses.dart';
+import '../models/requests/pan123_share_requests.dart';
 import '../models/responses/pan123_upload_responses.dart';
+import '../models/responses/pan123_share_list_response.dart';
+import '../models/responses/pan123_share_cancel_response.dart';
 import '../models/responses/pan123_user_info_response.dart';
 import 'pan123_base_service.dart';
 import 'pan123_config.dart';
@@ -153,6 +156,83 @@ class Pan123Operations {
         final ok = processed['code'] == 0;
         _log(ok ? '123云盘 - 文件删除成功' : '123云盘 - 文件删除失败');
         return ok;
+      },
+    );
+  }
+
+  /// 分享列表（免费/付费）
+  static Future<Pan123ShareListResponse> listShares({
+    required CloudDriveAccount account,
+    required Pan123ShareListRequest request,
+  }) async {
+    const operationName = '123云盘-分享列表';
+    return _executeWithLogging<Pan123ShareListResponse>(
+      operationName: operationName,
+      account: account,
+      action: () async {
+        final endpoint = request.isPaid
+            ? Pan123Config.endpoints['shareListPaid']!
+            : Pan123Config.endpoints['shareListFree']!;
+        final base = Pan123Config.shareBaseUrl;
+        final url = Uri.parse('$base${endpoint}');
+        final query = request.toQueryParams();
+
+        final dio = Pan123BaseService.createDio(account);
+        final uri = url.replace(
+          queryParameters: query.map((k, v) => MapEntry(k, v.toString())),
+        );
+        if (_detailed) _log('123云盘 - 分享列表请求: $uri');
+        final response = await dio.get(uri.toString());
+        final raw = response.data;
+        if (raw is! Map<String, dynamic>) {
+          throw CloudDriveException(
+            '分享列表返回非 JSON',
+            CloudDriveErrorType.unknown,
+            operation: operationName,
+            context: {'raw': raw.toString()},
+          );
+        }
+        final data = raw;
+        if (_detailed) _log('响应体: $data');
+        return Pan123ShareListResponse.fromMap(data);
+      },
+    );
+  }
+
+  /// 获取用户信息
+  /// 取消分享（免费/付费）
+  static Future<Pan123ShareCancelResponse> cancelShare({
+    required CloudDriveAccount account,
+    required Pan123ShareCancelRequest request,
+  }) async {
+    const operationName = '123云盘-取消分享';
+    return _executeWithLogging<Pan123ShareCancelResponse>(
+      operationName: operationName,
+      account: account,
+      action: () async {
+        final endpoint = Pan123Config.endpoints['shareDelete']!;
+        final base = Pan123Config.shareBaseUrl;
+        final url = Uri.parse('$base$endpoint');
+        final body = request.toBody();
+        final query = Pan123BaseService.buildNoiseQueryParams();
+
+        final dio = Pan123BaseService.createDio(account);
+        final uri = url.replace(
+          queryParameters: query.map((k, v) => MapEntry(k, v.toString())),
+        );
+        if (_detailed) _log('123云盘 - 取消分享请求: $uri, body=$body');
+        final response = await dio.post(uri.toString(), data: body);
+        final raw = response.data;
+        if (raw is! Map<String, dynamic>) {
+          throw CloudDriveException(
+            '取消分享返回非 JSON',
+            CloudDriveErrorType.unknown,
+            operation: operationName,
+            context: {'raw': raw.toString()},
+          );
+        }
+        if (_detailed) _log('响应体: $raw');
+        return Pan123ShareCancelResponse.fromMap(raw);
       },
     );
   }
@@ -401,6 +481,16 @@ class Pan123Operations {
           _log('上传初始化: bucket=${initResp.bucket}, key=${initResp.key}');
         }
 
+        // 如果服务器返回 Reuse=true，直接使用已有信息并跳过后续步骤
+        if (initResp.reuse && initResp.info.isNotEmpty) {
+          _log('上传复用命中，跳过实际上传');
+          return _mapUploadedFile(
+            info: initResp.info,
+            fallbackName: fileName,
+            parentId: parentId,
+          );
+        }
+
         // 2) 获取预签名 URL
         final authResp = await _getUploadAuth(
           account: account,
@@ -460,6 +550,26 @@ class Pan123Operations {
         _log('123云盘 - 上传完成: ${result.name} (${result.id})');
         return result;
       },
+    );
+  }
+
+  static CloudDriveFile _mapUploadedFile({
+    required Map<String, dynamic> info,
+    required String fallbackName,
+    String? parentId,
+  }) {
+    final createdAt = DateTime.tryParse(info['CreateAt']?.toString() ?? '');
+    final updatedAt = DateTime.tryParse(info['UpdateAt']?.toString() ?? '');
+    return CloudDriveFile(
+      id: info['FileId']?.toString() ?? '',
+      name: info['FileName']?.toString() ?? fallbackName,
+      isFolder: false,
+      folderId: info['ParentFileId']?.toString() ?? parentId ?? '0',
+      size: (info['Size'] as num?)?.toInt(),
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      downloadUrl: info['DownloadUrl']?.toString(),
+      metadata: info,
     );
   }
 

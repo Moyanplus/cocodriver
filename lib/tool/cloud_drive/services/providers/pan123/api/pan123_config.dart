@@ -5,6 +5,8 @@ class Pan123Config {
   // API 配置
   static const String baseUrl = 'https://www.123pan.com';
   static const String apiBaseUrl = 'https://www.123pan.com/b/api';
+  // 分享域名带上 /b/api 前缀，避免返回 HTML
+  static const String shareBaseUrl = 'https://www.123684.com/b/api';
 
   // API 端点配置
   static const Map<String, String> endpoints = {
@@ -13,7 +15,8 @@ class Pan123Config {
     'downloadInfo': '/file/download_info', // 获取下载信息
     'download': '/file/download', // 获取下载链接
     'upload': '/file/upload', // 上传文件
-    'delete': '/file/delete', // 删除文件
+    // 删除接口：使用 /file/trash 将文件移入回收站，避免误用永久删除接口
+    'delete': '/file/trash',
     'move': '/file/mod_pid', // 移动文件
     'copy': '/restful/goapi/v1/file/copy/async', // 复制文件
     'rename': '/file/rename', // 重命名文件
@@ -21,6 +24,9 @@ class Pan123Config {
     'share': '/file/share', // 分享文件
     'search': '/file/search', // 搜索文件
     'recycle': '/file/trash', // 回收站
+    'shareListFree': '/share/list', // 免费分享列表
+    'shareListPaid': '/restful/goapi/v1/share/content/payment/list', // 付费分享列表
+    'shareDelete': '/share/delete', // 取消分享
     'userInfo': '/user/info', // 用户信息
     'space': '/user/space', // 空间信息
     // 上传相关

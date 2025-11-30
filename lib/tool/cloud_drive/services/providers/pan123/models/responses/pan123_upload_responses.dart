@@ -9,6 +9,7 @@ class Pan123UploadInitResponse {
     required this.sliceSize,
     required this.endPoint,
     required this.reuse,
+    required this.info,
   });
 
   factory Pan123UploadInitResponse.fromJson(Map<String, dynamic> json) {
@@ -22,6 +23,7 @@ class Pan123UploadInitResponse {
       sliceSize: data['SliceSize']?.toString() ?? '',
       endPoint: data['EndPoint']?.toString() ?? '',
       reuse: data['Reuse'] as bool? ?? false,
+      info: (data['Info'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
 
@@ -33,6 +35,7 @@ class Pan123UploadInitResponse {
   final String sliceSize;
   final String endPoint;
   final bool reuse;
+  final Map<String, dynamic> info;
 }
 
 /// 预签名 URL 响应

@@ -7,7 +7,10 @@ import '../api/pan123_operations.dart';
 import '../models/requests/pan123_list_request.dart';
 import '../models/requests/pan123_operation_requests.dart';
 import '../models/requests/pan123_offline_requests.dart';
+import '../models/requests/pan123_share_requests.dart';
 import '../models/responses/pan123_offline_responses.dart';
+import '../models/responses/pan123_share_list_response.dart';
+import '../models/responses/pan123_share_cancel_response.dart';
 
 /// 123 云盘仓库，适配统一仓库接口。
 class Pan123Repository extends BaseCloudDriveRepository {
@@ -234,6 +237,27 @@ class Pan123Repository extends BaseCloudDriveRepository {
     );
   }
 
+  /// 获取分享列表（免费/付费；付费列表 isPaid=true）
+  Future<Pan123ShareListResponse> listShares({
+    required CloudDriveAccount account,
+    bool isPaid = false,
+    int limit = 20,
+    String next = '0',
+    String orderBy = 'fileId',
+    String orderDirection = 'desc',
+    String search = '',
+  }) {
+    final req = Pan123ShareListRequest(
+      limit: limit,
+      next: next,
+      orderBy: orderBy,
+      orderDirection: orderDirection,
+      search: search,
+      isPaid: isPaid,
+    );
+    return _api.listShares(account: account, request: req);
+  }
+
   /// 上传文件（单分片）
   @override
   Future<CloudDriveFile?> uploadFile({
@@ -250,5 +274,18 @@ class Pan123Repository extends BaseCloudDriveRepository {
       parentId: parentId,
       onProgress: onProgress,
     );
+  }
+
+  /// 取消分享（免费/付费；isPaidShare 控制接口字段）
+  Future<Pan123ShareCancelResponse> cancelShare({
+    required CloudDriveAccount account,
+    required List<int> shareIds,
+    bool isPaidShare = false,
+  }) {
+    final req = Pan123ShareCancelRequest(
+      shareIds: shareIds,
+      isPaidShare: isPaidShare,
+    );
+    return _api.cancelShare(account: account, request: req);
   }
 }
