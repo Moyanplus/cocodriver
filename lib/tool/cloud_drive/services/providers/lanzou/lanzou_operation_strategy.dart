@@ -7,7 +7,6 @@ import '../../../base/cloud_drive_operation_service.dart';
 import '../../../data/models/cloud_drive_dtos.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../../utils/cloud_drive_log_utils.dart';
-import 'facade/lanzou_cloud_drive_facade.dart';
 // import 'lanzou_config.dart'; // 未使用
 
 /// 蓝奏云操作策略
@@ -107,18 +106,18 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     LogManager().cloudDrive('蓝奏云 - 账号: ${account.name}');
 
     try {
-      // 调用蓝奏云服务的移动文件方法
-      final result = await LanzouCloudDriveFacade.moveFile(
+      final repository = LanzouRepository.fromAccount(account);
+      final result = await repository.move(
         account: account,
         file: file,
-        targetFolderId: targetFolderId,
+        targetFolderId: targetFolderId ?? LanzouConfig.defaultFolderId,
       );
 
-      if (result.isSuccess && result.data == true) {
+      if (result) {
         LogManager().cloudDrive('蓝奏云 - 文件移动成功');
         return true;
       } else {
-        LogManager().cloudDrive('蓝奏云 - 文件移动失败: ${result.error?.message}');
+        LogManager().cloudDrive('蓝奏云 - 文件移动失败');
         return false;
       }
     } catch (e, stackTrace) {
@@ -137,17 +136,14 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     LogManager().cloudDrive('蓝奏云 - 文件: ${file.name} (ID: ${file.id})');
 
     try {
-      final result = await LanzouCloudDriveFacade.deleteFile(
-        account: account,
-        file: file,
-      );
-      if (result.isSuccess && result.data == true) {
+      final repository = LanzouRepository.fromAccount(account);
+      final result = await repository.delete(account: account, file: file);
+      if (result) {
         LogManager().cloudDrive('蓝奏云 - 文件删除成功');
         return true;
       }
-      final message = result.error?.message ?? '蓝奏云删除失败';
-      LogManager().cloudDrive('蓝奏云 - 文件删除失败: $message');
-      throw LanzouApiException(message);
+      LogManager().cloudDrive('蓝奏云 - 文件删除失败');
+      throw LanzouApiException('蓝奏云删除失败');
     } catch (e, stackTrace) {
       LogManager().cloudDrive('蓝奏云 - 删除文件异常: $e');
       LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
@@ -166,18 +162,18 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     LogManager().cloudDrive('蓝奏云 - 新文件名: $newName');
 
     try {
-      final result = await LanzouCloudDriveFacade.renameFile(
+      final repository = LanzouRepository.fromAccount(account);
+      final result = await repository.rename(
         account: account,
         file: file,
         newName: newName,
       );
-      if (result.isSuccess && result.data == true) {
+      if (result) {
         LogManager().cloudDrive('蓝奏云 - 文件重命名成功');
         return true;
       }
-      final message = result.error?.message ?? '蓝奏云重命名失败';
-      LogManager().cloudDrive('蓝奏云 - 文件重命名失败: $message');
-      throw LanzouApiException(message);
+      LogManager().cloudDrive('蓝奏云 - 文件重命名失败');
+      throw LanzouApiException('蓝奏云重命名失败');
     } catch (e, stackTrace) {
       LogManager().cloudDrive('蓝奏云 - 重命名文件异常: $e');
       LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');
@@ -258,23 +254,16 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         '蓝奏云 - 账号信息: ${account.name} (${account.type.displayName})',
       );
 
-      // 从 Cookie 中提取 UID
-      final uid = LanzouCloudDriveFacade.extractUidFromCookies(
-        account.cookies ?? '',
-      );
+      final uid = LanzouRepository.extractUidFromCookies(account.cookies ?? '');
 
       if (uid == null || uid.isEmpty) {
         LogManager().cloudDrive('蓝奏云 - 无法从 Cookie 中提取 UID');
         return null;
       }
 
-      // 验证 Cookie 有效性
-      final validateResult = await LanzouCloudDriveFacade.validateCookies(
-        account.cookies ?? '',
-        uid,
-      );
-
-      if (!(validateResult.isSuccess && validateResult.data == true)) {
+      final repository = LanzouRepository.fromAccount(account);
+      final isValid = await repository.validateSession();
+      if (!isValid) {
         LogManager().cloudDrive('蓝奏云 - Cookie 验证失败');
         return null;
       }
@@ -374,20 +363,20 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     LogManager().cloudDrive('文件夹ID: ${folderId ?? '-1'}');
 
     try {
-      final result = await LanzouCloudDriveFacade.uploadFile(
+      final repository = LanzouRepository.fromAccount(account);
+      final uploaded = await repository.uploadFile(
         account: account,
         filePath: filePath,
         fileName: fileName,
-        folderId: folderId ?? '-1',
+        parentId: folderId ?? '-1',
       );
 
-      if (result.isSuccess) {
-        LogManager().cloudDrive('蓝奏云 - 文件上传成功');
-        return result.data?.toMap() ?? {'success': true};
-      } else {
-        LogManager().cloudDrive('蓝奏云 - 文件上传失败: ${result.error?.message}');
-        return {'success': false, 'message': result.error?.message};
+      if (uploaded != null) {
+        LogManager().cloudDrive('蓝奏云 - 文件上传成功: ${uploaded.name}');
+        return {'success': true, 'file': uploaded};
       }
+      LogManager().cloudDrive('蓝奏云 - 文件上传失败: 未返回文件');
+      return {'success': false, 'message': '上传失败'};
     } catch (e, stackTrace) {
       LogManager().cloudDrive('蓝奏云 - 上传文件异常: $e');
       LogManager().cloudDrive('蓝奏云 - 错误堆栈: $stackTrace');

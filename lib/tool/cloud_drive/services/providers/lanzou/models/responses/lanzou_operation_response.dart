@@ -10,7 +10,21 @@ class LanzouOperationResponse {
   final String? message;
   final Map<String, dynamic> raw;
 
+  /// 原始 info 字段，部分接口会返回字符串提示或 Map 详细数据。
   dynamic get payload => raw['info'];
+
+  /// 蓝奏常用的 text 字段（如创建文件夹返回新 folderId，上传返回文件信息）。
+  String? get text => raw['text']?.toString();
+
+  /// 将 payload 转为 Map 便于后续解析（若不是 Map 返回 null）。
+  Map<String, dynamic>? get payloadMap =>
+      payload is Map<String, dynamic>
+          ? Map<String, dynamic>.from(payload as Map<String, dynamic>)
+          : null;
+
+  /// 将 payload 转为 List 便于后续解析（若不是 List 返回 null）。
+  List<dynamic>? get payloadList =>
+      payload is List ? List<dynamic>.from(payload as List) : null;
 
   factory LanzouOperationResponse.fromMap(Map<String, dynamic> map) =>
       LanzouOperationResponse(

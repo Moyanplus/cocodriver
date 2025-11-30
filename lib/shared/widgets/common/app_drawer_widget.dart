@@ -16,21 +16,38 @@
 /// 创建时间: 2024年
 library;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 // 核心模块导入
-import '../../../core/theme/theme_models.dart';
 import '../../../core/navigation/navigation_providers.dart';
 import '../../../core/providers/cloud_drive_type_provider.dart';
-import '../../../core/utils/responsive_utils.dart';
+import '../../../core/theme/theme_models.dart';
 import '../../../core/utils/adaptive_utils.dart';
+import '../../../core/utils/responsive_utils.dart';
+import '../../../shared/widgets/common/bottom_sheet_widget.dart';
 
 // 云盘功能导入
 import '../../../tool/cloud_drive/data/models/cloud_drive_entities.dart';
+import '../../../tool/cloud_drive/base/cloud_drive_operation_service.dart';
+import '../../../tool/cloud_drive/presentation/providers/cloud_drive_provider.dart';
+import '../../../tool/cloud_drive/presentation/providers/cloud_drive_provider.dart'
+    show cloudDriveEventHandlerProvider, currentAccountProvider;
+import '../../../tool/cloud_drive/presentation/widgets/account/account_detail_bottom_sheet.dart';
+import '../../../tool/cloud_drive/presentation/widgets/add_account/add_account_form_widget.dart';
+
+/// 当前账号详情 Provider：根据选中账号动态拉取云盘账号信息
+final currentAccountDetailsProvider =
+    FutureProvider.autoDispose<CloudDriveAccountDetails?>((ref) async {
+  final account = ref.watch(currentAccountProvider);
+  if (account == null) return null;
+  final strategy = CloudDriveOperationService.getStrategy(account.type);
+  if (strategy == null) return null;
+  return strategy.getAccountDetails(account: account);
+});
 
 /// 应用侧边栏Widget
 ///
@@ -48,6 +65,22 @@ class AppDrawerWidget extends ConsumerStatefulWidget {
 /// 负责监听主题和云盘类型变化，构建侧边栏的UI结构
 /// 包括用户信息区域、导航菜单、主题切换等组件
 class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
+  bool _hasRequestedAccounts = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 首次构建时若账号列表为空，则主动触发一次加载，避免侧边栏初次打开空白
+    Future.microtask(() async {
+      if (!mounted) return;
+      final state = ref.read(cloudDriveProvider);
+      if (!_hasRequestedAccounts && state.accounts.isEmpty) {
+        _hasRequestedAccounts = true;
+        await ref.read(cloudDriveEventHandlerProvider).loadAccounts();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -75,10 +108,10 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
             child: Column(
               children: [
                 // 头像
-                _buildAvatar(context),
+                _buildAvatar(context, ref),
                 SizedBox(height: 16.h),
                 // 用户信息
-                _buildUserInfo(context),
+                _buildUserInfo(context, ref),
               ],
             ),
           ),
@@ -98,7 +131,10 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
   }
 
   /// 构建头像
-  Widget _buildAvatar(BuildContext context) {
+  Widget _buildAvatar(BuildContext context, WidgetRef ref) {
+    final account = ref.watch(currentAccountProvider);
+    final initial =
+        (account?.name.isNotEmpty ?? false) ? account!.name[0].toUpperCase() : 'F';
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -118,7 +154,7 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
         radius: ResponsiveUtils.getIconSize(50),
         backgroundColor: Theme.of(context).colorScheme.surface,
         child: Text(
-          'F',
+          initial,
           style: TextStyle(
             fontSize: ResponsiveUtils.getResponsiveFontSize(30),
             fontWeight: FontWeight.bold,
@@ -130,25 +166,107 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
   }
 
   /// 构建用户信息
-  Widget _buildUserInfo(BuildContext context) {
+  Widget _buildUserInfo(BuildContext context, WidgetRef ref) {
+    final account = ref.watch(currentAccountProvider);
+    final detailsAsync = ref.watch(currentAccountDetailsProvider);
+
+    final name = account?.name ?? '未登录';
+    final typeLabel = account?.type.displayName ?? '请选择云盘';
+
     return Column(
       children: [
         Text(
-          'Flutter开发者',
+          name,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
-            fontSize: ResponsiveUtils.getResponsiveFontSize(16),
-          ),
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: ResponsiveUtils.getResponsiveFontSize(16),
+              ),
         ),
         SizedBox(height: 4.h),
         Text(
-          'UI模板项目',
+          typeLabel,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: 0.7),
-            fontSize: ResponsiveUtils.getResponsiveFontSize(12),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.7),
+                fontSize: ResponsiveUtils.getResponsiveFontSize(12),
+              ),
+        ),
+        SizedBox(height: 4.h),
+        detailsAsync.when(
+          data: (details) {
+            if (details == null) return const SizedBox.shrink();
+            final info = details.accountInfo;
+            final vip = info?.isVip == true || info?.isSvip == true;
+            final subtitle = info?.username ?? details.name;
+            final badge = vip ? 'VIP' : (details.isValid ? '已登录' : '未登录');
+
+            return Column(
+              children: [
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7),
+                        fontSize: ResponsiveUtils.getResponsiveFontSize(12),
+                      ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  badge,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: vip
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.6),
+                        fontWeight: FontWeight.w600,
+                        fontSize: ResponsiveUtils.getResponsiveFontSize(12),
+                      ),
+                ),
+                if (details.quotaInfo != null) ...[
+                  SizedBox(height: 4.h),
+                  Text(
+                    '存储: ${(details.quotaInfo!.used / (1024 * 1024 * 1024)).toStringAsFixed(1)} / ${(details.quotaInfo!.total / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.7),
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(12),
+                        ),
+                  ),
+                ],
+              ],
+            );
+          },
+          loading: () => Padding(
+            padding: EdgeInsets.only(top: 4.h),
+            child: SizedBox(
+              height: 12,
+              width: 12,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation(
+                  Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+          ),
+          error: (_, __) => Text(
+            '账号信息获取失败',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .error
+                      .withValues(alpha: 0.8),
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(12),
+                ),
           ),
         ),
       ],
@@ -172,7 +290,6 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 标题和开关
           Row(
             children: [
               Icon(
@@ -188,96 +305,74 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
-              const Spacer(),
-              Switch(
-                value: cloudDriveTypeState.isFilterEnabled,
-                onChanged: (value) {
-                  ref.read(cloudDriveTypeProvider.notifier).toggleFilter();
-                },
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
             ],
           ),
 
-          // 云盘类型选择器
-          if (cloudDriveTypeState.isFilterEnabled) ...[
-            SizedBox(height: 12.h),
-            Wrap(
-              spacing: 8.w,
-              runSpacing: 8.h,
-              children:
-                  cloudDriveTypeState.availableTypes.map((type) {
-                    final isSelected = cloudDriveTypeState.selectedType == type;
-                    return GestureDetector(
-                      onTap: () {
-                        if (isSelected) {
-                          ref
-                              .read(cloudDriveTypeProvider.notifier)
-                              .clearSelection();
-                        } else {
-                          ref
-                              .read(cloudDriveTypeProvider.notifier)
-                              .selectType(type);
-                        }
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12.w,
-                          vertical: 6.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              isSelected
-                                  ? type.color.withValues(alpha: 0.2)
-                                  : Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(20.r),
-                          border: Border.all(
-                            color:
-                                isSelected
-                                    ? type.color
-                                    : Theme.of(context).colorScheme.outline
-                                        .withValues(alpha: 0.3),
-                            width: isSelected ? 2 : 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              type.iconData,
-                              size: ResponsiveUtils.getIconSize(16),
-                              color:
-                                  isSelected
-                                      ? type.color
-                                      : Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
-                            ),
-                            SizedBox(width: 4.w),
-                            Text(
-                              type.displayName,
-                              style: Theme.of(
-                                context,
-                              ).textTheme.bodySmall?.copyWith(
-                                color:
-                                    isSelected
-                                        ? type.color
-                                        : Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
-                                fontWeight:
-                                    isSelected
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                              ),
-                            ),
-                          ],
-                        ),
+          SizedBox(height: 12.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: cloudDriveTypeState.availableTypes.map((type) {
+              final isSelected = cloudDriveTypeState.selectedType == type;
+              return GestureDetector(
+                onTap: () {
+                  if (isSelected) {
+                    ref.read(cloudDriveTypeProvider.notifier).clearSelection();
+                  } else {
+                    ref.read(cloudDriveTypeProvider.notifier).selectType(type);
+                  }
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 6.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? type.color.withValues(alpha: 0.2)
+                        : Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(
+                      color: isSelected
+                          ? type.color
+                          : Theme.of(context)
+                              .colorScheme
+                              .outline
+                              .withValues(alpha: 0.3),
+                      width: isSelected ? 2 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        type.iconData,
+                        size: ResponsiveUtils.getIconSize(16),
+                        color: isSelected
+                            ? type.color
+                            : Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
                       ),
-                    );
-                  }).toList(),
-            ),
-          ],
+                      SizedBox(width: 4.w),
+                      Text(
+                        type.displayName,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: isSelected
+                                  ? type.color
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                              fontWeight:
+                                  isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ],
       ),
     );
@@ -288,6 +383,17 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
+        // 账号管理
+        _buildMenuItem(
+          context,
+          icon: PhosphorIcons.userList(),
+          title: '账号管理',
+          onTap: () {
+            Navigator.pop(context);
+            _showAccountManager(context, ref);
+          },
+        ),
+
         // 下载管理
         _buildMenuItem(
           context,
@@ -462,6 +568,165 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  /// 账号管理入口：列表 + 添加
+  Future<void> _showAccountManager(BuildContext context, WidgetRef ref) async {
+    // 预先获取账户与事件处理器，避免在 BottomSheet 生命周期外使用 ref
+    final typeState = ref.read(cloudDriveTypeProvider);
+    final handler = ref.read(cloudDriveEventHandlerProvider);
+    final cloudProvider = ref.read(cloudDriveProvider);
+    final isLoading = cloudProvider.isLoading;
+    final allAccounts = cloudProvider.accounts;
+    final idToIndex = <String, int>{
+      for (var i = 0; i < allAccounts.length; i++) allAccounts[i].id: i,
+    };
+
+    final accounts = allAccounts.where((a) {
+      if (typeState.isFilterEnabled && typeState.selectedType != null) {
+        return a.type == typeState.selectedType;
+      }
+      return true;
+    }).toList();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: const Text('云盘账号管理'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      debugPrint('[AccountAdd] add button pressed');
+                      // 预先获取根级 context，避免当前 BottomSheet 关闭后 context 失效
+                      final rootCtx = Navigator.of(ctx, rootNavigator: true)
+                          .overlay
+                          ?.context;
+                      Navigator.pop(ctx);
+                      Future.microtask(() {
+                        if (rootCtx != null && rootCtx.mounted) {
+                          debugPrint('[AccountAdd] using root context to show add sheet');
+                          _handleAddAccount(rootCtx, handler);
+                        } else {
+                          debugPrint('[AccountAdd] root context unavailable, fallback to ctx');
+                          _handleAddAccount(ctx, handler);
+                        }
+                      });
+                    },
+                  ),
+                ),
+                if (accounts.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : const Text('尚未添加云盘账号'),
+                  )
+                else
+                  ...accounts.map(
+                    (a) => ListTile(
+                      title: Text('${a.name} (${a.type.displayName})'),
+                      subtitle: Text('ID: ${a.id}'),
+                      onTap: () {
+                        // 点按：切换账号
+                        final idx = idToIndex[a.id];
+                        Navigator.pop(ctx);
+                        if (idx != null) {
+                          handler.switchAccount(idx);
+                        } else {
+                          debugPrint('[AccountTap] idx not found for ${a.id}');
+                        }
+                      },
+                      onLongPress: () {
+                        // 长按：查看账号详情
+                        final nav = Navigator.of(ctx, rootNavigator: true);
+                        final rootCtx = nav.overlay?.context ?? ctx;
+                        Navigator.pop(ctx);
+                        Future.microtask(() {
+                          if (rootCtx.mounted) {
+                            _showAccountDetail(rootCtx, a);
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _handleAddAccount(
+    BuildContext context,
+    CloudDriveEventHandler handler,
+  ) {
+    debugPrint('[AccountAdd] _handleAddAccount invoked, context=$context');
+    final navigator = Navigator.of(context, rootNavigator: true);
+    debugPrint(
+      '[AccountAdd] navigator=$navigator, overlay=${navigator.overlay}, overlay.ctx=${navigator.overlay?.context}',
+    );
+    final rootContext = navigator.overlay?.context ?? navigator.context;
+    debugPrint('[AccountAdd] resolved rootContext=$rootContext');
+    BottomSheetWidget.showWithTitle(
+      context: rootContext,
+      title: '添加云盘账号',
+      content: AddAccountFormWidget(
+        onAccountCreated: (account) async {
+          try {
+            await handler.addAccount(account);
+            if (rootContext.mounted) {
+              Navigator.pop(rootContext);
+              _showAccountAddSuccess(rootContext, account.name);
+            }
+          } catch (e) {
+            if (rootContext.mounted) {
+              _showAccountAddError(rootContext, e);
+            }
+          }
+        },
+        onCancel: () => Navigator.pop(rootContext),
+      ),
+    );
+  }
+
+  void _showAccountDetail(BuildContext context, CloudDriveAccount account) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => AccountDetailBottomSheet(account: account),
+    );
+  }
+
+  void _showAccountAddSuccess(BuildContext context, String accountName) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('账号添加成功: $accountName'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _showAccountAddError(BuildContext context, dynamic e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('账号添加失败: $e'),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
       ),
     );
   }

@@ -8,8 +8,11 @@ import '../../../../../../core/logging/log_manager.dart';
 import '../../../../base/cloud_drive_operation_service.dart';
 import '../../../../core/result.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
+import '../models/requests/pan123_offline_requests.dart';
 import '../models/requests/pan123_operation_requests.dart';
+import '../models/responses/pan123_offline_responses.dart';
 import '../models/responses/pan123_upload_responses.dart';
+import '../models/responses/pan123_user_info_response.dart';
 import 'pan123_base_service.dart';
 import 'pan123_config.dart';
 
@@ -154,6 +157,29 @@ class Pan123Operations {
     );
   }
 
+  /// 获取用户信息
+  static Future<Pan123UserInfoResponse> getUserInfo({
+    required CloudDriveAccount account,
+    required Dio dio,
+  }) async {
+    const operationName = '123云盘-获取用户信息';
+    return _executeWithLogging<Pan123UserInfoResponse>(
+      operationName: operationName,
+      account: account,
+      action: () async {
+        final url = Pan123Config.getApiUrl(Pan123Config.endpoints['userInfo']!);
+        final dio = Pan123BaseService.createDio(account);
+        final response = await dio.get(url);
+        final processed = Pan123BaseService.handleApiResponse(
+          response.data as Map<String, dynamic>,
+          operation: operationName,
+        );
+        final data = processed['data'] as Map<String, dynamic>? ?? {};
+        return Pan123UserInfoResponse.fromJson(data);
+      },
+    );
+  }
+
   /// 创建文件夹
   ///
   /// [account] 登录账号
@@ -262,6 +288,90 @@ class Pan123Operations {
     return null;
   }
 
+  /// 离线解析
+  static Future<Pan123OfflineResolveResponse> resolveOffline({
+    required CloudDriveAccount account,
+    required Pan123OfflineResolveRequest request,
+  }) {
+    return _executeWithLogging(
+      operationName: '123云盘-离线解析',
+      account: account,
+      action: () async {
+        final base = Uri.parse(
+          Pan123Config.getApiUrl(Pan123Config.endpoints['offlineResolve']!),
+        );
+        final query = Pan123BaseService.buildNoiseQueryParams();
+        final url = base.replace(queryParameters: query);
+        final dio = Pan123BaseService.createDio(account);
+
+        if (_detailed) _log('离线解析请求体: ${request.toJson()}');
+        final response = await dio.post(url.toString(), data: request.toJson());
+        final processed = Pan123BaseService.handleApiResponse(
+          response.data as Map<String, dynamic>,
+          operation: '离线解析',
+        );
+        if (_detailed) _log('离线解析响应: ${response.data}');
+        return Pan123OfflineResolveResponse.fromJson(processed);
+      },
+    );
+  }
+
+  /// 提交离线任务
+  static Future<Pan123OfflineSubmitResponse> submitOffline({
+    required CloudDriveAccount account,
+    required Pan123OfflineSubmitRequest request,
+  }) {
+    return _executeWithLogging(
+      operationName: '123云盘-离线提交',
+      account: account,
+      action: () async {
+        final base = Uri.parse(
+          Pan123Config.getApiUrl(Pan123Config.endpoints['offlineSubmit']!),
+        );
+        final query = Pan123BaseService.buildNoiseQueryParams();
+        final url = base.replace(queryParameters: query);
+        final dio = Pan123BaseService.createDio(account);
+
+        if (_detailed) _log('离线提交请求体: ${request.toJson()}');
+        final response = await dio.post(url.toString(), data: request.toJson());
+        final processed = Pan123BaseService.handleApiResponse(
+          response.data as Map<String, dynamic>,
+          operation: '离线提交',
+        );
+        if (_detailed) _log('离线提交响应: ${response.data}');
+        return Pan123OfflineSubmitResponse.fromJson(processed);
+      },
+    );
+  }
+
+  /// 查询离线任务列表
+  static Future<Pan123OfflineTaskListResponse> listOfflineTasks({
+    required CloudDriveAccount account,
+    required Pan123OfflineListRequest request,
+  }) {
+    return _executeWithLogging(
+      operationName: '123云盘-离线任务列表',
+      account: account,
+      action: () async {
+        final base = Uri.parse(
+          Pan123Config.getApiUrl(Pan123Config.endpoints['offlineList']!),
+        );
+        final query = Pan123BaseService.buildNoiseQueryParams();
+        final url = base.replace(queryParameters: query);
+        final dio = Pan123BaseService.createDio(account);
+
+        if (_detailed) _log('离线列表请求体: ${request.toJson()}');
+        final response = await dio.post(url.toString(), data: request.toJson());
+        final processed = Pan123BaseService.handleApiResponse(
+          response.data as Map<String, dynamic>,
+          operation: '离线任务列表',
+        );
+        if (_detailed) _log('离线列表响应: ${response.data}');
+        return Pan123OfflineTaskListResponse.fromJson(processed);
+      },
+    );
+  }
+
   /// 上传文件（单分片）
   static Future<CloudDriveFile?> uploadFile({
     required CloudDriveAccount account,
@@ -309,7 +419,7 @@ class Pan123Operations {
         }
 
         // 3) PUT 上传文件
-        final dio = Pan123BaseService.createDio(account);
+        final dio = Pan123BaseService.createUploadDio(provider: '123云盘');
         final mime = lookupMimeType(fileName) ?? 'application/octet-stream';
         await dio.put(
           uploadUrl,
@@ -368,7 +478,7 @@ class Pan123Operations {
     final url = base.replace(queryParameters: noise);
     final dio = Pan123BaseService.createDio(account);
 
-    final etag = await _sha256(file);
+    final etag = await _md5(file);
     final body = {
       'driveId': 0,
       'etag': etag,
@@ -453,8 +563,8 @@ class Pan123Operations {
     return Pan123UploadCompleteResponse.fromJson(processed);
   }
 
-  static Future<String> _sha256(File file) async {
-    final digest = await sha256.bind(file.openRead()).first;
+  static Future<String> _md5(File file) async {
+    final digest = await md5.bind(file.openRead()).first;
     return digest.toString();
   }
 

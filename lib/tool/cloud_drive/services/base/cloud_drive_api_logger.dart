@@ -139,4 +139,24 @@ class CloudDriveLoggingInterceptor extends Interceptor {
     logger.logError(err);
     handler.next(err);
   }
+
+  /// 便捷方法：为指定 Dio 添加日志拦截器。
+  static void attach(
+    Dio dio, {
+    required String provider,
+    bool? verbose,
+    int? truncateLength,
+    LogManager? logManager,
+  }) {
+    dio.interceptors.add(
+      CloudDriveLoggingInterceptor(
+        logger: CloudDriveApiLogger(
+          provider: provider,
+          verbose: verbose,
+          truncateLength: truncateLength,
+          logManager: logManager,
+        ),
+      ),
+    );
+  }
 }

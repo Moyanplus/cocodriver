@@ -64,8 +64,8 @@ class AccountStateHandler {
         ),
       );
 
-      // 加载根目录
-      await _stateManager.folderHandler.loadFolder(forceRefresh: true);
+      // 不在此处自动加载文件列表，避免侧边栏切换账号时频繁触发文件接口。
+      // 进入文件页时再按需加载。
 
       _logger.info('账号切换成功: ${account.name}');
     } catch (e) {
@@ -183,6 +183,24 @@ class AccountStateHandler {
     } catch (e) {
       _logger.error('账号验证失败: $e');
       return false;
+    }
+  }
+
+  /// 获取账号详情（昵称/容量等），由各云盘策略适配到通用模型
+  Future<CloudDriveAccountDetails?> getAccountDetails(
+    CloudDriveAccount account,
+  ) async {
+    try {
+      _logger.info('获取账号详情: ${account.name}');
+      final strategy = _stateManager.strategyRegistry.getStrategy(account.type);
+      if (strategy == null) {
+        _logger.warning('未找到策略，无法获取账号详情: ${account.type}');
+        return null;
+      }
+      return await strategy.getAccountDetails(account: account);
+    } catch (e, stack) {
+      _logger.error('获取账号详情失败: $e', stackTrace: stack);
+      return null;
     }
   }
 

@@ -16,7 +16,11 @@ class CloudDriveTypeState {
   /// 使用可用云盘类型的默认构造函数
   factory CloudDriveTypeState.defaultState() {
     return CloudDriveTypeState(
-      availableTypes: CloudDriveTypeHelper.availableTypes,
+      // 默认列出所有云盘类型，保证侧边栏可以切换任何已支持的云盘
+      availableTypes: CloudDriveType.values,
+      // 默认选中 123 云盘，并开启过滤
+      selectedType: CloudDriveType.pan123,
+      isFilterEnabled: true,
     );
   }
 

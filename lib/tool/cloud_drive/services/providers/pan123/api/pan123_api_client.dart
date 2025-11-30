@@ -5,10 +5,10 @@ import '../models/requests/pan123_offline_requests.dart';
 import '../models/requests/pan123_operation_requests.dart';
 import '../models/responses/pan123_file_list_response.dart';
 import '../models/responses/pan123_offline_responses.dart';
-import 'pan123_config.dart';
+import '../models/responses/pan123_user_info_response.dart';
 import 'pan123_base_service.dart';
 import 'pan123_operations.dart';
-import 'pan123_offline_operations.dart';
+import 'pan123_config.dart';
 
 /// 123 云盘 API 客户端（当前复用现有 Service，统一出入参）。
 class Pan123ApiClient {
@@ -20,27 +20,29 @@ class Pan123ApiClient {
     required CloudDriveAccount account,
     required Pan123ListRequest request,
   }) async {
-    return _safeCall(
-      () async {
-        final dio = Pan123BaseService.createDio(account);
-        final url = Uri.parse(
-          Pan123Config.getApiUrl(Pan123Config.endpoints['fileList']!),
-        );
-        final params = Pan123BaseService.buildRequestParams(
-          parentId: request.parentId,
-          page: request.page,
-          limit: request.pageSize,
-          searchValue: request.searchValue,
-        );
-        final uri = url.replace(
-          queryParameters: params.map((k, v) => MapEntry(k, v.toString())),
-        );
-        final response = await dio.get(uri.toString());
-        final data = response.data as Map<String, dynamic>? ?? {};
-        return Pan123FileListResponse.fromMap(data);
-      },
-      operation: '123云盘-获取文件列表',
-    );
+    return _safeCall(() async {
+      final dio = Pan123BaseService.createDio(account);
+      final url = Uri.parse(
+        Pan123Config.getApiUrl(Pan123Config.endpoints['fileList']!),
+      );
+      final params = Pan123BaseService.buildRequestParams(
+        parentId: request.parentId,
+        page: request.page,
+        limit: request.pageSize,
+        searchValue: request.searchValue,
+        trashed: request.trashed,
+        orderBy: request.orderBy,
+        orderDirection: request.orderDirection,
+        event: request.event,
+        next: request.next,
+      );
+      final uri = url.replace(
+        queryParameters: params.map((k, v) => MapEntry(k, v.toString())),
+      );
+      final response = await dio.get(uri.toString());
+      final data = response.data as Map<String, dynamic>? ?? {};
+      return Pan123FileListResponse.fromMap(data);
+    }, operation: '123云盘-获取文件列表');
   }
 
   /// 离线解析
@@ -49,7 +51,7 @@ class Pan123ApiClient {
     required Pan123OfflineResolveRequest request,
   }) {
     return _safeCall(
-      () => Pan123OfflineOperations.resolve(account: account, request: request),
+      () => Pan123Operations.resolveOffline(account: account, request: request),
       operation: '123云盘-离线解析',
     );
   }
@@ -60,7 +62,7 @@ class Pan123ApiClient {
     required Pan123OfflineSubmitRequest request,
   }) {
     return _safeCall(
-      () => Pan123OfflineOperations.submit(account: account, request: request),
+      () => Pan123Operations.submitOffline(account: account, request: request),
       operation: '123云盘-离线提交',
     );
   }
@@ -71,11 +73,24 @@ class Pan123ApiClient {
     required Pan123OfflineListRequest request,
   }) {
     return _safeCall(
-      () => Pan123OfflineOperations.listTasks(
+      () => Pan123Operations.listOfflineTasks(
         account: account,
         request: request,
       ),
       operation: '123云盘-离线任务列表',
+    );
+  }
+
+  /// 获取用户信息
+  Future<Pan123UserInfoResponse> getUserInfo({
+    required CloudDriveAccount account,
+  }) {
+    return _safeCall(
+      () => Pan123Operations.getUserInfo(
+        account: account,
+        dio: Pan123BaseService.createDio(account),
+      ),
+      operation: '123云盘-获取用户信息',
     );
   }
 
@@ -164,10 +179,7 @@ class Pan123ApiClient {
   }
 
   /// 包装执行函数，统一捕获异常
-  Future<T> _safeCall<T>(
-    Future<T> Function() fn, {
-    String? operation,
-  }) async {
+  Future<T> _safeCall<T>(Future<T> Function() fn, {String? operation}) async {
     try {
       return await fn();
     } on CloudDriveException {

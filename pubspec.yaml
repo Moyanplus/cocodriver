@@ -115,6 +115,7 @@ dependencies:
     path: packages/azlistview_fix
   mime: ^2.0.0
   crypto: ^3.0.7
+  meta: ^1.17.0
 
 dev_dependencies:
   flutter_test:

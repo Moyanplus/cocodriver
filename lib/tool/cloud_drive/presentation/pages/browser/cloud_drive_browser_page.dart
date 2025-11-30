@@ -54,6 +54,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   double _lastScrollOffset = 0;
   final CloudDriveBrowserViewModel _viewModel =
       const CloudDriveBrowserViewModel();
+  ProviderSubscription? _accountSub;
 
   CloudDriveEventHandler get _eventHandler =>
       ref.read(cloudDriveEventHandlerProvider);
@@ -62,13 +63,26 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   @override
   void initState() {
     super.initState();
-    // 加载初始数据
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _eventHandler.loadAccounts();
-    });
-
     // 监听滚动事件
     _scrollController.addListener(_onScroll);
+
+    // 账号切换后自动加载根目录
+    _accountSub = ref.listen(cloudDriveProvider, (previous, next) {
+      final prevId = previous?.currentAccount?.id;
+      final nextId = next.currentAccount?.id;
+      if (nextId != null && prevId != nextId) {
+        _eventHandler.loadFolder(forceRefresh: true);
+      }
+    });
+
+    // 初次进入，如果已有账号但未加载文件，则拉取根目录
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final state = ref.read(cloudDriveProvider);
+      final hasAccount = state.currentAccount != null;
+      if (hasAccount && state.files.isEmpty && state.folders.isEmpty) {
+        _eventHandler.loadFolder(forceRefresh: true);
+      }
+    });
   }
 
   /// 展示创建弹窗，处理文件/媒体上传或新建文件夹操作。
@@ -297,6 +311,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _accountSub?.close();
     super.dispose();
   }
 

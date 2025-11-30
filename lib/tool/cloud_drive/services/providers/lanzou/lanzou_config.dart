@@ -1,3 +1,5 @@
+import '../../../data/models/cloud_drive_entities.dart';
+
 /// 蓝奏云配置类
 ///
 /// 集中管理蓝奏云的所有配置参数，包括 API 端点、请求头、超时设置等。
@@ -168,4 +170,14 @@ class LanzouConfig {
   static String getResponseMessage(Map<String, dynamic> response) {
     return response['info']?.toString() ?? '未知错误';
   }
+
+  /// 上传请求头，集中定义，避免仓库/策略重复拼接。
+  static Map<String, String> buildUploadHeaders(CloudDriveAccount account) => {
+    ...defaultHeaders,
+    'Cookie': account.cookies ?? '',
+    'Referer': '$baseUrl/',
+    'Origin': baseUrl,
+    'X-Requested-With': 'XMLHttpRequest',
+    'Content-Type': 'multipart/form-data',
+  };
 }

@@ -26,6 +26,7 @@ import '../services/theme_service.dart';
 import '../../features/home/pages/home_page.dart';
 import '../../features/user/pages/user_profile_page.dart';
 import '../../tool/cloud_drive/presentation/pages/browser/cloud_drive_browser_page.dart';
+import '../../tool/cloud_drive/presentation/pages/transfer/transfer_page.dart';
 
 // ==================== 应用Provider包装器 ====================
 /// 应用提供者包装器
@@ -174,7 +175,12 @@ final currentPageIndexProvider = StateProvider<int>((ref) => 0);
 
 /// 页面列表提供者
 final pagesProvider = Provider<List<Widget>>(
-  (ref) => const [HomePage(), CloudDriveBrowserPage(), UserProfilePage()],
+  (ref) => const [
+    HomePage(),
+    CloudDriveBrowserPage(),
+    TransferPage(),
+    UserProfilePage(),
+  ],
 );
 
 /// 页面导航状态提供者

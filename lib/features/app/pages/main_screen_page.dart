@@ -111,53 +111,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         pinned: false,
         snap: false,
         actions: [
-          // 云盘助手页面的图标按钮
+          // 云盘页面的工具按钮（仅保留搜索/排序）
           if (currentIndex == 1) ...[
-            // 添加账号按钮
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: _handleAddAccount,
-              tooltip: '添加账号',
-            ),
-            // 切换账号选择器显示/隐藏按钮
-            Consumer(
-              builder: (context, ref, child) {
-                final showSelector =
-                    ref.watch(cloudDriveProvider).showAccountSelector;
-                return IconButton(
-                  icon: Icon(
-                    showSelector
-                        ? Icons.account_circle
-                        : Icons.account_circle_outlined,
-                  ),
-                  onPressed:
-                      () =>
-                          ref
-                              .read(cloudDriveEventHandlerProvider)
-                              .toggleAccountSelector(),
-                  tooltip: showSelector ? '隐藏账号选择器' : '显示账号选择器',
-                );
-              },
-            ),
-            // 取消待操作按钮
-            Consumer(
-              builder: (context, ref, child) {
-                final showFloatingButton =
-                    ref.watch(cloudDriveProvider).showFloatingActionButton;
-                return showFloatingButton
-                    ? IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed:
-                          () =>
-                              ref
-                                  .read(cloudDriveEventHandlerProvider)
-                                  .clearPendingOperation(),
-                      tooltip: '取消操作',
-                    )
-                    : const SizedBox.shrink();
-              },
-            ),
-            // 搜索按钮
             IconButton(
               icon: const Icon(Icons.search),
               onPressed: () async {
@@ -371,6 +326,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 icon: Icon(PhosphorIcons.cloud(), size: navIconSize),
                 selectedIcon: Icon(PhosphorIcons.cloud(), size: navIconSize),
                 label: l10n.files,
+              ),
+              NavigationDestination(
+                icon: Icon(PhosphorIcons.arrowsLeftRight(), size: navIconSize),
+                selectedIcon:
+                    Icon(PhosphorIcons.arrowsLeftRight(), size: navIconSize),
+                label: '传输',
               ),
               NavigationDestination(
                 icon: Icon(PhosphorIcons.user(), size: navIconSize),

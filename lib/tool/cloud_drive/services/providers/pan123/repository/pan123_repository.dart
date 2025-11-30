@@ -1,4 +1,5 @@
 import '../../../../base/cloud_drive_operation_service.dart';
+import '../../../../data/models/cloud_drive_dtos.dart' show CloudDriveQuotaInfo;
 import '../../../../data/models/cloud_drive_entities.dart';
 import '../../../../base/base_cloud_drive_repository.dart';
 import '../api/pan123_api_client.dart';
@@ -83,6 +84,7 @@ class Pan123Repository extends BaseCloudDriveRepository {
   }
 
   /// 搜索文件列表（仅 Pan123 使用，未纳入通用接口）
+  @override
   Future<List<CloudDriveFile>> search({
     required CloudDriveAccount account,
     required String keyword,
@@ -98,6 +100,29 @@ class Pan123Repository extends BaseCloudDriveRepository {
     );
     return _api.listFiles(account: account, request: request).then((r) {
       logListSummary('123云盘-搜索', r.files, folderId: request.parentId);
+      return r.files;
+    });
+  }
+
+  /// 回收站列表
+  @override
+  Future<List<CloudDriveFile>> listRecycle({
+    required CloudDriveAccount account,
+    int page = 1,
+    int pageSize = 100,
+  }) {
+    final request = Pan123ListRequest(
+      parentId: '0',
+      page: page,
+      pageSize: pageSize,
+      trashed: true,
+      orderBy: 'trashed_at',
+      orderDirection: 'desc',
+      event: 'recycleListFile',
+      next: '-1',
+    );
+    return _api.listFiles(account: account, request: request).then((r) {
+      logListSummary('123云盘-回收站', r.files, folderId: 'recycle');
       return r.files;
     });
   }
@@ -182,7 +207,35 @@ class Pan123Repository extends BaseCloudDriveRepository {
     return _api.getDownloadUrl(account: account, request: req);
   }
 
+  /// 获取账号详情
+  @override
+  Future<CloudDriveAccountDetails?> getAccountDetails({
+    required CloudDriveAccount account,
+  }) async {
+    final info = await _api.getUserInfo(account: account);
+    final used = info.used;
+    final total = info.total;
+    return CloudDriveAccountDetails(
+      id: account.id,
+      name: info.nickname.isNotEmpty ? info.nickname : account.name,
+      avatarUrl: info.avatar,
+      usedSpace: used,
+      totalSpace: total,
+      freeSpace: total - used,
+      isValid: true,
+      accountInfo: info.toAccountInfo(),
+      quotaInfo: CloudDriveQuotaInfo(
+        total: total,
+        used: used,
+        free: total - used,
+        expire: false,
+        serverTime: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      ),
+    );
+  }
+
   /// 上传文件（单分片）
+  @override
   Future<CloudDriveFile?> uploadFile({
     required CloudDriveAccount account,
     required String filePath,

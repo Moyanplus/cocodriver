@@ -4,8 +4,6 @@ import '../../../../base/cloud_drive_operation_service.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
 import '../../../../data/models/cloud_drive_dtos.dart';
 import '../../../../utils/cloud_drive_log_utils.dart';
-import '../api/pan123_config.dart';
-import '../models/requests/pan123_offline_requests.dart';
 import '../models/responses/pan123_offline_responses.dart';
 import '../utils/pan123_utils.dart';
 import '../repository/pan123_repository.dart';
@@ -329,6 +327,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     'createFolder': true, // 通过仓库实现
     'preview': false,
     'offlineDownload': true,
+    'recycle': true,
   };
 
   @override
@@ -418,8 +417,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
   Future<CloudDriveAccountDetails?> getAccountDetails({
     required CloudDriveAccount account,
   }) {
-    // TODO: 实现123云盘账号详情获取
-    return Future.value(null);
+    return _repository.getAccountDetails(account: account);
   }
 
   @override

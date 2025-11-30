@@ -1,5 +1,6 @@
 import '../../../core/logging/log_manager.dart';
 import '../data/models/cloud_drive_entities.dart';
+import 'cloud_drive_operation_service.dart';
 
 /// 各云盘 Repository 的统一接口定义。
 ///
@@ -63,6 +64,68 @@ abstract class BaseCloudDriveRepository {
     String? password,
   });
 
+  /// 获取账号详情，默认未实现。
+  Future<CloudDriveAccountDetails?> getAccountDetails({
+    required CloudDriveAccount account,
+  }) async {
+    LogManager().cloudDrive(
+      '${account.type.displayName} 尚未实现账号详情接口',
+      className: runtimeType.toString(),
+      methodName: 'getAccountDetails',
+      data: {'accountId': account.id},
+    );
+    return null;
+  }
+
+  /// 回收站列表，默认返回空。
+  Future<List<CloudDriveFile>> listRecycle({
+    required CloudDriveAccount account,
+    int page = 1,
+    int pageSize = 100,
+  }) async {
+    LogManager().cloudDrive(
+      '${account.type.displayName} 尚未实现回收站接口',
+      className: runtimeType.toString(),
+      methodName: 'listRecycle',
+      data: {'accountId': account.id},
+    );
+    return const [];
+  }
+
+  /// 搜索，默认返回空。
+  Future<List<CloudDriveFile>> search({
+    required CloudDriveAccount account,
+    required String keyword,
+    String? folderId,
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    LogManager().cloudDrive(
+      '${account.type.displayName} 尚未实现搜索接口',
+      className: runtimeType.toString(),
+      methodName: 'search',
+      data: {'accountId': account.id, 'keyword': keyword},
+    );
+    return const [];
+  }
+
+  /// 上传文件，默认未实现。
+  Future<CloudDriveFile?> uploadFile({
+    required CloudDriveAccount account,
+    required String filePath,
+    required String fileName,
+    String? parentId,
+    UploadProgressCallback? onProgress,
+  }) async {
+    LogManager().cloudDrive(
+      '${account.type.displayName} 尚未实现上传接口',
+      className: runtimeType.toString(),
+      methodName: 'uploadFile',
+      data: {'accountId': account.id, 'fileName': fileName},
+    );
+    return null;
+  }
+
   /// 获取预览信息，默认返回 null，由具体云盘按需实现。
   Future<CloudDrivePreviewResult?> getPreviewInfo({
     required CloudDriveAccount account,
@@ -85,8 +148,9 @@ abstract class BaseCloudDriveRepository {
     int sampleCount = 2,
   }) {
     if (files.isEmpty) {
-      LogManager()
-          .cloudDrive('$provider 列表为空${folderId != null ? ' folder=$folderId' : ''}');
+      LogManager().cloudDrive(
+        '$provider 列表为空${folderId != null ? ' folder=$folderId' : ''}',
+      );
       return;
     }
 
@@ -94,34 +158,40 @@ abstract class BaseCloudDriveRepository {
 
     // 只展示一个文件夹和一个文件（如果存在）
     final samplesList = <CloudDriveFile>{};
-    final folderSample =
-        files.firstWhere((f) => f.isFolder, orElse: () => files.first);
+    final folderSample = files.firstWhere(
+      (f) => f.isFolder,
+      orElse: () => files.first,
+    );
     samplesList.add(folderSample);
-    final fileSample =
-        files.firstWhere((f) => !f.isFolder, orElse: () => folderSample);
+    final fileSample = files.firstWhere(
+      (f) => !f.isFolder,
+      orElse: () => folderSample,
+    );
     samplesList.add(fileSample);
 
-    final samples = samplesList.map((f) {
-      final kind = f.isFolder ? 'folder' : 'file';
-      return [
-        'id=${fmt(f.id)}',
-        'name=${fmt(f.name)}',
-        'type=$kind',
-        'size=${fmt(f.size)}',
-        'createdAt=${fmt(f.createdAt)}',
-        'updatedAt=${fmt(f.updatedAt)}',
-        'parent=${fmt(f.folderId)}',
-        'path=${fmt(f.path)}',
-        'downloadUrl=${fmt(f.downloadUrl)}',
-        'thumbnailUrl=${fmt(f.thumbnailUrl)}',
-        'bigThumbnailUrl=${fmt(f.bigThumbnailUrl)}',
-        'previewUrl=${fmt(f.previewUrl)}',
-        'description=${fmt(f.description)}',
-        'category=${fmt(f.category?.name)}',
-        'downloadCount=${f.downloadCount}',
-        'shareCount=${f.shareCount}',
-      ].join(', ');
-    }).join('\n  - ');
+    final samples = samplesList
+        .map((f) {
+          final kind = f.isFolder ? 'folder' : 'file';
+          return [
+            'id=${fmt(f.id)}',
+            'name=${fmt(f.name)}',
+            'type=$kind',
+            'size=${fmt(f.size)}',
+            'createdAt=${fmt(f.createdAt)}',
+            'updatedAt=${fmt(f.updatedAt)}',
+            'parent=${fmt(f.folderId)}',
+            'path=${fmt(f.path)}',
+            'downloadUrl=${fmt(f.downloadUrl)}',
+            'thumbnailUrl=${fmt(f.thumbnailUrl)}',
+            'bigThumbnailUrl=${fmt(f.bigThumbnailUrl)}',
+            'previewUrl=${fmt(f.previewUrl)}',
+            'description=${fmt(f.description)}',
+            'category=${fmt(f.category?.name)}',
+            'downloadCount=${f.downloadCount}',
+            'shareCount=${f.shareCount}',
+          ].join(', ');
+        })
+        .join('\n  - ');
 
     LogManager().cloudDrive(
       '$provider 列表: total=${files.length}'

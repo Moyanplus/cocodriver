@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
@@ -50,13 +51,28 @@ class Pan123BaseService {
       ),
     );
 
-    dio.interceptors.add(
-      CloudDriveLoggingInterceptor(
-        logger: CloudDriveApiLogger(
-          provider: '123云盘',
-          verbose: Pan123Config.enableDetailedLog,
-        ),
+    CloudDriveLoggingInterceptor.attach(
+      dio,
+      provider: '123云盘',
+      verbose: Pan123Config.enableDetailedLog,
+    );
+
+    return dio;
+  }
+
+  /// 上传用的精简 Dio：不携带业务 Header，挂上统一日志拦截器。
+  static Dio createUploadDio({required String provider}) {
+    final dio = Dio(
+      BaseOptions(
+        followRedirects: true,
+        headers: {HttpHeaders.acceptEncodingHeader: 'gzip, deflate, br'},
       ),
+    );
+
+    CloudDriveLoggingInterceptor.attach(
+      dio,
+      provider: provider,
+      verbose: Pan123Config.enableDetailedLog,
     );
 
     return dio;
@@ -74,9 +90,7 @@ class Pan123BaseService {
       response['code'] == 0;
 
   /// 获取响应中的 data 字段
-  static Map<String, dynamic>? getResponseData(
-    Map<String, dynamic> response,
-  ) {
+  static Map<String, dynamic>? getResponseData(Map<String, dynamic> response) {
     if (isSuccessResponse(response)) {
       return response['data'] as Map<String, dynamic>?;
     }
@@ -121,6 +135,9 @@ class Pan123BaseService {
     String? orderBy,
     String? orderDirection,
     String? searchValue,
+    bool trashed = false,
+    String event = 'homeListFile',
+    String next = '0',
   }) {
     // 生成时间戳参数（类似你URL中的901108958=1754698117-5448833-1822996736）
     final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -131,15 +148,15 @@ class Pan123BaseService {
       timestamp.toString(): randomValue,
       'driveId': '0', // 固定值
       'limit': limit.clamp(1, Pan123Config.maxPageSize),
-      'next': '0', // 分页参数
+      'next': next, // 分页参数
       'orderBy': orderBy ?? 'update_time', // 默认按更新时间排序
       'orderDirection': orderDirection ?? 'desc', // 默认降序
       'parentFileId': Pan123Config.getFolderId(parentId),
-      'trashed': 'false', // 不包含回收站文件
+      'trashed': trashed ? 'true' : 'false', // 回收站过滤
       'SearchData': searchValue ?? '', // 搜索关键词
       'Page': page.toString(),
       'OnlyLookAbnormalFile': '0', // 不只查看异常文件
-      'event': 'homeListFile', // 事件类型
+      'event': event, // 事件类型
       'operateType': '1', // 操作类型
       'inDirectSpace': 'false', // 不在直接空间中
     };

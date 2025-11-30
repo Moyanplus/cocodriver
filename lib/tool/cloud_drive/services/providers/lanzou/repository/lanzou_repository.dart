@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 import '../../../../../../core/logging/log_manager.dart';
+import '../../../../base/cloud_drive_operation_service.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
 import '../../../../base/base_cloud_drive_repository.dart';
 import '../../../base/cloud_drive_api_logger.dart';
@@ -64,6 +65,16 @@ class LanzouRepository extends BaseCloudDriveRepository {
     return dio;
   }
 
+  /// 从 Cookie 中提取 UID，便于在策略/业务层使用。
+  static String? extractUidFromCookies(String cookies) =>
+      LanzouUtils.extractUid(cookies);
+
+  /// 校验 Cookie 有效性，成功返回 true。
+  Future<bool> validateSession() async {
+    final resp = await validateCookies();
+    return resp.success;
+  }
+
   /// 获取当前账号指定文件夹下的文件/文件夹列表。
   /// [account] 蓝奏云账号
   /// [folderId] 目标文件夹ID，默认根目录 -1
@@ -78,7 +89,9 @@ class LanzouRepository extends BaseCloudDriveRepository {
     final targetFolderId = folderId ?? '-1';
     final files = await fetchFiles(targetFolderId, page: page);
     final folders =
-        page == 1 ? await fetchFolders(targetFolderId) : const <CloudDriveFile>[];
+        page == 1
+            ? await fetchFolders(targetFolderId)
+            : const <CloudDriveFile>[];
     final all = [...folders, ...files];
     logListSummary('蓝奏云', all, folderId: targetFolderId);
     return all;
@@ -97,7 +110,7 @@ class LanzouRepository extends BaseCloudDriveRepository {
     );
     final response = await _postWithVei(request);
 
-    final parsed = LanzouFilesResponse.fromMap(response);
+    final parsed = LanzouFilesResponse.fromMap(response.raw);
     if (!parsed.success) {
       throw LanzouApiException(parsed.info ?? '获取文件列表失败');
     }
@@ -117,7 +130,7 @@ class LanzouRepository extends BaseCloudDriveRepository {
     );
     final response = await _postWithVei(request, allowFolderMeta: true);
 
-    final parsed = LanzouFoldersResponse.fromMap(response);
+    final parsed = LanzouFoldersResponse.fromMap(response.raw);
     if (!parsed.success) {
       throw LanzouApiException(parsed.info ?? '获取文件夹失败');
     }
@@ -215,9 +228,9 @@ class LanzouRepository extends BaseCloudDriveRepository {
       parentFolderId: parentId ?? '-1',
       description: description,
     );
-    if (response.success && response.raw['text'] != null) {
+    if (response.success && response.text != null) {
       return CloudDriveFile(
-        id: response.raw['text'],
+        id: response.text!,
         name: name,
         isFolder: true,
         folderId: parentId ?? '/',
@@ -293,27 +306,30 @@ class LanzouRepository extends BaseCloudDriveRepository {
     );
   }
 
-  /// 上传文件，返回蓝奏云原始响应。
+  /// 上传文件，返回通用 CloudDriveFile。
   /// [filePath] 本地路径
   /// [fileName] 上传后的文件名
-  /// [folderId] 目标文件夹，默认 -1（根）
-  Future<LanzouUploadResponse> uploadFile({
+  /// [parentId] 目标文件夹，默认 -1（根）
+  @override
+  Future<CloudDriveFile?> uploadFile({
+    required CloudDriveAccount account,
     required String filePath,
     required String fileName,
-    String folderId = '-1',
+    String? parentId,
+    UploadProgressCallback? onProgress,
   }) async {
-    final targetAccount = _accountOrThrow();
+    final folderId = parentId ?? '-1';
     final file = File(filePath);
     if (!await file.exists()) {
       throw LanzouApiException('文件不存在: $filePath');
     }
 
-    final uid = LanzouUtils.extractUid(targetAccount.cookies ?? '');
+    final uid = LanzouUtils.extractUid(account.cookies ?? '');
     if (uid == null || uid.isEmpty) {
       throw LanzouApiException('无法从Cookie中提取UID，请重新登录');
     }
 
-    final headers = _buildUploadHeaders(targetAccount);
+    final headers = _buildUploadHeaders(account);
     final formData = FormData.fromMap({
       'task': LanzouConfig.getTaskId('uploadFile'),
       'vie': '2',
@@ -327,7 +343,7 @@ class LanzouRepository extends BaseCloudDriveRepository {
       'upload_file': await MultipartFile.fromFile(filePath, filename: fileName),
     });
 
-    final response = await LanzouDioFactory.createDio(targetAccount).post(
+    final response = await LanzouDioFactory.createDio(account).post(
       LanzouConfig.uploadUrl,
       data: formData,
       options: Options(
@@ -345,7 +361,15 @@ class LanzouRepository extends BaseCloudDriveRepository {
     if (data is Map<String, dynamic>) {
       final model = LanzouUploadResponse.fromMap(data);
       if (model.success) {
-        return model;
+        final info = model.file;
+        return CloudDriveFile(
+          id: info?.id ?? '',
+          name: info?.name ?? fileName,
+          isFolder: false,
+          folderId: folderId,
+          size: await file.length(),
+          metadata: info?.toMap(),
+        );
       }
       throw LanzouApiException(model.message ?? '上传失败');
     }
@@ -560,53 +584,21 @@ class LanzouRepository extends BaseCloudDriveRepository {
   }
 
   /// 构造包含 VEI 的请求体并发送。
-  Future<Map<String, dynamic>> _postWithVei(
+  Future<LanzouOperationResponse> _postWithVei(
     LanzouFolderRequest request, {
     bool allowFolderMeta = false,
   }) async {
     final vei = await _getVei();
     final data = request.build(vei);
-    if (allowFolderMeta) {
-      return _postAllowFolderMeta(data);
-    }
-    return _postExpectSuccessMap(data);
-  }
-
-  /// 发送请求并保证 `zt == 1`，否则抛出异常（用于需要原始 Map 的场景）
-  Future<Map<String, dynamic>> _postExpectSuccessMap(
-    Map<String, dynamic> data,
-  ) async {
-    final response = await _client.post(data);
-    final parsed = LanzouOperationResponse.fromMap(response);
-    if (parsed.success) {
-      return parsed.raw;
-    }
-    throw LanzouApiException(parsed.message ?? '蓝奏云请求失败');
-  }
-
-  Future<Map<String, dynamic>> _postAllowFolderMeta(
-    Map<String, dynamic> data,
-  ) async {
-    final response = await _client.post(data);
-    final parsed = LanzouOperationResponse.fromMap(response);
-    if (parsed.success || _containsFolderMeta(response)) {
-      return parsed.raw;
-    }
-    throw LanzouApiException(parsed.message ?? '蓝奏云请求失败');
-  }
-
-  bool _containsFolderMeta(Map<String, dynamic> response) {
-    final info = response['info'];
-    if (info is List && info.isNotEmpty) {
-      final first = info.first;
-      if (first is Map<String, dynamic>) {
-        return first.containsKey('folderid') || first.containsKey('now');
-      }
-    }
-    return false;
+    return _postExpectSuccess(data);
   }
 
   Future<LanzouOperationResponse> _postOperationExpectSuccess(
+    Map<String, dynamic> data,
+  ) async =>
+      _postExpectSuccess(data);
+
+  Future<LanzouOperationResponse> _postExpectSuccess(
     Map<String, dynamic> data,
   ) async {
     final response = await _client.post(data);
@@ -640,18 +632,8 @@ class LanzouRepository extends BaseCloudDriveRepository {
     return acc;
   }
 
-  Map<String, String> _buildUploadHeaders(CloudDriveAccount account) {
-    return LanzouDioFactory.createHeaders(
-      account,
-      extra: {
-        'Cookie': account.cookies ?? '',
-        'Referer': '${LanzouConfig.baseUrl}/',
-        'Origin': LanzouConfig.baseUrl,
-        'X-Requested-With': 'XMLHttpRequest',
-        'Content-Type': 'multipart/form-data',
-      },
-    );
-  }
+  Map<String, String> _buildUploadHeaders(CloudDriveAccount account) =>
+      LanzouConfig.buildUploadHeaders(account);
 
   Future<LanzouOperationResponse> createFolderRaw({
     required String folderName,
@@ -673,21 +655,21 @@ class LanzouRepository extends BaseCloudDriveRepository {
   }
 
   CloudDriveFile _mapFile(LanzouRawFile raw) => CloudDriveFile(
-        id: raw.id,
-        name: raw.name,
-        size: LanzouUtils.parseFileSize(raw.size),
-        updatedAt: _tryParseTime(raw.time),
-        isFolder: false,
-        metadata: _buildFileMetadata(raw),
-        downloadCount: raw.downloads ?? -1,
-      );
+    id: raw.id,
+    name: raw.name,
+    size: LanzouUtils.parseFileSize(raw.size),
+    updatedAt: _tryParseTime(raw.time),
+    isFolder: false,
+    metadata: _buildFileMetadata(raw),
+    downloadCount: raw.downloads ?? -1,
+  );
 
   CloudDriveFile _mapFolder(LanzouRawFolder raw) => CloudDriveFile(
-        id: raw.id,
-        name: raw.name,
-        updatedAt: _tryParseTime(raw.time),
-        isFolder: true,
-      );
+    id: raw.id,
+    name: raw.name,
+    updatedAt: _tryParseTime(raw.time),
+    isFolder: true,
+  );
 
   Map<String, dynamic>? _buildFileMetadata(LanzouRawFile raw) {
     final data = <String, dynamic>{};
