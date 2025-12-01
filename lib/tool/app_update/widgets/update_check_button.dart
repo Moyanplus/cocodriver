@@ -1,6 +1,7 @@
 /// 检查更新按钮组件
 ///
 /// 在设置页面或其他地方使用的检查更新按钮
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

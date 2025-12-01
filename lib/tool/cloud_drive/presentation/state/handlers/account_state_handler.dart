@@ -44,6 +44,45 @@ class AccountStateHandler {
         ),
       );
 
+      // 恢复持久化的当前账号
+      final savedCurrentId =
+          await CloudDriveAccountService.getCurrentAccountId();
+      if (savedCurrentId != null && accounts.isNotEmpty) {
+        CloudDriveAccount? savedAccount;
+        for (final acc in accounts) {
+          if (acc.id == savedCurrentId) {
+            savedAccount = acc;
+            break;
+          }
+        }
+        savedAccount ??= accounts.first;
+        _stateManager.updateState(
+          (state) => state.copyWith(currentAccount: savedAccount),
+        );
+      }
+
+      // 预填充持久化的认证状态
+      final persistedDetails = <String, CloudDriveAccountDetails>{};
+      for (final acc in accounts) {
+        if (acc.lastAuthValid != null) {
+          persistedDetails[acc.id] = CloudDriveAccountDetails(
+            id: acc.id,
+            name: acc.name,
+            isValid: acc.lastAuthValid!,
+          );
+        }
+      }
+      if (persistedDetails.isNotEmpty) {
+        _stateManager.updateState(
+          (state) => state.copyWith(
+            accountDetails: {
+              ...state.accountDetails,
+              ...persistedDetails,
+            },
+          ),
+        );
+      }
+
       _logger.info('账号列表加载成功: ${accounts.length}个账号');
     } catch (e) {
       _logger.error('加载账号列表失败: $e');
@@ -53,6 +92,51 @@ class AccountStateHandler {
     }
   }
 
+  /// 统一的认证失效处理：标记失效、清理凭证、更新持久化，并提示。
+  Future<void> _handleAuthFailure(
+    CloudDriveAccount account,
+    String message, {
+    String? errorMessage,
+  }) async {
+    final cleared = account.copyWith(
+      clearAuthorizationToken: true,
+      clearCookies: true,
+      clearQrCodeToken: true,
+      lastAuthValid: false,
+      lastAuthTime: DateTime.now(),
+      lastAuthError: errorMessage ?? message,
+    );
+
+    await CloudDriveAccountService.updateAccount(cleared);
+    await CloudDriveAccountService.updateAuthState(
+      account.id,
+      isValid: false,
+      message: errorMessage ?? message,
+    );
+
+    final stateNow = _stateManager.getCurrentState();
+    final updatedAccounts = stateNow.accounts
+        .map((a) => a.id == account.id ? cleared : a)
+        .toList();
+    final updatedDetails = Map<String, CloudDriveAccountDetails>.from(
+      stateNow.accountDetails,
+    )..[account.id] = CloudDriveAccountDetails(
+        id: account.id,
+        name: account.name,
+        isValid: false,
+      );
+
+    _stateManager.updateState(
+      (state) => state.copyWith(
+        accounts: updatedAccounts,
+        accountDetails: updatedDetails,
+        currentAccount:
+            state.currentAccount?.id == account.id ? null : state.currentAccount,
+        error: message,
+      ),
+    );
+  }
+
   /// 切换当前账号，切换成功后自动加载根目录内容
   ///
   /// [accountIndex] 要切换到的账号索引
@@ -60,13 +144,13 @@ class AccountStateHandler {
     _logger.info('切换账号: $accountIndex');
 
     try {
-      final currentState = _stateManager.getCurrentState();
-      if (accountIndex < 0 || accountIndex >= currentState.accounts.length) {
+      final previousState = _stateManager.getCurrentState();
+      if (accountIndex < 0 || accountIndex >= previousState.accounts.length) {
         throw Exception('账号索引无效: $accountIndex');
       }
 
-      final account = currentState.accounts[accountIndex];
-      // 先乐观切换，再视登录状态决定是否校验，避免未登录账号打接口
+      final account = previousState.accounts[accountIndex];
+      // 先切换，再校验；校验失败则回滚
       _stateManager.updateState(
         (state) => state.copyWith(
           currentAccount: account,
@@ -80,8 +164,18 @@ class AccountStateHandler {
       );
 
       if (account.isLoggedIn) {
-        // 异步校验有效性，结果写入状态
-        unawaited(_validateAndStoreAccount(account));
+        final details = await _fetchAndStoreAccountDetails(account);
+        if (details != null && details.isValid == false) {
+          _logger.warning('账号切换失败，认证失效: ${account.name}');
+          _stateManager.setState(
+            previousState.copyWith(
+              accountDetails: _stateManager.getCurrentState().accountDetails,
+              error: '账号已失效，请重新登录：${account.name}',
+            ),
+          );
+          return;
+        }
+        await CloudDriveAccountService.saveCurrentAccountId(account.id);
       }
 
       // 不在此处自动加载文件列表，避免侧边栏切换账号时频繁触发文件接口。
@@ -97,19 +191,21 @@ class AccountStateHandler {
   /// 添加新的云盘账号
   ///
   /// [account] 要添加的云盘账号
-  Future<void> addAccount(CloudDriveAccount account) async {
+  Future<AddAccountResult> addAccount(CloudDriveAccount account) async {
     _logger.info('添加账号: ${account.name}');
 
     try {
-      await CloudDriveAccountService.addAccount(account);
+      final result = await CloudDriveAccountService.addAccount(account);
 
       // 重新加载账号列表
       await loadAccounts();
 
       _logger.info('账号添加成功: ${account.name}');
+      return result;
     } catch (e) {
       _logger.error('添加账号失败: $e');
       _stateManager.updateState((state) => state.copyWith(error: e.toString()));
+      rethrow;
     }
   }
 
@@ -298,24 +394,29 @@ class AccountStateHandler {
                 state.accountState.copyWith(validatingAccountIds: newValidating),
           );
         });
+        await CloudDriveAccountService.updateAuthState(
+          account.id,
+          isValid: details.isValid,
+          message: null,
+        );
+        if (details.isValid == false) {
+          await _handleAuthFailure(account, '账号已失效，请重新登录：${account.name}');
+        }
       }
       return details;
     } on CloudDriveException catch (e, stack) {
       _logger.error('获取账号详情失败: $e\n$stack');
       if (e.type == CloudDriveErrorType.authentication) {
-        final details = CloudDriveAccountDetails(
+        await _handleAuthFailure(
+          account,
+          '账号已失效，请重新登录：${account.name}',
+          errorMessage: e.message,
+        );
+        return CloudDriveAccountDetails(
           id: account.id,
           name: account.name,
           isValid: false,
         );
-        _stateManager.updateState((state) {
-          final updated = Map<String, CloudDriveAccountDetails>.from(
-            state.accountDetails,
-          );
-          updated[account.id] = details;
-          return state.copyWith(accountDetails: updated);
-        });
-        return details;
       }
       return null;
     } catch (e, stack) {

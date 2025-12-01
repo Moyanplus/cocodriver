@@ -1,6 +1,7 @@
 /// 更新对话框组件
 ///
 /// 显示更新信息、下载进度、安装等UI
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -4,6 +4,7 @@ import '../../registry/cloud_drive_provider_descriptor.dart';
 import 'strategy/pan123_operation_strategy.dart';
 import 'package:flutter/material.dart';
 import 'services/pan123_qr_login_service.dart';
+import 'pan123_account_normalizer.dart';
 
 /// 123 云盘的可插拔描述符。
 /// 负责向注册表提供策略、能力、登录方式等信息。
@@ -20,5 +21,6 @@ CloudDriveProviderDescriptor createPan123ProviderDescriptor() {
     qrLoginService: Pan123QRLoginService(),
     qrLoginAuthType: AuthType.authorization,
     description: '123云盘，免费大容量',
+    accountNormalizer: Pan123AccountNormalizer(),
   );
 }

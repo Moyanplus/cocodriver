@@ -1,6 +1,7 @@
 /// Mock 更新数据服务
 ///
 /// 提供模拟的更新数据用于测试和开发
+library;
 
 import '../models/update_models.dart';
 
@@ -140,7 +141,3 @@ class UpdateScenario {
     required this.forceUpdate,
   });
 }
-
-
-
-

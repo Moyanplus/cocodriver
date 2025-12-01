@@ -42,8 +42,9 @@ class CloudDriveFileItem extends StatelessWidget {
     final double? uploadProgress =
         (file.metadata?['uploadProgress'] as num?)?.toDouble();
 
-    final overlay =
-        MaterialStateProperty.all(theme.colorScheme.primary.withOpacity(0.08));
+    final overlay = WidgetStateProperty.all(
+      theme.colorScheme.primary.withOpacity(0.08),
+    );
     final splashColor = theme.colorScheme.primary.withOpacity(0.16);
     final highlightColor = theme.colorScheme.primary.withOpacity(0.06);
 
@@ -71,7 +72,7 @@ class CloudDriveFileItem extends StatelessWidget {
               color:
                   highlight
                       ? theme.colorScheme.primary.withValues(alpha: 0.08)
-                      : theme.colorScheme.surface,  // 保持系统默认背景
+                      : theme.colorScheme.surface, // 保持系统默认背景
 
               borderRadius: borderRadius,
               border:
@@ -110,46 +111,48 @@ class CloudDriveFileItem extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                    AnimatedScale(
-                      scale: highlight ? 1.05 : 1,
-                      duration: const Duration(milliseconds: 180),
-                      child: _buildFileIcon(context),
-                    ),
-                    SizedBox(width: ResponsiveUtils.getSpacing() * 0.5),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            file.name,
-                            style: TextStyle(
-                              fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                12.sp,
-                              ),
-                              fontWeight: FontWeight.w500,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          SizedBox(height: ResponsiveUtils.getSpacing() * 0.15),
-                          Text(
-                            _buildSecondaryText(isUploading, uploadProgress),
-                            style: TextStyle(
-                              fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                10.sp,
-                              ),
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                      AnimatedScale(
+                        scale: highlight ? 1.05 : 1,
+                        duration: const Duration(milliseconds: 180),
+                        child: _buildFileIcon(context),
                       ),
-                    ),
-                  ],
-                ),
+                      SizedBox(width: ResponsiveUtils.getSpacing() * 0.5),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              file.name,
+                              style: TextStyle(
+                                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                  12.sp,
+                                ),
+                                fontWeight: FontWeight.w500,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(
+                              height: ResponsiveUtils.getSpacing() * 0.15,
+                            ),
+                            Text(
+                              _buildSecondaryText(isUploading, uploadProgress),
+                              style: TextStyle(
+                                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                  10.sp,
+                                ),
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

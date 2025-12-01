@@ -51,7 +51,7 @@ class IndexBarDragDetails {
 }
 
 ///Default Index data.
-const List<String> kIndexBarData = const [
+const List<String> kIndexBarData = [
   'A',
   'B',
   'C',
@@ -279,7 +279,7 @@ class _IndexBarState extends State<IndexBar> {
   @override
   void initState() {
     super.initState();
-    widget.indexBarDragNotifier?.dragDetails?.addListener(_valueChanged);
+    widget.indexBarDragNotifier?.dragDetails.addListener(_valueChanged);
     widget.controller?._attach(this);
   }
 
@@ -338,7 +338,7 @@ class _IndexBarState extends State<IndexBar> {
         color: textStyle.color,
       );
     } else {
-      child = Text('$tag', style: textStyle);
+      child = Text(tag, style: textStyle);
     }
     return Container(
       width: widget.options.indexHintWidth,
@@ -433,7 +433,7 @@ class _IndexBarState extends State<IndexBar> {
         color: textStyle?.color,
       );
     } else {
-      child = Text('$tag', style: textStyle);
+      child = Text(tag, style: textStyle);
     }
 
     return Container(
@@ -549,8 +549,7 @@ class _BaseIndexBarState extends State<BaseIndexBar> {
   Widget build(BuildContext context) {
     List<Widget> children = List.generate(widget.data.length, (index) {
       Widget child = widget.itemBuilder == null
-          ? Center(
-              child: Text('${widget.data[index]}', style: widget.textStyle))
+          ? Center(child: Text(widget.data[index], style: widget.textStyle))
           : widget.itemBuilder!(context, index);
       return SizedBox(
         width: widget.width,

@@ -1,6 +1,7 @@
 /// 云盘数据传输对象（DTO）模型
 ///
 /// 定义云盘功能中使用的各种数据传输对象，包括路径信息、账号信息、文件信息等。
+library;
 
 import 'package:flutter/material.dart';
 

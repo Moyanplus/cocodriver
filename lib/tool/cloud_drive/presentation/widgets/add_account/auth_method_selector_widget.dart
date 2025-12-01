@@ -113,7 +113,7 @@ class AuthMethodSelectorWidget extends StatelessWidget {
             isEnabled ? (selected) => onAuthTypeChanged(authType) : null,
         selectedColor: Theme.of(context).colorScheme.primaryContainer,
         checkmarkColor: Theme.of(context).colorScheme.primary,
-        disabledColor: Theme.of(context).colorScheme.surfaceVariant,
+        disabledColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       ),
     );
   }

@@ -32,8 +32,8 @@ class AccountService extends CloudDriveServiceBase {
     }, operationName: '保存账号列表');
   }
 
-  /// 添加账号
-  Future<Result<void>> addAccount(CloudDriveAccount account) async {
+  /// 添加账号，返回是否替换
+  Future<Result<AddAccountResult>> addAccount(CloudDriveAccount account) async {
     logOperation(
       '添加账号',
       params: {
@@ -43,8 +43,11 @@ class AccountService extends CloudDriveServiceBase {
     );
 
     return await ResultUtils.fromAsync(() async {
-      await CloudDriveAccountService.addAccount(account);
-      logSuccess('添加账号', details: account.name);
+      final result = await CloudDriveAccountService.addAccount(account);
+      final detail =
+          result.replaced ? '${account.name} (已替换)' : account.name;
+      logSuccess('添加账号', details: detail);
+      return result;
     }, operationName: '添加账号');
   }
 

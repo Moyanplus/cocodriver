@@ -1,6 +1,7 @@
 /// 应用更新模块的数据模型
 ///
 /// 包含版本信息、更新信息、下载进度等模型定义
+library;
 
 import 'package:json_annotation/json_annotation.dart';
 

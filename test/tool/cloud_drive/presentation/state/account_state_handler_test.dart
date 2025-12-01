@@ -18,8 +18,7 @@ class _TestLogger implements CloudDriveLoggerAdapter {
 }
 
 class _StubFolderHandler extends FolderStateHandler {
-  _StubFolderHandler(CloudDriveStateManager manager)
-    : super(manager, logger: _TestLogger());
+  _StubFolderHandler(super.manager) : super(logger: _TestLogger());
 
   final List<bool> loadCalls = [];
 
@@ -44,38 +43,43 @@ void main() {
       createdAt: DateTime.now(),
     );
 
-    test('switchAccount updates current account and triggers refresh', () async {
-      late _StubFolderHandler folderHandler;
-      final manager = CloudDriveStateManager(
-        logger: _TestLogger(),
-        folderHandlerBuilder: (m) {
-          folderHandler = _StubFolderHandler(m);
-          return folderHandler;
-        },
-        accountHandlerBuilder: (m) => AccountStateHandler(m, logger: _TestLogger()),
-      );
+    test(
+      'switchAccount updates current account and triggers refresh',
+      () async {
+        late _StubFolderHandler folderHandler;
+        final manager = CloudDriveStateManager(
+          logger: _TestLogger(),
+          folderHandlerBuilder: (m) {
+            folderHandler = _StubFolderHandler(m);
+            return folderHandler;
+          },
+          accountHandlerBuilder:
+              (m) => AccountStateHandler(m, logger: _TestLogger()),
+        );
 
-      manager.setState(
-        CloudDriveState(
-          accounts: [account1, account2],
-          currentAccount: account1,
-          files: [CloudDriveFile(id: 'f', name: 'F', isFolder: false)],
-        ),
-      );
+        manager.setState(
+          CloudDriveState(
+            accounts: [account1, account2],
+            currentAccount: account1,
+            files: [CloudDriveFile(id: 'f', name: 'F', isFolder: false)],
+          ),
+        );
 
-      await manager.accountHandler.switchAccount(1);
+        await manager.accountHandler.switchAccount(1);
 
-      final newState = manager.getCurrentState();
-      expect(newState.currentAccount?.id, equals('acc2'));
-      expect(newState.files, isEmpty);
-      expect(folderHandler.loadCalls, equals([true]));
-    });
+        final newState = manager.getCurrentState();
+        expect(newState.currentAccount?.id, equals('acc2'));
+        expect(newState.files, isEmpty);
+        expect(folderHandler.loadCalls, equals([true]));
+      },
+    );
 
     test('switchAccount throws when index invalid', () async {
       final manager = CloudDriveStateManager(
         logger: _TestLogger(),
         folderHandlerBuilder: (m) => _StubFolderHandler(m),
-        accountHandlerBuilder: (m) => AccountStateHandler(m, logger: _TestLogger()),
+        accountHandlerBuilder:
+            (m) => AccountStateHandler(m, logger: _TestLogger()),
       );
 
       manager.setState(

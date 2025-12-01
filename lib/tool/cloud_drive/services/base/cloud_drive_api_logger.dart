@@ -42,7 +42,7 @@ class CloudDriveApiLogger {
       ..writeln('[$provider] 请求: ${options.method} ${options.uri}');
 
     if (verbose && options.headers.isNotEmpty) {
-      buffer.writeln('Headers: ${_formatMap(options.headers)}');
+      buffer.writeln('Headers:\n${_formatData(options.headers)}');
     }
 
     if (options.data != null) {

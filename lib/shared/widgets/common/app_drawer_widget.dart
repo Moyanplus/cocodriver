@@ -657,6 +657,8 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
                               cloudState.accountState.validatingAccountIds
                                   .contains(a.id);
                           final isLoggedIn = !isInvalid && a.isLoggedIn;
+                          final isCurrent =
+                              cloudState.currentAccount?.id == a.id;
                           final statusText =
                               isValidating
                                   ? '校验中...'
@@ -675,6 +677,9 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
                                           ).colorScheme.onSurfaceVariant;
 
                           return ListTile(
+                            leading: isCurrent
+                                ? const Icon(Icons.check_circle, color: Colors.green)
+                                : const Icon(Icons.account_circle_outlined),
                             title: Text('${a.name} (${a.type.displayName})'),
                             subtitle: Text('ID: ${a.id}'),
                             trailing: Text(
@@ -731,10 +736,14 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
       content: AddAccountFormWidget(
         onAccountCreated: (account) async {
           try {
-            await handler.addAccount(account);
+            final result = await handler.addAccount(account);
             if (rootContext.mounted) {
               Navigator.pop(rootContext);
-              _showAccountAddSuccess(rootContext, account.name);
+              _showAccountAddSuccess(
+                rootContext,
+                account.name,
+                replaced: result.replaced,
+              );
             }
           } catch (e) {
             if (rootContext.mounted) {
@@ -755,10 +764,18 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
     );
   }
 
-  void _showAccountAddSuccess(BuildContext context, String accountName) {
+  void _showAccountAddSuccess(
+    BuildContext context,
+    String accountName, {
+    bool replaced = false,
+  }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('账号添加成功: $accountName'),
+        content: Text(
+          replaced
+              ? '账号已存在，已更新：$accountName'
+              : '账号添加成功: $accountName',
+        ),
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 2),
       ),

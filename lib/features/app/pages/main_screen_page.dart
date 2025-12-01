@@ -353,10 +353,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       content: AddAccountFormWidget(
         onAccountCreated: (account) async {
           try {
-            await ref.read(cloudDriveEventHandlerProvider).addAccount(account);
+            final result = await ref
+                .read(cloudDriveEventHandlerProvider)
+                .addAccount(account);
             if (context.mounted) {
               Navigator.pop(context);
-              _showAccountAddSuccess(account.name);
+              _showAccountAddSuccess(
+                account.name,
+                replaced: result.replaced,
+              );
             }
           } catch (e) {
             if (context.mounted) {
@@ -370,11 +375,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   /// 显示账号添加成功消息
-  void _showAccountAddSuccess(String accountName) {
+  void _showAccountAddSuccess(String accountName, {bool replaced = false}) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('账号添加成功: $accountName'),
+          content: Text(
+            replaced
+                ? '账号已存在，已更新：$accountName'
+                : '账号添加成功: $accountName',
+          ),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 3),
         ),

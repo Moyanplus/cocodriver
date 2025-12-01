@@ -18,8 +18,7 @@ class _TestLogger implements CloudDriveLoggerAdapter {
 }
 
 class _StubFolderHandler extends FolderStateHandler {
-  _StubFolderHandler(CloudDriveStateManager manager)
-    : super(manager, logger: _TestLogger());
+  _StubFolderHandler(super.manager) : super(logger: _TestLogger());
 
   final List<bool> loadCalls = [];
 
@@ -37,7 +36,11 @@ void main() {
       type: CloudDriveType.lanzou,
       createdAt: DateTime.now(),
     );
-    final childFolder = CloudDriveFile(id: 'child', name: 'Child', isFolder: true);
+    final childFolder = CloudDriveFile(
+      id: 'child',
+      name: 'Child',
+      isFolder: true,
+    );
 
     test('enterFolder updates path and clears batch state', () async {
       late _StubFolderHandler handler;
@@ -80,7 +83,11 @@ void main() {
         },
       );
 
-      final parentFolder = CloudDriveFile(id: 'parent', name: 'Parent', isFolder: true);
+      final parentFolder = CloudDriveFile(
+        id: 'parent',
+        name: 'Parent',
+        isFolder: true,
+      );
       manager.setState(
         CloudDriveState(
           accounts: [account],

@@ -303,7 +303,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
       final success = uploaded != null;
       if (success) {
-        LogManager().cloudDrive('123云盘 - 上传文件成功: ${uploaded!.name}');
+        LogManager().cloudDrive('123云盘 - 上传文件成功: ${uploaded.name}');
       } else {
         LogManager().cloudDrive('123云盘 - 上传文件失败');
       }

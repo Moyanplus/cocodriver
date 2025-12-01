@@ -13,6 +13,7 @@
 /// 作者: Flutter开发团队
 /// 版本: 1.0.0
 /// 创建时间: 2024年
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -75,10 +76,8 @@ class ResponsiveUtils {
       specOf(context).maxContentWidth;
 
   /// 当前断点的默认内边距
-  static EdgeInsets contentPadding(
-    BuildContext context, {
-    double? vertical,
-  }) => specOf(context).contentPadding(vertical: vertical);
+  static EdgeInsets contentPadding(BuildContext context, {double? vertical}) =>
+      specOf(context).contentPadding(vertical: vertical);
 
   /// 当前断点的默认间距
   static double spacingOf(BuildContext context) => specOf(context).spacing;
@@ -123,11 +122,7 @@ class ResponsiveUtils {
       case ResponsiveSizeClass.large:
         return large ?? expanded ?? medium ?? compact;
       case ResponsiveSizeClass.extraLarge:
-        return extraLarge ??
-            large ??
-            expanded ??
-            medium ??
-            compact;
+        return extraLarge ?? large ?? expanded ?? medium ?? compact;
     }
   }
 
@@ -308,11 +303,7 @@ class ResponsiveUtils {
       case ResponsiveSizeClass.large:
         return desktop ?? expanded ?? tablet ?? mobile;
       case ResponsiveSizeClass.extraLarge:
-        return extraLarge ??
-            desktop ??
-            expanded ??
-            tablet ??
-            mobile;
+        return extraLarge ?? desktop ?? expanded ?? tablet ?? mobile;
     }
   }
 
@@ -336,9 +327,9 @@ class ResponsiveUtils {
     );
 
     return Wrap(
-      children: children,
       spacing: spacing ?? getSpacing(),
       runSpacing: runSpacing ?? getSpacing(),
+      children: children,
     );
   }
 

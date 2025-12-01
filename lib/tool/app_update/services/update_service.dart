@@ -1,6 +1,7 @@
 /// 更新服务
 ///
 /// 负责检查更新、下载更新、安装更新等功能
+library;
 
 import 'dart:async';
 import 'dart:io';

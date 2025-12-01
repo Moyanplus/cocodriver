@@ -60,9 +60,7 @@ class _FileOperationBottomSheetState
     _offsetAnimation = Tween<Offset>(
       begin: const Offset(0, 0.08),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
     _controller.forward();
     _gateway = defaultCloudDriveGateway;
     // 【优化】移除不必要的文件详情加载
@@ -474,8 +472,8 @@ class _FileOperationBottomSheetState
       await DownloadService().createDownloadTask(
         url: downloadUrl,
         fileName: widget.file.name,
-        downloadDir: (await DownloadConfigService().loadConfig())
-            .downloadDirectory,
+        downloadDir:
+            (await DownloadConfigService().loadConfig()).downloadDirectory,
         showNotification: true,
         openFileFromNotification: false,
         isExternalStorage: false,
@@ -614,22 +612,18 @@ class _FileOperationBottomSheetState
             originalName,
           );
         },
-        action: () => _gateway.renameFile(
-          account: account,
-          file: file,
-          newName: newName,
-        ),
+        action:
+            () => _gateway.renameFile(
+              account: account,
+              file: file,
+              newName: newName,
+            ),
         rollbackWhen: (result) => !result,
       );
 
       if (success) {
         LogManager().cloudDrive('重命名成功: ${file.name} -> $newName');
-        cacheManager.updateFileInCache(
-          account.id,
-          folderId,
-          file.id,
-          newName,
-        );
+        cacheManager.updateFileInCache(account.id, folderId, file.id, newName);
         onOperationResult?.call('文件重命名成功', true);
       } else {
         LogManager().cloudDrive('重命名失败，需要回滚');
@@ -798,7 +792,7 @@ class _ImageViewerState extends State<_ImageViewer> {
         maxScale: 4.0,
         boundaryMargin: EdgeInsets.all(double.infinity),
         constrained: false,
-        child: Container(
+        child: SizedBox(
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: Center(

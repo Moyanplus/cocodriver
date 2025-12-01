@@ -7,7 +7,6 @@ import '../models/responses/baidu_operation_response.dart';
 import '../models/responses/baidu_api_result.dart';
 import '../baidu_base_service.dart';
 import '../baidu_config.dart';
-import 'package:dio/dio.dart';
 
 /// 百度网盘 API 客户端（当前复用已有 Service，统一 DTO）。
 class BaiduApiClient {
@@ -16,20 +15,20 @@ class BaiduApiClient {
     required BaiduListRequest request,
   }) async {
     final dio = BaiduBaseService.createDio(account);
-    final uri = Uri.parse('${dio.options.baseUrl}${BaiduConfig.getApiEndpoint('fileList')}');
+    final uri = Uri.parse(
+      '${dio.options.baseUrl}${BaiduConfig.getApiEndpoint('fileList')}',
+    );
     final params = BaiduBaseService.buildRequestParams(
       dir: request.folderId,
       page: request.page,
       num: request.pageSize,
     );
 
-    final result = await _safeCall<Map<String, dynamic>>(
-      () async {
-        final response = await dio.getUri(uri.replace(queryParameters: params));
-        final data = response.data as Map<String, dynamic>? ?? {};
-        return BaiduBaseService.handleApiResponse(data);
-      },
-    );
+    final result = await _safeCall<Map<String, dynamic>>(() async {
+      final response = await dio.getUri(uri.replace(queryParameters: params));
+      final data = response.data as Map<String, dynamic>? ?? {};
+      return BaiduBaseService.handleApiResponse(data);
+    });
 
     final respData = result.data ?? {};
     final list = respData['list'] as List<dynamic>? ?? [];
@@ -38,13 +37,19 @@ class BaiduApiClient {
     for (final item in list) {
       if (item is Map<String, dynamic>) {
         final isDir = (item['isdir']?.toString() ?? '0') == '1';
-        final timestamp = item['server_mtime'] is int
-            ? DateTime.fromMillisecondsSinceEpoch((item['server_mtime'] as int) * 1000)
-            : null;
+        final timestamp =
+            item['server_mtime'] is int
+                ? DateTime.fromMillisecondsSinceEpoch(
+                  (item['server_mtime'] as int) * 1000,
+                )
+                : null;
         final file = CloudDriveFile(
           id: item['fs_id']?.toString() ?? '',
           name: item['server_filename']?.toString() ?? '',
-          size: item['size'] is int ? item['size'] as int : int.tryParse('${item['size'] ?? ''}'),
+          size:
+              item['size'] is int
+                  ? item['size'] as int
+                  : int.tryParse('${item['size'] ?? ''}'),
           updatedAt: timestamp,
           createdAt: timestamp,
           isFolder: isDir,
@@ -71,13 +76,11 @@ class BaiduApiClient {
     final data = {
       'fid_list': [request.file.id],
     };
-    final result = await _safeCall<Map<String, dynamic>>(
-      () async {
-        final response = await dio.postUri(uri, data: data);
-        final body = response.data as Map<String, dynamic>? ?? {};
-        return BaiduBaseService.handleApiResponse(body);
-      },
-    );
+    final result = await _safeCall<Map<String, dynamic>>(() async {
+      final response = await dio.postUri(uri, data: data);
+      final body = response.data as Map<String, dynamic>? ?? {};
+      return BaiduBaseService.handleApiResponse(body);
+    });
     return BaiduOperationResponse(
       success: result.success,
       message: result.message,
@@ -92,17 +95,12 @@ class BaiduApiClient {
     final uri = Uri.parse(
       '${dio.options.baseUrl}${BaiduConfig.getApiEndpoint('rename')}',
     );
-    final data = {
-      'file_id': request.file.id,
-      'new_name': request.newName,
-    };
-    final result = await _safeCall<Map<String, dynamic>>(
-      () async {
-        final response = await dio.postUri(uri, data: data);
-        final body = response.data as Map<String, dynamic>? ?? {};
-        return BaiduBaseService.handleApiResponse(body);
-      },
-    );
+    final data = {'file_id': request.file.id, 'new_name': request.newName};
+    final result = await _safeCall<Map<String, dynamic>>(() async {
+      final response = await dio.postUri(uri, data: data);
+      final body = response.data as Map<String, dynamic>? ?? {};
+      return BaiduBaseService.handleApiResponse(body);
+    });
     return BaiduOperationResponse(
       success: result.success,
       message: result.message,
@@ -126,13 +124,11 @@ class BaiduApiClient {
       'rtype': 1,
       'name': request.name,
     };
-    final result = await _safeCall<Map<String, dynamic>>(
-      () async {
-        final response = await dio.postUri(uri, data: data);
-        final body = response.data as Map<String, dynamic>? ?? {};
-        return BaiduBaseService.handleApiResponse(body);
-      },
-    );
+    final result = await _safeCall<Map<String, dynamic>>(() async {
+      final response = await dio.postUri(uri, data: data);
+      final body = response.data as Map<String, dynamic>? ?? {};
+      return BaiduBaseService.handleApiResponse(body);
+    });
     if (result.success) {
       return CloudDriveFile(
         id: '',
@@ -154,16 +150,14 @@ class BaiduApiClient {
     );
     final data = {
       'filelist': [
-        {'fileid': request.file.id, 'path': request.targetFolderId}
+        {'fileid': request.file.id, 'path': request.targetFolderId},
       ],
     };
-    final result = await _safeCall<Map<String, dynamic>>(
-      () async {
-        final response = await dio.postUri(uri, data: data);
-        final body = response.data as Map<String, dynamic>? ?? {};
-        return BaiduBaseService.handleApiResponse(body);
-      },
-    );
+    final result = await _safeCall<Map<String, dynamic>>(() async {
+      final response = await dio.postUri(uri, data: data);
+      final body = response.data as Map<String, dynamic>? ?? {};
+      return BaiduBaseService.handleApiResponse(body);
+    });
     return BaiduOperationResponse(
       success: result.success,
       message: result.message,
@@ -180,16 +174,14 @@ class BaiduApiClient {
     );
     final data = {
       'filelist': [
-        {'fileid': request.file.id, 'path': request.targetFolderId}
+        {'fileid': request.file.id, 'path': request.targetFolderId},
       ],
     };
-    final result = await _safeCall<Map<String, dynamic>>(
-      () async {
-        final response = await dio.postUri(uri, data: data);
-        final body = response.data as Map<String, dynamic>? ?? {};
-        return BaiduBaseService.handleApiResponse(body);
-      },
-    );
+    final result = await _safeCall<Map<String, dynamic>>(() async {
+      final response = await dio.postUri(uri, data: data);
+      final body = response.data as Map<String, dynamic>? ?? {};
+      return BaiduBaseService.handleApiResponse(body);
+    });
     return BaiduOperationResponse(
       success: result.success,
       message: result.message,
@@ -204,7 +196,10 @@ class BaiduApiClient {
     final uri = Uri.parse(
       '${dio.options.baseUrl}${BaiduConfig.getApiEndpoint('download')}',
     );
-    final data = {'fid_list': [request.file.id], 'type': 'dlink'};
+    final data = {
+      'fid_list': [request.file.id],
+      'type': 'dlink',
+    };
     return _safeCall<String?>(() async {
       final response = await dio.postUri(uri, data: data);
       final body = response.data as Map<String, dynamic>? ?? {};

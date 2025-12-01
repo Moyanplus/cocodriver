@@ -161,25 +161,61 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                             CrossAxisAlignment.start,
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text(
-                                            account.name,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize:
-                                                  ResponsiveUtils.getResponsiveFontSize(
-                                                    12.sp,
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  account.name,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize:
+                                                        ResponsiveUtils.getResponsiveFontSize(
+                                                          12.sp,
+                                                        ),
+                                                    color:
+                                                        isSelected
+                                                            ? Theme.of(context)
+                                                                .colorScheme
+                                                                .onPrimaryContainer
+                                                            : Theme.of(
+                                                              context,
+                                                            ).colorScheme
+                                                                .onSurface,
                                                   ),
-                                              color:
-                                                  isSelected
-                                                      ? Theme.of(context)
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                              ),
+                                              if (isSelected) ...[
+                                                const SizedBox(width: 6),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 2,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primaryContainer,
+                                                    borderRadius: BorderRadius.circular(
+                                                      12,
+                                                    ),
+                                                  ),
+                                                  child: Text(
+                                                    '当前',
+                                                    style: TextStyle(
+                                                      fontSize:
+                                                          ResponsiveUtils.getResponsiveFontSize(
+                                                            10.sp,
+                                                          ),
+                                                      color: Theme.of(context)
                                                           .colorScheme
-                                                          .onPrimaryContainer
-                                                      : Theme.of(
-                                                        context,
-                                                      ).colorScheme.onSurface,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
+                                                          .onPrimaryContainer,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                           Text(
                                             _getTypeLabel(account.type),

@@ -1,6 +1,7 @@
 import '../../../config/cloud_drive_capabilities.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../registry/cloud_drive_provider_descriptor.dart';
+import '../../shared/default_account_normalizer.dart';
 import 'strategy/ali_operation_strategy.dart';
 import 'package:flutter/material.dart';
 
@@ -16,5 +17,6 @@ CloudDriveProviderDescriptor createAliProviderDescriptor() {
     color: Colors.red,
     supportedAuthTypes: const [AuthType.web, AuthType.qrCode],
     description: '阿里云盘，高速下载',
+    accountNormalizer: DefaultAccountNormalizer(type: CloudDriveType.ali),
   );
 }

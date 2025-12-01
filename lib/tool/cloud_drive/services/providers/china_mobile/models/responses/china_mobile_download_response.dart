@@ -1,5 +1,4 @@
 import 'china_mobile_base_response.dart';
-import 'parsing_utils.dart';
 
 /// 中国移动云盘下载响应
 class ChinaMobileDownloadResponse {

@@ -8,9 +8,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // 核心模块导入
 import '../../../../../core/logging/log_manager.dart';
+import '../services/registry/cloud_drive_provider_registry.dart';
+import '../services/registry/cloud_drive_provider_descriptor.dart';
+import 'cloud_drive_account_normalizer.dart';
 
 // 云盘数据模型导入
 import '../data/models/cloud_drive_entities.dart';
+
+/// 添加账号结果，标识是否替换了已有账号。
+class AddAccountResult {
+  const AddAccountResult({required this.account, required this.replaced});
+
+  final CloudDriveAccount account;
+  final bool replaced;
+}
 
 /// 账号存储抽象，便于测试/替换实现。
 abstract class CloudDriveAccountStore {
@@ -50,6 +61,27 @@ class CloudDriveAccountService {
   static CloudDriveAccountStore _store = SharedPrefsCloudDriveAccountStore();
 
   static List<CloudDriveAccount>? _cache;
+  static const String _currentAccountKey = 'cloud_drive_current_account_id';
+
+  static Future<CloudDriveAccount> _normalizeAccount(
+    CloudDriveAccount account,
+  ) async {
+    final CloudDriveProviderDescriptor? descriptor =
+        CloudDriveProviderRegistry.get(account.type);
+    final normalizer = descriptor?.accountNormalizer;
+    if (normalizer == null) return account;
+    try {
+      return await normalizer.normalize(account);
+    } catch (e) {
+      LogManager().warning(
+        '账号归一化失败，使用原始ID',
+        className: 'CloudDriveAccountService',
+        methodName: '_normalizeAccount',
+        data: {'error': e.toString(), 'type': account.type.name},
+      );
+      return account;
+    }
+  }
 
   /// 可注入的存储实现，便于测试/替换
   static void setStore(CloudDriveAccountStore store) {
@@ -110,9 +142,10 @@ class CloudDriveAccountService {
     }
   }
 
-  /// 添加账号
-  static Future<void> addAccount(CloudDriveAccount account) async {
+  /// 添加账号，返回是否替换了已有账号
+  static Future<AddAccountResult> addAccount(CloudDriveAccount account) async {
     try {
+      account = await _normalizeAccount(account);
       _debugLog(
         '开始保存账号到本地存储',
         data: {
@@ -124,7 +157,14 @@ class CloudDriveAccountService {
       final accounts = await loadAccounts();
       _debugLog('当前已有账号数量', data: {'currentCount': accounts.length});
 
-      accounts.add(account);
+      final existingIndex = accounts.indexWhere((a) => a.id == account.id);
+      final replaced = existingIndex >= 0;
+      if (replaced) {
+        accounts[existingIndex] = account;
+        _debugLog('检测到相同ID账号，已替换', data: {'id': account.id});
+      } else {
+        accounts.add(account);
+      }
       await saveAccounts(accounts);
 
       // 验证保存后立即读取
@@ -137,6 +177,7 @@ class CloudDriveAccountService {
           'isLoggedIn': savedAccount.isLoggedIn,
         },
       );
+      return AddAccountResult(account: account, replaced: replaced);
     } catch (e) {
       LogManager().error(
         '保存账号失败',
@@ -147,6 +188,22 @@ class CloudDriveAccountService {
       );
       rethrow;
     }
+  }
+
+  /// 保存当前账号ID（null 表示清除）
+  static Future<void> saveCurrentAccountId(String? accountId) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (accountId == null) {
+      await prefs.remove(_currentAccountKey);
+    } else {
+      await prefs.setString(_currentAccountKey, accountId);
+    }
+  }
+
+  /// 读取当前账号ID
+  static Future<String?> getCurrentAccountId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_currentAccountKey);
   }
 
   /// 更新账号
@@ -175,6 +232,35 @@ class CloudDriveAccountService {
       );
       rethrow;
     }
+  }
+
+  /// 更新账号的认证状态（持久化）。
+  static Future<void> updateAuthState(
+    String accountId, {
+    required bool isValid,
+    String? message,
+  }) async {
+    final accounts = await loadAccounts();
+    final index = accounts.indexWhere((a) => a.id == accountId);
+    if (index == -1) return;
+
+    final now = DateTime.now();
+    final updated = accounts[index].copyWith(
+      lastAuthValid: isValid,
+      lastAuthTime: now,
+      lastAuthError: isValid ? null : message,
+      clearLastAuthError: isValid,
+    );
+    accounts[index] = updated;
+    await saveAccounts(accounts);
+    _debugLog(
+      '更新账号认证状态',
+      data: {
+        'accountId': accountId,
+        'isValid': isValid,
+        'message': message,
+      },
+    );
   }
 
   /// 删除账号

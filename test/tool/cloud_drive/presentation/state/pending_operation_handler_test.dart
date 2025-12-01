@@ -21,7 +21,7 @@ class _TestLogger implements CloudDriveLoggerAdapter {
 }
 
 class _FakeFolderHandler extends FolderStateHandler {
-  _FakeFolderHandler(CloudDriveStateManager manager) : super(manager);
+  _FakeFolderHandler(super.manager);
 
   bool moveShouldSucceed = true;
   bool copyShouldSucceed = true;

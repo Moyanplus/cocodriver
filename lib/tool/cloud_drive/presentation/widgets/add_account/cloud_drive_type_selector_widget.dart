@@ -24,7 +24,7 @@ class CloudDriveTypeSelectorWidget extends StatelessWidget {
     final hasDescriptor = descriptors.isNotEmpty;
 
     return DropdownButtonFormField<CloudDriveType>(
-      value: selectedType,
+      initialValue: selectedType,
       decoration: InputDecoration(
         labelText: AddAccountFormConstants.labelCloudDriveType,
         border: OutlineInputBorder(
@@ -37,43 +37,51 @@ class CloudDriveTypeSelectorWidget extends StatelessWidget {
           vertical: AddAccountFormConstants.contentPaddingVertical.h,
         ),
       ),
-      items: hasDescriptor
-          ? descriptors
-              .map(
-                (descriptor) => DropdownMenuItem(
-                  value: descriptor.type,
-                  child: Row(
-                    children: [
-                      Icon(
-                        descriptor.iconData ?? descriptor.type.iconData,
-                        color: descriptor.color ?? descriptor.type.color,
-                        size: AddAccountFormConstants.iconSizeLarge.w,
+      items:
+          hasDescriptor
+              ? descriptors
+                  .map(
+                    (descriptor) => DropdownMenuItem(
+                      value: descriptor.type,
+                      child: Row(
+                        children: [
+                          Icon(
+                            descriptor.iconData ?? descriptor.type.iconData,
+                            color: descriptor.color ?? descriptor.type.color,
+                            size: AddAccountFormConstants.iconSizeLarge.w,
+                          ),
+                          SizedBox(
+                            width: AddAccountFormConstants.smallSpacing.w,
+                          ),
+                          Text(
+                            descriptor.displayName ??
+                                descriptor.type.displayName,
+                          ),
+                        ],
                       ),
-                      SizedBox(width: AddAccountFormConstants.smallSpacing.w),
-                      Text(descriptor.displayName ?? descriptor.type.displayName),
-                    ],
-                  ),
-                ),
-              )
-              .toList()
-          : CloudDriveTypeHelper.availableTypes
-              .map(
-                (type) => DropdownMenuItem(
-                  value: type,
-                  child: Row(
-                    children: [
-                      Icon(
-                        type.iconData,
-                        color: type.color,
-                        size: AddAccountFormConstants.iconSizeLarge.w,
+                    ),
+                  )
+                  .toList()
+              : CloudDriveTypeHelper.availableTypes
+                  .map(
+                    (type) => DropdownMenuItem(
+                      value: type,
+                      child: Row(
+                        children: [
+                          Icon(
+                            type.iconData,
+                            color: type.color,
+                            size: AddAccountFormConstants.iconSizeLarge.w,
+                          ),
+                          SizedBox(
+                            width: AddAccountFormConstants.smallSpacing.w,
+                          ),
+                          Text(type.displayName),
+                        ],
                       ),
-                      SizedBox(width: AddAccountFormConstants.smallSpacing.w),
-                      Text(type.displayName),
-                    ],
-                  ),
-                ),
-              )
-              .toList(),
+                    ),
+                  )
+                  .toList(),
       onChanged: (value) {
         if (value != null) {
           onTypeChanged(value);

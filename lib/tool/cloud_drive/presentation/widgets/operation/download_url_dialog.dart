@@ -115,7 +115,7 @@ class DownloadUrlDialog extends StatelessWidget {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

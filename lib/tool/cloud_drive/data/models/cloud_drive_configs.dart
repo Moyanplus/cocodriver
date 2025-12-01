@@ -286,7 +286,7 @@ class PostLoginConfig {
   static const PostLoginConfig defaultConfig = PostLoginConfig(
     hasPostLoginProcessing: false,
     enableAutoRedirect: true,
-    waitTime: const Duration(seconds: 2),
+    waitTime: Duration(seconds: 2),
   );
 }
 

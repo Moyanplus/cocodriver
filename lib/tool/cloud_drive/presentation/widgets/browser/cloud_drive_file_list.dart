@@ -167,44 +167,44 @@ class CloudDriveFileList extends StatelessWidget {
 
   /// 图标视图：按当前宽度自适应列数，便于在不同屏幕一次展示更多文件
   Widget _buildGridView(BuildContext context) => LayoutBuilder(
-        builder: (context, constraints) {
-          final width =
-              constraints.maxWidth == double.infinity
-                  ? MediaQuery.of(context).size.width
-                  : constraints.maxWidth;
-          // 根据容器宽度动态计算列数，保证小屏也至少两列，大屏可展示更多
-          var crossAxisCount = (width / 120).floor();
-          if (crossAxisCount < 2) crossAxisCount = 2;
-          if (crossAxisCount > 6) crossAxisCount = 6;
-          final gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 6.w,
-            mainAxisSpacing: 6.w,
-            childAspectRatio: 1,
-          );
+    builder: (context, constraints) {
+      final width =
+          constraints.maxWidth == double.infinity
+              ? MediaQuery.of(context).size.width
+              : constraints.maxWidth;
+      // 根据容器宽度动态计算列数，保证小屏也至少两列，大屏可展示更多
+      var crossAxisCount = (width / 120).floor();
+      if (crossAxisCount < 2) crossAxisCount = 2;
+      if (crossAxisCount > 6) crossAxisCount = 6;
+      final gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 6.w,
+        mainAxisSpacing: 6.w,
+        childAspectRatio: 1,
+      );
 
-          final items = state.allItems;
-          final totalCount = items.length + (state.isLoadingMore ? 1 : 0);
-          return GridView.builder(
-            key: PageStorageKey<String>(
-              'cloud_drive_grid_${state.currentAccount?.id ?? 'no_account'}_${state.currentFolder?.id ?? 'root'}',
-            ),
-            controller: scrollController,
-            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 6.h),
-            gridDelegate: gridDelegate,
-            itemCount: totalCount,
-            itemBuilder: (context, index) {
-              if (index >= items.length) {
-                return Padding(
-                  padding: EdgeInsets.all(16.w),
-                  child: const Center(child: CircularProgressIndicator()),
-                );
-              }
-              return _buildGridTile(items[index]);
-            },
-          );
+      final items = state.allItems;
+      final totalCount = items.length + (state.isLoadingMore ? 1 : 0);
+      return GridView.builder(
+        key: PageStorageKey<String>(
+          'cloud_drive_grid_${state.currentAccount?.id ?? 'no_account'}_${state.currentFolder?.id ?? 'root'}',
+        ),
+        controller: scrollController,
+        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 6.h),
+        gridDelegate: gridDelegate,
+        itemCount: totalCount,
+        itemBuilder: (context, index) {
+          if (index >= items.length) {
+            return Padding(
+              padding: EdgeInsets.all(16.w),
+              child: const Center(child: CircularProgressIndicator()),
+            );
+          }
+          return _buildGridTile(items[index]);
         },
       );
+    },
+  );
 
   Widget _buildGridTile(CloudDriveFile item) {
     final isFolder = state.folders.contains(item);
@@ -216,9 +216,10 @@ class CloudDriveFileList extends StatelessWidget {
       isSelected: isSelected,
       isBatchMode: state.isBatchMode,
       onTap:
-          () => state.isBatchMode
-              ? onToggleSelection(item.id)
-              : isFolder
+          () =>
+              state.isBatchMode
+                  ? onToggleSelection(item.id)
+                  : isFolder
                   ? onFolderTap(item)
                   : onFileTap(item),
       onLongPress: () => onLongPress(item.id),
@@ -271,9 +272,7 @@ class CloudDriveFileList extends StatelessWidget {
         needRebuild: true,
         decoration: const BoxDecoration(color: Colors.transparent),
         textStyle: baseStyle,
-        downTextStyle: baseStyle.copyWith(
-          color: theme.colorScheme.primary,
-        ),
+        downTextStyle: baseStyle.copyWith(color: theme.colorScheme.primary),
         selectTextStyle: const TextStyle(
           fontSize: 11,
           color: Colors.white,
@@ -363,8 +362,20 @@ class CloudDriveFileList extends StatelessWidget {
   }
 
   DateTime? _resolveTimeForIndex(CloudDriveFile file) {
-    const createdKeys = ['createdTime', 'createTime', 'created_at', 'createdAt', 'ctime'];
-    const modifiedKeys = ['modifiedTime', 'updateTime', 'updated_at', 'updatedAt', 'mtime'];
+    const createdKeys = [
+      'createdTime',
+      'createTime',
+      'created_at',
+      'createdAt',
+      'ctime',
+    ];
+    const modifiedKeys = [
+      'modifiedTime',
+      'updateTime',
+      'updated_at',
+      'updatedAt',
+      'mtime',
+    ];
     final updatedOrCreated = file.updatedAt ?? file.createdAt;
 
     switch (state.sortField) {
@@ -381,10 +392,7 @@ class CloudDriveFileList extends StatelessWidget {
     }
   }
 
-  DateTime? _extractTimeFromMetadata(
-    CloudDriveFile file,
-    List<String> keys,
-  ) {
+  DateTime? _extractTimeFromMetadata(CloudDriveFile file, List<String> keys) {
     final meta = file.metadata;
     if (meta == null) return null;
     for (final key in keys) {
@@ -532,7 +540,9 @@ class _GridFileTile extends StatelessWidget {
     final radius = BorderRadius.circular(16);
     final size = 46.w;
 
-    if (!isFolder && file.thumbnailUrl != null && file.thumbnailUrl!.isNotEmpty) {
+    if (!isFolder &&
+        file.thumbnailUrl != null &&
+        file.thumbnailUrl!.isNotEmpty) {
       return ClipRRect(
         borderRadius: radius,
         child: SizedBox(
@@ -561,23 +571,21 @@ class _GridFileTile extends StatelessWidget {
 }
 
 class _IndexedEntry extends ISuspensionBean {
-  _IndexedEntry({
-    required this.file,
-    required String tag,
-  })  : _tag = tag,
-        isLoader = false,
-        isFolder = file?.isFolder ?? false;
+  _IndexedEntry({required this.file, required String tag})
+    : _tag = tag,
+      isLoader = false,
+      isFolder = file?.isFolder ?? false;
 
   _IndexedEntry.loader()
-      : file = null,
-        _tag = '~',
-        isLoader = true,
-        isFolder = false;
+    : file = null,
+      _tag = '~',
+      isLoader = true,
+      isFolder = false;
 
   final CloudDriveFile? file;
   final bool isLoader;
   final bool isFolder;
-  String _tag;
+  final String _tag;
   String get tag => _tag;
 
   @override
@@ -724,7 +732,7 @@ class _SkeletonItemState extends State<_SkeletonItem>
       child: Container(
         height: 60.h,
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceVariant,
+          color: theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(
             ResponsiveUtils.getCardRadius() * 0.6,
           ),

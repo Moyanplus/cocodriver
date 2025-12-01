@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../../../lib/tool/cloud_drive/data/models/cloud_drive_entities.dart';
+import 'package:coco_cloud_drive/tool/cloud_drive/data/models/cloud_drive_entities.dart';
 
 void main() {
   group('CloudDriveState Tests', () {

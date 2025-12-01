@@ -170,11 +170,12 @@ class Pan123Operations {
       operationName: operationName,
       account: account,
       action: () async {
-        final endpoint = request.isPaid
-            ? Pan123Config.endpoints['shareListPaid']!
-            : Pan123Config.endpoints['shareListFree']!;
+        final endpoint =
+            request.isPaid
+                ? Pan123Config.endpoints['shareListPaid']!
+                : Pan123Config.endpoints['shareListFree']!;
         final base = Pan123Config.shareBaseUrl;
-        final url = Uri.parse('$base${endpoint}');
+        final url = Uri.parse('$base$endpoint');
         final query = request.toQueryParams();
 
         final dio = Pan123BaseService.createDio(account);

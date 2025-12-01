@@ -71,7 +71,7 @@ class LogStyle {
       resolved = methodName;
     }
     if (resolved == null || resolved.isEmpty) return null;
-    return '${_bold}($resolved)$_reset';
+    return '$_bold($resolved)$_reset';
   }
 
   static String dim(String text) => '$_dim$text$_reset';

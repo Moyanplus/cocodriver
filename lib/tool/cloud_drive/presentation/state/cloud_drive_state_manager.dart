@@ -3,6 +3,7 @@ library;
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../base/cloud_drive_account_service.dart';
 import '../../base/cloud_drive_service_gateway.dart';
 import '../../core/result.dart';
 import '../../data/models/cloud_drive_entities.dart';
@@ -32,7 +33,9 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
         accountHandlerBuilder?.call(this) ??
         AccountStateHandler(
           this,
-          validationService: AccountValidationService(logger ?? DefaultCloudDriveLoggerAdapter()),
+          validationService: AccountValidationService(
+            logger ?? DefaultCloudDriveLoggerAdapter(),
+          ),
         );
     folderHandler =
         folderHandlerBuilder?.call(this) ?? FolderStateHandler(this);
@@ -192,8 +195,8 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
   /// 添加云盘账号
   ///
   /// [account] 要添加的云盘账号
-  Future<void> addAccount(CloudDriveAccount account) async {
-    await accountHandler.addAccount(account);
+  Future<AddAccountResult> addAccount(CloudDriveAccount account) async {
+    return await accountHandler.addAccount(account);
   }
 
   /// 删除云盘账号
@@ -245,10 +248,9 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
 
   /// 切换账号选择器显示状态
   void toggleAccountSelector() {
-    final next =
-        state.accountState.copyWith(
-          showAccountSelector: !state.showAccountSelector,
-        );
+    final next = state.accountState.copyWith(
+      showAccountSelector: !state.showAccountSelector,
+    );
     state = state.copyWith(accountState: next);
   }
 

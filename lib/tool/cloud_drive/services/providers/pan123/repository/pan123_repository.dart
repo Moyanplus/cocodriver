@@ -13,6 +13,7 @@ import '../models/requests/pan123_share_requests.dart';
 import '../models/responses/pan123_offline_responses.dart';
 import '../models/responses/pan123_share_list_response.dart';
 import '../models/responses/pan123_share_cancel_response.dart';
+import '../models/responses/pan123_user_info_response.dart';
 
 /// 123 云盘仓库，适配统一仓库接口。
 class Pan123Repository extends BaseCloudDriveRepository {
@@ -260,6 +261,13 @@ class Pan123Repository extends BaseCloudDriveRepository {
 
       rethrow;
     }
+  }
+
+  /// 获取用户信息（包含 UID），用于构造唯一账号ID等。
+  Future<Pan123UserInfoResponse> getUserInfo({
+    required CloudDriveAccount account,
+  }) {
+    return _api.getUserInfo(account: account);
   }
 
   /// 获取分享列表（免费/付费；付费列表 isPaid=true）

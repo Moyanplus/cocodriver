@@ -1,5 +1,6 @@
 import '../../base/cloud_drive_operation_service.dart'
     show CloudDriveOperationStrategy;
+import '../../base/cloud_drive_account_normalizer.dart';
 import '../../config/cloud_drive_capabilities.dart';
 import '../../data/models/cloud_drive_entities.dart';
 import '../base/qr_login_service.dart';
@@ -22,6 +23,7 @@ class CloudDriveProviderDescriptor {
     this.description,
     this.qrLoginService,
     this.qrLoginAuthType,
+    this.accountNormalizer,
   });
 
   final CloudDriveType type;
@@ -44,4 +46,7 @@ class CloudDriveProviderDescriptor {
   /// 二维码登录返回的认证类型（用于保存到 cookies 或 Authorization）。
   /// 不配置则默认写入 qrCodeToken 使用 Authorization 头。
   final AuthType? qrLoginAuthType;
+
+  /// 可选：账号归一化器，用于生成稳定 ID/昵称 等。
+  final CloudDriveAccountNormalizer? accountNormalizer;
 }

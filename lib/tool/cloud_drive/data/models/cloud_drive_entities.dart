@@ -221,6 +221,9 @@ class CloudDriveAccount {
   final String? driveId;
   final DateTime createdAt;
   final DateTime? lastLoginAt;
+  final bool? lastAuthValid;
+  final DateTime? lastAuthTime;
+  final String? lastAuthError;
 
   const CloudDriveAccount({
     required this.id,
@@ -233,6 +236,9 @@ class CloudDriveAccount {
     this.driveId,
     required this.createdAt,
     this.lastLoginAt,
+    this.lastAuthValid,
+    this.lastAuthTime,
+    this.lastAuthError,
   });
 
   /// 检查是否已登录
@@ -289,19 +295,24 @@ class CloudDriveAccount {
         ),
         cookies: json['cookies']?.toString(),
         authorizationToken: json['authorizationToken']?.toString(),
-        qrCodeToken: json['qrCodeToken']?.toString(),
-        avatarUrl: json['avatarUrl']?.toString(),
-        driveId: json['driveId']?.toString(),
-        createdAt:
-            json['createdAt'] != null
-                ? DateTime.tryParse(json['createdAt'].toString()) ??
-                    DateTime.now()
-                : DateTime.now(),
-        lastLoginAt:
-            json['lastLoginAt'] != null
-                ? DateTime.tryParse(json['lastLoginAt'].toString())
-                : null,
-      );
+    qrCodeToken: json['qrCodeToken']?.toString(),
+    avatarUrl: json['avatarUrl']?.toString(),
+    driveId: json['driveId']?.toString(),
+    createdAt:
+        json['createdAt'] != null
+            ? DateTime.tryParse(json['createdAt'].toString()) ??
+                DateTime.now()
+            : DateTime.now(),
+    lastLoginAt:
+        json['lastLoginAt'] != null
+            ? DateTime.tryParse(json['lastLoginAt'].toString())
+            : null,
+    lastAuthValid: json['lastAuthValid'] as bool?,
+    lastAuthTime: json['lastAuthTime'] != null
+        ? DateTime.tryParse(json['lastAuthTime'].toString())
+        : null,
+    lastAuthError: json['lastAuthError']?.toString(),
+  );
 
   /// 转换为JSON
   Map<String, dynamic> toJson() => {
@@ -315,6 +326,9 @@ class CloudDriveAccount {
     'driveId': driveId,
     'createdAt': createdAt.toIso8601String(),
     'lastLoginAt': lastLoginAt?.toIso8601String(),
+    'lastAuthValid': lastAuthValid,
+    'lastAuthTime': lastAuthTime?.toIso8601String(),
+    'lastAuthError': lastAuthError,
   };
 
   /// 复制并更新
@@ -332,9 +346,13 @@ class CloudDriveAccount {
     String? driveId,
     DateTime? createdAt,
     DateTime? lastLoginAt,
+    bool? lastAuthValid,
+    DateTime? lastAuthTime,
+    String? lastAuthError,
     bool clearCookies = false,
     bool clearAuthorizationToken = false,
     bool clearQrCodeToken = false,
+    bool clearLastAuthError = false,
   }) => CloudDriveAccount(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -349,6 +367,10 @@ class CloudDriveAccount {
     driveId: driveId ?? this.driveId,
     createdAt: createdAt ?? this.createdAt,
     lastLoginAt: lastLoginAt ?? this.lastLoginAt,
+    lastAuthValid: lastAuthValid ?? this.lastAuthValid,
+    lastAuthTime: lastAuthTime ?? this.lastAuthTime,
+    lastAuthError:
+        clearLastAuthError ? null : (lastAuthError ?? this.lastAuthError),
   );
 
   @override

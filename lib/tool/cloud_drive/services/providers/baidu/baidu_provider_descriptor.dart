@@ -1,6 +1,7 @@
 import '../../../config/cloud_drive_capabilities.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../registry/cloud_drive_provider_descriptor.dart';
+import '../../shared/default_account_normalizer.dart';
 import 'baidu_operation_strategy.dart';
 import 'package:flutter/material.dart';
 
@@ -16,5 +17,6 @@ CloudDriveProviderDescriptor createBaiduProviderDescriptor() {
     color: Colors.blue,
     supportedAuthTypes: const [AuthType.cookie, AuthType.qrCode],
     description: '百度网盘，支持大文件存储',
+    accountNormalizer: DefaultAccountNormalizer(type: CloudDriveType.baidu),
   );
 }

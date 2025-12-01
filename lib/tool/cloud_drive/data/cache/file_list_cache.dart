@@ -167,7 +167,7 @@ class FileListCacheManager {
     final count = _cache.length;
     _cache.clear();
     _accessTime.clear();
-    LogManager().cloudDrive('🗑️ 清除所有缓存 (${count} 项)');
+    LogManager().cloudDrive('🗑️ 清除所有缓存 ($count 项)');
   }
 
   /// LRU 淘汰：移除最久未访问的缓存

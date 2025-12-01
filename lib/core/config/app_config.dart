@@ -2,6 +2,7 @@
 ///
 /// 使用静态常量定义所有配置项，确保全局一致性
 /// 所有配置项都应该是不可变的常量
+library;
 
 import 'package:flutter/material.dart';
 

@@ -23,5 +23,6 @@
     "valarray": "cpp",
     "vector": "cpp",
     "sstream": "cpp"
-  }
+  },
+  "cmake.ignoreCMakeListsMissing": true
 }
