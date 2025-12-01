@@ -11,7 +11,8 @@ void main() {
         id: 'test_account_1',
         type: CloudDriveType.baidu,
         name: 'Test Account',
-        cookies: 'test_cookies',
+        authType: AuthType.cookie,
+        authValue: 'test_cookies',
         createdAt: DateTime.now(),
         lastLoginAt: DateTime.now(),
       );
@@ -31,11 +32,11 @@ void main() {
         expect(testAccount.id, equals('test_account_1'));
         expect(testAccount.type, equals(CloudDriveType.baidu));
         expect(testAccount.name, equals('Test Account'));
-        expect(testAccount.cookies, equals('test_cookies'));
+        expect(testAccount.primaryAuthValue, equals('test_cookies'));
       });
 
       test('should handle account validation', () {
-        expect(testAccount.cookies, isNotNull);
+        expect(testAccount.primaryAuthValue, isNotNull);
         expect(testAccount.createdAt, isA<DateTime>());
         expect(testAccount.lastLoginAt, isA<DateTime>());
       });
@@ -67,12 +68,12 @@ void main() {
       });
 
       test('should have correct display names', () {
-        expect(CloudDriveType.baidu.displayName, equals('百度网盘'));
-        expect(CloudDriveType.ali.displayName, equals('阿里云盘'));
-        expect(CloudDriveType.lanzou.displayName, equals('蓝奏云'));
-        expect(CloudDriveType.pan123.displayName, equals('123云盘'));
-        expect(CloudDriveType.quark.displayName, equals('夸克云盘'));
-        expect(CloudDriveType.chinaMobile.displayName, equals('中国移动云盘'));
+        expect(CloudDriveType.baidu.name, equals('baidu'));
+        expect(CloudDriveType.ali.name, equals('ali'));
+        expect(CloudDriveType.lanzou.name, equals('lanzou'));
+        expect(CloudDriveType.pan123.name, equals('pan123'));
+        expect(CloudDriveType.quark.name, equals('quark'));
+        expect(CloudDriveType.chinaMobile.name, equals('chinaMobile'));
       });
     });
 

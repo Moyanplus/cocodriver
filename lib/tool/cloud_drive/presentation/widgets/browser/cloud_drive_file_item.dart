@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/utils/responsive_utils.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../../utils/file_type_utils.dart';
-import '../../../utils/common_utils.dart';
 import '../../../utils/format_utils.dart';
 import '../common/authenticated_network_image.dart';
 import '../common/file_time_formatter.dart';
@@ -43,16 +42,10 @@ class CloudDriveFileItem extends StatelessWidget {
         (file.metadata?['uploadProgress'] as num?)?.toDouble();
 
     final overlay = WidgetStateProperty.all(
-      theme.colorScheme.primary.withValues(
-        alpha: 0.08,
-      ),
+      theme.colorScheme.primary.withValues(alpha: 0.08),
     );
-    final splashColor = theme.colorScheme.primary.withValues(
-      alpha: 0.16,
-    );
-    final highlightColor = theme.colorScheme.primary.withValues(
-      alpha: 0.06,
-    );
+    final splashColor = theme.colorScheme.primary.withValues(alpha: 0.16);
+    final highlightColor = theme.colorScheme.primary.withValues(alpha: 0.06);
 
     return Padding(
       padding: EdgeInsets.symmetric(

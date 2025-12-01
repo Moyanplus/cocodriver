@@ -35,9 +35,7 @@ class CloudDriveTypeSelector extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             border: Border.all(
-              color: Theme.of(context).dividerColor.withValues(
-                alpha: (0.3 * 255).round(),
-              ),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
             ),
             borderRadius: BorderRadius.circular(8.r),
           ),
@@ -45,173 +43,169 @@ class CloudDriveTypeSelector extends StatelessWidget {
             children:
                 hasDescriptor
                     ? descriptors.map((descriptor) {
-                        final type = descriptor.type;
-                        final isSelected = selectedType == type;
-                        final description =
-                            descriptor.description ?? _getTypeDescription(type);
-                        return InkWell(
-                          onTap: () => onTypeChanged(type),
-                          borderRadius: BorderRadius.circular(8.r),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16.w,
-                              vertical: 12.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  isSelected
-                                      ? Theme.of(
-                                        context,
-                                      ).primaryColor.withValues(
-                                            alpha: (0.1 * 255).round(),
-                                          )
-                                      : Colors.transparent,
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 24.w,
-                                  height: 24.h,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color:
-                                          isSelected
-                                              ? Theme.of(context).primaryColor
-                                              : Theme.of(context).dividerColor,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child:
-                                      isSelected
-                                          ? Icon(
-                                            Icons.check,
-                                            size: 16.sp,
-                                            color: Theme.of(context).primaryColor,
-                                          )
-                                          : null,
-                                ),
-                                SizedBox(width: 12.w),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        descriptor.displayName ??
-                                            type.displayName,
-                                        style: TextStyle(
-                                          fontSize: 16.sp,
-                                          fontWeight: FontWeight.w500,
-                                          color:
-                                              isSelected
-                                                  ? Theme.of(context).primaryColor
-                                                  : Theme.of(
-                                                    context,
-                                                  ).textTheme.bodyLarge?.color,
-                                        ),
-                                      ),
-                                      SizedBox(height: 2.h),
-                                      Text(
-                                        description,
-                                        style: TextStyle(
-                                          fontSize: 12.sp,
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).textTheme.bodySmall?.color,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                      final type = descriptor.type;
+                      final isSelected = selectedType == type;
+                      final description =
+                          descriptor.description ?? _getTypeDescription(type);
+                      return InkWell(
+                        onTap: () => onTypeChanged(type),
+                        borderRadius: BorderRadius.circular(8.r),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
                           ),
-                        );
-                      }).toList()
+                          decoration: BoxDecoration(
+                            color:
+                                isSelected
+                                    ? Theme.of(
+                                      context,
+                                    ).primaryColor.withValues(alpha: 0.1)
+                                    : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 24.w,
+                                height: 24.h,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color:
+                                        isSelected
+                                            ? Theme.of(context).primaryColor
+                                            : Theme.of(context).dividerColor,
+                                    width: 2,
+                                  ),
+                                ),
+                                child:
+                                    isSelected
+                                        ? Icon(
+                                          Icons.check,
+                                          size: 16.sp,
+                                          color: Theme.of(context).primaryColor,
+                                        )
+                                        : null,
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      descriptor.displayName ??
+                                          type.displayName,
+                                      style: TextStyle(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w500,
+                                        color:
+                                            isSelected
+                                                ? Theme.of(context).primaryColor
+                                                : Theme.of(
+                                                  context,
+                                                ).textTheme.bodyLarge?.color,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2.h),
+                                    Text(
+                                      description,
+                                      style: TextStyle(
+                                        fontSize: 12.sp,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.bodySmall?.color,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList()
                     : CloudDriveTypeHelper.availableTypes.map((type) {
-                        final isSelected = selectedType == type;
-                        return InkWell(
-                          onTap: () => onTypeChanged(type),
-                          borderRadius: BorderRadius.circular(8.r),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16.w,
-                              vertical: 12.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  isSelected
-                                      ? Theme.of(
-                                        context,
-                                      ).primaryColor.withValues(
-                                            alpha: (0.1 * 255).round(),
-                                          )
-                                      : Colors.transparent,
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 24.w,
-                                  height: 24.h,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color:
-                                          isSelected
-                                              ? Theme.of(context).primaryColor
-                                              : Theme.of(context).dividerColor,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child:
-                                      isSelected
-                                          ? Icon(
-                                            Icons.check,
-                                            size: 16.sp,
-                                            color: Theme.of(context).primaryColor,
-                                          )
-                                          : null,
-                                ),
-                                SizedBox(width: 12.w),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        type.displayName,
-                                        style: TextStyle(
-                                          fontSize: 16.sp,
-                                          fontWeight: FontWeight.w500,
-                                          color:
-                                              isSelected
-                                                  ? Theme.of(context).primaryColor
-                                                  : Theme.of(
-                                                    context,
-                                                  ).textTheme.bodyLarge?.color,
-                                        ),
-                                      ),
-                                      SizedBox(height: 2.h),
-                                      Text(
-                                        _getTypeDescription(type),
-                                        style: TextStyle(
-                                          fontSize: 12.sp,
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).textTheme.bodySmall?.color,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                      final isSelected = selectedType == type;
+                      return InkWell(
+                        onTap: () => onTypeChanged(type),
+                        borderRadius: BorderRadius.circular(8.r),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
                           ),
-                        );
-                      }).toList(),
+                          decoration: BoxDecoration(
+                            color:
+                                isSelected
+                                    ? Theme.of(
+                                      context,
+                                    ).primaryColor.withValues(alpha: 0.1)
+                                    : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 24.w,
+                                height: 24.h,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color:
+                                        isSelected
+                                            ? Theme.of(context).primaryColor
+                                            : Theme.of(context).dividerColor,
+                                    width: 2,
+                                  ),
+                                ),
+                                child:
+                                    isSelected
+                                        ? Icon(
+                                          Icons.check,
+                                          size: 16.sp,
+                                          color: Theme.of(context).primaryColor,
+                                        )
+                                        : null,
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      type.displayName,
+                                      style: TextStyle(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w500,
+                                        color:
+                                            isSelected
+                                                ? Theme.of(context).primaryColor
+                                                : Theme.of(
+                                                  context,
+                                                ).textTheme.bodyLarge?.color,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2.h),
+                                    Text(
+                                      _getTypeDescription(type),
+                                      style: TextStyle(
+                                        fontSize: 12.sp,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.bodySmall?.color,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
           ),
         ),
       ],

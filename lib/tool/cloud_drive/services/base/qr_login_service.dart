@@ -173,7 +173,6 @@ class QRLoginManager {
           }
         } catch (e) {
           // 轮询出错，继续下一次
-          print('轮询状态出错: $e');
         }
       });
 

@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:coco_cloud_drive/tool/cloud_drive/presentation/state/cloud_drive_state_model.dart';
-import 'package:coco_cloud_drive/tool/cloud_drive/presentation/view_models/cloud_drive_browser_view_model.dart';
 import 'package:coco_cloud_drive/tool/cloud_drive/data/models/cloud_drive_entities.dart';
 
 void main() {
@@ -8,11 +7,11 @@ void main() {
     const viewModel = CloudDriveBrowserViewModel();
 
     test('returns noAccount when account list is empty', () {
-      const state = CloudDriveState(accounts: [], isLoading: false);
-      expect(
-        viewModel.resolveBody(state),
-        CloudDriveBrowserBodyType.noAccount,
+      const state = CloudDriveState(
+        accountState: AccountViewState(accounts: []),
+        isLoading: false,
       );
+      expect(viewModel.resolveBody(state), CloudDriveBrowserBodyType.noAccount);
     });
 
     test('returns selectAccount when accounts exist but none selected', () {
@@ -23,8 +22,10 @@ void main() {
         createdAt: DateTime.now(),
       );
       final state = CloudDriveState(
-        accounts: [account],
-        currentAccount: null,
+        accountState: AccountViewState(
+          accounts: [account],
+          currentAccount: null,
+        ),
       );
       expect(
         viewModel.resolveBody(state),
@@ -39,11 +40,13 @@ void main() {
         type: CloudDriveType.lanzou,
         createdAt: DateTime.now(),
       );
-      final state = CloudDriveState(accounts: [account], currentAccount: account);
-      expect(
-        viewModel.resolveBody(state),
-        CloudDriveBrowserBodyType.content,
+      final state = CloudDriveState(
+        accountState: AccountViewState(
+          accounts: [account],
+          currentAccount: account,
+        ),
       );
+      expect(viewModel.resolveBody(state), CloudDriveBrowserBodyType.content);
     });
   });
 }

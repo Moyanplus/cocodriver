@@ -57,13 +57,15 @@ void main() {
               (m) => AccountStateHandler(m, logger: _TestLogger()),
         );
 
-        manager.setState(
-          CloudDriveState(
+      manager.setState(
+        CloudDriveState(
+          accountState: AccountViewState(
             accounts: [account1, account2],
             currentAccount: account1,
-            files: [CloudDriveFile(id: 'f', name: 'F', isFolder: false)],
           ),
-        );
+          files: [CloudDriveFile(id: 'f', name: 'F', isFolder: false)],
+        ),
+      );
 
         await manager.accountHandler.switchAccount(1);
 
@@ -83,7 +85,12 @@ void main() {
       );
 
       manager.setState(
-        CloudDriveState(accounts: [account1], currentAccount: account1),
+        CloudDriveState(
+          accountState: AccountViewState(
+            accounts: [account1],
+            currentAccount: account1,
+          ),
+        ),
       );
 
       expect(() => manager.accountHandler.switchAccount(5), throwsException);

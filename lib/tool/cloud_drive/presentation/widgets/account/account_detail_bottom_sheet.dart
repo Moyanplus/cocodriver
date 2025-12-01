@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/scheduler.dart';
@@ -107,9 +106,9 @@ class _AccountDetailBottomSheetState
           height: 4,
           margin: const EdgeInsets.only(top: 8, bottom: 8),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(
-              alpha: 0.3,
-            ),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(2),
           ),
         ),

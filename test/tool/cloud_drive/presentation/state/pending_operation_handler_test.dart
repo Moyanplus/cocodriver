@@ -83,8 +83,10 @@ void main() {
 
       manager.setState(
         CloudDriveState(
-          accounts: [account],
-          currentAccount: account,
+          accountState: AccountViewState(
+            accounts: [account],
+            currentAccount: account,
+          ),
           currentFolder: rootFolder,
           files: [file],
         ),
@@ -115,8 +117,10 @@ void main() {
 
       manager.setState(
         CloudDriveState(
-          accounts: [account],
-          currentAccount: account,
+          accountState: AccountViewState(
+            accounts: [account],
+            currentAccount: account,
+          ),
           currentFolder: rootFolder,
           files: [file],
         ),

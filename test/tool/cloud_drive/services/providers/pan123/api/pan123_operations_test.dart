@@ -7,7 +7,6 @@ import 'package:coco_cloud_drive/tool/cloud_drive/services/providers/pan123/mode
 import 'package:coco_cloud_drive/tool/cloud_drive/services/providers/pan123/models/requests/pan123_operation_requests.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart' as mockito;
 import 'package:mockito/mockito.dart';
 
 class MockDio extends Mock implements Dio {}
@@ -33,7 +32,8 @@ CloudDriveAccount _buildAccount() {
     id: 'pan123',
     name: '123Test',
     type: CloudDriveType.pan123,
-    authorizationToken: 'token',
+    authType: AuthType.authorization,
+    authValue: 'token',
     createdAt: DateTime.now(),
   );
 }
@@ -56,9 +56,8 @@ void main() {
   });
 
   Future<void> stubPost(Map<String, dynamic>? body) async {
-    mockito
-        .when(() => dio.post(any<String>(), data: mockito.anyNamed('data')))
-        .thenAnswer((invocation) async => _successResponse(body));
+    when(dio.post(any<String>(), data: anyNamed('data')))
+        .thenAnswer((_) async => _successResponse(body));
   }
 
   test('rename returns true on code 0', () async {
@@ -98,10 +97,7 @@ void main() {
   });
 
   test('rename throws CloudDriveException on failure code', () async {
-    mockito
-        .when(
-          () => dio.post(mockito.any<String>(), data: mockito.anyNamed('data')),
-        )
+    when(dio.post(any<String>(), data: anyNamed('data')))
         .thenAnswer((_) async => _failureResponse(-3, 'error'));
 
     expect(
@@ -132,9 +128,7 @@ void main() {
       },
     };
 
-    mockito
-        .when(() => dio.get(mockito.any<String>()))
-        .thenAnswer((_) async => _successResponse(data));
+    when(dio.get(any<String>())).thenAnswer((_) async => _successResponse(data));
 
     final response = await Pan123ApiClient().listFiles(
       account: account,

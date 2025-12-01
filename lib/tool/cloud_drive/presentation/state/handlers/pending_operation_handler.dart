@@ -5,7 +5,7 @@ class PendingOperationHandler {
 
   final CloudDriveStateManager _manager;
 
-  CloudDriveState get _state => _manager.state;
+  CloudDriveState get _state => _manager.getCurrentState();
   CloudDriveLoggerAdapter get _logger => _manager.logger;
   FolderStateHandler get _folderHandler => _manager.folderHandler;
 
@@ -116,38 +116,42 @@ class PendingOperationHandler {
   }
 
   void setPendingOperation(CloudDriveFile file, String operationType) {
-    _manager.state = _manager.state.copyWith(
-      pendingOperationFile: file,
-      pendingOperationType: operationType,
+    _manager.setState(
+      _manager.getCurrentState().copyWith(
+        pendingOperationFile: file,
+        pendingOperationType: operationType,
+      ),
     );
   }
 
   void clearPendingOperation() {
-    final current = _manager.state;
-    _manager.state = CloudDriveState(
-      accountState: current.accountState,
-      currentFolder: current.currentFolder,
-      folders: current.folders,
-      files: current.files,
-      folderPath: current.folderPath,
-      isLoading: current.isLoading,
-      isRefreshing: current.isRefreshing,
-      error: current.error,
-      isBatchMode: current.isBatchMode,
-      isInBatchMode: current.isInBatchMode,
-      selectedItems: current.selectedItems,
-      isAllSelected: current.isAllSelected,
-      currentPage: current.currentPage,
-      hasMoreData: current.hasMoreData,
-      isLoadingMore: current.isLoadingMore,
-      isFromCache: current.isFromCache,
-      lastRefreshTime: current.lastRefreshTime,
-      pendingOperationFile: null,
-      pendingOperationType: null,
-      showFloatingActionButton: current.showFloatingActionButton,
-      sortField: current.sortField,
-      isSortAscending: current.isSortAscending,
-      viewMode: current.viewMode,
+    final current = _manager.getCurrentState();
+    _manager.setState(
+      CloudDriveState(
+        accountState: current.accountState,
+        currentFolder: current.currentFolder,
+        folders: current.folders,
+        files: current.files,
+        folderPath: current.folderPath,
+        isLoading: current.isLoading,
+        isRefreshing: current.isRefreshing,
+        error: current.error,
+        isBatchMode: current.isBatchMode,
+        isInBatchMode: current.isInBatchMode,
+        selectedItems: current.selectedItems,
+        isAllSelected: current.isAllSelected,
+        currentPage: current.currentPage,
+        hasMoreData: current.hasMoreData,
+        isLoadingMore: current.isLoadingMore,
+        isFromCache: current.isFromCache,
+        lastRefreshTime: current.lastRefreshTime,
+        pendingOperationFile: null,
+        pendingOperationType: null,
+        showFloatingActionButton: current.showFloatingActionButton,
+        sortField: current.sortField,
+        isSortAscending: current.isSortAscending,
+        viewMode: current.viewMode,
+      ),
     );
   }
 
@@ -155,24 +159,24 @@ class PendingOperationHandler {
     if (file.isFolder) {
       final currentFolders = List<CloudDriveFile>.from(_state.folders)
         ..add(file);
-      _manager.state = _state.copyWith(folders: currentFolders);
+      _manager.setState(_state.copyWith(folders: currentFolders));
       return;
     }
 
     final currentFiles = List<CloudDriveFile>.from(_state.files)..add(file);
-    _manager.state = _state.copyWith(files: currentFiles);
+    _manager.setState(_state.copyWith(files: currentFiles));
   }
 
   void removeFileFromState(String fileId) {
     final currentFiles =
         _state.files.where((file) => file.id != fileId).toList();
-    _manager.state = _state.copyWith(files: currentFiles);
+    _manager.setState(_state.copyWith(files: currentFiles));
   }
 
   void removeFolderFromState(String folderId) {
     final currentFolders =
         _state.folders.where((folder) => folder.id != folderId).toList();
-    _manager.state = _state.copyWith(folders: currentFolders);
+    _manager.setState(_state.copyWith(folders: currentFolders));
   }
 
   void updateFileMetadata(
@@ -188,7 +192,7 @@ class PendingOperationHandler {
                       : file,
             )
             .toList();
-    _manager.state = _state.copyWith(files: updatedFiles);
+    _manager.setState(_state.copyWith(files: updatedFiles));
   }
 
   void _removeItemFromState(CloudDriveFile file) {
@@ -204,7 +208,7 @@ class PendingOperationHandler {
         _state.files
             .map((f) => f.id == fileId ? f.copyWith(name: newName) : f)
             .toList();
-    _manager.state = _state.copyWith(files: currentFiles);
+    _manager.setState(_state.copyWith(files: currentFiles));
   }
 
   void _invalidateCaches({

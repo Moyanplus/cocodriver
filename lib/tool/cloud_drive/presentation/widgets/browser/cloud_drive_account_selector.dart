@@ -87,30 +87,31 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                   final isSelected = index == state.currentAccountIndex;
                   final details = state.accountDetails[account.id];
                   final bool? isValid = details?.isValid;
-                  final isValidating =
-                      state.accountState.validatingAccountIds
-                          .contains(account.id);
+                  final isValidating = state.accountState.validatingAccountIds
+                      .contains(account.id);
                   final statusText =
                       isValidating
                           ? '校验中...'
                           : isValid == null
-                              ? (account.isLoggedIn ? '未校验' : '未登录')
-                              : (isValid ? '有效' : '已失效');
+                          ? (account.isLoggedIn ? '未校验' : '未登录')
+                          : (isValid ? '有效' : '已失效');
                   final statusColor =
                       isValidating
                           ? Theme.of(context).colorScheme.tertiary
                           : isValid == null
-                              ? Theme.of(context).colorScheme.onSurfaceVariant
-                              : isValid
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.error;
+                          ? Theme.of(context).colorScheme.onSurfaceVariant
+                          : isValid
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.error;
 
                   return GestureDetector(
                     onTap: () {
                       if (onAccountSelected != null) {
                         onAccountSelected!(index);
                       } else {
-                        ref.read(cloudDriveProvider.notifier).switchAccount(index);
+                        ref
+                            .read(cloudDriveProvider.notifier)
+                            .switchAccount(index);
                       }
                     },
                     onLongPress:
@@ -177,29 +178,32 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                                             ? Theme.of(context)
                                                                 .colorScheme
                                                                 .onPrimaryContainer
-                                                            : Theme.of(
-                                                              context,
-                                                            ).colorScheme
+                                                            : Theme.of(context)
+                                                                .colorScheme
                                                                 .onSurface,
                                                   ),
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   maxLines: 1,
                                                 ),
                                               ),
                                               if (isSelected) ...[
                                                 const SizedBox(width: 6),
                                                 Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                    horizontal: 6,
-                                                    vertical: 2,
-                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2,
+                                                      ),
                                                   decoration: BoxDecoration(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .primaryContainer,
-                                                    borderRadius: BorderRadius.circular(
-                                                      12,
-                                                    ),
+                                                    color:
+                                                        Theme.of(context)
+                                                            .colorScheme
+                                                            .primaryContainer,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
                                                   ),
                                                   child: Text(
                                                     '当前',
@@ -208,9 +212,10 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                                           ResponsiveUtils.getResponsiveFontSize(
                                                             10.sp,
                                                           ),
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .onPrimaryContainer,
+                                                      color:
+                                                          Theme.of(context)
+                                                              .colorScheme
+                                                              .onPrimaryContainer,
                                                     ),
                                                   ),
                                                 ),
@@ -226,15 +231,15 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                                   ),
                                               color:
                                                   isSelected
-                                              ? Theme.of(context)
-                                                  .colorScheme
-                                                  .onPrimaryContainer
-                                                  .withValues(
-                                                    alpha: (0.7 * 255).round(),
-                                                  )
-                                              : Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurfaceVariant,
+                                                      ? Theme.of(context)
+                                                          .colorScheme
+                                                          .onPrimaryContainer
+                                                          .withValues(
+                                                            alpha: 0.7,
+                                                          )
+                                                      : Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
                                             ),
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 1,
@@ -248,8 +253,8 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                       ),
                                       height:
                                           ResponsiveUtils.getResponsiveHeight(
-                                        40,
-                                      ),
+                                            40,
+                                          ),
                                       child: IconButton(
                                         icon: Icon(
                                           Icons.info_outline,
@@ -258,13 +263,11 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                           ),
                                           color:
                                               isSelected
-                                                  ? Theme.of(
-                                                    context,
-                                                  ).colorScheme
+                                                  ? Theme.of(context)
+                                                      .colorScheme
                                                       .onPrimaryContainer
-                                                  : Theme.of(
-                                                    context,
-                                                  ).colorScheme
+                                                  : Theme.of(context)
+                                                      .colorScheme
                                                       .onSurfaceVariant,
                                         ),
                                         padding: EdgeInsets.zero,
@@ -334,15 +337,13 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                      Icon(
-                        Icons.account_circle_outlined,
-                        size: ResponsiveUtils.getIconSize(32.sp),
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurfaceVariant.withValues(
-                              alpha: (0.5 * 255).round(),
-                            ),
-                      ),
+                    Icon(
+                      Icons.account_circle_outlined,
+                      size: ResponsiveUtils.getIconSize(32.sp),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                    ),
                     SizedBox(height: 8.h),
                     Text(
                       '暂无云盘账号',
@@ -352,9 +353,9 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                       ),
                     ),
                   ],
-                                        ),
-                                      ),
-                                    ),
+                ),
+              ),
+            ),
           ],
         ],
       ),
@@ -383,9 +384,7 @@ class CloudDriveAccountSelector extends ConsumerWidget {
           CircleAvatar(
             backgroundImage: NetworkImage(account.avatarUrl!),
             radius: ResponsiveUtils.getIconSize(14.sp),
-            backgroundColor: account.type.color.withValues(
-              alpha: (0.1 * 255).round(),
-            ),
+            backgroundColor: account.type.color.withValues(alpha: 0.1),
           ),
           // 云盘类型小图标徽章
           Positioned(

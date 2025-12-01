@@ -72,7 +72,6 @@ abstract class BaseRepository {
       await localDataSource.save(key, cacheData);
     } catch (e) {
       // 缓存失败不应该影响主流程
-      print('Failed to save to cache: $e');
     }
   }
 
@@ -97,7 +96,6 @@ abstract class BaseRepository {
       return cacheData['data'] as T?;
     } catch (e) {
       // 缓存读取失败不应该影响主流程
-      print('Failed to get from cache: $e');
       return null;
     }
   }
@@ -118,9 +116,7 @@ abstract class BaseRepository {
     try {
       // 这里可以实现清理过期缓存的逻辑
       // 比如遍历所有缓存键，检查是否过期
-    } catch (e) {
-      print('Failed to clean expired cache: $e');
-    }
+    } catch (e) {}
   }
 }
 

@@ -177,10 +177,8 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       );
 
       // 解析文件大小
-      int? fileSize;
       if (file.size != null && file.size! > 0) {
         // 直接使用int类型的size
-        fileSize = file.size;
       }
 
       // 从文件信息中提取S3KeyFlag和Etag
