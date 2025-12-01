@@ -14,6 +14,7 @@ import '../account_validation_service.dart';
 class AccountStateHandler {
   final CloudDriveStateManager _stateManager;
   final CloudDriveLoggerAdapter _logger;
+  // AccountValidationService 暂未使用，保留占位便于后续扩展。
   final AccountValidationService _validationService;
 
   AccountStateHandler(
@@ -38,13 +39,13 @@ class AccountStateHandler {
       _stateManager.updateState(
         (state) => state.copyWith(
           accounts: accounts,
-          accountDetails: {},
-          isLoading: false,
-          error: null,
-        ),
-      );
+        accountDetails: {},
+        isLoading: false,
+        error: null,
+      ),
+    );
 
-      // 恢复持久化的当前账号
+    // 恢复持久化的当前账号
       final savedCurrentId =
           await CloudDriveAccountService.getCurrentAccountId();
       if (savedCurrentId != null && accounts.isNotEmpty) {
@@ -99,9 +100,7 @@ class AccountStateHandler {
     String? errorMessage,
   }) async {
     final cleared = account.copyWith(
-      clearAuthorizationToken: true,
-      clearCookies: true,
-      clearQrCodeToken: true,
+      clearAuthValue: true,
       lastAuthValid: false,
       lastAuthTime: DateTime.now(),
       lastAuthError: errorMessage ?? message,
@@ -164,19 +163,19 @@ class AccountStateHandler {
       );
 
       if (account.isLoggedIn) {
-        final details = await _fetchAndStoreAccountDetails(account);
-        if (details != null && details.isValid == false) {
-          _logger.warning('账号切换失败，认证失效: ${account.name}');
-          _stateManager.setState(
-            previousState.copyWith(
-              accountDetails: _stateManager.getCurrentState().accountDetails,
-              error: '账号已失效，请重新登录：${account.name}',
-            ),
-          );
-          return;
-        }
-        await CloudDriveAccountService.saveCurrentAccountId(account.id);
+      final details = await _fetchAndStoreAccountDetails(account);
+      if (details != null && details.isValid == false) {
+        _logger.warning('账号切换失败，认证失效: ${account.name}');
+        _stateManager.setState(
+          previousState.copyWith(
+            accountDetails: _stateManager.getCurrentState().accountDetails,
+            error: '账号已失效，请重新登录：${account.name}',
+          ),
+        );
+        return;
       }
+      await CloudDriveAccountService.saveCurrentAccountId(account.id);
+    }
 
       // 不在此处自动加载文件列表，避免侧边栏切换账号时频繁触发文件接口。
       // 进入文件页时再按需加载。
@@ -342,7 +341,8 @@ class AccountStateHandler {
       }
 
       final updatedAccount = accounts[accountIndex].copyWith(
-        cookies: newCookies,
+        authType: AuthType.cookie,
+        authValue: newCookies,
       );
       await CloudDriveAccountService.updateAccount(updatedAccount);
 
@@ -364,12 +364,6 @@ class AccountStateHandler {
     } catch (e) {
       _logger.error('更新账号Cookie失败: $e');
       _stateManager.updateState((state) => state.copyWith(error: e.toString()));
-    }
-  }
-
-  Future<void> _refreshAccountDetails(List<CloudDriveAccount> accounts) async {
-    for (final account in accounts) {
-      await _fetchAndStoreAccountDetails(account);
     }
   }
 
@@ -427,34 +421,6 @@ class AccountStateHandler {
     }
   }
 
-  Future<void> _validateAndStoreAccount(CloudDriveAccount account) async {
-    _setValidating(account.id, true);
-    final details = await _validationService.fetchDetails(account);
-    if (details == null) return;
-    _stateManager.updateState((state) {
-      final updated = Map<String, CloudDriveAccountDetails>.from(
-        state.accountDetails,
-      );
-      updated[account.id] = details;
-      final newValidating = Set<String>.from(
-        state.accountState.validatingAccountIds,
-      )..remove(account.id);
-      return state.copyWith(
-        accountDetails: updated,
-        accountState:
-            state.accountState.copyWith(validatingAccountIds: newValidating),
-      );
-    });
-    if (!details.isValid) {
-      _stateManager.updateState(
-        (state) => state.copyWith(
-          error: '账号已失效，请重新登录或更新凭证',
-          showAccountSelector: true,
-        ),
-      );
-    }
-    _setValidating(account.id, false);
-  }
 
   void _setValidating(String accountId, bool isValidating) {
     _stateManager.updateState((state) {

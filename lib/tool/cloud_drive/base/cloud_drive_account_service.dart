@@ -353,13 +353,8 @@ class CloudDriveAccountService {
           'accountId': account.id,
           'accountType': account.type.name,
           'isLoggedIn': account.isLoggedIn,
-          'hasCookies': account.cookies != null && account.cookies!.isNotEmpty,
-          'cookiesLength': account.cookies?.length ?? 0,
-          'hasAuthToken':
-              account.authorizationToken != null &&
-              account.authorizationToken!.isNotEmpty,
-          'hasQrToken':
-              account.qrCodeToken != null && account.qrCodeToken!.isNotEmpty,
+          'authType': account.primaryAuthType?.name,
+          'authValueLength': account.primaryAuthValue?.length ?? 0,
         },
       );
     }

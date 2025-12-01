@@ -482,15 +482,14 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: _nameController.text.trim(),
       type: _selectedType,
-      cookies: cookiesValue,
+      authType: AuthType.cookie,
+      authValue: cookiesValue,
       createdAt: DateTime.now(),
       lastLoginAt: DateTime.now(),
     );
 
     debugPrint('🍪 账号创建完成 - isLoggedIn: ${account.isLoggedIn}');
-    debugPrint(
-      '🍪 账号创建完成 - cookies字段: ${account.cookies?.substring(0, account.cookies!.length > 100 ? 100 : account.cookies!.length)}',
-    );
+    debugPrint('🍪 账号创建完成 - authValue长度: ${account.authValue?.length}');
 
     return account;
   }
@@ -507,15 +506,14 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: _nameController.text.trim(),
       type: _selectedType,
-      authorizationToken: authorizationValue,
+      authType: AuthType.authorization,
+      authValue: authorizationValue,
       createdAt: DateTime.now(),
       lastLoginAt: DateTime.now(),
     );
 
     debugPrint('🔑 账号创建完成 - isLoggedIn: ${account.isLoggedIn}');
-    debugPrint(
-      '🔑 账号创建完成 - authorizationToken字段: ${account.authorizationToken?.substring(0, account.authorizationToken!.length > 50 ? 50 : account.authorizationToken!.length)}...',
-    );
+    debugPrint('🔑 账号创建完成 - authValue长度: ${account.authValue?.length}');
 
     return account;
   }
@@ -566,9 +564,8 @@ class _AddAccountFormWidgetState extends ConsumerState<AddAccountFormWidget> {
               ? _nameController.text.trim()
               : '${_selectedType.displayName}账号',
       type: _selectedType,
-      cookies: cookiesValue,
-      authorizationToken: authValue,
-      qrCodeToken: qrValue,
+      authType: qrAuthType,
+      authValue: qrToken,
       createdAt: DateTime.now(),
       lastLoginAt: DateTime.now(),
     );

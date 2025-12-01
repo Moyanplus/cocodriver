@@ -68,9 +68,9 @@ abstract class AliBaseService {
     final headers = Map<String, String>.from(AliConfig.defaultHeaders);
 
     // 添加Authorization头
-    if (account.authorizationToken != null &&
-        account.authorizationToken!.isNotEmpty) {
-      headers['Authorization'] = 'Bearer ${account.authorizationToken}';
+    if (account.primaryAuthValue != null &&
+        account.primaryAuthValue!.isNotEmpty) {
+      headers['Authorization'] = 'Bearer ${account.primaryAuthValue}';
     }
 
     return headers;

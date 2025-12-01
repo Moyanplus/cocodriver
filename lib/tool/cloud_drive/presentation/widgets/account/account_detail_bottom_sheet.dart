@@ -424,7 +424,7 @@ class _AccountDetailBottomSheetState
   /// 构建认证信息卡片
   Widget _buildAuthInfoCard() {
     String authType = '';
-    String authValue = '';
+    String authValue = widget.account.primaryAuthValue ?? '';
 
     // 使用实际的认证方式
     final actualAuth = widget.account.actualAuthType;
@@ -432,19 +432,13 @@ class _AccountDetailBottomSheetState
     switch (actualAuth) {
       case AuthType.cookie:
         authType = 'Cookie';
-        authValue = widget.account.cookies ?? '';
         break;
       case AuthType.authorization:
-        authType = 'Authorization Token';
-        authValue = widget.account.authorizationToken ?? '';
-        break;
       case AuthType.web:
         authType = 'Authorization Token';
-        authValue = widget.account.authorizationToken ?? '';
         break;
       case AuthType.qrCode:
         authType = 'QR Code Token';
-        authValue = widget.account.qrCodeToken ?? '';
         break;
       case null:
         // 没有任何认证信息

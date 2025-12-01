@@ -182,7 +182,10 @@ class QuarkAuthService {
 
     if (puusToken != null) {
       // 从账号的原始Cookie中提取其他cookie
-      final originalCookie = account.cookies ?? '';
+    final originalCookie =
+        account.primaryAuthType == AuthType.cookie
+            ? (account.primaryAuthValue ?? '')
+            : '';
       final cookieMap = <String, String>{};
 
       // 解析原始cookie

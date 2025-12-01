@@ -174,7 +174,10 @@ class LanzouConfig {
   /// 上传请求头，集中定义，避免仓库/策略重复拼接。
   static Map<String, String> buildUploadHeaders(CloudDriveAccount account) => {
     ...defaultHeaders,
-    'Cookie': account.cookies ?? '',
+    'Cookie':
+        account.primaryAuthType == AuthType.cookie
+            ? (account.primaryAuthValue ?? '')
+            : '',
     'Referer': '$baseUrl/',
     'Origin': baseUrl,
     'X-Requested-With': 'XMLHttpRequest',

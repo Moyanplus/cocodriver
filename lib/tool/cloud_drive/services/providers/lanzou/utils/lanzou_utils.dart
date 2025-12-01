@@ -14,7 +14,8 @@ class LanzouUtils {
         id: uid != null ? 'temp_$uid' : 'temp',
         name: uid != null ? 'temp_$uid' : 'temp',
         type: CloudDriveType.lanzou,
-        cookies: cookies,
+        authType: AuthType.cookie,
+        authValue: cookies,
         createdAt: DateTime.now(),
       );
 

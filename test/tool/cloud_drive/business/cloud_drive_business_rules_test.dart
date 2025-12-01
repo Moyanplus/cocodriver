@@ -11,7 +11,6 @@ void main() {
         id: 'test_account_1',
         type: CloudDriveType.baidu,
         name: 'Test Account',
-        cookies: 'test_cookies',
         createdAt: DateTime.now(),
         lastLoginAt: DateTime.now(),
       );

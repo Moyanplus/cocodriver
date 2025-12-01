@@ -214,9 +214,8 @@ class CloudDriveAccount {
   final String id;
   final String name;
   final CloudDriveType type;
-  final String? cookies;
-  final String? authorizationToken;
-  final String? qrCodeToken; // 二维码登录token
+  final AuthType? authType; // 统一的认证类型
+  final String? authValue; // 统一的认证值
   final String? avatarUrl;
   final String? driveId;
   final DateTime createdAt;
@@ -229,9 +228,8 @@ class CloudDriveAccount {
     required this.id,
     required this.name,
     required this.type,
-    this.cookies,
-    this.authorizationToken,
-    this.qrCodeToken,
+    this.authType,
+    this.authValue,
     this.avatarUrl,
     this.driveId,
     required this.createdAt,
@@ -246,82 +244,102 @@ class CloudDriveAccount {
   /// 根据实际保存的认证信息来判断，而不是依赖 type.authType
   /// 只要有任何一种认证信息存在，就认为已登录
   bool get isLoggedIn {
-    return (cookies != null && cookies!.isNotEmpty) ||
-        (authorizationToken != null && authorizationToken!.isNotEmpty) ||
-        (qrCodeToken != null && qrCodeToken!.isNotEmpty);
+    final value = _effectiveAuthValue;
+    if (value != null && value.isNotEmpty) return true;
+    return false;
   }
 
   /// 获取实际使用的认证方式
   AuthType? get actualAuthType {
-    if (cookies != null && cookies!.isNotEmpty) {
-      return AuthType.cookie;
-    } else if (authorizationToken != null && authorizationToken!.isNotEmpty) {
-      return AuthType.authorization;
-    } else if (qrCodeToken != null && qrCodeToken!.isNotEmpty) {
-      return AuthType.qrCode;
-    }
-    return null;
+    return _effectiveAuthType;
   }
 
   /// 获取认证头信息
   ///
   /// 根据实际保存的认证信息返回对应的请求头
   Map<String, String> get authHeaders {
-    // 优先使用实际的认证信息
-    if (cookies != null && cookies!.isNotEmpty) {
-      return {'Cookie': cookies!};
-    } else if (authorizationToken != null && authorizationToken!.isNotEmpty) {
-      // 从配置中获取 Authorization 前缀
-      final prefix = type.config.authorizationPrefix;
-      return {'Authorization': '$prefix $authorizationToken'};
-    } else if (qrCodeToken != null && qrCodeToken!.isNotEmpty) {
-      // 从配置中获取 Authorization 前缀
-      final prefix = type.config.authorizationPrefix;
-      return {'Authorization': '$prefix $qrCodeToken'};
+    final type = _effectiveAuthType;
+    final value = _effectiveAuthValue;
+    if (type == null || value == null || value.isEmpty) return {};
+
+    switch (type) {
+      case AuthType.cookie:
+        return {'Cookie': value};
+      case AuthType.authorization:
+      case AuthType.web:
+      case AuthType.qrCode:
+        final prefix = this.type.config.authorizationPrefix;
+        return {'Authorization': '$prefix $value'};
     }
-    return {};
   }
 
+  AuthType? get _effectiveAuthType {
+    if (authType != null) return authType;
+    return null;
+  }
+
+  String? get _effectiveAuthValue {
+    if (authValue != null && authValue!.isNotEmpty) return authValue;
+    return null;
+  }
+
+  /// 统一对外暴露的主认证方式/值（优先使用 authType/authValue，回落到旧字段）
+  AuthType? get primaryAuthType => _effectiveAuthType;
+  String? get primaryAuthValue => _effectiveAuthValue;
+
+
   /// 从JSON创建实例
-  factory CloudDriveAccount.fromJson(Map<String, dynamic> json) =>
-      CloudDriveAccount(
-        id:
-            json['id']?.toString() ??
-            DateTime.now().millisecondsSinceEpoch.toString(),
-        name: json['name']?.toString() ?? '未知账号',
-        type: CloudDriveType.values.firstWhere(
-          (e) => e.name == json['type']?.toString(),
-          orElse: () => CloudDriveType.baidu,
-        ),
-        cookies: json['cookies']?.toString(),
-        authorizationToken: json['authorizationToken']?.toString(),
-    qrCodeToken: json['qrCodeToken']?.toString(),
-    avatarUrl: json['avatarUrl']?.toString(),
-    driveId: json['driveId']?.toString(),
-    createdAt:
-        json['createdAt'] != null
-            ? DateTime.tryParse(json['createdAt'].toString()) ??
-                DateTime.now()
-            : DateTime.now(),
-    lastLoginAt:
-        json['lastLoginAt'] != null
-            ? DateTime.tryParse(json['lastLoginAt'].toString())
-            : null,
-    lastAuthValid: json['lastAuthValid'] as bool?,
-    lastAuthTime: json['lastAuthTime'] != null
-        ? DateTime.tryParse(json['lastAuthTime'].toString())
-        : null,
-    lastAuthError: json['lastAuthError']?.toString(),
-  );
+  factory CloudDriveAccount.fromJson(Map<String, dynamic> json) {
+    String? rawAuthValue = json['authValue']?.toString();
+    AuthType? rawAuthType;
+    final authTypeStr = json['authType']?.toString();
+    if (authTypeStr != null) {
+      for (final t in AuthType.values) {
+        if (t.name == authTypeStr) {
+          rawAuthType = t;
+          break;
+        }
+      }
+    }
+
+    return CloudDriveAccount(
+      id:
+          json['id']?.toString() ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
+      name: json['name']?.toString() ?? '未知账号',
+      type: CloudDriveType.values.firstWhere(
+        (e) => e.name == json['type']?.toString(),
+        orElse: () => CloudDriveType.baidu,
+      ),
+      authType: rawAuthType,
+      authValue: rawAuthValue,
+      avatarUrl: json['avatarUrl']?.toString(),
+      driveId: json['driveId']?.toString(),
+      createdAt:
+          json['createdAt'] != null
+              ? DateTime.tryParse(json['createdAt'].toString()) ??
+                  DateTime.now()
+              : DateTime.now(),
+      lastLoginAt:
+          json['lastLoginAt'] != null
+              ? DateTime.tryParse(json['lastLoginAt'].toString())
+              : null,
+      lastAuthValid: json['lastAuthValid'] as bool?,
+      lastAuthTime:
+          json['lastAuthTime'] != null
+              ? DateTime.tryParse(json['lastAuthTime'].toString())
+              : null,
+      lastAuthError: json['lastAuthError']?.toString(),
+    );
+  }
 
   /// 转换为JSON
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
     'type': type.name,
-    'cookies': cookies,
-    'authorizationToken': authorizationToken,
-    'qrCodeToken': qrCodeToken,
+    'authType': authType?.name,
+    'authValue': authValue,
     'avatarUrl': avatarUrl,
     'driveId': driveId,
     'createdAt': createdAt.toIso8601String(),
@@ -339,9 +357,8 @@ class CloudDriveAccount {
     String? id,
     String? name,
     CloudDriveType? type,
-    String? cookies,
-    String? authorizationToken,
-    String? qrCodeToken,
+    AuthType? authType,
+    String? authValue,
     String? avatarUrl,
     String? driveId,
     DateTime? createdAt,
@@ -349,20 +366,14 @@ class CloudDriveAccount {
     bool? lastAuthValid,
     DateTime? lastAuthTime,
     String? lastAuthError,
-    bool clearCookies = false,
-    bool clearAuthorizationToken = false,
-    bool clearQrCodeToken = false,
+    bool clearAuthValue = false,
     bool clearLastAuthError = false,
   }) => CloudDriveAccount(
     id: id ?? this.id,
     name: name ?? this.name,
     type: type ?? this.type,
-    cookies: clearCookies ? null : (cookies ?? this.cookies),
-    authorizationToken:
-        clearAuthorizationToken
-            ? null
-            : (authorizationToken ?? this.authorizationToken),
-    qrCodeToken: clearQrCodeToken ? null : (qrCodeToken ?? this.qrCodeToken),
+    authType: authType ?? this.authType,
+    authValue: clearAuthValue ? null : (authValue ?? this.authValue),
     avatarUrl: avatarUrl ?? this.avatarUrl,
     driveId: driveId ?? this.driveId,
     createdAt: createdAt ?? this.createdAt,
@@ -462,8 +473,8 @@ class CloudDriveFile {
     this.category,
     this.downloadCount = -1,
     this.shareCount = -1,
-  })  : createdAt = createdAt ?? updatedAt,
-        updatedAt = updatedAt ?? createdAt;
+  }) : createdAt = createdAt ?? updatedAt,
+       updatedAt = updatedAt ?? createdAt;
 
   /// 是否为目录
   bool get isDirectory => isFolder;
@@ -536,12 +547,14 @@ class CloudDriveFile {
     name: json['name']?.toString() ?? '',
     isFolder: json['isFolder'] as bool? ?? false,
     size: json['size'] as int?,
-    createdAt: json['createdAt'] != null
-        ? DateTime.tryParse(json['createdAt'].toString())
-        : null,
-    updatedAt: json['updatedAt'] != null
-        ? DateTime.tryParse(json['updatedAt'].toString())
-        : json['modifiedTime'] != null
+    createdAt:
+        json['createdAt'] != null
+            ? DateTime.tryParse(json['createdAt'].toString())
+            : null,
+    updatedAt:
+        json['updatedAt'] != null
+            ? DateTime.tryParse(json['updatedAt'].toString())
+            : json['modifiedTime'] != null
             ? DateTime.tryParse(json['modifiedTime'].toString())
             : null,
     description: json['description']?.toString(),

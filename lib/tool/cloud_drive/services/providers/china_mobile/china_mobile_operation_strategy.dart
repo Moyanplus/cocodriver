@@ -67,9 +67,9 @@ class ChinaMobileCloudDriveOperationStrategy
 
       // 从 Authorization Token 中解析用户信息
       String? username;
-      if (account.authorizationToken != null &&
-          account.authorizationToken!.isNotEmpty) {
-        username = _extractUsernameFromAuthToken(account.authorizationToken!);
+      if (account.primaryAuthValue != null &&
+          account.primaryAuthValue!.isNotEmpty) {
+        username = _extractUsernameFromAuthToken(account.primaryAuthValue!);
       }
 
       // 创建账号信息对象
@@ -520,13 +520,14 @@ class ChinaMobileCloudDriveOperationStrategy
 
       // 参考 alist-main/drivers/139/util.go 中的 refreshToken 实现
       // 如果使用 authorizationToken（base64编码），需要解析并刷新
-      if (account.authorizationToken != null &&
-          account.authorizationToken!.isNotEmpty) {
+      if (account.primaryAuthValue != null &&
+          account.primaryAuthValue!.isNotEmpty) {
         return await _refreshAuthorizationToken(account);
       }
 
-      // 如果使用 cookies，尝试验证有效性
-      if (account.cookies != null && account.cookies!.isNotEmpty) {
+      // 如果使用 cookie，尝试验证有效性
+      if (account.primaryAuthType == AuthType.cookie &&
+          (account.primaryAuthValue?.isNotEmpty ?? false)) {
         // 通过尝试获取文件列表来验证 cookies 是否有效
         try {
           final files = await getFileList(
@@ -563,7 +564,7 @@ class ChinaMobileCloudDriveOperationStrategy
     CloudDriveAccount account,
   ) async {
     try {
-      final authorization = account.authorizationToken!;
+      final authorization = account.primaryAuthValue!;
 
       // 1. 解码 base64
       String decodedStr;
@@ -676,9 +677,8 @@ class ChinaMobileCloudDriveOperationStrategy
         id: account.id,
         name: account.name,
         type: account.type,
-        cookies: account.cookies,
-        authorizationToken: newAuthorization,
-        qrCodeToken: account.qrCodeToken,
+        authType: AuthType.authorization,
+        authValue: newAuthorization,
         avatarUrl: account.avatarUrl,
         driveId: account.driveId,
         createdAt: account.createdAt,

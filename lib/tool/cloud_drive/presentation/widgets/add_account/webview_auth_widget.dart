@@ -105,7 +105,8 @@ class WebViewAuthWidget extends StatelessWidget {
                   id: DateTime.now().millisecondsSinceEpoch.toString(),
                   name: 'WebView账号',
                   type: cloudDriveType,
-                  cookies: cookies,
+                  authType: AuthType.cookie,
+                  authValue: cookies,
                   createdAt: DateTime.now(),
                   lastLoginAt: DateTime.now(),
                 );

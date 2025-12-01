@@ -115,7 +115,8 @@ class AuthorizationValidationService {
         id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
         name: accountName?.trim().isNotEmpty == true ? accountName! : '临时账号',
         type: type,
-        authorizationToken: cleanedToken,
+        authType: AuthType.authorization,
+        authValue: cleanedToken,
         createdAt: DateTime.now(),
         lastLoginAt: DateTime.now(),
       );

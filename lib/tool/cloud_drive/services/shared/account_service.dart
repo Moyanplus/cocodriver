@@ -144,27 +144,29 @@ class AccountService extends CloudDriveServiceBase {
 
     switch (actualAuth) {
       case AuthType.cookie:
-        if (account.cookies == null || account.cookies!.isEmpty) {
+        if (account.primaryAuthValue == null ||
+            account.primaryAuthValue!.isEmpty) {
           logWarning('验证账号登录状态', 'Cookie为空');
           return const Failure('Cookie为空');
         }
         break;
       case AuthType.authorization:
-        if (account.authorizationToken == null ||
-            account.authorizationToken!.isEmpty) {
+        if (account.primaryAuthValue == null ||
+            account.primaryAuthValue!.isEmpty) {
           logWarning('验证账号登录状态', 'Authorization Token为空');
           return const Failure('Authorization Token为空');
         }
         break;
       case AuthType.web:
-        if (account.authorizationToken == null ||
-            account.authorizationToken!.isEmpty) {
+        if (account.primaryAuthValue == null ||
+            account.primaryAuthValue!.isEmpty) {
           logWarning('验证账号登录状态', 'Authorization Token为空');
           return const Failure('Authorization Token为空');
         }
         break;
       case AuthType.qrCode:
-        if (account.qrCodeToken == null || account.qrCodeToken!.isEmpty) {
+        if (account.primaryAuthValue == null ||
+            account.primaryAuthValue!.isEmpty) {
           logWarning('验证账号登录状态', 'QR Code Token为空');
           return const Failure('QR Code Token为空');
         }

@@ -432,7 +432,9 @@ class LargeFileProcessor {
       'User-Agent': 'CloudDriveApp/1.0',
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-      if (account.cookies != null) 'Cookie': account.cookies!,
+      if (account.primaryAuthType == AuthType.cookie &&
+          (account.primaryAuthValue?.isNotEmpty ?? false))
+        'Cookie': account.primaryAuthValue!,
     };
   }
 

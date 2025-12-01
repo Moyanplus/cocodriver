@@ -31,7 +31,10 @@ class LanzouRepository extends BaseCloudDriveRepository {
 
   /// 根据账号信息构建仓库，自动解析 Cookie 获取 UID。
   factory LanzouRepository.fromAccount(CloudDriveAccount account) {
-    final cookies = account.cookies ?? '';
+    final cookies =
+        account.primaryAuthType == AuthType.cookie
+            ? (account.primaryAuthValue ?? '')
+            : '';
     final uid = LanzouUtils.extractUid(cookies);
     if (uid == null || uid.isEmpty) {
       throw LanzouApiException('无法从Cookie中提取UID');
@@ -324,7 +327,11 @@ class LanzouRepository extends BaseCloudDriveRepository {
       throw LanzouApiException('文件不存在: $filePath');
     }
 
-    final uid = LanzouUtils.extractUid(account.cookies ?? '');
+    final uid = LanzouUtils.extractUid(
+      account.primaryAuthType == AuthType.cookie
+          ? (account.primaryAuthValue ?? '')
+          : '',
+    );
     if (uid == null || uid.isEmpty) {
       throw LanzouApiException('无法从Cookie中提取UID，请重新登录');
     }

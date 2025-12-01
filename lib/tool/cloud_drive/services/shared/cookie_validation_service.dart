@@ -145,15 +145,16 @@ class CookieValidationService {
         id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
         name: accountName?.trim().isNotEmpty == true ? accountName! : '临时账号',
         type: type,
-        cookies: formattedCookies,
+        authType: AuthType.cookie,
+        authValue: formattedCookies,
         createdAt: DateTime.now(),
         lastLoginAt: DateTime.now(),
       );
 
       // 5. 调用统一的获取账号详情接口
-      final accountDetails =
-          await defaultCloudDriveGateway.strategyFor(tempAccount)
-              ?.getAccountDetails(account: tempAccount);
+      final accountDetails = await defaultCloudDriveGateway
+          .strategyFor(tempAccount)
+          ?.getAccountDetails(account: tempAccount);
 
       if (accountDetails != null && accountDetails.accountInfo != null) {
         // 验证成功

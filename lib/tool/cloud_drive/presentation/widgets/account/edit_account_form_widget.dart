@@ -38,6 +38,12 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
   late TextEditingController _nameController;
   late TextEditingController _cookiesController;
   late TextEditingController _authorizationController;
+  String _savedAuthValueFor(AuthType type) {
+    if (widget.account.primaryAuthType == type) {
+      return widget.account.primaryAuthValue ?? '';
+    }
+    return '';
+  }
 
   @override
   void initState() {
@@ -51,19 +57,17 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
         widget.account.actualAuthType ?? widget.account.type.authType;
 
     // 初始化 Cookie 控制器
-    if (_selectedAuthType == AuthType.cookie &&
-        widget.account.cookies != null) {
-      _cookiesController = TextEditingController(text: widget.account.cookies);
+    final savedCookie = _savedAuthValueFor(AuthType.cookie);
+    if (_selectedAuthType == AuthType.cookie && savedCookie.isNotEmpty) {
+      _cookiesController = TextEditingController(text: savedCookie);
     } else {
       _cookiesController = TextEditingController();
     }
 
     // 初始化 Authorization 控制器
-    if (_selectedAuthType == AuthType.authorization &&
-        widget.account.authorizationToken != null) {
-      _authorizationController = TextEditingController(
-        text: widget.account.authorizationToken,
-      );
+    final savedAuth = _savedAuthValueFor(AuthType.authorization);
+    if (_selectedAuthType == AuthType.authorization && savedAuth.isNotEmpty) {
+      _authorizationController = TextEditingController(text: savedAuth);
     } else {
       _authorizationController = TextEditingController();
     }
@@ -371,16 +375,12 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
 
       // 如果切换认证方式，尝试恢复对应的认证信息
       if (authType == AuthType.cookie && _cookiesController.text.isEmpty) {
-        // 如果有旧的 Cookie，尝试恢复
-        if (widget.account.cookies != null) {
-          _cookiesController.text = widget.account.cookies!;
-        }
+        final saved = _savedAuthValueFor(AuthType.cookie);
+        if (saved.isNotEmpty) _cookiesController.text = saved;
       } else if (authType == AuthType.authorization &&
           _authorizationController.text.isEmpty) {
-        // 如果有旧的 Authorization Token，尝试恢复
-        if (widget.account.authorizationToken != null) {
-          _authorizationController.text = widget.account.authorizationToken!;
-        }
+        final saved = _savedAuthValueFor(AuthType.authorization);
+        if (saved.isNotEmpty) _authorizationController.text = saved;
       }
     });
   }
@@ -392,11 +392,9 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
     }
 
     // 如果选择 Cookie 认证，需要验证 Cookie 不为空
-    if (_selectedAuthType == AuthType.cookie) {
-      return _cookiesController.text.trim().isNotEmpty;
-    }
-
-    return true;
+    return _selectedAuthType != AuthType.cookie
+        ? true
+        : _cookiesController.text.trim().isNotEmpty;
   }
 
   /// 保存账号
@@ -414,20 +412,18 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
         case AuthType.cookie:
           updatedAccount = widget.account.copyWith(
             name: _nameController.text.trim(),
-            cookies: _cookiesController.text.trim(),
-            // 清除其他认证方式的字段
-            clearAuthorizationToken: true,
-            clearQrCodeToken: true,
+            authType: AuthType.cookie,
+            authValue: _cookiesController.text.trim(),
+            clearAuthValue: false,
             lastLoginAt: DateTime.now(),
           );
           break;
         case AuthType.authorization:
           updatedAccount = widget.account.copyWith(
             name: _nameController.text.trim(),
-            authorizationToken: _authorizationController.text.trim(),
-            // 清除其他认证方式的字段
-            clearCookies: true,
-            clearQrCodeToken: true,
+            authType: AuthType.authorization,
+            authValue: _authorizationController.text.trim(),
+            clearAuthValue: false,
             lastLoginAt: DateTime.now(),
           );
           break;
@@ -435,9 +431,7 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
           // WebView 认证需要重新登录，清空所有认证信息
           updatedAccount = widget.account.copyWith(
             name: _nameController.text.trim(),
-            clearCookies: true,
-            clearAuthorizationToken: true,
-            clearQrCodeToken: true,
+            clearAuthValue: true,
             lastLoginAt: DateTime.now(),
           );
           _showWarningSnackBar('已清除认证信息，请重新进行网页登录');
@@ -446,9 +440,7 @@ class _EditAccountFormWidgetState extends State<EditAccountFormWidget> {
           // 二维码认证需要重新扫码，清空所有认证信息
           updatedAccount = widget.account.copyWith(
             name: _nameController.text.trim(),
-            clearCookies: true,
-            clearAuthorizationToken: true,
-            clearQrCodeToken: true,
+            clearAuthValue: true,
             lastLoginAt: DateTime.now(),
           );
           _showWarningSnackBar('已清除认证信息，请重新扫描二维码登录');

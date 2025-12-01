@@ -16,11 +16,7 @@ class DefaultAccountNormalizer implements CloudDriveAccountNormalizer {
     // 仅处理对应类型
     if (account.type != type) return account;
 
-    final candidate =
-        account.driveId ??
-        account.authorizationToken ??
-        account.qrCodeToken ??
-        account.cookies;
+    final candidate = account.driveId ?? account.primaryAuthValue;
 
     if (candidate == null || candidate.isEmpty) return account;
 

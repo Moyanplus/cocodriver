@@ -254,7 +254,11 @@ class LanzouCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         '蓝奏云 - 账号信息: ${account.name} (${account.type.displayName})',
       );
 
-      final uid = LanzouRepository.extractUidFromCookies(account.cookies ?? '');
+      final uid = LanzouRepository.extractUidFromCookies(
+        account.primaryAuthType == AuthType.cookie
+            ? (account.primaryAuthValue ?? '')
+            : '',
+      );
 
       if (uid == null || uid.isEmpty) {
         LogManager().cloudDrive('蓝奏云 - 无法从 Cookie 中提取 UID');

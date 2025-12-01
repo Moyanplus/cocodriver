@@ -55,8 +55,9 @@ class AuthenticatedNetworkImage extends StatelessWidget {
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
         'Referer': 'https://pan.quark.cn/',
-        if (account.cookies != null && account.cookies!.isNotEmpty)
-          'Cookie': account.cookies!,
+        if (account.primaryAuthType == AuthType.cookie &&
+            (account.primaryAuthValue?.isNotEmpty ?? false))
+          'Cookie': account.primaryAuthValue!,
       },
       placeholder: (context, url) =>
           placeholderBuilder?.call() ?? const SizedBox.shrink(),

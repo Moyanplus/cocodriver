@@ -36,7 +36,10 @@ class LanzouApiClient {
 
   Map<String, String> get _headers => {
     ...LanzouConfig.defaultHeaders,
-    'Cookie': account.cookies ?? '',
+    'Cookie':
+        account.primaryAuthType == AuthType.cookie
+            ? (account.primaryAuthValue ?? '')
+            : '',
     'Referer': '${LanzouConfig.baseUrl}/',
     'Origin': LanzouConfig.baseUrl,
   };
