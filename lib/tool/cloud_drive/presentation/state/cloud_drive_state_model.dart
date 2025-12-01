@@ -264,12 +264,14 @@ class AccountViewState {
   final Map<String, CloudDriveAccountDetails> accountDetails;
   final CloudDriveAccount? currentAccount;
   final bool showAccountSelector;
+  final Set<String> validatingAccountIds;
 
   const AccountViewState({
     this.accounts = const [],
     this.accountDetails = const {},
     this.currentAccount,
     this.showAccountSelector = false,
+    this.validatingAccountIds = const {},
   });
 
   AccountViewState copyWith({
@@ -277,11 +279,13 @@ class AccountViewState {
     Map<String, CloudDriveAccountDetails>? accountDetails,
     CloudDriveAccount? currentAccount,
     bool? showAccountSelector,
+    Set<String>? validatingAccountIds,
   }) => AccountViewState(
     accounts: accounts ?? this.accounts,
     accountDetails: accountDetails ?? this.accountDetails,
     currentAccount: currentAccount ?? this.currentAccount,
     showAccountSelector: showAccountSelector ?? this.showAccountSelector,
+    validatingAccountIds: validatingAccountIds ?? this.validatingAccountIds,
   );
 
   @override
@@ -292,14 +296,16 @@ class AccountViewState {
           accounts == other.accounts &&
           accountDetails == other.accountDetails &&
           currentAccount == other.currentAccount &&
-          showAccountSelector == other.showAccountSelector;
+          showAccountSelector == other.showAccountSelector &&
+          validatingAccountIds == other.validatingAccountIds;
 
   @override
   int get hashCode =>
       accounts.hashCode ^
       accountDetails.hashCode ^
       currentAccount.hashCode ^
-      showAccountSelector.hashCode;
+      showAccountSelector.hashCode ^
+      validatingAccountIds.hashCode;
 }
 
 /// 文件列表状态

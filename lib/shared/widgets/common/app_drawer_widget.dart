@@ -585,24 +585,6 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
 
   /// 账号管理入口：列表 + 添加
   Future<void> _showAccountManager(BuildContext context, WidgetRef ref) async {
-    // 预先获取账户与事件处理器，避免在 BottomSheet 生命周期外使用 ref
-    final typeState = ref.read(cloudDriveTypeProvider);
-    final handler = ref.read(cloudDriveStateManagerProvider.notifier);
-    final cloudProvider = ref.read(cloudDriveProvider);
-    final isLoading = cloudProvider.isLoading;
-    final allAccounts = cloudProvider.accounts;
-    final idToIndex = <String, int>{
-      for (var i = 0; i < allAccounts.length; i++) allAccounts[i].id: i,
-    };
-
-    final accounts =
-        allAccounts.where((a) {
-          if (typeState.isFilterEnabled && typeState.selectedType != null) {
-            return a.type == typeState.selectedType;
-          }
-          return true;
-        }).toList();
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -612,76 +594,122 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
             bottom: MediaQuery.of(ctx).viewInsets.bottom,
           ),
           child: SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  title: const Text('云盘账号管理'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: () {
-                      debugPrint('[AccountAdd] add button pressed');
-                      // 预先获取根级 context，避免当前 BottomSheet 关闭后 context 失效
-                      final rootCtx =
-                          Navigator.of(
-                            ctx,
-                            rootNavigator: true,
-                          ).overlay?.context;
-                      Navigator.pop(ctx);
-                      Future.microtask(() {
-                        if (rootCtx != null && rootCtx.mounted) {
-                          debugPrint(
-                            '[AccountAdd] using root context to show add sheet',
-                          );
-                          _handleAddAccount(rootCtx, handler);
-                        } else {
-                          debugPrint(
-                            '[AccountAdd] root context unavailable, fallback to ctx',
-                          );
-                          _handleAddAccount(ctx, handler);
-                        }
-                      });
-                    },
-                  ),
-                ),
-                if (accounts.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child:
-                        isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : const Text('尚未添加云盘账号'),
-                  )
-                else
-                  ...accounts.map(
-                    (a) => ListTile(
-                      title: Text('${a.name} (${a.type.displayName})'),
-                      subtitle: Text('ID: ${a.id}'),
-                      onTap: () {
-                        // 点按：切换账号
-                        final idx = idToIndex[a.id];
-                        Navigator.pop(ctx);
-                        if (idx != null) {
-                          handler.switchAccount(idx);
-                        } else {
-                          debugPrint('[AccountTap] idx not found for ${a.id}');
-                        }
-                      },
-                      onLongPress: () {
-                        // 长按：查看账号详情
-                        final nav = Navigator.of(ctx, rootNavigator: true);
-                        final rootCtx = nav.overlay?.context ?? ctx;
-                        Navigator.pop(ctx);
-                        Future.microtask(() {
-                          if (rootCtx.mounted) {
-                            _showAccountDetail(rootCtx, a);
-                          }
-                        });
-                      },
+            child: Consumer(
+              builder: (context, ref, _) {
+                final typeState = ref.watch(cloudDriveTypeProvider);
+                final handler =
+                    ref.watch(cloudDriveStateManagerProvider.notifier);
+                final cloudState = ref.watch(cloudDriveProvider);
+                final allAccounts = cloudState.accounts;
+                final idToIndex = <String, int>{
+                  for (var i = 0; i < allAccounts.length; i++)
+                    allAccounts[i].id: i,
+                };
+                final accounts =
+                    allAccounts.where((a) {
+                      if (typeState.isFilterEnabled &&
+                          typeState.selectedType != null) {
+                        return a.type == typeState.selectedType;
+                      }
+                      return true;
+                    }).toList();
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      title: const Text('云盘账号管理'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: () {
+                          debugPrint('[AccountAdd] add button pressed');
+                          final rootCtx =
+                              Navigator.of(ctx, rootNavigator: true)
+                                  .overlay
+                                  ?.context;
+                          Navigator.pop(ctx);
+                          Future.microtask(() {
+                            if (rootCtx != null && rootCtx.mounted) {
+                              _handleAddAccount(rootCtx, handler);
+                            } else {
+                              _handleAddAccount(ctx, handler);
+                            }
+                          });
+                        },
+                      ),
                     ),
-                  ),
-                const SizedBox(height: 12),
-              ],
+                    if (accounts.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child:
+                            cloudState.isLoading
+                                ? const Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                                : const Text('尚未添加云盘账号'),
+                      )
+                    else
+                      ...accounts.map(
+                        (a) {
+                          final details = cloudState.accountDetails[a.id];
+                          final isInvalid = details?.isValid == false;
+                          final isValidating =
+                              cloudState.accountState.validatingAccountIds
+                                  .contains(a.id);
+                          final isLoggedIn = !isInvalid && a.isLoggedIn;
+                          final statusText =
+                              isValidating
+                                  ? '校验中...'
+                                  : isInvalid
+                                      ? '失效'
+                                      : (isLoggedIn ? '正常' : '未登录');
+                          final statusColor =
+                              isValidating
+                                  ? Theme.of(ctx).colorScheme.tertiary
+                                  : isInvalid
+                                      ? Theme.of(ctx).colorScheme.error
+                                      : isLoggedIn
+                                          ? Theme.of(ctx).colorScheme.primary
+                                          : Theme.of(
+                                            ctx,
+                                          ).colorScheme.onSurfaceVariant;
+
+                          return ListTile(
+                            title: Text('${a.name} (${a.type.displayName})'),
+                            subtitle: Text('ID: ${a.id}'),
+                            trailing: Text(
+                              statusText,
+                              style: TextStyle(
+                                color: statusColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            onTap: () {
+                              final idx = idToIndex[a.id];
+                              if (idx != null) {
+                                handler.switchAccount(idx);
+                              } else {
+                                debugPrint(
+                                  '[AccountTap] idx not found for ${a.id}',
+                                );
+                              }
+                            },
+                            onLongPress: () {
+                              final nav = Navigator.of(ctx, rootNavigator: true);
+                              final rootCtx = nav.overlay?.context ?? ctx;
+                              Future.microtask(() {
+                                if (rootCtx.mounted) {
+                                  _showAccountDetail(rootCtx, a);
+                                }
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    const SizedBox(height: 12),
+                  ],
+                );
+              },
             ),
           ),
         );

@@ -87,16 +87,23 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                   final isSelected = index == state.currentAccountIndex;
                   final details = state.accountDetails[account.id];
                   final bool? isValid = details?.isValid;
+                  final isValidating =
+                      state.accountState.validatingAccountIds
+                          .contains(account.id);
                   final statusText =
-                      isValid == null
-                          ? (account.isLoggedIn ? '未校验' : '未登录')
-                          : (isValid ? '有效' : '已失效');
+                      isValidating
+                          ? '校验中...'
+                          : isValid == null
+                              ? (account.isLoggedIn ? '未校验' : '未登录')
+                              : (isValid ? '有效' : '已失效');
                   final statusColor =
-                      isValid == null
-                          ? Theme.of(context).colorScheme.onSurfaceVariant
-                          : isValid
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.error;
+                      isValidating
+                          ? Theme.of(context).colorScheme.tertiary
+                          : isValid == null
+                              ? Theme.of(context).colorScheme.onSurfaceVariant
+                              : isValid
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.error;
 
                   return GestureDetector(
                     onTap: () {

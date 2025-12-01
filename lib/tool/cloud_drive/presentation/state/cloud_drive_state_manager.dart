@@ -274,6 +274,13 @@ class CloudDriveStateManager extends StateNotifier<CloudDriveState> {
     }
   }
 
+  /// 刷新账号详情并写入状态
+  Future<CloudDriveAccountDetails?> refreshAccountDetails(
+    CloudDriveAccount account,
+  ) {
+    return accountHandler.refreshAccountDetails(account);
+  }
+
   /// 更新文件元数据
   void updateFileMetadata(
     String fileId,

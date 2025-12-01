@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../../../config/cloud_drive_ui_config.dart';
 import '../../../data/models/cloud_drive_entities.dart';
@@ -38,7 +41,14 @@ class _AccountDetailBottomSheetState
   @override
   void initState() {
     super.initState();
-    _loadAccountDetails();
+    // 先用全局状态中的详情作为初始值，避免每次打开都为空
+    _accountDetails = ref
+        .read(cloudDriveProvider)
+        .accountDetails[widget.account.id];
+    // 延后刷新，避免在构建阶段修改 provider
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _loadAccountDetails();
+    });
   }
 
   @override
@@ -204,48 +214,52 @@ class _AccountDetailBottomSheetState
                   ],
                 ),
               ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color:
-                      widget.account.isLoggedIn
-                          ? Theme.of(context).colorScheme.primaryContainer
-                          : Theme.of(context).colorScheme.tertiaryContainer,
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      widget.account.isLoggedIn
-                          ? Icons.check_circle
-                          : Icons.warning_amber_rounded,
-                      size: 14.sp,
-                      color:
-                          widget.account.isLoggedIn
+              Builder(
+                builder: (context) {
+                  final isValid = _accountDetails?.isValid;
+                  final isInvalid = isValid == false;
+                  final isLoggedIn = !isInvalid && widget.account.isLoggedIn;
+                  final statusText =
+                      isInvalid ? '失效' : (isLoggedIn ? '正常' : '未登录');
+                  final bgColor =
+                      isInvalid
+                          ? Theme.of(context).colorScheme.errorContainer
+                          : isLoggedIn
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : Theme.of(context).colorScheme.tertiaryContainer;
+                  final fgColor =
+                      isInvalid
+                          ? Theme.of(context).colorScheme.onErrorContainer
+                          : isLoggedIn
                               ? Theme.of(context).colorScheme.onPrimaryContainer
-                              : Theme.of(
-                                context,
-                              ).colorScheme.onTertiaryContainer,
+                              : Theme.of(context).colorScheme.onTertiaryContainer;
+                  final icon =
+                      isInvalid
+                          ? Icons.error_outline
+                          : (isLoggedIn ? Icons.check_circle : Icons.warning_amber_rounded);
+                  return Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(20.r),
                     ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      widget.account.isLoggedIn ? '已登录' : '未登录',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                        color:
-                            widget.account.isLoggedIn
-                                ? Theme.of(
-                                  context,
-                                ).colorScheme.onPrimaryContainer
-                                : Theme.of(
-                                  context,
-                                ).colorScheme.onTertiaryContainer,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(icon, size: 14.sp, color: fgColor),
+                        SizedBox(width: 4.w),
+                        Text(
+                          statusText,
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w500,
+                            color: fgColor,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ],
           ),
@@ -439,9 +453,6 @@ class _AccountDetailBottomSheetState
 
     if (authValue.isEmpty) return const SizedBox.shrink();
 
-    final displayValue =
-        authValue.length > 50 ? '${authValue.substring(0, 50)}...' : authValue;
-
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -469,67 +480,23 @@ class _AccountDetailBottomSheetState
           _buildInfoRow('认证方式', authType),
           SizedBox(height: 12.h),
 
-          // 认证凭证（可复制）
-          GestureDetector(
-            onTap: () => _copyToClipboard(authValue, '认证信息'),
-            child: Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: Theme.of(context).dividerColor),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      displayValue,
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontFamily: 'monospace',
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                  Icon(
-                    Icons.copy,
-                    size: 16.sp,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ],
+          // 认证凭证（完整显示）
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(color: Theme.of(context).dividerColor),
+            ),
+            child: Text(
+              authValue,
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontFamily: 'monospace',
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-          ),
-          SizedBox(height: 12.h),
-
-          // 操作按钮
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _copyToClipboard(authValue, '认证信息'),
-                  icon: Icon(Icons.copy, size: 16.sp),
-                  label: Text('复制'),
-                  style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 8.h),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8.w),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _showFullAuthInfo(authType, authValue),
-                  icon: Icon(Icons.visibility, size: 16.sp),
-                  label: Text('查看完整'),
-                  style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 8.h),
-                  ),
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -538,60 +505,8 @@ class _AccountDetailBottomSheetState
 
   /// 构建操作按钮
   Widget _buildActionButtons() {
-    return Column(
-      children: [
-        // 主要操作
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _editAccount,
-                icon: Icon(Icons.edit, size: 18.sp),
-                label: Text('编辑账号'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                ),
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _testConnection,
-                icon: Icon(Icons.wifi_find, size: 18.sp),
-                label: Text('测试连接'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 8.h),
-
-        // 危险操作
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: _deleteAccount,
-            icon: Icon(
-              Icons.delete_outline,
-              size: 18.sp,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            label: Text(
-              '删除账号',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            style: OutlinedButton.styleFrom(
-              padding: EdgeInsets.symmetric(vertical: 12.h),
-              side: BorderSide(
-                color: Theme.of(context).colorScheme.error.withOpacity(0.5),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
+    // 暂不提供操作按钮
+    return const SizedBox.shrink();
   }
 
   /// 构建信息行
@@ -621,9 +536,25 @@ class _AccountDetailBottomSheetState
     });
 
     try {
-      final details = await ref
-          .read(cloudDriveProvider.notifier)
-          .getAccountDetails(widget.account);
+      // 调试：打印当前账号存储字段（美化 JSON）
+      final prettyAccount = const JsonEncoder.withIndent('  ').convert(
+        widget.account.toJson(),
+      );
+      LogManager().cloudDrive(
+        'AccountDetailBottomSheet: 当前账号信息\n$prettyAccount',
+      );
+
+      CloudDriveAccountDetails? details;
+      if (widget.account.isLoggedIn) {
+        details = await ref
+            .read(cloudDriveProvider.notifier)
+            .refreshAccountDetails(widget.account);
+      } else {
+        details =
+            ref
+                .read(cloudDriveProvider)
+                .accountDetails[widget.account.id];
+      }
 
       if (mounted) {
         setState(() {

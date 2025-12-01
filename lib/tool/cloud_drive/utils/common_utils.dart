@@ -7,6 +7,9 @@ import 'package:flutter/foundation.dart';
 import '../data/models/cloud_drive_entities.dart';
 import '../infrastructure/performance/performance_metrics.dart';
 import '../infrastructure/error/recovery_strategies.dart';
+import 'format_utils.dart';
+import 'network_utils.dart';
+import 'async_utils.dart';
 
 /// 通用工具类
 ///
@@ -14,58 +17,20 @@ import '../infrastructure/error/recovery_strategies.dart';
 class CommonUtils {
   static final PerformanceMetrics _metrics = PerformanceMetrics();
 
-  /// 统一的 Dio 创建方法
-  ///
-  /// [account] 云盘账号信息
-  /// [connectTimeout] 连接超时时间（可选）
-  /// [receiveTimeout] 接收超时时间（可选）
-  /// [sendTimeout] 发送超时时间（可选）
-  /// [defaultHeaders] 默认请求头（可选）
+  /// 统一的 Dio 创建方法（兼容旧调用，内部委托 NetworkUtils）
   static Dio createDio({
     required CloudDriveAccount account,
     Duration? connectTimeout,
     Duration? receiveTimeout,
     Duration? sendTimeout,
     Map<String, String>? defaultHeaders,
-  }) {
-    final dio = Dio(
-      BaseOptions(
-        connectTimeout: connectTimeout ?? const Duration(seconds: 30),
-        receiveTimeout: receiveTimeout ?? const Duration(seconds: 30),
-        sendTimeout: sendTimeout ?? const Duration(seconds: 30),
-        headers: {
-          'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Accept': 'application/json, text/plain, */*',
-          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Connection': 'keep-alive',
-          'Cache-Control': 'no-cache',
-          ...?defaultHeaders,
-        },
-      ),
-    );
-
-    // 添加请求拦截器
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          _logRequest(options);
-          handler.next(options);
-        },
-        onResponse: (response, handler) {
-          _logResponse(response);
-          handler.next(response);
-        },
-        onError: (error, handler) {
-          _logError(error);
-          handler.next(error);
-        },
-      ),
-    );
-
-    return dio;
-  }
+  }) => NetworkUtils.createDio(
+    account: account,
+    connectTimeout: connectTimeout,
+    receiveTimeout: receiveTimeout,
+    sendTimeout: sendTimeout,
+    defaultHeaders: defaultHeaders,
+  );
 
   /// 统一的API请求方法
   ///
@@ -95,47 +60,14 @@ class CommonUtils {
         operationId ?? '${method.toUpperCase()}_${Uri.parse(url).path}';
 
     try {
-      final response = await RecoveryStrategies.apiCall(
+      final response = await NetworkUtils.apiRequest<T>(
+        dio: dio,
+        method: method,
+        url: url,
+        data: data,
+        queryParameters: queryParameters,
+        headers: headers,
         operationId: opId,
-        operation: () async {
-          switch (method.toUpperCase()) {
-            case 'GET':
-              return await dio.get<T>(
-                url,
-                queryParameters: queryParameters,
-                options: Options(headers: headers),
-              );
-            case 'POST':
-              return await dio.post<T>(
-                url,
-                data: data,
-                queryParameters: queryParameters,
-                options: Options(headers: headers),
-              );
-            case 'PUT':
-              return await dio.put<T>(
-                url,
-                data: data,
-                queryParameters: queryParameters,
-                options: Options(headers: headers),
-              );
-            case 'DELETE':
-              return await dio.delete<T>(
-                url,
-                data: data,
-                queryParameters: queryParameters,
-                options: Options(headers: headers),
-              );
-            default:
-              throw ArgumentError('Unsupported HTTP method: $method');
-          }
-        },
-        context: {
-          'url': url,
-          'method': method,
-          'has_data': data != null,
-          'has_query': queryParameters != null,
-        },
       );
 
       // 记录性能指标
@@ -332,52 +264,11 @@ class CommonUtils {
     }
   }
 
-  /// 统一的文件大小格式化
-  ///
-  /// 将字节数格式化为可读的文件大小字符串
-  ///
-  /// [bytes] 字节数
-  /// 返回格式化的文件大小字符串
-  static String formatFileSize(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024) {
-      return '${(bytes / 1024 / 1024).toStringAsFixed(1)} MB';
-    }
-    return '${(bytes / 1024 / 1024 / 1024).toStringAsFixed(1)} GB';
-  }
-
-  /// 统一的时间格式化
-  ///
-  /// 将DateTime格式化为标准时间字符串
-  ///
-  /// [time] 时间对象
-  /// 返回格式化的时间字符串
-  static String formatTime(DateTime time) {
-    return '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} '
-        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
-  }
-
-  /// 统一的相对时间格式化
-  ///
-  /// 将DateTime格式化为相对时间描述
-  ///
-  /// [time] 时间对象
-  /// 返回相对时间字符串
-  static String formatRelativeTime(DateTime time) {
-    final now = DateTime.now();
-    final difference = now.difference(time);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays}天前';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}小时前';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}分钟前';
-    } else {
-      return '刚刚';
-    }
-  }
+  // ====== 格式化工具（迁移到 FormatUtils） ======
+  static String formatFileSize(int bytes) => FormatUtils.formatFileSize(bytes);
+  static String formatTime(DateTime time) => FormatUtils.formatTime(time);
+  static String formatRelativeTime(DateTime time) =>
+      FormatUtils.formatRelativeTime(time);
 
   /// 统一的文件名验证
   ///
@@ -462,23 +353,16 @@ class CommonUtils {
   /// 检查网络连接状态
   ///
   /// 返回网络是否可用
-  static Future<bool> checkNetworkConnectivity() async {
-    try {
-      final result = await InternetAddress.lookup('google.com');
-      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-    } catch (e) {
-      return false;
-    }
-  }
+  static Future<bool> checkNetworkConnectivity() async =>
+      AsyncUtils.checkNetworkConnectivity();
 
   /// 统一的延迟执行
   ///
   /// 延迟指定时间后继续执行
   ///
   /// [duration] 延迟时间
-  static Future<void> delay(Duration duration) async {
-    await Future.delayed(duration);
-  }
+  static Future<void> delay(Duration duration) async =>
+      AsyncUtils.delay(duration);
 
   /// 统一的防抖执行
   ///
@@ -486,11 +370,8 @@ class CommonUtils {
   ///
   /// [delay] 防抖延迟时间
   /// [callback] 回调函数
-  static Timer? _debounceTimer;
-  static void debounce(Duration delay, VoidCallback callback) {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(delay, callback);
-  }
+  static void debounce(Duration delay, VoidCallback callback) =>
+      AsyncUtils.debounce(delay, callback);
 
   /// 统一的节流执行
   ///
@@ -499,17 +380,8 @@ class CommonUtils {
   /// [interval] 节流时间间隔
   /// [callback] 回调函数
   /// 返回是否执行了回调
-  static DateTime? _lastThrottleTime;
-  static bool throttle(Duration interval, VoidCallback callback) {
-    final now = DateTime.now();
-    if (_lastThrottleTime == null ||
-        now.difference(_lastThrottleTime!) >= interval) {
-      _lastThrottleTime = now;
-      callback();
-      return true;
-    }
-    return false;
-  }
+  static bool throttle(Duration interval, VoidCallback callback) =>
+      AsyncUtils.throttle(interval, callback);
 
   // 私有方法
   /// 记录请求日志

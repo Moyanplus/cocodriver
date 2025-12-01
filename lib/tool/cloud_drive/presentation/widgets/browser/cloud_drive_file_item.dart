@@ -5,6 +5,7 @@ import '../../../../../core/utils/responsive_utils.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../../utils/file_type_utils.dart';
 import '../../../utils/common_utils.dart';
+import '../../../utils/format_utils.dart';
 import '../common/authenticated_network_image.dart';
 import '../common/file_time_formatter.dart';
 
@@ -266,7 +267,7 @@ class CloudDriveFileItem extends StatelessWidget {
 
     // 添加大小信息（如果有）
     if (item.size != null && item.size! > 0) {
-      parts.add(CommonUtils.formatFileSize(item.size!));
+      parts.add(FormatUtils.formatFileSize(item.size!));
     }
 
     // 下载量/分享量（>=0 才显示）

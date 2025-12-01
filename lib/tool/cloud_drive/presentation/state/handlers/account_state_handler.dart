@@ -44,8 +44,6 @@ class AccountStateHandler {
         ),
       );
 
-      await _refreshAccountDetails(accounts);
-
       _logger.info('账号列表加载成功: ${accounts.length}个账号');
     } catch (e) {
       _logger.error('加载账号列表失败: $e');
@@ -68,7 +66,7 @@ class AccountStateHandler {
       }
 
       final account = currentState.accounts[accountIndex];
-      // 先乐观切换，再异步校验，避免阻塞 UI
+      // 先乐观切换，再视登录状态决定是否校验，避免未登录账号打接口
       _stateManager.updateState(
         (state) => state.copyWith(
           currentAccount: account,
@@ -81,8 +79,10 @@ class AccountStateHandler {
         ),
       );
 
-      // 异步校验有效性，结果写入状态
-      unawaited(_validateAndStoreAccount(account));
+      if (account.isLoggedIn) {
+        // 异步校验有效性，结果写入状态
+        unawaited(_validateAndStoreAccount(account));
+      }
 
       // 不在此处自动加载文件列表，避免侧边栏切换账号时频繁触发文件接口。
       // 进入文件页时再按需加载。
@@ -224,6 +224,12 @@ class AccountStateHandler {
     }
   }
 
+  /// 刷新并写入账号详情，返回获取的详情
+  Future<CloudDriveAccountDetails?> refreshAccountDetails(
+    CloudDriveAccount account,
+  ) =>
+      _fetchAndStoreAccountDetails(account);
+
   /// 更新账号的Cookie信息
   ///
   /// [accountId] 要更新Cookie的账号ID
@@ -275,6 +281,7 @@ class AccountStateHandler {
     CloudDriveAccount account,
   ) async {
     try {
+      _setValidating(account.id, true);
       final details = await getAccountDetails(account);
       if (details != null) {
         _stateManager.updateState((state) {
@@ -282,7 +289,14 @@ class AccountStateHandler {
             state.accountDetails,
           );
           updated[account.id] = details;
-          return state.copyWith(accountDetails: updated);
+          final newValidating = Set<String>.from(
+            state.accountState.validatingAccountIds,
+          )..remove(account.id);
+          return state.copyWith(
+            accountDetails: updated,
+            accountState:
+                state.accountState.copyWith(validatingAccountIds: newValidating),
+          );
         });
       }
       return details;
@@ -307,10 +321,13 @@ class AccountStateHandler {
     } catch (e, stack) {
       _logger.error('获取账号详情失败: $e\n$stack');
       return null;
+    } finally {
+      _setValidating(account.id, false);
     }
   }
 
   Future<void> _validateAndStoreAccount(CloudDriveAccount account) async {
+    _setValidating(account.id, true);
     final details = await _validationService.fetchDetails(account);
     if (details == null) return;
     _stateManager.updateState((state) {
@@ -318,7 +335,14 @@ class AccountStateHandler {
         state.accountDetails,
       );
       updated[account.id] = details;
-      return state.copyWith(accountDetails: updated);
+      final newValidating = Set<String>.from(
+        state.accountState.validatingAccountIds,
+      )..remove(account.id);
+      return state.copyWith(
+        accountDetails: updated,
+        accountState:
+            state.accountState.copyWith(validatingAccountIds: newValidating),
+      );
     });
     if (!details.isValid) {
       _stateManager.updateState(
@@ -328,5 +352,22 @@ class AccountStateHandler {
         ),
       );
     }
+    _setValidating(account.id, false);
+  }
+
+  void _setValidating(String accountId, bool isValidating) {
+    _stateManager.updateState((state) {
+      final next = Set<String>.from(state.accountState.validatingAccountIds);
+      if (isValidating) {
+        next.add(accountId);
+      } else {
+        next.remove(accountId);
+      }
+      return state.copyWith(
+        accountState: state.accountState.copyWith(
+          validatingAccountIds: next,
+        ),
+      );
+    });
   }
 }
