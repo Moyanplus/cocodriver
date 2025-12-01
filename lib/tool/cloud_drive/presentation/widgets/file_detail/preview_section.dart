@@ -26,13 +26,13 @@ class PreviewSection extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              fileTypeInfo.color.withOpacity(0.05),
-              fileTypeInfo.color.withOpacity(0.02),
+              fileTypeInfo.color.withValues(alpha: 0.05),
+              fileTypeInfo.color.withValues(alpha: 0.02),
             ],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: fileTypeInfo.color.withOpacity(0.15),
+            color: fileTypeInfo.color.withValues(alpha: 0.15),
             width: 1.5,
           ),
         ),
@@ -66,7 +66,7 @@ class PreviewSection extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: fileTypeInfo.color.withOpacity(0.1),
+              color: fileTypeInfo.color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -112,7 +112,7 @@ class PreviewSection extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: fileTypeInfo.color.withOpacity(0.1),
+              color: fileTypeInfo.color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -158,7 +158,7 @@ class PreviewSection extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: fileTypeInfo.color.withOpacity(0.1),
+              color: fileTypeInfo.color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -207,7 +207,7 @@ class PreviewSection extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: fileTypeInfo.color.withOpacity(0.1),
+              color: fileTypeInfo.color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(

@@ -126,7 +126,7 @@ class UpdateDialog extends ConsumerWidget {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.grey.withValues(alpha: (0.1 * 255).round()),
+        color: Colors.grey.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
@@ -141,7 +141,7 @@ class UpdateDialog extends ConsumerWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: (0.2 * 255).round()),
+              color: Colors.green.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(4.r),
             ),
             child: Text(

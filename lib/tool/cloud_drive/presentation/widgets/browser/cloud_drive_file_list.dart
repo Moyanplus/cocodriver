@@ -254,7 +254,9 @@ class CloudDriveFileList extends StatelessWidget {
             height: 72,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.9),
+              color: theme.colorScheme.primary.withValues(
+                alpha: 0.9,
+              ),
               borderRadius: BorderRadius.circular(18),
             ),
             child: Text(
@@ -279,7 +281,7 @@ class CloudDriveFileList extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
         selectItemDecoration: BoxDecoration(
-          color: theme.colorScheme.primary.withOpacity(0.85),
+          color: theme.colorScheme.primary.withValues(alpha: 0.85),
           borderRadius: BorderRadius.circular(10),
         ),
       ),
@@ -466,7 +468,7 @@ class _GridFileTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           color:
               isSelected
-                  ? theme.colorScheme.primaryContainer.withOpacity(0.4)
+                  ? theme.colorScheme.primaryContainer.withValues(alpha: 0.4)
                   : theme.colorScheme.surface,
         ),
         child: Column(
@@ -562,7 +564,7 @@ class _GridFileTile extends StatelessWidget {
       height: size,
       margin: EdgeInsets.only(bottom: 6.w),
       decoration: BoxDecoration(
-        color: typeColor.withOpacity(0.18),
+        color: typeColor.withValues(alpha: 0.18),
         borderRadius: radius,
       ),
       child: Icon(typeIcon, color: typeColor, size: 26.w),

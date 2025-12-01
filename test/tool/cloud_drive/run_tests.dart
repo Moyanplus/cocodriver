@@ -6,17 +6,14 @@ void main() {
   group('CloudDrive Test Suite', () {
     test('运行所有单元测试', () {
       // 这里可以添加单元测试的运行逻辑
-      print('OK 单元测试运行完成');
     });
 
     test('运行所有集成测试', () {
       // 这里可以添加集成测试的运行逻辑
-      print('OK 集成测试运行完成');
     });
 
     test('运行所有性能测试', () {
       // 这里可以添加性能测试的运行逻辑
-      print('OK 性能测试运行完成');
     });
   });
 }
@@ -69,16 +66,10 @@ class TestStats {
   /// 打印统计报告
   static void printReport() {
     final stats = getStats();
-    print('\nSTATS 测试统计报告:');
-    print('总测试数: ${stats['total']}');
-    print('通过: ${stats['passed']} OK');
-    print('失败: ${stats['failed']} ERROR');
-    print('跳过: ${stats['skipped']} SKIP');
 
     if (stats['total']! > 0) {
       final passRate = (stats['passed']! / stats['total']! * 100)
           .toStringAsFixed(1);
-      print('通过率: $passRate%');
     }
   }
 }

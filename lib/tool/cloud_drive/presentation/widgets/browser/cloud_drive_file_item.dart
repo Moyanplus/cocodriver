@@ -43,10 +43,16 @@ class CloudDriveFileItem extends StatelessWidget {
         (file.metadata?['uploadProgress'] as num?)?.toDouble();
 
     final overlay = WidgetStateProperty.all(
-      theme.colorScheme.primary.withOpacity(0.08),
+      theme.colorScheme.primary.withValues(
+        alpha: 0.08,
+      ),
     );
-    final splashColor = theme.colorScheme.primary.withOpacity(0.16);
-    final highlightColor = theme.colorScheme.primary.withOpacity(0.06);
+    final splashColor = theme.colorScheme.primary.withValues(
+      alpha: 0.16,
+    );
+    final highlightColor = theme.colorScheme.primary.withValues(
+      alpha: 0.06,
+    );
 
     return Padding(
       padding: EdgeInsets.symmetric(

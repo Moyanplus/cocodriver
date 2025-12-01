@@ -77,8 +77,8 @@ class FileInfoDisplay extends StatelessWidget {
       height: 60.h,
       decoration: BoxDecoration(
         color: file.isFolder 
-            ? CloudDriveUIConfig.folderColor.withOpacity(0.1)
-            : fileTypeInfo.color.withOpacity(0.1),
+            ? CloudDriveUIConfig.folderColor.withValues(alpha: 0.1)
+            : fileTypeInfo.color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(CloudDriveUIConfig.cardRadius),
       ),
       child: Icon(

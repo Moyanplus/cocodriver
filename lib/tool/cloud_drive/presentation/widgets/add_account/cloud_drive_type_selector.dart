@@ -35,7 +35,9 @@ class CloudDriveTypeSelector extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             border: Border.all(
-              color: Theme.of(context).dividerColor.withOpacity(0.3),
+              color: Theme.of(context).dividerColor.withValues(
+                alpha: (0.3 * 255).round(),
+              ),
             ),
             borderRadius: BorderRadius.circular(8.r),
           ),
@@ -60,7 +62,9 @@ class CloudDriveTypeSelector extends StatelessWidget {
                                   isSelected
                                       ? Theme.of(
                                         context,
-                                      ).primaryColor.withOpacity(0.1)
+                                      ).primaryColor.withValues(
+                                            alpha: (0.1 * 255).round(),
+                                          )
                                       : Colors.transparent,
                               borderRadius: BorderRadius.circular(8.r),
                             ),
@@ -141,7 +145,9 @@ class CloudDriveTypeSelector extends StatelessWidget {
                                   isSelected
                                       ? Theme.of(
                                         context,
-                                      ).primaryColor.withOpacity(0.1)
+                                      ).primaryColor.withValues(
+                                            alpha: (0.1 * 255).round(),
+                                          )
                                       : Colors.transparent,
                               borderRadius: BorderRadius.circular(8.r),
                             ),

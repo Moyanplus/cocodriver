@@ -1,5 +1,5 @@
 import 'package:coco_cloud_drive/tool/cloud_drive/core/result.dart';
-import 'package:coco_cloud_drive/tool/cloud_drive/models/cloud_drive_models.dart';
+import 'package:coco_cloud_drive/tool/cloud_drive/data/models/cloud_drive_entities.dart';
 import 'package:coco_cloud_drive/tool/cloud_drive/services/providers/pan123/api/pan123_api_client.dart';
 import 'package:coco_cloud_drive/tool/cloud_drive/services/providers/pan123/api/pan123_base_service.dart';
 import 'package:coco_cloud_drive/tool/cloud_drive/services/providers/pan123/api/pan123_operations.dart';

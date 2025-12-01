@@ -270,7 +270,9 @@ class OperationButtons extends StatelessWidget {
   }) {
     final displayColor = enabled ? color : Colors.grey;
     final backgroundColor =
-        enabled ? color.withOpacity(0.1) : Colors.grey.withOpacity(0.15);
+        enabled
+            ? color.withValues(alpha: 0.1)
+            : Colors.grey.withValues(alpha: 0.15);
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: CloudDriveUIConfig.spacingS),
@@ -294,7 +296,9 @@ class OperationButtons extends StatelessWidget {
   }) {
     final displayColor = enabled ? color : Colors.grey;
     final backgroundColor =
-        enabled ? color.withOpacity(0.1) : Colors.grey.withOpacity(0.15);
+        enabled
+            ? color.withValues(alpha: 0.1)
+            : Colors.grey.withValues(alpha: 0.15);
     return Material(
       color: backgroundColor,
       borderRadius: BorderRadius.circular(12),

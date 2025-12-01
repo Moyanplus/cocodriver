@@ -142,8 +142,8 @@ class _ShareDialogState extends State<ShareDialog> {
                   decoration: BoxDecoration(
                     color:
                         isSelected
-                            ? CloudDriveUIConfig.primaryActionColor.withOpacity(
-                              0.1,
+                            ? CloudDriveUIConfig.primaryActionColor.withValues(
+                              alpha: 0.1,
                             )
                             : null,
                     borderRadius: BorderRadius.circular(

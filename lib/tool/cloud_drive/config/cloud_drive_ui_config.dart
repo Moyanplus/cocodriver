@@ -76,7 +76,7 @@ class CloudDriveUIConfig {
   // 阴影
   static List<BoxShadow> get cardShadow => [
         BoxShadow(
-          color: Colors.black.withOpacity(0.1),
+          color: Colors.black.withValues(alpha: 0.1),
           blurRadius: 8.r,
           offset: Offset(0, 2.h),
         ),
@@ -84,7 +84,7 @@ class CloudDriveUIConfig {
 
   static List<BoxShadow> get buttonShadow => [
         BoxShadow(
-          color: Colors.black.withOpacity(0.1),
+          color: Colors.black.withValues(alpha: 0.1),
           blurRadius: 4.r,
           offset: Offset(0, 2.h),
         ),

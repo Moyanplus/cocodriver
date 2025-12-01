@@ -135,7 +135,7 @@ class _DownloadManagerPageState extends ConsumerState<DownloadManagerPage>
                               border: Border.all(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.outline.withOpacity(0.3),
+                                ).colorScheme.outline.withValues(alpha: 0.3),
                               ),
                             ),
                             child: Column(
@@ -277,7 +277,7 @@ class _DownloadManagerPageState extends ConsumerState<DownloadManagerPage>
         controller: _tabController,
         indicatorColor: colorScheme.primary,
         labelColor: colorScheme.primary,
-        unselectedLabelColor: colorScheme.onSurface.withOpacity(0.6),
+        unselectedLabelColor: colorScheme.onSurface.withValues(alpha: 0.6),
         labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         unselectedLabelStyle: const TextStyle(
           fontSize: 14,
@@ -332,13 +332,17 @@ class _DownloadManagerPageState extends ConsumerState<DownloadManagerPage>
             Icon(
               Icons.download_outlined,
               size: 64,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(
               '暂无下载任务',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
           ],

@@ -148,7 +148,7 @@ class _FileOperationBottomSheetState
         height: containerSize,
         padding: EdgeInsets.all(CloudDriveUIConfig.spacingS),
         decoration: BoxDecoration(
-          color: Colors.orange.withOpacity(0.1),
+          color: Colors.orange.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(Icons.folder_rounded, size: iconSize, color: Colors.orange),
@@ -192,7 +192,7 @@ class _FileOperationBottomSheetState
       decoration: BoxDecoration(
         color: FileTypeUtils.getFileTypeColor(
           widget.file.name,
-        ).withOpacity(0.1),
+        ).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(
@@ -258,7 +258,7 @@ class _FileOperationBottomSheetState
         color:
             hasPreview
                 ? theme.colorScheme.primary
-                : theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
       ),
       onPressed: () => _showPreviewViewer(context),
       tooltip: hasPreview ? '预览文件' : '暂无预览',
@@ -281,7 +281,7 @@ class _FileOperationBottomSheetState
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),

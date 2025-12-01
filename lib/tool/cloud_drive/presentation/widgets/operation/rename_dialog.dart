@@ -94,7 +94,9 @@ class _RenameDialogState extends State<RenameDialog> {
           Container(
             padding: ResponsiveUtils.getResponsivePadding(all: 12.w),
             decoration: BoxDecoration(
-              color: CloudDriveUIConfig.infoColor.withOpacity(0.1),
+              color: CloudDriveUIConfig.infoColor.withValues(
+                alpha: 0.1,
+              ),
               borderRadius: BorderRadius.circular(
                 ResponsiveUtils.getCardRadius(),
               ),

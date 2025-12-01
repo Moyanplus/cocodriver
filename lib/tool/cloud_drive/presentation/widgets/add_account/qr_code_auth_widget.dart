@@ -83,7 +83,7 @@ class _QRCodeAuthWidgetState extends State<QRCodeAuthWidget> {
         height: 200.h,
         decoration: BoxDecoration(
           border: Border.all(
-            color: Theme.of(context).dividerColor.withOpacity(0.3),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
           ),
           borderRadius: BorderRadius.circular(8.r),
         ),
@@ -118,7 +118,7 @@ class _QRCodeAuthWidgetState extends State<QRCodeAuthWidget> {
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             border: Border.all(
-              color: Theme.of(context).dividerColor.withOpacity(0.3),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
             ),
             borderRadius: BorderRadius.circular(8.r),
           ),
@@ -146,7 +146,7 @@ class _QRCodeAuthWidgetState extends State<QRCodeAuthWidget> {
                     fontSize: 12.sp,
                     color: Theme.of(
                       context,
-                    ).textTheme.bodySmall?.color?.withOpacity(0.6),
+                    ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -174,7 +174,7 @@ class _QRCodeAuthWidgetState extends State<QRCodeAuthWidget> {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.1),
+          color: Colors.green.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(6.r),
         ),
         child: Row(
@@ -200,7 +200,7 @@ class _QRCodeAuthWidgetState extends State<QRCodeAuthWidget> {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+          color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(6.r),
         ),
         child: Row(
@@ -229,7 +229,7 @@ class _QRCodeAuthWidgetState extends State<QRCodeAuthWidget> {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(6.r),
         ),
         child: Row(

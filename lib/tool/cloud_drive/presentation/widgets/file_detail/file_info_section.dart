@@ -43,7 +43,7 @@ class _FileInfoSectionState extends State<FileInfoSection>
                   vertical: CloudDriveUIConfig.spacingXS,
                 ),
                 decoration: BoxDecoration(
-                  color: fileTypeInfo.color.withOpacity(0.12),
+                  color: fileTypeInfo.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
@@ -239,7 +239,9 @@ class _FileInfoSectionState extends State<FileInfoSection>
           bottom:
               !isLast
                   ? BorderSide(
-                    color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.5,
+                    ),
                     width: 0.5,
                   )
                   : BorderSide.none,
@@ -251,7 +253,7 @@ class _FileInfoSectionState extends State<FileInfoSection>
           Container(
             padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer.withOpacity(0.5),
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(

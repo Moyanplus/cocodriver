@@ -130,7 +130,9 @@ class _CloudDriveLoginPageState extends State<CloudDriveLoginPage> {
           if (_errorMessage != null)
             Container(
               width: double.infinity,
-              color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.error.withValues(
+                alpha: 0.1,
+              ),
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               child: Row(
                 children: [
@@ -165,7 +167,7 @@ class _CloudDriveLoginPageState extends State<CloudDriveLoginPage> {
                 if (_isLoading)
                   Positioned.fill(
                     child: Container(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       alignment: Alignment.center,
                       child: const CircularProgressIndicator(strokeWidth: 2),
                     ),

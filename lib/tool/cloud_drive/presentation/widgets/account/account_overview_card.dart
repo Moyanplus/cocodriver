@@ -40,7 +40,8 @@ class AccountOverviewCard extends StatelessWidget {
                     ),
                     SizedBox(height: CloudDriveUIConfig.spacingXS),
                     Text(
-                      _getDescriptor(account.type).displayName ?? account.type.name,
+                      _getDescriptor(account.type).displayName ??
+                          account.type.name,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -85,8 +86,11 @@ class AccountOverviewCard extends StatelessWidget {
       height: 60.h,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: _getDescriptor(account.type).color?.withOpacity(0.15) ??
-            CloudDriveUIConfig.secondaryActionColor.withOpacity(0.15),
+        color:
+            _getDescriptor(
+              account.type,
+            ).color?.withValues(alpha: 0.15) ??
+            CloudDriveUIConfig.secondaryActionColor.withValues(alpha: 0.15),
       ),
       child: Icon(
         _getDescriptor(account.type).iconData ?? Icons.cloud_queue,
@@ -97,7 +101,10 @@ class AccountOverviewCard extends StatelessWidget {
   }
 
   /// 构建状态指示器
-  Widget _buildStatusIndicator(BuildContext context, CloudDriveAccount account) {
+  Widget _buildStatusIndicator(
+    BuildContext context,
+    CloudDriveAccount account,
+  ) {
     String status;
     final colorScheme = Theme.of(context).colorScheme;
     Color statusColor;

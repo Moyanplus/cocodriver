@@ -38,7 +38,7 @@ class WebViewToolbar extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         border: Border(
           bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
           ),
         ),
       ),
@@ -51,7 +51,7 @@ class WebViewToolbar extends StatelessWidget {
           Container(
             width: 1.w,
             height: 32.h,
-            color: CloudDriveUIConfig.dividerColor.withOpacity(0.3),
+            color: CloudDriveUIConfig.dividerColor.withValues(alpha: 0.3),
           ),
 
           // 刷新/停止按钮
@@ -61,7 +61,7 @@ class WebViewToolbar extends StatelessWidget {
           Container(
             width: 1.w,
             height: 32.h,
-            color: CloudDriveUIConfig.dividerColor.withOpacity(0.3),
+            color: CloudDriveUIConfig.dividerColor.withValues(alpha: 0.3),
           ),
 
           // 缩放控制

@@ -226,13 +226,15 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                                                   ),
                                               color:
                                                   isSelected
-                                                      ? Theme.of(context)
-                                                          .colorScheme
-                                                          .onPrimaryContainer
-                                                          .withOpacity(0.7)
-                                                      : Theme.of(context)
-                                                          .colorScheme
-                                                          .onSurfaceVariant,
+                                              ? Theme.of(context)
+                                                  .colorScheme
+                                                  .onPrimaryContainer
+                                                  .withValues(
+                                                    alpha: (0.7 * 255).round(),
+                                                  )
+                                              : Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
                                             ),
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 1,
@@ -332,13 +334,15 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.account_circle_outlined,
-                      size: ResponsiveUtils.getIconSize(32.sp),
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant.withOpacity(0.5),
-                    ),
+                      Icon(
+                        Icons.account_circle_outlined,
+                        size: ResponsiveUtils.getIconSize(32.sp),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant.withValues(
+                              alpha: (0.5 * 255).round(),
+                            ),
+                      ),
                     SizedBox(height: 8.h),
                     Text(
                       '暂无云盘账号',
@@ -379,7 +383,9 @@ class CloudDriveAccountSelector extends ConsumerWidget {
           CircleAvatar(
             backgroundImage: NetworkImage(account.avatarUrl!),
             radius: ResponsiveUtils.getIconSize(14.sp),
-            backgroundColor: account.type.color.withOpacity(0.1),
+            backgroundColor: account.type.color.withValues(
+              alpha: (0.1 * 255).round(),
+            ),
           ),
           // 云盘类型小图标徽章
           Positioned(

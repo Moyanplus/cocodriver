@@ -162,7 +162,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
         decoration: BoxDecoration(
           color: Theme.of(
             context,
-          ).colorScheme.primaryContainer.withOpacity(0.25),
+          ).colorScheme.primaryContainer.withValues(alpha: 0.25),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -655,7 +655,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => Navigator.pop(context),
-                  child: Container(color: Colors.black.withOpacity(0.2)),
+                  child: Container(color: Colors.black.withValues(alpha: 0.2)),
                 ),
               ),
               DraggableScrollableSheet(

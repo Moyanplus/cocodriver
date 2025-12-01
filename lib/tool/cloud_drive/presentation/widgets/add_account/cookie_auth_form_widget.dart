@@ -135,7 +135,7 @@ class _CookieAuthFormWidgetState extends State<CookieAuthFormWidget> {
         vertical: AddAccountFormConstants.smallSpacing.h,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(
           AddAccountFormConstants.smallBorderRadius.r,
         ),

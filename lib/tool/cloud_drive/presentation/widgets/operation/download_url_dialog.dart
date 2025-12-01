@@ -93,8 +93,8 @@ class DownloadUrlDialog extends StatelessWidget {
                           vertical: 8.h,
                         ),
                         decoration: BoxDecoration(
-                          color: CloudDriveUIConfig.dividerColor.withOpacity(
-                            0.1,
+                          color: CloudDriveUIConfig.dividerColor.withValues(
+                            alpha: 0.1,
                           ),
                           borderRadius: BorderRadius.circular(
                             ResponsiveUtils.getCardRadius() * 0.5,
