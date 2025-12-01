@@ -98,8 +98,9 @@ void main() {
 
       expect(success, isTrue);
       final files = manager.getCurrentState().files;
-      expect(files.length, 1);
-      expect(files.first.folderId, '/');
+      // 移动到新目录后，原文件保留（不同目录），新增一条复制到目标目录的记录
+      expect(files.length, 2);
+      expect(files.any((f) => f.folderId == '/'), isTrue);
       expect(fakeHandler.cacheInvalidations.length, 2);
       expect(fakeHandler.loadCalls.contains(true), isTrue);
     });

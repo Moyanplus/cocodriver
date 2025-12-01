@@ -72,7 +72,8 @@ void main() {
         final newState = manager.getCurrentState();
         expect(newState.currentAccount?.id, equals('acc2'));
         expect(newState.files, isEmpty);
-        expect(folderHandler.loadCalls, equals([true]));
+        // 切换账号不再主动刷新文件夹，交由页面按需触发
+        expect(folderHandler.loadCalls, isEmpty);
       },
     );
 
@@ -93,7 +94,8 @@ void main() {
         ),
       );
 
-      expect(() => manager.accountHandler.switchAccount(5), throwsException);
+      await manager.accountHandler.switchAccount(5);
+      expect(manager.getCurrentState().error, isNotNull);
     });
   });
 }

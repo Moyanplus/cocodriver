@@ -128,7 +128,8 @@ void main() {
       },
     };
 
-    when(dio.get(any<String>())).thenAnswer((_) async => _successResponse(data));
+    when(dio.get(any<String>()))
+        .thenAnswer((_) async => _successResponse(data));
 
     final response = await Pan123ApiClient().listFiles(
       account: account,

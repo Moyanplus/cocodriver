@@ -32,11 +32,11 @@ void main() {
         expect(testAccount.id, equals('test_account_1'));
         expect(testAccount.type, equals(CloudDriveType.baidu));
         expect(testAccount.name, equals('Test Account'));
-        expect(testAccount.primaryAuthValue, equals('test_cookies'));
+        expect(testAccount.authValue, equals('test_cookies'));
       });
 
       test('should handle account validation', () {
-        expect(testAccount.primaryAuthValue, isNotNull);
+        expect(testAccount.authValue, isNotNull);
         expect(testAccount.createdAt, isA<DateTime>());
         expect(testAccount.lastLoginAt, isA<DateTime>());
       });

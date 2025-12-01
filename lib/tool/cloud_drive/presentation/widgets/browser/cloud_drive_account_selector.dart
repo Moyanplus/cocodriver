@@ -149,7 +149,15 @@ class CloudDriveAccountSelector extends ConsumerWidget {
                           Row(
                             children: [
                               // 显示用户头像或云盘图标
-                              _buildAccountIcon(context, account),
+                              _buildAccountIcon(
+                                context,
+                                account,
+                                avatarUrl:
+                                    (account.avatarUrl != null &&
+                                            account.avatarUrl!.isNotEmpty)
+                                        ? account.avatarUrl
+                                        : details?.avatarUrl,
+                              ),
                               SizedBox(
                                 width: ResponsiveUtils.getSpacing() * 0.5,
                               ),
@@ -376,13 +384,18 @@ class CloudDriveAccountSelector extends ConsumerWidget {
   /// 参数：
   /// - [context]: 构建上下文，用于获取主题数据
   /// - [account]: 云盘账号信息，包含头像URL、云盘类型等数据
-  Widget _buildAccountIcon(BuildContext context, CloudDriveAccount account) {
-    if (account.avatarUrl != null && account.avatarUrl!.isNotEmpty) {
+  Widget _buildAccountIcon(
+    BuildContext context,
+    CloudDriveAccount account, {
+    String? avatarUrl,
+  }) {
+    final resolvedAvatar = avatarUrl ?? account.avatarUrl;
+    if (resolvedAvatar != null && resolvedAvatar.isNotEmpty) {
       // 如果有头像，显示头像并在右下角添加云盘类型小图标
       return Stack(
         children: [
           CircleAvatar(
-            backgroundImage: NetworkImage(account.avatarUrl!),
+            backgroundImage: NetworkImage(resolvedAvatar),
             radius: ResponsiveUtils.getIconSize(14.sp),
             backgroundColor: account.type.color.withValues(alpha: 0.1),
           ),

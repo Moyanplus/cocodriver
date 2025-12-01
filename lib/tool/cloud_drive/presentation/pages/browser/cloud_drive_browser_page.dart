@@ -12,6 +12,7 @@ import '../../../base/cloud_drive_service_gateway.dart';
 import '../../providers/cloud_drive_provider.dart';
 import '../../state/cloud_drive_state_model.dart';
 import '../../state/cloud_drive_state_manager.dart';
+import '../../widgets/browser/cloud_drive_account_selector.dart';
 import '../../widgets/browser/cloud_drive_file_list.dart';
 import '../../widgets/browser/cloud_drive_batch_action_bar.dart';
 import '../../widgets/browser/cloud_drive_path_navigator.dart';
@@ -374,7 +375,7 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
 
     return Scaffold(
       backgroundColor: CloudDriveUIConfig.backgroundColor,
-      // body: _buildBody(state),
+      body: _buildBody(state),
       bottomNavigationBar:
           state.isBatchMode ? const CloudDriveBatchActionBar() : null,
       floatingActionButton: _buildFloatingActionButton(state),
@@ -382,39 +383,35 @@ class _CloudDriveBrowserPageState extends ConsumerState<CloudDriveBrowserPage> {
   }
 
   /// 构建主体内容
-  // Widget _buildBody(CloudDriveState state) {
-  //   final bodyType = _viewModel.resolveBody(state);
-  //   return Column(
-  //     children: [
-  //       const CloudDriveAccountSelector(),
-  //       Expanded(
-  //         child: AnimatedSwitcher(
-  //           duration: const Duration(milliseconds: 250),
-  //           switchInCurve: Curves.easeOut,
-  //           switchOutCurve: Curves.easeIn,
-  //           child: _buildMainContent(state, bodyType),
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
+  Widget _buildBody(CloudDriveState state) {
+    final hasAccounts = state.accounts.isNotEmpty;
+    final hasCurrent = state.currentAccount != null;
 
-  /// 构建主要内容
-  // Widget _buildMainContent(
-  //   CloudDriveState state,
-  //   CloudDriveBrowserBodyType bodyType,
-  // ) {
-  //   switch (bodyType) {
-  //     case CloudDriveBrowserBodyType.noAccount:
-  //       return _buildEmptyState(key: const ValueKey('no-accounts'));
-  //     case CloudDriveBrowserBodyType.selectAccount:
-  //       return _buildNoAccountSelectedState(
-  //         key: const ValueKey('select-account'),
-  //       );
-  //     case CloudDriveBrowserBodyType.content:
-  //       return _buildContent(state);
-  //   }
-  // }
+    Widget child;
+    if (!hasAccounts) {
+      child = _buildEmptyState(key: const ValueKey('no-accounts'));
+    } else if (!hasCurrent) {
+      child = _buildNoAccountSelectedState(
+        key: const ValueKey('select-account'),
+      );
+    } else {
+      child = _buildContent(state);
+    }
+
+    return Column(
+      children: [
+        const CloudDriveAccountSelector(),
+        Expanded(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            child: child,
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildContent(CloudDriveState state) {
     // ========== 正常显示：路径导航器 + 文件列表 ==========

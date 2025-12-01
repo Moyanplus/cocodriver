@@ -17,13 +17,8 @@ class Pan123AccountNormalizer implements CloudDriveAccountNormalizer {
       final info = await _repository.getUserInfo(account: account);
       final uid = info.uid;
       if (uid <= 0) return account;
-      // TODO 错误 这个 头像
       final newId = '${CloudDriveType.pan123.name}_$uid';
       final newName = info.nickname.isNotEmpty ? info.nickname : account.name;
-      final newAvatar =
-          (info.avatar != null && info.avatar!.isNotEmpty)
-              ? info.avatar
-              : account.avatarUrl;
 
       return account.copyWith(
         id: newId,

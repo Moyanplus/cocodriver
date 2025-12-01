@@ -154,7 +154,7 @@ class LoginDetectionConfig {
     detectionMethod: 'cookie',
     checkInterval: Duration(seconds: 2),
     maxRetries: 30,
-    successIndicators: ['BDUSS', 'STOKEN', 'PCS_TOKEN'], // 与Cookie处理配置保持一致
+    successIndicators: ['BDUSS', 'STOKEN'], // 与Cookie处理配置保持一致
     successUrl: 'https://pan.baidu.com/disk/home',
     successTitle: '百度网盘',
     timeout: Duration(seconds: 30),
@@ -229,7 +229,7 @@ class CookieProcessingConfig {
   static const CookieProcessingConfig defaultConfig = CookieProcessingConfig(
     enableProcessing: true,
     useInterceptedCookies: true,
-    requiredCookies: ['BDUSS', 'STOKEN', 'PCS_TOKEN'],
+    requiredCookies: ['BDUSS', 'STOKEN'],
   );
 
   /// 123云盘Cookie处理配置

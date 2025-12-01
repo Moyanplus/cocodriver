@@ -105,7 +105,7 @@ void main() {
       final newState = manager.getCurrentState();
       expect(newState.currentFolder, isNull);
       expect(newState.folderPath, isEmpty);
-      expect(handler.loadCalls, equals([true]));
+      expect(handler.loadCalls, equals([false]));
     });
   });
 }

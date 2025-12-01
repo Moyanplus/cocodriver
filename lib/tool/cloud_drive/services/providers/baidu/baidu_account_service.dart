@@ -8,28 +8,34 @@ import 'baidu_base_service.dart';
 /// 提供百度网盘账号相关功能，包括 Cookie 验证、账号信息获取等。
 class BaiduAccountService {
   static const String _baseUrl = 'https://pan.baidu.com/api';
+  static const String _memberApi =
+      'https://pan.baidu.com/rest/2.0/membership/user/info';
 
   /// 验证Cookie
   static Future<bool> validateCookies(CloudDriveAccount account) async {
     try {
       final dio = BaiduBaseService.createDio(account);
 
-      final response = await dio.get('$_baseUrl/userinfo');
+      // 官方 userinfo 接口已不可用，改用 membership 用户信息接口
+      final response = await dio.get(
+        _memberApi,
+        queryParameters: {
+          'method': 'query',
+          'clienttype': 0,
+          'app_id': 250528,
+          'web': 1,
+        },
+      );
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data['errno'] == 0) {
-          _logSuccess('Cookie验证成功');
-          return true;
-        } else {
-          final errorMsg = _getErrorMessage(data['errno']);
-          _logError('Cookie验证失败', errorMsg);
-          return false;
-        }
-      } else {
-        _logError('Cookie验证失败', 'HTTP ${response.statusCode}');
-        return false;
+      if (response.statusCode == 200 &&
+          response.data is Map &&
+          response.data['error_code'] == 0) {
+        _logSuccess('Cookie验证成功');
+        return true;
       }
+
+      _logError('Cookie验证失败', 'HTTP ${response.statusCode}');
+      return false;
     } catch (e) {
       _logError('Cookie验证异常', e);
       return false;
@@ -44,20 +50,30 @@ class BaiduAccountService {
       final dio = BaiduBaseService.createDio(account);
 
       // 获取用户信息
-      final userResponse = await dio.get('$_baseUrl/userinfo');
-      if (userResponse.statusCode != 200 || userResponse.data['errno'] != 0) {
+      final userResponse = await dio.get(
+        _memberApi,
+        queryParameters: {
+          'method': 'query',
+          'clienttype': 0,
+          'app_id': 250528,
+          'web': 1,
+        },
+      );
+      final userData = userResponse.data;
+      if (userResponse.statusCode != 200 || userData['error_code'] != 0) {
         _logError('获取用户信息失败', 'HTTP ${userResponse.statusCode}');
         return null;
       }
 
-      final userData = userResponse.data;
+      final userInfo = userData['user_info'] ?? {};
       final accountInfo = CloudDriveAccountInfo(
-        username: userData['baidu_name'] ?? '未知用户',
-        uk: userData['uk'] ?? 0,
-        isVip: userData['vip_type'] != null && userData['vip_type'] > 0,
-        isSvip: userData['vip_type'] == 2,
-        loginState: 1,
+        username: userInfo['username'] ?? '未知用户',
+        uk: userInfo['uk'] ?? 0,
+        isVip: (userInfo['is_vip'] ?? 0) > 0,
+        isSvip: (userInfo['is_svip'] ?? 0) > 0,
+        loginState: userInfo['loginstate'] ?? 1,
       );
+      final avatarUrl = userInfo['photo']?.toString();
 
       // 获取容量信息
       final quotaResponse = await dio.get('$_baseUrl/quota');
@@ -77,6 +93,7 @@ class BaiduAccountService {
       final accountDetails = CloudDriveAccountDetails(
         id: account.id,
         name: account.name,
+        avatarUrl: avatarUrl,
         accountInfo: accountInfo,
         quotaInfo: quotaInfo,
       );

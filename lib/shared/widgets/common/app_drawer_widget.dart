@@ -132,10 +132,20 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
   /// 构建头像
   Widget _buildAvatar(BuildContext context, WidgetRef ref) {
     final account = ref.watch(currentAccountProvider);
+    final details =
+        ref.watch(currentAccountDetailsProvider).maybeWhen(
+              data: (value) => value,
+              orElse: () => null,
+            );
     final initial =
         (account?.name.isNotEmpty ?? false)
             ? account!.name[0].toUpperCase()
             : 'F';
+    final avatarUrl =
+        (account?.avatarUrl != null && account!.avatarUrl!.isNotEmpty)
+            ? account.avatarUrl
+            : details?.avatarUrl;
+
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -154,14 +164,21 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
       child: CircleAvatar(
         radius: ResponsiveUtils.getIconSize(50),
         backgroundColor: Theme.of(context).colorScheme.surface,
-        child: Text(
-          initial,
-          style: TextStyle(
-            fontSize: ResponsiveUtils.getResponsiveFontSize(30),
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-        ),
+        backgroundImage:
+            avatarUrl != null && avatarUrl.isNotEmpty
+                ? NetworkImage(avatarUrl)
+                : null,
+        child:
+            (avatarUrl == null || avatarUrl.isEmpty)
+                ? Text(
+                  initial,
+                  style: TextStyle(
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(30),
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                )
+                : null,
       ),
     );
   }

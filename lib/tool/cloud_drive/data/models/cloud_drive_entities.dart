@@ -589,7 +589,14 @@ class CloudDriveFile {
     'thumbnailUrl': thumbnailUrl,
     'bigThumbnailUrl': bigThumbnailUrl,
     'previewUrl': previewUrl,
-    'metadata': metadata,
+    'metadata': metadata == null
+        ? null
+        : metadata!.map(
+          (key, value) => MapEntry(
+            key,
+            value is Enum ? value.name : value,
+          ),
+        ),
     'category': category?.name,
     'downloadCount': downloadCount,
     'shareCount': shareCount,
