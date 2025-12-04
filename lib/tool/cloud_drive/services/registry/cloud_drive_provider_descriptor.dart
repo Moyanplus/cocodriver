@@ -7,6 +7,9 @@ import '../base/qr_login_service.dart';
 import 'package:flutter/material.dart';
 
 typedef StrategyFactory = CloudDriveOperationStrategy Function();
+typedef MediaHeadersBuilder = Map<String, String> Function(
+  CloudDriveAccount account,
+);
 
 /// 云盘提供方描述，用于实现可插拔注册。
 class CloudDriveProviderDescriptor {
@@ -24,6 +27,7 @@ class CloudDriveProviderDescriptor {
     this.qrLoginService,
     this.qrLoginAuthType,
     this.accountNormalizer,
+    this.mediaHeadersBuilder,
   });
 
   final CloudDriveType type;
@@ -49,4 +53,7 @@ class CloudDriveProviderDescriptor {
 
   /// 可选：账号归一化器，用于生成稳定 ID/昵称 等。
   final CloudDriveAccountNormalizer? accountNormalizer;
+
+  /// 可选：媒体（缩略图/预览图）请求附加头构造器，避免 UI 层硬编码。
+  final MediaHeadersBuilder? mediaHeadersBuilder;
 }

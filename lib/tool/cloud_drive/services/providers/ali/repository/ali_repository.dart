@@ -1,8 +1,10 @@
 import '../../../../base/base_cloud_drive_repository.dart';
+import '../../../../base/cloud_drive_operation_service.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
 import '../api/ali_api_client.dart';
 import '../models/requests/ali_list_request.dart';
 import '../models/requests/ali_operation_requests.dart';
+import '../models/responses/ali_share_record.dart';
 
 /// 阿里云盘仓库，适配统一仓库接口。
 class AliRepository extends BaseCloudDriveRepository {
@@ -114,5 +116,47 @@ class AliRepository extends BaseCloudDriveRepository {
     if (driveId == null) return null;
     final req = AliDownloadRequest(file: file, driveId: driveId);
     return _client.getDownloadUrl(account: account, request: req);
+  }
+
+  @override
+  Future<List<CloudDriveFile>> listRecycle({
+    required CloudDriveAccount account,
+    int page = 1,
+    int pageSize = 100,
+  }) async {
+    final driveId = await _client.getDriveId(account);
+    if (driveId == null) return const [];
+    return _client.listRecycle(
+      account: account,
+      driveId: driveId,
+      page: page,
+      pageSize: pageSize,
+    );
+  }
+
+  Future<List<AliShareRecord>> listShareRecords({
+    required CloudDriveAccount account,
+    int limit = 20,
+  }) async {
+    return _client.listShareRecords(
+      account: account,
+      limit: limit,
+    );
+  }
+
+  Future<CloudDriveFile?> uploadFile({
+    required CloudDriveAccount account,
+    required String filePath,
+    required String fileName,
+    String? parentId,
+    UploadProgressCallback? onProgress,
+  }) {
+    return _client.uploadFile(
+      account: account,
+      filePath: filePath,
+      fileName: fileName,
+      parentId: parentId,
+      onProgress: onProgress,
+    );
   }
 }

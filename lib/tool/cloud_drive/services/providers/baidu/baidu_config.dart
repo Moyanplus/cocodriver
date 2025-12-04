@@ -18,6 +18,8 @@ class BaiduConfig {
     'download': '/api/download', // 获取下载链接
     'createFolder': '/api/create', // 新建文件夹
     'share': '/api/share/set', // 分享
+    // filemanager 已经在 apiBaseUrl 下，避免重复 /api，末尾不再带 /api 前缀
+    'fileManager': '/filemanager', // 文件操作（移动/复制/删除等）
   };
 
   static String getApiEndpoint(String key) => endpoints[key] ?? '/';
@@ -91,6 +93,7 @@ class BaiduConfig {
     -8: '操作被拒绝',
     -9: '文件系统错误',
     -10: '数据库错误',
+    132: '需要安全验证（验证码/滑块），请在网页完成验证后重试',
   };
 
   // 支持的文件类型
@@ -314,7 +317,8 @@ class BaiduConfig {
     Map<String, dynamic>? extraParams,
   }) {
     final params = <String, dynamic>{
-      'async': 2,
+      // 使用同步模式(0)等待服务端完成，避免异步 taskid 导致列表刷新为空
+      'async': 0,
       'onnest': 'fail',
       'opera': operation,
       'clienttype': 0,

@@ -3,8 +3,10 @@ import '../../../../base/cloud_drive_operation_service.dart';
 import '../../../../data/models/cloud_drive_dtos.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
 import '../../../../utils/cloud_drive_log_utils.dart';
+import '../../../../core/result.dart';
 import '../repository/ali_repository.dart';
 import '../api/ali_api_client.dart';
+import '../models/responses/ali_share_record.dart';
 
 /// 阿里云盘操作策略
 ///
@@ -23,9 +25,11 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     'copy': false,
     'delete': true,
     'download': true,
-    'upload': false,
+    'upload': true,
     'share': false,
+    'share_records': true,
     'preview': false,
+    'recycle': true,
   };
 
   @override
@@ -58,6 +62,37 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     } catch (e) {
       LogManager().cloudDrive('阿里云盘 - 获取文件列表异常: $e');
       return [];
+    }
+  }
+
+  /// 回收站列表
+  Future<List<CloudDriveFile>> listRecycle({
+    required CloudDriveAccount account,
+    int page = 1,
+    int pageSize = 100,
+  }) async {
+    try {
+      return _repository.listRecycle(
+        account: account,
+        page: page,
+        pageSize: pageSize,
+      );
+    } catch (e) {
+      LogManager().cloudDrive('阿里云盘 - 获取回收站异常: $e');
+      return const [];
+    }
+  }
+
+  /// 分享记录列表
+  Future<List<AliShareRecord>> listShareRecords({
+    required CloudDriveAccount account,
+    int limit = 20,
+  }) async {
+    try {
+      return _repository.listShareRecords(account: account, limit: limit);
+    } catch (e) {
+      LogManager().cloudDrive('阿里云盘 - 获取分享列表异常: $e');
+      return const [];
     }
   }
 
@@ -104,6 +139,8 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
         LogManager().cloudDrive('阿里云盘 - 文件夹创建操作失败: $folderName');
         return null;
       }
+    } on CloudDriveException {
+      rethrow;
     } catch (e) {
       LogManager().cloudDrive('阿里云盘 - 创建文件夹异常: $e');
       return null;
@@ -336,9 +373,20 @@ class AliCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     LogManager().cloudDrive('文件夹ID: ${folderId ?? 'root'}');
 
     try {
-      // TODO: 实现阿里云盘上传功能
-      LogManager().cloudDrive('阿里云盘 - 上传功能暂未实现');
-      return {'success': false, 'message': '阿里云盘上传功能暂未实现'};
+      final uploaded = await _repository.uploadFile(
+        account: account,
+        filePath: filePath,
+        fileName: fileName,
+        parentId: folderId,
+        onProgress: onProgress,
+      );
+      final success = uploaded != null;
+      if (success) {
+        LogManager().cloudDrive('阿里云盘 - 上传文件成功: ${uploaded.name}');
+      } else {
+        LogManager().cloudDrive('阿里云盘 - 上传文件失败');
+      }
+      return {'success': success, 'file': uploaded};
     } catch (e, stackTrace) {
       LogManager().cloudDrive('阿里云盘 - 上传文件异常: $e');
       LogManager().cloudDrive('阿里云盘 - 错误堆栈: $stackTrace');

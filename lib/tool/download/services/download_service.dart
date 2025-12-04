@@ -300,6 +300,14 @@ class DownloadService {
     try {
       // 【简化】只打印关键信息
       DebugService.log('创建下载: ${fileName ?? "未知文件"}');
+      DebugService.log(
+        '下载参数: url=${url.length > 80 ? "${url.substring(0, 80)}..." : url}, '
+        'dir=$downloadDir, notify=$showNotification, openFromNotify=$openFileFromNotification, '
+        'external=$isExternalStorage',
+      );
+      if (customHeaders != null && customHeaders.isNotEmpty) {
+        DebugService.log('自定义头: ${customHeaders.keys.join(",")}');
+      }
 
       // 确保目录存在
       await _ensureDirectoryExists(downloadDir);
@@ -355,6 +363,7 @@ class DownloadService {
   Future<bool> pauseTask(String taskId) async {
     try {
       DebugService.log('暂停任务: $taskId');
+      DebugService.log('暂停前尝试刷新任务状态');
 
       // 先检查任务状态
       final tasks = await FlutterDownloader.loadTasks();
@@ -500,6 +509,7 @@ class DownloadService {
   Future<bool> resumeTask(String taskId) async {
     try {
       DebugService.log('恢复任务: $taskId');
+      DebugService.log('恢复前校验任务存在性');
 
       // 先检查任务状态
       final tasks = await FlutterDownloader.loadTasks();
@@ -613,6 +623,7 @@ class DownloadService {
   Future<bool> removeTask(String taskId) async {
     try {
       DebugService.log('删除任务: $taskId');
+      DebugService.log('删除前尝试暂停相关回调，确保不会收到 stale 消息');
       await FlutterDownloader.remove(taskId: taskId);
       DebugService.success('删除命令已发送');
       return true;

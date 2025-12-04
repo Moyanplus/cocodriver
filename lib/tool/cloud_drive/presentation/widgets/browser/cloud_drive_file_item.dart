@@ -7,6 +7,7 @@ import '../../../utils/file_type_utils.dart';
 import '../../../utils/format_utils.dart';
 import '../common/authenticated_network_image.dart';
 import '../common/file_time_formatter.dart';
+import '../../utils/media_header_utils.dart';
 
 /// 云盘文件项组件
 class CloudDriveFileItem extends StatelessWidget {
@@ -15,8 +16,9 @@ class CloudDriveFileItem extends StatelessWidget {
   final bool isFolder;
   final bool isSelected;
   final bool isBatchMode;
-  final VoidCallback onTap;
-  final VoidCallback onLongPress;
+  final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+  final Widget? trailing;
 
   const CloudDriveFileItem({
     super.key,
@@ -25,8 +27,9 @@ class CloudDriveFileItem extends StatelessWidget {
     required this.isFolder,
     required this.isSelected,
     required this.isBatchMode,
-    required this.onTap,
-    required this.onLongPress,
+    this.onTap,
+    this.onLongPress,
+    this.trailing,
   });
 
   @override
@@ -117,36 +120,51 @@ class CloudDriveFileItem extends StatelessWidget {
                       ),
                       SizedBox(width: ResponsiveUtils.getSpacing() * 0.5),
                       Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              file.name,
-                              style: TextStyle(
-                                fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                  12.sp,
-                                ),
-                                fontWeight: FontWeight.w500,
-                                color: theme.colorScheme.onSurface,
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    file.name,
+                                    style: TextStyle(
+                                      fontSize:
+                                          ResponsiveUtils.getResponsiveFontSize(
+                                            12.sp,
+                                          ),
+                                      fontWeight: FontWeight.w500,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  SizedBox(
+                                    height: ResponsiveUtils.getSpacing() * 0.15,
+                                  ),
+                                  Text(
+                                    _buildSecondaryText(
+                                      isUploading,
+                                      uploadProgress,
+                                    ),
+                                    style: TextStyle(
+                                      fontSize:
+                                          ResponsiveUtils.getResponsiveFontSize(
+                                            10.sp,
+                                          ),
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
-                            SizedBox(
-                              height: ResponsiveUtils.getSpacing() * 0.15,
-                            ),
-                            Text(
-                              _buildSecondaryText(isUploading, uploadProgress),
-                              style: TextStyle(
-                                fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                  10.sp,
-                                ),
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                            if (trailing != null) ...[
+                              SizedBox(width: ResponsiveUtils.getSpacing() * 0.3),
+                              trailing!,
+                            ],
                           ],
                         ),
                       ),
@@ -196,6 +214,7 @@ class CloudDriveFileItem extends StatelessWidget {
           child: AuthenticatedNetworkImage(
             imageUrl: file.thumbnailUrl!,
             account: account,
+            headers: buildMediaHeaders(account),
             fit: BoxFit.cover,
             placeholderBuilder:
                 () => Container(

@@ -85,6 +85,7 @@ class BaiduFileListService {
       size: size,
       updatedAt: DateTime.fromMillisecondsSinceEpoch(serverTime * 1000),
       folderId: item['parent_path']?.toString(),
+      path: item['path']?.toString(),
       downloadUrl: isDirectory ? null : item['download_url'],
       thumbnailUrl: item['thumbs']?['url1'],
       metadata: {'path': item['path'] ?? '', 'md5': item['md5']},

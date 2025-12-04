@@ -36,6 +36,10 @@ class FolderStateHandler {
     }
 
     final folderId = _stateManager.getCurrentState().currentFolder?.id ?? '/';
+    final folderPath = _stateManager.getCurrentState().currentFolder?.path;
+    // 优先使用路径，如果有的话；没有则回退到 id。避免在部分网盘（如百度）用 fs_id 导致错误。
+    final resolvedFolderId =
+        (folderPath != null && folderPath.isNotEmpty) ? folderPath : folderId;
     _logger.info(
       '📂 加载文件夹: ${_stateManager.getCurrentState().currentFolder?.name ?? '根目录'} (ID: $folderId)',
     );
@@ -80,7 +84,7 @@ class FolderStateHandler {
 
       final items = await _gateway.listFiles(
         account: account,
-        folderId: folderId,
+        folderId: resolvedFolderId,
         page: 1,
         pageSize: 50,
       );

@@ -13,6 +13,8 @@ class AliConfig {
     'getUserInfo': '/v2/user/get',
     'getQuotaInfo': '/adrive/v1/user/getUserCapacityInfo',
     'getFileList': '/adrive/v3/file/list',
+    'recycleList': '/adrive/v2/recyclebin/list',
+    'shareList': '/adrive/v3/share_link/list',
     'createFolder': '/adrive/v2/file/createWithFolders',
     'moveFile': '/adrive/v4/batch',
     'deleteFile': '/adrive/v4/batch',
@@ -30,6 +32,11 @@ class AliConfig {
     'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
     'Cache-Control': 'no-cache',
     'Pragma': 'no-cache',
+    'Origin': 'https://www.aliyundrive.com',
+    'Referer': 'https://www.aliyundrive.com/',
+    'x-canary': 'client=web,app=adrive,version=v4.3.1',
+    // 若有设备ID，可在运行时覆盖此值
+    'x-device-id': 'web',
   };
 
   static String getApiEndpoint(String key) => apiEndpoints[key] ?? '/';

@@ -168,7 +168,8 @@ class QRLoginManager {
           // 如果登录成功或失败，停止轮询
           if (loginInfo.status == QRLoginStatus.success ||
               loginInfo.status == QRLoginStatus.failed ||
-              loginInfo.status == QRLoginStatus.cancelled) {
+              loginInfo.status == QRLoginStatus.cancelled ||
+              loginInfo.status == QRLoginStatus.expired) {
             timer.cancel();
           }
         } catch (e) {

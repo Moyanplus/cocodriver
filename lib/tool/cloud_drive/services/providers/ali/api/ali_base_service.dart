@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 import '../../../../../../core/logging/log_manager.dart';
@@ -67,13 +69,38 @@ abstract class AliBaseService {
   static Map<String, String> _buildHeaders(CloudDriveAccount account) {
     final headers = Map<String, String>.from(AliConfig.defaultHeaders);
 
-    // 添加Authorization头
-    if (account.primaryAuthValue != null &&
-        account.primaryAuthValue!.isNotEmpty) {
-      headers['Authorization'] = 'Bearer ${account.primaryAuthValue}';
+    final authValue = account.primaryAuthValue;
+    if (authValue != null && authValue.isNotEmpty) {
+      if (account.authType == AuthType.cookie) {
+        headers['Cookie'] = authValue;
+      } else {
+        headers['Authorization'] = 'Bearer $authValue';
+      }
+    }
+
+    // 尝试补充 userId，用于部分接口要求的 x-forwarded-user-id
+    final userId = parseUserIdFromToken(account.authValue) ?? account.driveId;
+    if (userId != null && userId.isNotEmpty) {
+      headers['x-forwarded-user-id'] = userId;
     }
 
     return headers;
+  }
+
+  /// 解析 Authorization Bearer token，获取 userId。
+  static String? parseUserIdFromToken(String? token) {
+    if (token == null || token.isEmpty || !token.contains('.')) return null;
+    try {
+      final parts = token.split('.');
+      if (parts.length < 2) return null;
+      final payload = parts[1];
+      final normalized = base64Url.normalize(payload);
+      final jsonStr = utf8.decode(base64Url.decode(normalized));
+      final map = json.decode(jsonStr) as Map<String, dynamic>;
+      return map['userId']?.toString();
+    } catch (_) {
+      return null;
+    }
   }
 
   /// 添加拦截器
@@ -132,7 +159,8 @@ abstract class AliBaseService {
   static CloudDriveFile? parseFileItem(Map<String, dynamic> data) {
     try {
       final fileId = data['file_id']?.toString();
-      final name = data['name']?.toString();
+      // create 接口返回字段为 file_name，这里兼容两种字段名称
+      final name = data['name']?.toString() ?? data['file_name']?.toString();
       if (fileId == null || name == null) {
         return null;
       }
@@ -148,15 +176,57 @@ abstract class AliBaseService {
       if (updatedAtRaw != null) {
         updatedAt = DateTime.tryParse(updatedAtRaw);
       }
+      final createdAtRaw = data['created_at']?.toString();
+      DateTime? createdAt;
+      if (createdAtRaw != null) {
+        createdAt = DateTime.tryParse(createdAtRaw);
+      }
       final parentId = data['parent_file_id']?.toString();
+
+      final thumbnail = data['thumbnail']?.toString();
+      final url = data['url']?.toString();
+      final mimeType =
+          data['mime_type']?.toString() ?? data['content_type']?.toString();
+      final category = data['category']?.toString();
+
+      // 部分接口只返回 modified_at，这里用作 updatedAt 的回退。
+      final modifiedAtRaw = data['modified_at']?.toString();
+      if (updatedAt == null && modifiedAtRaw != null) {
+        updatedAt = DateTime.tryParse(modifiedAtRaw);
+      }
 
       return CloudDriveFile(
         id: fileId,
         name: name,
         size: size,
         updatedAt: updatedAt,
+        createdAt: createdAt,
         isFolder: isFolder,
         folderId: parentId,
+        thumbnailUrl: thumbnail,
+        bigThumbnailUrl: thumbnail,
+        downloadUrl: url,
+        previewUrl: url,
+        metadata: {
+          'driveId': data['drive_id'],
+          'category': category,
+          'mimeType': mimeType,
+          'contentType': data['content_type'],
+          'fileExtension': data['file_extension'],
+          'starred': data['starred'],
+          'contentHash': data['content_hash'],
+          'crc64Hash': data['crc64_hash'],
+          'uploadId': data['upload_id'],
+          'revisionId': data['revision_id'],
+          'contentUri': data['content_uri'],
+          'location': data['location'],
+          'localModifiedAt': data['local_modified_at'],
+          'status': data['status'],
+          'userTags': data['user_tags'],
+          'userMeta': data['user_meta'],
+          'videoMediaMetadata': data['video_media_metadata'],
+          'videoPreviewMetadata': data['video_preview_metadata'],
+        },
       );
     } catch (_) {
       return null;

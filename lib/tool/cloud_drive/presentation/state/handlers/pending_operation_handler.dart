@@ -14,6 +14,12 @@ class PendingOperationHandler {
     final operationType = _state.pendingOperationType;
     final currentAccount = _state.currentAccount;
     final currentFolderId = _state.currentFolder?.id;
+    final currentFolderPath = _state.currentFolder?.path;
+    // 对操作请求使用路径优先（兼容百度等需要路径的接口），缓存键仍沿用 id。
+    final targetFolderForOperation =
+        (currentFolderPath != null && currentFolderPath.isNotEmpty)
+            ? currentFolderPath
+            : currentFolderId;
     final sourceFolderId = pendingFile?.folderId ?? '/';
 
     if (pendingFile == null ||
@@ -54,7 +60,7 @@ class PendingOperationHandler {
               () => _folderHandler.moveFile(
                 account: currentAccount,
                 file: pendingFile,
-                targetFolderId: currentFolderId,
+                targetFolderId: targetFolderForOperation,
               ),
           rollbackWhen: (result) => !result,
         );
@@ -65,7 +71,7 @@ class PendingOperationHandler {
             sourceFolderId: sourceFolderId,
             targetFolderId: currentFolderId,
           );
-          unawaited(_folderHandler.loadFolder(forceRefresh: true));
+          // 不强制立即重载，保持乐观更新结果，后续由用户主动刷新或分页触发。
         }
       } else if (operationType == 'copy') {
         _logger.info('执行复制操作: ${pendingFile.name} -> $currentFolderId');
@@ -88,7 +94,7 @@ class PendingOperationHandler {
               () => _folderHandler.copyFile(
                 account: currentAccount,
                 file: pendingFile,
-                targetFolderId: currentFolderId,
+                targetFolderId: targetFolderForOperation,
               ),
           rollbackWhen: (result) => !result,
         );
@@ -99,7 +105,7 @@ class PendingOperationHandler {
             sourceFolderId: sourceFolderId,
             targetFolderId: currentFolderId,
           );
-          unawaited(_folderHandler.loadFolder(forceRefresh: true));
+          // 复制成功后不强制重载，保持当前列表的乐观状态，按需再刷新。
         }
       }
 

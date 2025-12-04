@@ -5,6 +5,7 @@ import '../models/requests/baidu_operation_requests.dart';
 import '../models/responses/baidu_file_list_response.dart';
 import '../models/responses/baidu_operation_response.dart';
 import '../models/responses/baidu_api_result.dart';
+import '../models/responses/baidu_share_record.dart';
 import '../baidu_base_service.dart';
 import '../baidu_config.dart';
 
@@ -54,6 +55,7 @@ class BaiduApiClient {
           createdAt: timestamp,
           isFolder: isDir,
           folderId: request.folderId,
+          path: item['path']?.toString(),
         );
         if (isDir) {
           folders.add(file);
@@ -228,6 +230,100 @@ class BaiduApiClient {
         expireTime: expireDays ?? 0,
       ),
     ).then((r) => r.data);
+  }
+
+  /// 获取分享记录列表
+  Future<List<BaiduShareRecord>> listShareRecords({
+    required CloudDriveAccount account,
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    final dio = BaiduBaseService.createDio(account);
+    final uri = Uri.parse('${BaiduConfig.baseUrl}/share/record').replace(
+      queryParameters: {
+        'channel': 'chunlei',
+        'clienttype': '0',
+        'app_id': '250528',
+        'dp-logid': DateTime.now().millisecondsSinceEpoch.toString().padLeft(
+              20,
+              '0',
+            ),
+        'num': pageSize.toString(),
+        'page': page.toString(),
+        'web': '1',
+        'order': 'ctime',
+        'desc': '1',
+        'is_batch': '1',
+      },
+    );
+
+    final result = await _safeCall<Map<String, dynamic>>(() async {
+      final response = await dio.getUri(uri);
+      final data = response.data as Map<String, dynamic>? ?? {};
+      return BaiduBaseService.handleApiResponse(data);
+    });
+
+    if (!(result.success)) return const [];
+    final data = result.data ?? {};
+    final list = data['list'] as List<dynamic>? ?? [];
+    return list
+        .whereType<Map<String, dynamic>>()
+        .map(BaiduShareRecord.fromJson)
+        .toList(growable: false);
+  }
+
+  /// 回收站列表
+  Future<List<CloudDriveFile>> listRecycle({
+    required CloudDriveAccount account,
+    int page = 1,
+    int pageSize = 100,
+  }) async {
+    final dio = BaiduBaseService.createDio(account);
+    final uri = Uri.parse('${BaiduConfig.baseUrl}/api/recycle/list/').replace(
+      queryParameters: {
+        'clienttype': '0',
+        'app_id': '250528',
+        'dp-logid': DateTime.now().millisecondsSinceEpoch.toString().padLeft(
+              20,
+              '0',
+            ),
+        'num': pageSize.toString(),
+        'page': page.toString(),
+        'web': '1',
+      },
+    );
+
+    final result = await _safeCall<Map<String, dynamic>>(() async {
+      final response = await dio.getUri(uri);
+      final data = response.data as Map<String, dynamic>? ?? {};
+      return BaiduBaseService.handleApiResponse(data);
+    });
+
+    if (!result.success) return const [];
+    final list = (result.data?['list'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>();
+
+    DateTime? _ts(int? v) =>
+        v == null ? null : DateTime.fromMillisecondsSinceEpoch(v * 1000);
+
+    return list
+        .map(
+          (item) => CloudDriveFile(
+            id: item['fs_id']?.toString() ?? '',
+            name: item['server_filename']?.toString() ?? '',
+            isFolder: (item['isdir'] ?? 0) == 1,
+            size: item['size'] as int?,
+            createdAt: _ts(item['server_ctime'] as int?),
+            updatedAt: _ts(item['server_mtime'] as int?),
+            path: item['path']?.toString(),
+            metadata: {
+              'leftTime': item['leftTime'],
+              'deleteType': item['delete_type'],
+              'md5': item['md5'],
+            },
+          ),
+        )
+        .toList(growable: false);
   }
 
   Future<BaiduApiResult<T>> _safeCall<T>(Future<T> Function() fn) async {

@@ -430,13 +430,17 @@ class _FileOperationBottomSheetState
         throw Exception('无法获取下载链接');
       }
       final config = await DownloadConfigService().loadConfig();
+      final resolvedDir = await DownloadService().getValidDownloadDirectory(
+        config.downloadDirectory,
+      );
+      final isExternalStorage = resolvedDir.startsWith('/storage/emulated/0/');
       await DownloadService().createDownloadTask(
         url: downloadUrl,
         fileName: widget.file.name,
-        downloadDir: config.downloadDirectory,
+        downloadDir: resolvedDir,
         showNotification: config.showNotification,
         openFileFromNotification: config.openFileFromNotification,
-        isExternalStorage: false,
+        isExternalStorage: isExternalStorage,
         customHeaders: widget.account.authHeaders,
         thumbnailUrl: widget.file.thumbnailUrl,
       );
@@ -468,15 +472,19 @@ class _FileOperationBottomSheetState
         throw Exception('无法获取下载链接');
       }
 
+      final resolvedDir = await DownloadService().getValidDownloadDirectory(
+        (await DownloadConfigService().loadConfig()).downloadDirectory,
+      );
+      final isExternalStorage = resolvedDir.startsWith('/storage/emulated/0/');
+
       // TODO: 替换成统一 DownloadService 注入，这里先复用现有批量下载逻辑
       await DownloadService().createDownloadTask(
         url: downloadUrl,
         fileName: widget.file.name,
-        downloadDir:
-            (await DownloadConfigService().loadConfig()).downloadDirectory,
+        downloadDir: resolvedDir,
         showNotification: true,
         openFileFromNotification: false,
-        isExternalStorage: false,
+        isExternalStorage: isExternalStorage,
         customHeaders: widget.account.authHeaders,
         thumbnailUrl: widget.file.thumbnailUrl,
       );

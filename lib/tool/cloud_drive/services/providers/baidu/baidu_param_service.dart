@@ -31,10 +31,8 @@ class BaiduParamService {
     LogManager().cloudDrive('百度网盘 - 获取参数');
 
     try {
-      // 使用配置中的API端点
-      final url = BaiduConfig.getApiUrl(
-        BaiduConfig.endpoints['templateVariable']!,
-      );
+      // 使用官方 gettemplatevariable 接口获取 bdstoken 等参数
+      final url = '${BaiduConfig.apiBaseUrl}/gettemplatevariable';
       final queryParams = {
         'fields':
             '["sign1","sign2","sign3","bdstoken","token","uk","isdocuser","servertime","timestamp"]',

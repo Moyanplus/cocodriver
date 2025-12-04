@@ -84,47 +84,51 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
   Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      child: Column(
-        children: [
-          // 顶部用户信息区域
-          Container(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 20.h,
-              bottom: 20.h,
-              left: 20.w,
-              right: 20.w,
-            ),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+      child: SafeArea(
+        top: false, // 顶部自行处理状态栏高度，避免重复填充
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            // 顶部用户信息区域
+            Container(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 20.h,
+                bottom: 20.h,
+                left: 20.w,
+                right: 20.w,
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+                  ],
+                ),
+              ),
+              child: Column(
+                children: [
+                  // 头像
+                  _buildAvatar(context, ref),
+                  SizedBox(height: 16.h),
+                  // 用户信息
+                  _buildUserInfo(context, ref),
                 ],
               ),
             ),
-            child: Column(
-              children: [
-                // 头像
-                _buildAvatar(context, ref),
-                SizedBox(height: 16.h),
-                // 用户信息
-                _buildUserInfo(context, ref),
-              ],
-            ),
-          ),
-          // 云盘类型选择器
-          _buildCloudDriveTypeSelector(context, ref),
+            // 云盘类型选择器
+            _buildCloudDriveTypeSelector(context, ref),
 
-          // 测试页面区域（仅在debug模式显示）
-          if (kDebugMode) _buildTestPagesSection(context, ref),
+            // 测试页面区域（仅在debug模式显示）
+            if (kDebugMode) _buildTestPagesSection(context, ref),
 
-          // 菜单项
-          Expanded(child: _buildMenuItems(context, ref)),
-          // 底部区域
-          _buildFooter(context, ref),
-        ],
+            // 菜单项
+            _buildMenuItems(context, ref),
+            // 底部区域
+            _buildFooter(context, ref),
+          ],
+        ),
       ),
     );
   }
@@ -408,8 +412,7 @@ class _AppDrawerWidgetState extends ConsumerState<AppDrawerWidget> {
 
   /// 构建菜单项
   Widget _buildMenuItems(BuildContext context, WidgetRef ref) {
-    return ListView(
-      padding: EdgeInsets.zero,
+    return Column(
       children: [
         // 账号管理
         _buildMenuItem(

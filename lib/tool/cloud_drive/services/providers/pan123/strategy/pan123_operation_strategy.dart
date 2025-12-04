@@ -318,6 +318,7 @@ class Pan123CloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     'upload': true,
     'download': true, // 已实现下载功能
     'share': false, // 暂未实现分享功能
+    'share_records': true, // 支持分享记录列表
     'move': true, // 已实现移动功能
     'delete': true, // 已实现删除功能
     'rename': true, // 已实现重命名功能

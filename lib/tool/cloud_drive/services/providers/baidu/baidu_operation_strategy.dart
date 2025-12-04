@@ -9,6 +9,7 @@ import '../../../data/models/cloud_drive_entities.dart';
 import '../../../utils/cloud_drive_log_utils.dart';
 import 'baidu_cloud_drive_service.dart';
 import 'baidu_repository.dart';
+import 'models/responses/baidu_share_record.dart';
 // import 'baidu_config.dart'; // 未使用
 
 /// 百度网盘操作策略
@@ -290,6 +291,32 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     }
   }
 
+  /// 获取分享记录列表
+  Future<List<BaiduShareRecord>> listShareRecords({
+    required CloudDriveAccount account,
+    int page = 1,
+    int pageSize = 50,
+  }) {
+    return _repository.listShareRecords(
+      account: account,
+      page: page,
+      pageSize: pageSize,
+    );
+  }
+
+  @override
+  Future<List<CloudDriveFile>> listRecycle({
+    required CloudDriveAccount account,
+    int page = 1,
+    int pageSize = 100,
+  }) {
+    return _repository.listRecycle(
+      account: account,
+      page: page,
+      pageSize: pageSize,
+    );
+  }
+
   /// 移动文件
   ///
   /// 将文件移动到指定的目标文件夹
@@ -312,15 +339,12 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     );
 
     try {
-      // 获取文件的完整路径
-      String filePath;
-      if (file.isFolder) {
-        // 文件夹使用id（已经是完整路径）
-        filePath = file.id;
-      } else {
-        // 文件使用folderId（完整路径）
-        filePath = file.folderId ?? file.id;
-      }
+      // 获取文件的完整路径（优先使用 path，其次 folderId+name，最后 id）
+      final filePath =
+          file.path ??
+          ((file.folderId != null && file.folderId!.isNotEmpty)
+              ? '${file.folderId!.endsWith('/') ? file.folderId : '${file.folderId}/'}${file.name}'
+              : '/${file.name}');
 
       LogManager().cloudDrive('百度网盘 - 文件路径: $filePath');
 
@@ -455,11 +479,13 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       'share': true,
       'share_with_password': true,
       'share_with_expire': true,
+      'share_records': true,
       'move': true,
       'delete': true,
       'copy': true,
       'rename': true,
       'createFolder': true, // 已实现
+      'recycle': true,
       'preview': false,
     };
     LogManager().cloudDrive('百度网盘 - 支持的操作: $operations');
@@ -707,7 +733,8 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       return [...folders, ...files];
     } catch (e) {
       LogManager().cloudDrive('百度网盘 - 获取文件列表异常: $e');
-      return [];
+      // 让上层感知失败，避免将失败结果当成成功并缓存空列表
+      rethrow;
     }
   }
 

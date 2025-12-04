@@ -19,10 +19,14 @@ class CloudDriveLogUtils {
       '[$provider] 文件列表获取成功: ${files.length} 个文件, ${folders.length} 个文件夹',
     );
     for (final folder in folders.take(sampleCount)) {
-      logger.cloudDrive('[$provider] 文件夹示例: ${jsonEncode(_fileToMap(folder))}');
+      logger.cloudDrive(
+        '[$provider] 文件夹示例: ${_safeEncode(_fileToMap(folder))}',
+      );
     }
     for (final file in files.take(sampleCount)) {
-      logger.cloudDrive('[$provider] 文件示例: ${jsonEncode(_fileToMap(file))}');
+      logger.cloudDrive(
+        '[$provider] 文件示例: ${_safeEncode(_fileToMap(file))}',
+      );
     }
   }
 
@@ -38,10 +42,37 @@ class CloudDriveLogUtils {
       'path': file.path,
       'downloadUrl': file.downloadUrl,
       'thumbnailUrl': file.thumbnailUrl,
-      'category': file.category,
+      // 把枚举转成可 JSON 序列化的字符串，避免 jsonEncode 报错
+      'category': file.category?.name,
       'downloadCount': file.downloadCount,
       'shareCount': file.shareCount,
-      'metadata': file.metadata,
+      'metadata': _sanitizeForJson(file.metadata),
     };
+  }
+
+  /// 将任意对象转换为可 JSON 序列化的结构，递归处理 Map/List/Enum。
+  static dynamic _sanitizeForJson(dynamic value) {
+    if (value == null) return null;
+    if (value is Enum) return value.name;
+    if (value is DateTime) return value.toIso8601String();
+    if (value is num || value is bool || value is String) return value;
+    if (value is Map) {
+      return value.map(
+        (key, v) => MapEntry(key.toString(), _sanitizeForJson(v)),
+      );
+    }
+    if (value is Iterable) {
+      return value.map(_sanitizeForJson).toList();
+    }
+    return value.toString();
+  }
+
+  /// 尝试 jsonEncode，失败时用 toString 兜底，避免打断业务流程。
+  static String _safeEncode(Map<String, dynamic> data) {
+    try {
+      return jsonEncode(data);
+    } catch (e) {
+      return data.toString();
+    }
   }
 }

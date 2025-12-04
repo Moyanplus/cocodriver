@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import '../../../data/models/cloud_drive_entities.dart';
+import '../../utils/media_header_utils.dart';
 
 /// 带认证的缓存管理器
 /// 为每个账号创建独立的缓存管理器，支持Cookie认证
@@ -34,6 +35,7 @@ class AuthenticatedNetworkImage extends StatelessWidget {
   final Widget Function()? placeholderBuilder;
   final Widget Function()? errorBuilder;
   final BoxFit fit;
+  final Map<String, String>? headers;
 
   const AuthenticatedNetworkImage({
     super.key,
@@ -42,6 +44,7 @@ class AuthenticatedNetworkImage extends StatelessWidget {
     this.placeholderBuilder,
     this.errorBuilder,
     this.fit = BoxFit.cover,
+    this.headers,
   });
 
   @override
@@ -51,13 +54,8 @@ class AuthenticatedNetworkImage extends StatelessWidget {
       cacheManager: AuthenticatedCacheManager(),
       fit: fit,
       httpHeaders: {
-        'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
-        'Referer': 'https://pan.quark.cn/',
-        if (account.primaryAuthType == AuthType.cookie &&
-            (account.primaryAuthValue?.isNotEmpty ?? false))
-          'Cookie': account.primaryAuthValue!,
+        ...buildMediaHeaders(account),
+        ...?headers,
       },
       placeholder: (context, url) =>
           placeholderBuilder?.call() ?? const SizedBox.shrink(),
@@ -67,4 +65,5 @@ class AuthenticatedNetworkImage extends StatelessWidget {
       fadeOutDuration: const Duration(milliseconds: 100),
     );
   }
+
 }
