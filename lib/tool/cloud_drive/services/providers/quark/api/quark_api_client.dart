@@ -39,7 +39,7 @@ class QuarkApiClient {
     return QuarkOperations.createShare(account: account, request: request);
   }
 
-  Future<String?> getDownloadUrl({
+  Future<QuarkApiResult<String>> getDownloadUrl({
     required CloudDriveAccount account,
     required String fileId,
     required String fileName,

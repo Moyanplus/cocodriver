@@ -142,6 +142,6 @@ class QuarkRepository extends BaseCloudDriveRepository {
       fileName: file.name,
       size: size,
     );
-    return result;
+    return result.isSuccess ? result.data : null;
   }
 }

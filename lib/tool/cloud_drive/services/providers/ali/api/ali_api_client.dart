@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:collection/collection.dart';
 
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 
 import '../../../../../../core/logging/log_manager.dart';
+import '../../../shared/http_client.dart';
 import '../../../../base/cloud_drive_account_service.dart'
     show CloudDriveAccountService;
 import '../../../../data/models/cloud_drive_entities.dart';
@@ -23,25 +25,48 @@ import '../api/ali_config.dart';
 
 /// 阿里云盘 API 客户端（当前封装现有 Service，后续可逐步替换为显式请求/响应模型）。
 class AliApiClient {
+  static final Map<String, CloudDriveHttpClient> _httpCache = {};
+  static final Map<String, String> _authSnapshot = {};
+
+  CloudDriveHttpClient _http(CloudDriveAccount account) {
+    final key = account.id.toString();
+    final auth = _authKey(account);
+    final cached = _httpCache[key];
+    if (cached != null && _authSnapshot[key] == auth) {
+      return cached;
+    }
+    final fresh = AliBaseService.createApiHttpClient(account);
+    _httpCache[key] = fresh;
+    _authSnapshot[key] = auth;
+    return fresh;
+  }
+
+  static void clearHttpCache({String? accountId}) {
+    if (accountId == null) {
+      _httpCache.clear();
+      _authSnapshot.clear();
+    } else {
+      _httpCache.remove(accountId);
+      _authSnapshot.remove(accountId);
+    }
+  }
+
   Future<CloudDriveAccountInfo?> getUserInfo({
     required CloudDriveAccount account,
   }) async {
-    final dio = AliBaseService.createDio(account);
-    final requestBody = AliConfig.buildUserInfoParams();
-
-    final response = await dio.post(
-      AliConfig.getApiEndpoint('getUserInfo'),
-      data: requestBody,
+    final result = await _post(
+      account: account,
+      baseUrl: AliConfig.baseUrl,
+      path: AliConfig.getApiEndpoint('getUserInfo'),
+      data: AliConfig.buildUserInfoParams(),
     );
-
-    if (!AliBaseService.isHttpSuccess(response.statusCode)) {
-      return null;
-    }
-
-    final responseData = response.data as Map<String, dynamic>;
-
+    if (!result.success || result.data == null) return null;
+    final responseData = result.data!;
     if (!AliBaseService.isApiSuccess(responseData)) {
-      return null;
+      throw _buildException(
+        '获取用户信息',
+        result.copyWith(message: _mergeMessage(result, responseData)),
+      );
     }
 
     return CloudDriveAccountInfo(
@@ -64,23 +89,15 @@ class AliApiClient {
       return account.driveId;
     }
 
-    final dio = AliBaseService.createDio(account);
-    final requestBody = AliConfig.buildUserInfoParams();
-
-    final response = await dio.post(
-      AliConfig.getApiEndpoint('getUserInfo'),
-      data: requestBody,
+    final result = await _post(
+      account: account,
+      baseUrl: AliConfig.baseUrl,
+      path: AliConfig.getApiEndpoint('getUserInfo'),
+      data: AliConfig.buildUserInfoParams(),
     );
-
-    if (!AliBaseService.isHttpSuccess(response.statusCode)) {
-      return null;
-    }
-
-    final responseData = response.data as Map<String, dynamic>;
-
-    if (!AliBaseService.isApiSuccess(responseData)) {
-      return null;
-    }
+    if (!result.success || result.data == null) return null;
+    final responseData = result.data!;
+    if (!AliBaseService.isApiSuccess(responseData)) return null;
 
     final driveId = responseData['resource_drive_id'] as String?;
     if (driveId != null && driveId.isNotEmpty) {
@@ -93,20 +110,14 @@ class AliApiClient {
   Future<CloudDriveQuotaInfo?> getQuotaInfo({
     required CloudDriveAccount account,
   }) async {
-    final dio = AliBaseService.createApiDio(account);
-    final response = await dio.post(
-      AliConfig.getApiEndpoint('getQuotaInfo'),
+    final result = await _post(
+      account: account,
+      path: AliConfig.getApiEndpoint('getQuotaInfo'),
       data: AliConfig.buildQuotaInfoParams(),
     );
-
-    if (!AliBaseService.isHttpSuccess(response.statusCode)) {
-      return null;
-    }
-
-    final responseData = AliBaseService.getResponseData(response.data);
-    if (responseData == null) {
-      return null;
-    }
+    if (!result.success || result.data == null) return null;
+    final responseData = AliBaseService.getResponseData(result.data!);
+    if (responseData == null) return null;
 
     final driveDetails =
         responseData['drive_capacity_details'] as Map<String, dynamic>? ?? {};
@@ -413,6 +424,7 @@ class AliApiClient {
     }
 
     await _uploadContent(
+      http: _http(account),
       uploadUrl: uploadUrl,
       file: file,
       fileSize: fileSize,
@@ -455,31 +467,31 @@ class AliApiClient {
                 request.parentId == '/')
             ? 'root'
             : request.parentId;
-    final dio = AliBaseService.createApiDio(account);
     final body = AliConfig.buildCreateFolderParams(
       name: request.name,
       parentFileId: normalizedParentId,
       driveId: driveId,
     );
-    final response = await dio.post(
-      AliConfig.getApiEndpoint('createFolder'),
+    final result = await _post(
+      account: account,
+      path: AliConfig.getApiEndpoint('createFolder'),
       data: body,
     );
-    if (!AliBaseService.isHttpSuccess(response.statusCode)) {
-      final respData = response.data as Map<String, dynamic>? ?? {};
-      final msg = AliBaseService.getErrorMessage(respData);
+    if (!result.success || result.data == null) {
+      final respData = result.data ?? {};
+      final msg = result.message ?? AliBaseService.getErrorMessage(respData);
       LogManager().cloudDrive(
-        '阿里云盘 - 创建文件夹失败: http ${response.statusCode} body=$respData',
+        '阿里云盘 - 创建文件夹失败: ${result.statusCode} body=$respData',
       );
       throw CloudDriveException(
         msg,
         CloudDriveErrorType.serverError,
         operation: '创建文件夹',
-        statusCode: response.statusCode,
+        statusCode: result.statusCode,
         requestId: respData['requestId']?.toString(),
       );
     }
-    final data = response.data as Map<String, dynamic>? ?? {};
+    final data = result.data!;
     // API 已返回完整的文件信息，优先复用通用解析逻辑以带回时间、分类等元数据。
     final parsed = AliBaseService.parseFileItem(data);
     if (parsed != null) {
@@ -529,7 +541,6 @@ class AliApiClient {
     required File file,
     required int fileSize,
   }) async {
-    final dio = AliBaseService.createApiDio(account);
     final contentHash = await _computeSha1Hex(file);
     final proofCode = await _computeProofCode(
       accessToken: account.primaryAuthValue,
@@ -555,20 +566,21 @@ class AliApiClient {
       },
     };
 
-    final response = await dio.post(
-      AliConfig.getApiEndpoint('createFolder'),
+    final result = await _post(
+      account: account,
+      path: AliConfig.getApiEndpoint('createFolder'),
       data: body,
     );
-    if (!AliBaseService.isHttpSuccess(response.statusCode)) {
+    if (!result.success || result.data == null) {
       throw CloudDriveException(
-        'init upload failed: http ${response.statusCode}',
+        'init upload failed: http ${result.statusCode}',
         CloudDriveErrorType.serverError,
         operation: '上传文件',
-        statusCode: response.statusCode,
+        statusCode: result.statusCode,
       );
     }
 
-    final data = response.data as Map<String, dynamic>? ?? {};
+    final data = result.data!;
     final fileId = data['file_id']?.toString();
     final uploadId = data['upload_id']?.toString();
     Map<String, dynamic> _firstPart() {
@@ -600,6 +612,7 @@ class AliApiClient {
   }
 
   Future<void> _uploadContent({
+    required CloudDriveHttpClient http,
     required String uploadUrl,
     required File file,
     required int fileSize,
@@ -607,24 +620,37 @@ class AliApiClient {
     String? contentType,
     UploadProgressCallback? onProgress,
   }) async {
-    final headers = <String, Object>{
-      HttpHeaders.contentLengthHeader: fileSize,
-    };
+    final headers = <String, Object>{HttpHeaders.contentLengthHeader: fileSize};
     // 阿里返回的预签名未声明 content-type，显式传会导致签名不匹配，除非接口返回了值。
     if (contentType != null && contentType.isNotEmpty) {
       headers[HttpHeaders.contentTypeHeader] = contentType;
     }
 
-    final uploadDio = Dio(BaseOptions(headers: headers));
-    await uploadDio.put(
-      uploadUrl,
-      data: file.openRead(),
-      onSendProgress: (sent, total) {
-        if (onProgress != null && total > 0) {
-          onProgress(sent / total);
-        }
-      },
-    );
+    try {
+      await http.putResponse(
+        Uri.parse(uploadUrl),
+        data: file.openRead(),
+        headers: headers,
+        onSendProgress: (sent, total) {
+          if (onProgress != null && total > 0) {
+            onProgress(sent / total);
+          }
+        },
+      );
+    } on DioException catch (e) {
+      throw CloudDriveException(
+        http.formatDioError(e),
+        CloudDriveErrorType.network,
+        operation: '上传文件',
+        statusCode: e.response?.statusCode,
+      );
+    } catch (e) {
+      throw CloudDriveException(
+        '上传失败: $e',
+        CloudDriveErrorType.network,
+        operation: '上传文件',
+      );
+    }
   }
 
   Future<Map<String, dynamic>> _completeUpload({
@@ -633,24 +659,24 @@ class AliApiClient {
     required String uploadId,
     required String fileId,
   }) async {
-    final dio = AliBaseService.createApiDio(account);
-    final response = await dio.post(
-      '/v2/file/complete',
+    final result = await _post(
+      account: account,
+      path: '/v2/file/complete',
       data: {
         'drive_id': driveId,
         'upload_id': uploadId,
         'file_id': fileId,
       },
     );
-    if (!AliBaseService.isHttpSuccess(response.statusCode)) {
+    if (!result.success || result.data == null) {
       throw CloudDriveException(
-        'complete upload failed: http ${response.statusCode}',
+        'complete upload failed: http ${result.statusCode}',
         CloudDriveErrorType.serverError,
         operation: '上传文件',
-        statusCode: response.statusCode,
+        statusCode: result.statusCode,
       );
     }
-    return response.data as Map<String, dynamic>? ?? {};
+    return result.data!;
   }
 
   Future<String> _computeSha1Hex(File file) async {
@@ -699,7 +725,10 @@ class AliApiClient {
       CloudDriveErrorType.serverError,
       operation: operation,
       statusCode: result.statusCode,
-      requestId: resp['requestId']?.toString(),
+      requestId:
+          result.requestId ??
+          resp['requestId']?.toString() ??
+          resp['request_id']?.toString(),
       context: resp,
     );
   }
@@ -709,16 +738,15 @@ class AliApiClient {
     required String path,
     Map<String, String>? query,
     Map<String, dynamic>? data,
+    String baseUrl = AliConfig.apiUrl,
   }) async {
     try {
-      final dio = AliBaseService.createApiDio(account);
-      final uri =
-          query == null
-              ? Uri.parse('${dio.options.baseUrl}$path')
-              : Uri.parse(
-                '${dio.options.baseUrl}$path',
-              ).replace(queryParameters: query);
-      final response = await dio.postUri(uri, data: data);
+      final http = _http(account);
+      final uri = http.buildUri(
+        '$baseUrl$path',
+        query ?? const {},
+      );
+      final response = await http.postResponse(uri, data: data);
       final status = response.statusCode;
       final respData = response.data as Map<String, dynamic>? ?? {};
       final success = AliBaseService.isHttpSuccess(status);
@@ -726,7 +754,35 @@ class AliApiClient {
         success: success,
         data: respData,
         statusCode: status,
-        message: success ? null : 'http $status',
+        message: success
+            ? null
+            : _mergeMessage(
+                AliApiResult<Map<String, dynamic>>(
+                  success: false,
+                  statusCode: status,
+                  data: respData,
+                ),
+                respData,
+              ),
+        requestId: response.headers['x-request-id']?.firstOrNull ??
+            response.headers['x-ca-request-id']?.firstOrNull,
+      );
+    } on DioException catch (e) {
+      final http = _http(account);
+      return AliApiResult<Map<String, dynamic>>(
+        success: false,
+        statusCode: e.response?.statusCode,
+        message: _mergeMessage(
+          AliApiResult<Map<String, dynamic>>(
+            success: false,
+            statusCode: e.response?.statusCode,
+            data: e.response?.data as Map<String, dynamic>?,
+            message: http.formatDioError(e),
+          ),
+          e.response?.data as Map<String, dynamic>?,
+        ),
+        requestId: e.response?.headers['x-request-id']?.firstOrNull ??
+            e.response?.headers['x-ca-request-id']?.firstOrNull,
       );
     } catch (e) {
       return AliApiResult<Map<String, dynamic>>(
@@ -735,6 +791,23 @@ class AliApiClient {
       );
     }
   }
+
+  String _mergeMessage(
+    AliApiResult<Map<String, dynamic>> result,
+    Map<String, dynamic>? resp,
+  ) {
+    final code = resp?['code']?.toString();
+    final msg = resp?['message']?.toString() ??
+        resp?['msg']?.toString() ??
+        result.message;
+    if ((code == null || code.isEmpty) && msg != null) return msg;
+    if (msg == null && code != null) return 'code: $code';
+    if (code != null && msg != null) return 'code: $code, message: $msg';
+    return result.message ?? 'unknown error';
+  }
+
+  static String _authKey(CloudDriveAccount account) =>
+      '${account.id}::${account.authValue ?? ''}::${account.primaryAuthValue ?? ''}';
 }
 
 class _AliUploadInitResult {

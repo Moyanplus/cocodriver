@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'log_category.dart';
 import 'log_config.dart';
 
@@ -7,6 +9,10 @@ class LogStyle {
   static const _reset = '\x1B[0m';
   static const _bold = '\x1B[1m';
   static const _dim = '\x1B[90m';
+
+  /// iOS 控制台 / 部分终端不显示 ANSI 颜色，这里自动降级为纯文本。
+  static bool get _ansiEnabled =>
+      !kIsWeb && defaultTargetPlatform != TargetPlatform.iOS;
 
   static const Map<LogLevel, String> _levelColors = {
     LogLevel.debug: '\x1B[36m', // Cyan
@@ -50,7 +56,7 @@ class LogStyle {
   static String formatLevel(LogLevel level) {
     final color = _levelColors[level] ?? _dim;
     final padded = level.name.padRight(7);
-    return '$color[$padded]$_reset';
+    return _wrap('[$padded]', color);
   }
 
   static String formatCategory(LogCategory category) {
@@ -58,7 +64,7 @@ class LogStyle {
     final icon = _categoryIcons[category];
     final label =
         icon == null ? category.displayName : '$icon ${category.displayName}';
-    return '$color[$label]$_reset';
+    return _wrap('[$label]', color);
   }
 
   static String? formatScope(String? className, String? methodName) {
@@ -71,16 +77,16 @@ class LogStyle {
       resolved = methodName;
     }
     if (resolved == null || resolved.isEmpty) return null;
-    return '$_bold($resolved)$_reset';
+    return _wrap('($resolved)', _bold, allowBold: true);
   }
 
-  static String dim(String text) => '$_dim$text$_reset';
+  static String dim(String text) => _wrap(text, _dim);
 
   static String emphasizeError(String text) =>
-      '${_levelColors[LogLevel.error]}$text$_reset';
+      _wrap(text, _levelColors[LogLevel.error] ?? _dim);
 
   static String emphasizeWarning(String text) =>
-      '${_levelColors[LogLevel.warning]}$text$_reset';
+      _wrap(text, _levelColors[LogLevel.warning] ?? _dim);
 
   static String formatTimestamp(DateTime time) {
     final formatted =
@@ -90,5 +96,11 @@ class LogStyle {
         '${time.minute.toString().padLeft(2, '0')}:'
         '${time.second.toString().padLeft(2, '0')}';
     return dim('[$formatted]');
+  }
+
+  static String _wrap(String text, String ansiCode, {bool allowBold = false}) {
+    if (!_ansiEnabled) return text;
+    final prefix = allowBold ? '$ansiCode' : ansiCode;
+    return '$prefix$text$_reset';
   }
 }

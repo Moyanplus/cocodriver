@@ -154,5 +154,10 @@ class AliConfig {
         'file_id': fileId,
       };
 
+  /// 构建默认 query（目前为空，方便后续扩展）。
+  static Map<String, String> buildDefaultQuery({
+    Map<String, String> extra = const {},
+  }) => Map<String, String>.from(extra);
+
   static bool verboseLogging = true;
 }

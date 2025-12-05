@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import '../../../../../../core/logging/log_manager.dart';
 import '../../../../data/models/cloud_drive_entities.dart';
 import '../../../base/cloud_drive_api_logger.dart';
+import '../../../shared/http_client.dart';
 import 'ali_config.dart';
 
 /// 阿里云盘基础服务
@@ -60,6 +61,16 @@ abstract class AliBaseService {
     return dio;
   }
 
+  /// 创建带默认 query 的 HttpClient（使用 api 域名）。
+  static CloudDriveHttpClient createApiHttpClient(CloudDriveAccount account) {
+    final dio = createApiDio(account);
+    return CloudDriveHttpClient(
+      provider: '阿里云盘',
+      dio: dio,
+      defaultQueryBuilder: (extra) => AliConfig.buildDefaultQuery(extra: extra),
+    );
+  }
+
   /// 构建请求头
   ///
   /// 为阿里云盘账号构建HTTP请求头
@@ -108,10 +119,7 @@ abstract class AliBaseService {
   /// 为Dio实例添加请求、响应和错误拦截器
   ///
   /// [dio] Dio实例
-  static void _addInterceptors(
-    Dio dio, {
-    String providerLabel = '阿里云盘',
-  }) {
+  static void _addInterceptors(Dio dio, {String providerLabel = '阿里云盘'}) {
     dio.interceptors.add(
       CloudDriveLoggingInterceptor(
         logger: CloudDriveApiLogger(

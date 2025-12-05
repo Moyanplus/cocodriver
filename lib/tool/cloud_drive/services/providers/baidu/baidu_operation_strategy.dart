@@ -7,9 +7,9 @@ import '../../../base/cloud_drive_operation_service.dart';
 import '../../../data/models/cloud_drive_dtos.dart';
 import '../../../data/models/cloud_drive_entities.dart';
 import '../../../utils/cloud_drive_log_utils.dart';
-import 'baidu_cloud_drive_service.dart';
 import 'baidu_repository.dart';
 import 'models/responses/baidu_share_record.dart';
+import 'services/baidu_account_service.dart';
 // import 'baidu_config.dart'; // 未使用
 
 /// 百度网盘操作策略
@@ -613,7 +613,7 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
     );
 
     try {
-      final accountDetails = await BaiduCloudDriveService.getAccountDetails(
+      final accountDetails = await BaiduAccountService.getAccountDetails(
         account: account,
       );
 
@@ -715,22 +715,21 @@ class BaiduCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
       LogManager().cloudDrive('百度网盘 - 获取文件列表: path=$path, folderId=$folderId');
 
       // 使用百度网盘服务获取文件列表
-      final result = await BaiduCloudDriveService.getFileList(
+      final files = await _repository.listFiles(
         account: account,
-        folderId: folderId ?? '/',
+        folderId: folderId ?? path,
         page: page,
         pageSize: pageSize,
       );
-
-      final folders = (result['folders'] ?? <CloudDriveFile>[]);
-      final files = (result['files'] ?? <CloudDriveFile>[]);
+      final folders = files.where((f) => f.isFolder).toList();
+      final nonFolders = files.where((f) => !f.isFolder).toList();
       CloudDriveLogUtils.logFileListSummary(
         provider: '百度网盘',
-        files: files,
+        files: nonFolders,
         folders: folders,
       );
 
-      return [...folders, ...files];
+      return [...folders, ...nonFolders];
     } catch (e) {
       LogManager().cloudDrive('百度网盘 - 获取文件列表异常: $e');
       // 让上层感知失败，避免将失败结果当成成功并缓存空列表

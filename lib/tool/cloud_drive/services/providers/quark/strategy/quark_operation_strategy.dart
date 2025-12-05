@@ -42,11 +42,11 @@ class QuarkCloudDriveOperationStrategy implements CloudDriveOperationStrategy {
                 ? '${downloadUrl.substring(0, 100)}...'
                 : downloadUrl;
         QuarkLogger.info('夸克云盘 - 下载链接获取成功: $preview');
-      } else {
-        QuarkLogger.info('夸克云盘 - 下载链接获取失败: 返回null');
+        return downloadUrl;
       }
 
-      return downloadUrl;
+      QuarkLogger.info('夸克云盘 - 下载链接获取失败: 返回null');
+      return null;
     } catch (e, stackTrace) {
       QuarkLogger.info('夸克云盘 - 获取下载链接异常: $e');
       QuarkLogger.info('错误堆栈: $stackTrace');

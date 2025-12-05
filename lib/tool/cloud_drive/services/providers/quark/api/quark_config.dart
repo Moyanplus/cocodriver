@@ -68,6 +68,11 @@ class QuarkConfig {
   // 日志配置
   static const String logSubCategory = 'cloudDrive.quark';
 
+  /// 构建默认 query，便于扩展公共参数。
+  static Map<String, String> buildDefaultQuery({
+    Map<String, String> extra = const {},
+  }) => Map<String, String>.from(extra);
+
   // 响应状态码配置
   static const Map<String, dynamic> responseStatus = {
     'httpSuccess': 200,

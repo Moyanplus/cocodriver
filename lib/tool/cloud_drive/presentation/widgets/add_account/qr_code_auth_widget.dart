@@ -124,12 +124,30 @@ class _QRCodeAuthWidgetState extends State<QRCodeAuthWidget> {
           ),
           child: Column(
             children: [
-              QrImageView(
-                data: _currentQRLoginInfo!.qrContent,
-                version: QrVersions.auto,
-                size: 200.w,
-                backgroundColor: Colors.white,
-              ),
+              _currentQRLoginInfo!.qrImageUrl != null
+                  ? Container(
+                    width: 200.w,
+                    height: 200.w,
+                    color: Colors.white,
+                    child: Image.network(
+                      _currentQRLoginInfo!.qrImageUrl!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) {
+                        return Center(
+                          child: Text(
+                            '二维码加载失败',
+                            style: TextStyle(fontSize: 12.sp),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                  : QrImageView(
+                    data: _currentQRLoginInfo!.qrContent,
+                    version: QrVersions.auto,
+                    size: 200.w,
+                    backgroundColor: Colors.white,
+                  ),
               SizedBox(height: 12.h),
               Text(
                 _isLoginSuccess ? '登录成功' : '请使用手机扫描二维码登录',

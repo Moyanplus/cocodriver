@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 
 import '../../../../data/models/cloud_drive_entities.dart';
+import '../../../shared/http_client.dart';
 import '../models/quark_models.dart';
 import '../utils/quark_logger.dart';
 import 'quark_base_service.dart';
@@ -15,43 +16,41 @@ class QuarkOperations {
   }) {
     final startTime = DateTime.now();
 
-    return QuarkBaseService.createDioWithAuth(account).then(
-      (dio) async {
-        try {
-          final url = Uri.parse(
-            '${QuarkConfig.baseUrl}${QuarkConfig.getApiEndpoint('getFileList')}',
-          );
-          final uri = url.replace(queryParameters: request.toQueryParameters());
+    return _http(account).then((http) async {
+      try {
+        final uri = http.buildUri(
+          '${QuarkConfig.baseUrl}${QuarkConfig.getApiEndpoint('getFileList')}',
+          request.toQueryParameters().map((k, v) => MapEntry(k, v.toString())),
+        );
 
-          QuarkLogger.network('GET', url: uri.toString());
-          final response = await dio.getUri(uri);
+        QuarkLogger.network('GET', url: uri.toString());
+        final response = await http.getResponse(uri);
 
-          final result = QuarkResponseParser.parse<QuarkFileListResponse>(
-            response: response.data,
-            statusCode: response.statusCode,
-            dataParser: (data) {
-              return QuarkFileListResponse.fromJson(
-                response.data as Map<String, dynamic>,
-                request.parentFolderId,
-              );
-            },
-          );
-
-          if (result.isSuccess) {
-            final duration = DateTime.now().difference(startTime);
-            QuarkLogger.performance(
-              '获取文件列表完成，共 ${result.data!.files.length} 个文件',
-              duration: duration,
+        final result = QuarkResponseParser.parse<QuarkFileListResponse>(
+          response: response.data,
+          statusCode: response.statusCode,
+          dataParser: (data) {
+            return QuarkFileListResponse.fromJson(
+              response.data as Map<String, dynamic>,
+              request.parentFolderId,
             );
-          }
+          },
+        );
 
-          return result;
-        } catch (e, stackTrace) {
-          QuarkLogger.error('获取文件列表失败', error: e, stackTrace: stackTrace);
-          return QuarkApiResult.fromException(e as Exception);
+        if (result.isSuccess) {
+          final duration = DateTime.now().difference(startTime);
+          QuarkLogger.performance(
+            '获取文件列表完成，共 ${result.data!.files.length} 个文件',
+            duration: duration,
+          );
         }
-      },
-    );
+
+        return result;
+      } catch (e, stackTrace) {
+        QuarkLogger.error('获取文件列表失败', error: e, stackTrace: stackTrace);
+        return _toFailure(e);
+      }
+    });
   }
 
   static Future<QuarkApiResult<QuarkFileOperationResponse>> operate({
@@ -59,17 +58,20 @@ class QuarkOperations {
     required QuarkFileOperationRequest request,
   }) async {
     try {
-      final dio = await QuarkBaseService.createDioWithAuth(account);
+      final http = await _http(account);
       final operationName = _getOperationName(request.operationType);
-      final uri = _buildOperationUri(
-        operationName,
-        request.toQueryParameters(),
+      final uri = http.buildUri(
+        '${QuarkConfig.baseUrl}${QuarkConfig.getApiEndpoint(operationName)}',
+        request.toQueryParameters().map((k, v) => MapEntry(k, v.toString())),
       );
 
       QuarkLogger.network('POST', url: uri.toString());
       QuarkLogger.debug('请求体', data: request.toRequestBody());
 
-      final response = await dio.postUri(uri, data: request.toRequestBody());
+      final response = await http.postResponse(
+        uri,
+        data: request.toRequestBody(),
+      );
 
       return QuarkResponseParser.parse<QuarkFileOperationResponse>(
         response: response.data,
@@ -78,7 +80,7 @@ class QuarkOperations {
       );
     } catch (e, stackTrace) {
       QuarkLogger.error('文件操作失败', error: e, stackTrace: stackTrace);
-      return QuarkApiResult.fromException(e as Exception);
+      return _toFailure(e);
     }
   }
 
@@ -96,12 +98,13 @@ class QuarkOperations {
     );
 
     try {
-      final dio = await QuarkBaseService.createDioWithAuth(account);
-      final url = Uri.parse(
+      final http = await _http(account);
+      final uri = http.buildUri(
         '${QuarkConfig.baseUrl}${QuarkConfig.getApiEndpoint('createFolder')}',
+        QuarkConfig.buildCreateFolderParams().map(
+          (k, v) => MapEntry(k, v.toString()),
+        ),
       );
-      final queryParams = QuarkConfig.buildCreateFolderParams();
-      final uri = url.replace(queryParameters: queryParams);
 
       final requestBody = {
         QuarkConfig.responseFields['pdirFid']: QuarkConfig.getFolderId(
@@ -113,7 +116,7 @@ class QuarkOperations {
       };
 
       QuarkLogger.debug('请求体', data: requestBody);
-      final response = await dio.postUri(uri, data: requestBody);
+      final response = await http.postResponse(uri, data: requestBody);
 
       if (response.statusCode != 200) {
         throw Exception('HTTP请求失败，状态码: ${response.statusCode}');
@@ -132,19 +135,21 @@ class QuarkOperations {
       QuarkLogger.success('文件夹创建成功 - 文件夹ID: $fid');
 
       if (fid != null) {
-
         return QuarkApiResult.success(
           QuarkCreateFolderResponse(folderId: fid, isFinished: finish ?? false),
         );
       } else {
         QuarkLogger.error('文件夹创建成功但未返回文件夹ID');
         return QuarkApiResult.success(
-          QuarkCreateFolderResponse(folderId: null, isFinished: finish ?? false),
+          QuarkCreateFolderResponse(
+            folderId: null,
+            isFinished: finish ?? false,
+          ),
         );
       }
     } catch (e, stackTrace) {
       QuarkLogger.error('创建文件夹失败', error: e, stackTrace: stackTrace);
-      return QuarkApiResult.fromException(e as Exception);
+      return _toFailure(e);
     }
   }
 
@@ -163,27 +168,25 @@ class QuarkOperations {
     );
 
     try {
-      final dio = await QuarkBaseService.createDioWithAuth(account);
-      final url = Uri.parse(
+      final http = await _http(account);
+      final url = http.buildUri(
         '${QuarkConfig.baseUrl}${QuarkConfig.getApiEndpoint('createShare')}',
+        const {},
       );
       final requestBody = request.toRequestBody();
       QuarkLogger.debug('请求体', data: requestBody);
 
-      final response = await dio.postUri(
-        url,
-        data: requestBody,
-        options: Options(
-          responseType: ResponseType.plain,
-          contentType: 'application/json',
-        ),
-      );
+      final response = await http.postResponse(url, data: requestBody);
 
       Map<String, dynamic> responseData;
       try {
-        final responseText = response.data as String;
-        QuarkLogger.debug('响应文本长度: ${responseText.length}');
-        responseData = json.decode(responseText) as Map<String, dynamic>;
+        if (response.data is String) {
+          final responseText = response.data as String;
+          QuarkLogger.debug('响应文本长度: ${responseText.length}');
+          responseData = json.decode(responseText) as Map<String, dynamic>;
+        } else {
+          responseData = response.data as Map<String, dynamic>;
+        }
       } catch (e) {
         QuarkLogger.error('JSON解析失败', error: e);
         final responseText = response.data as String;
@@ -215,11 +218,11 @@ class QuarkOperations {
       );
     } catch (e, stackTrace) {
       QuarkLogger.error('创建分享链接失败', error: e, stackTrace: stackTrace);
-      return QuarkApiResult.fromException(e as Exception);
+      return _toFailure(e);
     }
   }
 
-  static Future<String?> getDownloadUrl({
+  static Future<QuarkApiResult<String>> getDownloadUrl({
     required CloudDriveAccount account,
     required String fileId,
     required String fileName,
@@ -240,16 +243,19 @@ class QuarkOperations {
     final request = QuarkDownloadRequest(fileIds: [fileId]);
 
     try {
-      final dio = await QuarkBaseService.createDioWithAuth(account);
-      final url = Uri.parse(
+      final http = await _http(account);
+      final uri = http.buildUri(
         '${QuarkConfig.baseUrl}${QuarkConfig.getApiEndpoint('getDownloadUrl')}',
+        request.toQueryParameters().map((k, v) => MapEntry(k, v.toString())),
       );
-      final uri = url.replace(queryParameters: request.toQueryParameters());
 
       QuarkLogger.network('POST', url: uri.toString());
       QuarkLogger.debug('请求体', data: request.toRequestBody());
 
-      final response = await dio.postUri(uri, data: request.toRequestBody());
+      final response = await http.postResponse(
+        uri,
+        data: request.toRequestBody(),
+      );
 
       final parsed = QuarkResponseParser.parse<QuarkDownloadResponse>(
         response: response.data,
@@ -265,13 +271,16 @@ class QuarkOperations {
 
       if (parsed.isSuccess && parsed.data != null) {
         QuarkLogger.success('下载链接获取成功');
-        return parsed.data!.downloadUrl;
+        return QuarkApiResult.success(parsed.data!.downloadUrl);
       }
       QuarkLogger.error('获取下载链接失败: ${parsed.errorMessage}');
-      return null;
+      return QuarkApiResult.failure(
+        message: parsed.errorMessage ?? '获取下载链接失败',
+        code: parsed.errorCode,
+      );
     } catch (e, stackTrace) {
       QuarkLogger.error('获取下载链接失败', error: e, stackTrace: stackTrace);
-      return null;
+      return _toFailure<String>(e);
     }
   }
 
@@ -288,15 +297,17 @@ class QuarkOperations {
     }
   }
 
-  static Uri _buildOperationUri(
-    String operation,
-    Map<String, dynamic> queryParams,
-  ) {
-    final url = Uri.parse(
-      '${QuarkConfig.baseUrl}${QuarkConfig.getApiEndpoint(operation)}',
-    );
-    return url.replace(
-      queryParameters: queryParams.map((k, v) => MapEntry(k, v.toString())),
-    );
+  static Future<CloudDriveHttpClient> _http(CloudDriveAccount account) =>
+      QuarkBaseService.createHttpClientWithAuth(account);
+
+  static QuarkApiResult<T> _toFailure<T>(Object e) {
+    if (e is DioException) {
+      final req = e.requestOptions;
+      final code = e.response?.statusCode;
+      final msg =
+          'HTTP ${code ?? 'error'} ${req.method} ${req.uri}: ${e.message}';
+      return QuarkApiResult.failure(message: msg);
+    }
+    return QuarkApiResult.fromException(e as Exception);
   }
 }

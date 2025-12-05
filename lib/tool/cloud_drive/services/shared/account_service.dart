@@ -4,6 +4,9 @@ import '../../base/cloud_drive_account_service.dart';
 import '../../core/result.dart';
 import 'cloud_drive_service_base.dart';
 import '../registry/cloud_drive_provider_registry.dart';
+import '../providers/ali/api/ali_api_client.dart';
+import '../providers/baidu/services/baidu_base_service.dart';
+import '../providers/quark/api/quark_base_service.dart';
 
 /// 账号服务
 ///
@@ -44,6 +47,7 @@ class AccountService extends CloudDriveServiceBase {
 
     return await ResultUtils.fromAsync(() async {
       final result = await CloudDriveAccountService.addAccount(account);
+      _clearProviderHttpCache(account.type, account.id);
       final detail =
           result.replaced ? '${account.name} (已替换)' : account.name;
       logSuccess('添加账号', details: detail);
@@ -60,6 +64,7 @@ class AccountService extends CloudDriveServiceBase {
 
     return await ResultUtils.fromAsync(() async {
       await CloudDriveAccountService.updateAccount(account);
+      _clearProviderHttpCache(account.type, account.id);
       logSuccess('更新账号', details: account.name);
     }, operationName: '更新账号');
   }
@@ -70,6 +75,7 @@ class AccountService extends CloudDriveServiceBase {
 
     return await ResultUtils.fromAsync(() async {
       await CloudDriveAccountService.deleteAccount(accountId);
+      _clearProviderHttpCache(type, accountId);
       logSuccess('删除账号', details: accountId);
     }, operationName: '删除账号');
   }
@@ -220,5 +226,32 @@ class AccountService extends CloudDriveServiceBase {
     List<CloudDriveAccount> accounts,
   ) {
     return accounts.where((account) => !account.isLoggedIn).toList();
+  }
+
+  /// 手动清理指定账号的 HTTP 客户端缓存，刷新登录态时可调用。
+  void clearHttpCacheForAccount(CloudDriveAccount account) =>
+      _clearProviderHttpCache(account.type, account.id);
+
+  /// 清理所有云盘 Provider 的 HTTP 客户端缓存。
+  void clearAllHttpCaches() {
+    BaiduBaseService.clearHttpCache();
+    QuarkBaseService.clearHttpCache();
+    AliApiClient.clearHttpCache();
+  }
+
+  void _clearProviderHttpCache(CloudDriveType type, String accountId) {
+    switch (type) {
+      case CloudDriveType.baidu:
+        BaiduBaseService.clearHttpCache(accountId: accountId);
+        break;
+      case CloudDriveType.quark:
+        QuarkBaseService.clearHttpCache(accountId: accountId);
+        break;
+      case CloudDriveType.ali:
+        AliApiClient.clearHttpCache(accountId: accountId);
+        break;
+      default:
+        break;
+    }
   }
 }

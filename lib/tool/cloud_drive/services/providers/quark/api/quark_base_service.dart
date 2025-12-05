@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../../../../data/models/cloud_drive_entities.dart';
 import '../../../base/cloud_drive_api_logger.dart';
+import '../../../shared/http_client.dart';
 import 'quark_auth_service.dart';
 import 'quark_config.dart';
 import '../utils/quark_logger.dart';
@@ -10,6 +11,9 @@ import '../utils/quark_logger.dart';
 ///
 /// 提供 Dio 实例创建、请求拦截、响应验证等功能。
 abstract class QuarkBaseService {
+  static final Map<String, CloudDriveHttpClient> _httpCache = {};
+  static final Map<String, String> _authSnapshot = {};
+
   /// 创建 Dio 实例（使用原始认证头）
   static Dio createDio(CloudDriveAccount account) {
     final dio = Dio(
@@ -23,6 +27,49 @@ abstract class QuarkBaseService {
 
     _addInterceptors(dio, providerLabel: '夸克云盘');
     return dio;
+  }
+
+  /// 创建带默认 query 的 HttpClient。
+  static CloudDriveHttpClient createHttpClient(CloudDriveAccount account) {
+    final key = account.id.toString();
+    final authKey = _authKey(account);
+    final cached = _httpCache[key];
+    if (cached != null && _authSnapshot[key] == authKey) {
+      return cached;
+    }
+    final dio = createDio(account);
+    final client = CloudDriveHttpClient(
+      provider: '夸克网盘',
+      dio: dio,
+      defaultQueryBuilder:
+          (extra) => QuarkConfig.buildDefaultQuery(extra: extra),
+    );
+    _httpCache[key] = client;
+    _authSnapshot[key] = authKey;
+    return client;
+  }
+
+  /// 创建带授权的 HttpClient。
+  static Future<CloudDriveHttpClient> createHttpClientWithAuth(
+    CloudDriveAccount account,
+  ) async {
+    final key = account.id.toString();
+    final authKey = _authKey(account);
+    final cached = _httpCache[key];
+    if (cached != null && _authSnapshot[key] == authKey) {
+      return cached;
+    }
+
+    final dio = await createDioWithAuth(account);
+    final client = CloudDriveHttpClient(
+      provider: '夸克网盘',
+      dio: dio,
+      defaultQueryBuilder:
+          (extra) => QuarkConfig.buildDefaultQuery(extra: extra),
+    );
+    _httpCache[key] = client;
+    _authSnapshot[key] = authKey;
+    return client;
   }
 
   /// 创建带有刷新认证的dio实例
@@ -49,10 +96,7 @@ abstract class QuarkBaseService {
   }
 
   /// 添加请求拦截器
-  static void _addInterceptors(
-    Dio dio, {
-    String providerLabel = '夸克云盘',
-  }) {
+  static void _addInterceptors(Dio dio, {String providerLabel = '夸克云盘'}) {
     dio.interceptors.add(
       CloudDriveLoggingInterceptor(
         logger: CloudDriveApiLogger(
@@ -98,4 +142,17 @@ abstract class QuarkBaseService {
   static String getErrorMessage(Map<String, dynamic> response) {
     return response[QuarkConfig.responseFields['message']] ?? '未知错误';
   }
+
+  static void clearHttpCache({String? accountId}) {
+    if (accountId == null) {
+      _httpCache.clear();
+      _authSnapshot.clear();
+    } else {
+      _httpCache.remove(accountId);
+      _authSnapshot.remove(accountId);
+    }
+  }
+
+  static String _authKey(CloudDriveAccount account) =>
+      '${account.id}::${account.authValue ?? ''}::${account.primaryAuthValue ?? ''}';
 }

@@ -1,13 +1,16 @@
+import 'package:dio/dio.dart';
+
 import '../../../../data/models/cloud_drive_entities.dart';
-import '../baidu_cloud_drive_service.dart';
+import '../../../shared/http_client.dart';
 import '../models/requests/baidu_list_request.dart';
 import '../models/requests/baidu_operation_requests.dart';
 import '../models/responses/baidu_file_list_response.dart';
 import '../models/responses/baidu_operation_response.dart';
 import '../models/responses/baidu_api_result.dart';
 import '../models/responses/baidu_share_record.dart';
-import '../baidu_base_service.dart';
+import '../services/baidu_base_service.dart';
 import '../baidu_config.dart';
+import '../services/baidu_param_service.dart';
 
 /// 百度网盘 API 客户端（当前复用已有 Service，统一 DTO）。
 class BaiduApiClient {
@@ -15,21 +18,20 @@ class BaiduApiClient {
     required CloudDriveAccount account,
     required BaiduListRequest request,
   }) async {
-    final dio = BaiduBaseService.createDio(account);
-    final uri = Uri.parse(
-      '${dio.options.baseUrl}${BaiduConfig.getApiEndpoint('fileList')}',
-    );
-    final params = BaiduBaseService.buildRequestParams(
-      dir: request.folderId,
-      page: request.page,
-      num: request.pageSize,
+    final http = BaiduBaseService.createHttpClient(account);
+    final uri = http.buildUri(
+      '${BaiduConfig.baseUrl}${BaiduConfig.getApiEndpoint('fileList')}',
+      BaiduBaseService.buildRequestParams(
+        dir: request.folderId,
+        page: request.page,
+        num: request.pageSize,
+      ).map((k, v) => MapEntry(k, v.toString())),
     );
 
     final result = await _safeCall<Map<String, dynamic>>(() async {
-      final response = await dio.getUri(uri.replace(queryParameters: params));
-      final data = response.data as Map<String, dynamic>? ?? {};
+      final data = await http.getMap(uri);
       return BaiduBaseService.handleApiResponse(data);
-    });
+    }, client: http);
 
     final respData = result.data ?? {};
     final list = respData['list'] as List<dynamic>? ?? [];
@@ -71,21 +73,10 @@ class BaiduApiClient {
     required CloudDriveAccount account,
     required BaiduDeleteRequest request,
   }) async {
-    final dio = BaiduBaseService.createDio(account);
-    final uri = Uri.parse(
-      '${dio.options.baseUrl}${BaiduConfig.getApiEndpoint('delete')}',
-    );
-    final data = {
-      'fid_list': [request.file.id],
-    };
-    final result = await _safeCall<Map<String, dynamic>>(() async {
-      final response = await dio.postUri(uri, data: data);
-      final body = response.data as Map<String, dynamic>? ?? {};
-      return BaiduBaseService.handleApiResponse(body);
-    });
-    return BaiduOperationResponse(
-      success: result.success,
-      message: result.message,
+    return _fileManagerOperation(
+      account: account,
+      operation: 'delete',
+      filePaths: [request.sourcePath],
     );
   }
 
@@ -93,19 +84,11 @@ class BaiduApiClient {
     required CloudDriveAccount account,
     required BaiduRenameRequest request,
   }) async {
-    final dio = BaiduBaseService.createDio(account);
-    final uri = Uri.parse(
-      '${dio.options.baseUrl}${BaiduConfig.getApiEndpoint('rename')}',
-    );
-    final data = {'file_id': request.file.id, 'new_name': request.newName};
-    final result = await _safeCall<Map<String, dynamic>>(() async {
-      final response = await dio.postUri(uri, data: data);
-      final body = response.data as Map<String, dynamic>? ?? {};
-      return BaiduBaseService.handleApiResponse(body);
-    });
-    return BaiduOperationResponse(
-      success: result.success,
-      message: result.message,
+    return _fileManagerOperation(
+      account: account,
+      operation: 'rename',
+      filePaths: [request.sourcePath],
+      newName: request.newName,
     );
   }
 
@@ -146,23 +129,11 @@ class BaiduApiClient {
     required CloudDriveAccount account,
     required BaiduMoveRequest request,
   }) async {
-    final dio = BaiduBaseService.createDio(account);
-    final uri = Uri.parse(
-      '${dio.options.baseUrl}${BaiduConfig.getApiEndpoint('move')}',
-    );
-    final data = {
-      'filelist': [
-        {'fileid': request.file.id, 'path': request.targetFolderId},
-      ],
-    };
-    final result = await _safeCall<Map<String, dynamic>>(() async {
-      final response = await dio.postUri(uri, data: data);
-      final body = response.data as Map<String, dynamic>? ?? {};
-      return BaiduBaseService.handleApiResponse(body);
-    });
-    return BaiduOperationResponse(
-      success: result.success,
-      message: result.message,
+    return _fileManagerOperation(
+      account: account,
+      operation: 'move',
+      filePaths: [request.sourcePath],
+      targetPath: request.targetFolderId,
     );
   }
 
@@ -170,23 +141,11 @@ class BaiduApiClient {
     required CloudDriveAccount account,
     required BaiduCopyRequest request,
   }) async {
-    final dio = BaiduBaseService.createDio(account);
-    final uri = Uri.parse(
-      '${dio.options.baseUrl}${BaiduConfig.getApiEndpoint('copy')}',
-    );
-    final data = {
-      'filelist': [
-        {'fileid': request.file.id, 'path': request.targetFolderId},
-      ],
-    };
-    final result = await _safeCall<Map<String, dynamic>>(() async {
-      final response = await dio.postUri(uri, data: data);
-      final body = response.data as Map<String, dynamic>? ?? {};
-      return BaiduBaseService.handleApiResponse(body);
-    });
-    return BaiduOperationResponse(
-      success: result.success,
-      message: result.message,
+    return _fileManagerOperation(
+      account: account,
+      operation: 'copy',
+      filePaths: [request.sourcePath],
+      targetPath: request.targetFolderId,
     );
   }
 
@@ -194,17 +153,17 @@ class BaiduApiClient {
     required CloudDriveAccount account,
     required BaiduDownloadRequest request,
   }) {
-    final dio = BaiduBaseService.createDio(account);
-    final uri = Uri.parse(
-      '${dio.options.baseUrl}${BaiduConfig.getApiEndpoint('download')}',
+    final http = BaiduBaseService.createHttpClient(account);
+    final uri = http.buildUri(
+      '${BaiduConfig.baseUrl}${BaiduConfig.getApiEndpoint('download')}',
+      const {},
     );
     final data = {
       'fid_list': [request.file.id],
       'type': 'dlink',
     };
     return _safeCall<String?>(() async {
-      final response = await dio.postUri(uri, data: data);
-      final body = response.data as Map<String, dynamic>? ?? {};
+      final body = await http.postMap(uri, data: data);
       final handled = BaiduBaseService.handleApiResponse(body);
       final dlinks = handled['dlink'] as List<dynamic>? ?? [];
       if (dlinks.isNotEmpty) {
@@ -212,7 +171,7 @@ class BaiduApiClient {
         return first['dlink']?.toString();
       }
       return null;
-    }).then((r) => r.data);
+    }, client: http).then((r) => r.data);
   }
 
   Future<String?> createShareLink({
@@ -222,14 +181,34 @@ class BaiduApiClient {
     int? expireDays,
   }) async {
     if (files.isEmpty) return null;
-    return _safeCall<String?>(
-      () => BaiduCloudDriveService.createShareLink(
-        account: account,
-        fileId: files.first.id,
-        password: password,
-        expireTime: expireDays ?? 0,
-      ),
-    ).then((r) => r.data);
+    final bdstoken = await _bdstokenOrThrow(account);
+    final http = BaiduBaseService.createHttpClient(account);
+    final url = http.buildUri(
+      BaiduConfig.getApiUrl(BaiduConfig.endpoints['share']!),
+      {'bdstoken': bdstoken},
+    );
+    final filePaths =
+        files
+            .map(
+              (f) =>
+                  f.path != null && f.path!.isNotEmpty ? f.path! : '/${f.name}',
+            )
+            .toList();
+    final body = BaiduConfig.buildShareParams(
+      fileList: filePaths,
+      password: password,
+      expireTime: expireDays,
+    );
+
+    final result = await _safeCall<Map<String, dynamic>>(() async {
+      final data = await http.postMap(url, data: body);
+      return BaiduBaseService.handleApiResponse(data);
+    });
+
+    if (!result.success) return null;
+    final data = result.data ?? {};
+    final shareId = data['shareid']?.toString();
+    return shareId == null ? null : 'https://pan.baidu.com/s/$shareId';
   }
 
   /// 获取分享记录列表
@@ -238,28 +217,18 @@ class BaiduApiClient {
     int page = 1,
     int pageSize = 50,
   }) async {
-    final dio = BaiduBaseService.createDio(account);
-    final uri = Uri.parse('${BaiduConfig.baseUrl}/share/record').replace(
-      queryParameters: {
-        'channel': 'chunlei',
-        'clienttype': '0',
-        'app_id': '250528',
-        'dp-logid': DateTime.now().millisecondsSinceEpoch.toString().padLeft(
-              20,
-              '0',
-            ),
-        'num': pageSize.toString(),
-        'page': page.toString(),
-        'web': '1',
-        'order': 'ctime',
-        'desc': '1',
-        'is_batch': '1',
-      },
-    );
+    final http = BaiduBaseService.createHttpClient(account);
+    final uri = http.buildUri('${BaiduConfig.baseUrl}/share/record', {
+      'channel': 'chunlei',
+      'num': pageSize.toString(),
+      'page': page.toString(),
+      'order': 'ctime',
+      'desc': '1',
+      'is_batch': '1',
+    });
 
     final result = await _safeCall<Map<String, dynamic>>(() async {
-      final response = await dio.getUri(uri);
-      final data = response.data as Map<String, dynamic>? ?? {};
+      final data = await http.getMap(uri);
       return BaiduBaseService.handleApiResponse(data);
     });
 
@@ -278,30 +247,21 @@ class BaiduApiClient {
     int page = 1,
     int pageSize = 100,
   }) async {
-    final dio = BaiduBaseService.createDio(account);
-    final uri = Uri.parse('${BaiduConfig.baseUrl}/api/recycle/list/').replace(
-      queryParameters: {
-        'clienttype': '0',
-        'app_id': '250528',
-        'dp-logid': DateTime.now().millisecondsSinceEpoch.toString().padLeft(
-              20,
-              '0',
-            ),
-        'num': pageSize.toString(),
-        'page': page.toString(),
-        'web': '1',
-      },
-    );
+    final http = BaiduBaseService.createHttpClient(account);
+    final uri = http.buildUri('${BaiduConfig.baseUrl}/api/recycle/list/', {
+      'num': pageSize.toString(),
+      'page': page.toString(),
+    });
 
     final result = await _safeCall<Map<String, dynamic>>(() async {
-      final response = await dio.getUri(uri);
-      final data = response.data as Map<String, dynamic>? ?? {};
+      final data = await http.getMap(uri);
       return BaiduBaseService.handleApiResponse(data);
     });
 
     if (!result.success) return const [];
-    final list = (result.data?['list'] as List<dynamic>? ?? [])
-        .whereType<Map<String, dynamic>>();
+    final list =
+        (result.data?['list'] as List<dynamic>? ?? [])
+            .whereType<Map<String, dynamic>>();
 
     DateTime? _ts(int? v) =>
         v == null ? null : DateTime.fromMillisecondsSinceEpoch(v * 1000);
@@ -326,12 +286,80 @@ class BaiduApiClient {
         .toList(growable: false);
   }
 
-  Future<BaiduApiResult<T>> _safeCall<T>(Future<T> Function() fn) async {
+  Future<BaiduOperationResponse> _fileManagerOperation({
+    required CloudDriveAccount account,
+    required String operation,
+    required List<String> filePaths,
+    String? targetPath,
+    String? newName,
+  }) async {
+    final String bdstoken;
+    try {
+      bdstoken = await _bdstokenOrThrow(account);
+    } catch (e) {
+      return BaiduOperationResponse(success: false, message: e.toString());
+    }
+
+    final http = BaiduBaseService.createHttpClient(account);
+    final urlParams = BaiduConfig.buildFileManagerUrlParams(
+      operation: operation,
+      bdstoken: bdstoken,
+    );
+    final body = BaiduConfig.buildFileManagerBody(
+      operation: operation,
+      fileList: filePaths,
+      targetPath: targetPath,
+      newName: newName,
+    );
+    final formData = FormData.fromMap(body);
+    final uri = http.buildUri(
+      BaiduConfig.getApiUrl(BaiduConfig.endpoints['fileManager']!),
+      urlParams.map((k, v) => MapEntry(k, v.toString())),
+    );
+
+    final result = await _safeCall<Map<String, dynamic>>(() async {
+      final data = await http.postMap(uri, data: formData);
+      return BaiduBaseService.handleApiResponse(data);
+    });
+
+    final data = result.data ?? {};
+    final errno = data['errno'] as int? ?? (result.success ? 0 : -1);
+    final success = result.success && errno == 0;
+    final message = result.message ?? BaiduConfig.getResponseMessage(data);
+
+    return BaiduOperationResponse(success: success, message: message);
+  }
+
+  Future<BaiduApiResult<T>> _safeCall<T>(
+    Future<T> Function() fn, {
+    CloudDriveHttpClient? client,
+  }) async {
     try {
       final data = await fn();
       return BaiduApiResult<T>(success: true, data: data);
     } catch (e) {
+      if (e is DioException) {
+        final msg =
+            client?.formatDioError(e) ??
+            'HTTP ${e.response?.statusCode ?? 'error'} ${e.requestOptions.method} ${e.requestOptions.uri}: ${e.message}';
+        return BaiduApiResult<T>(success: false, message: msg);
+      }
       return BaiduApiResult<T>(success: false, message: e.toString());
     }
   }
+
+  Future<String> _bdstokenOrThrow(CloudDriveAccount account) async {
+    final params = await BaiduParamService.getBaiduParams(account);
+    final bdstoken = params['bdstoken']?.toString();
+    if (bdstoken == null || bdstoken.isEmpty) {
+      throw Exception('未获取到bdstoken，请重新登录');
+    }
+    return bdstoken;
+  }
+
+  CloudDriveHttpClient _http(Dio dio) => CloudDriveHttpClient(
+    provider: '百度网盘',
+    dio: dio,
+    defaultQueryBuilder: (extra) => BaiduConfig.buildDefaultQuery(extra: extra),
+  );
 }

@@ -1,13 +1,17 @@
 import 'package:dio/dio.dart';
 
 import '../../../../../../core/logging/log_manager.dart';
-import '../../../data/models/cloud_drive_entities.dart';
-import '../../base/cloud_drive_api_logger.dart';
-import 'baidu_config.dart';
+import '../../../../data/models/cloud_drive_entities.dart';
+import '../../../base/cloud_drive_api_logger.dart';
+import '../../../shared/http_client.dart';
+import '../baidu_config.dart';
 
 /// 百度云盘基础服务
 ///
 class BaiduBaseService {
+  static final Map<String, CloudDriveHttpClient> _httpCache = {};
+  static final Map<String, String> _authSnapshot = {};
+
   /// 创建 Dio 实例
   static Dio createDio(CloudDriveAccount account) {
     final dio = Dio(
@@ -39,6 +43,36 @@ class BaiduBaseService {
     );
 
     return dio;
+  }
+
+  /// 创建带默认 query 构造的 HttpClient。
+  static CloudDriveHttpClient createHttpClient(CloudDriveAccount account) {
+    final key = account.id.toString();
+    final authKey = _authKey(account);
+    final cached = _httpCache[key];
+    if (cached != null && _authSnapshot[key] == authKey) {
+      return cached;
+    }
+    final dio = createDio(account);
+    final client = CloudDriveHttpClient(
+      provider: '百度网盘',
+      dio: dio,
+      defaultQueryBuilder: (extra) =>
+          BaiduConfig.buildDefaultQuery(extra: extra),
+    );
+    _httpCache[key] = client;
+    _authSnapshot[key] = authKey;
+    return client;
+  }
+
+  static void clearHttpCache({String? accountId}) {
+    if (accountId == null) {
+      _httpCache.clear();
+      _authSnapshot.clear();
+    } else {
+      _httpCache.remove(accountId);
+      _authSnapshot.remove(accountId);
+    }
   }
 
   /// 验证响应状态
@@ -169,4 +203,7 @@ class BaiduBaseService {
   /// 获取操作类型描述
   static String getOperationDescription(String operation) =>
       BaiduConfig.getOperationDescription(operation);
+
+  static String _authKey(CloudDriveAccount account) =>
+      '${account.id}::${account.authValue ?? ''}::${account.primaryAuthValue ?? ''}';
 }

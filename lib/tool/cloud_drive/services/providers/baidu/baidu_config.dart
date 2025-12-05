@@ -39,6 +39,15 @@ class BaiduConfig {
   static const Duration receiveTimeout = Duration(seconds: 30);
   static const Duration sendTimeout = Duration(seconds: 30);
 
+  // 二维码登录配置
+  static const Map<String, dynamic> qrLoginConfig = {
+    'timeout': 30, // 秒
+    'pollInterval': 4, // 秒
+    'maxPollCount': 60, // 约 4 分钟
+    'qrExpireTime': 300, // 秒
+    'headers': {'Accept': '*/*', 'Accept-Language': 'zh-CN,zh;q=0.9'},
+  };
+
   // 重定向配置
   static const bool followRedirects = true;
   static const int maxRedirects = 5;
@@ -56,6 +65,23 @@ class BaiduConfig {
   static const String defaultFolderId = '/';
   static const int defaultPageSize = 100;
   static const int maxPageSize = 1000;
+
+  /// 默认 query 参数 (clienttype/app_id/web/dp-logid)，便于复用。
+  static Map<String, String> buildDefaultQuery({Map<String, String>? extra}) {
+    final query = <String, String>{
+      'clienttype': '0',
+      'app_id': '250528',
+      'web': '1',
+      'dp-logid': generateDpLogId(),
+    };
+    if (extra != null) {
+      query.addAll(extra);
+    }
+    return query;
+  }
+
+  static String generateDpLogId() =>
+      DateTime.now().millisecondsSinceEpoch.toString().padLeft(20, '0');
 
   // 文件大小单位
   static const List<String> sizeUnits = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -317,17 +343,12 @@ class BaiduConfig {
     Map<String, dynamic>? extraParams,
   }) {
     final params = <String, dynamic>{
+      // 默认参数
+      ...buildDefaultQuery(),
       // 使用同步模式(0)等待服务端完成，避免异步 taskid 导致列表刷新为空
       'async': 0,
       'onnest': 'fail',
       'opera': operation,
-      'clienttype': 0,
-      'app_id': 250528,
-      'web': 1,
-      'dp-logid': DateTime.now().millisecondsSinceEpoch.toString().padLeft(
-        20,
-        '0',
-      ),
     };
 
     if (bdstoken != null) {
@@ -458,43 +479,17 @@ class BaiduConfig {
 
   /// 构建账号配额查询参数
   static Map<String, dynamic> buildQuotaParams() {
-    return {
-      'clienttype': 0,
-      'app_id': 250528,
-      'web': 1,
-      'dp-logid': DateTime.now().millisecondsSinceEpoch.toString().padLeft(
-        20,
-        '0',
-      ),
-    };
+    return {...buildDefaultQuery()};
   }
 
   /// 构建用户信息查询参数
   static Map<String, dynamic> buildUserInfoParams() {
-    return {
-      'method': 'query',
-      'clienttype': 0,
-      'app_id': 250528,
-      'web': 1,
-      'dp-logid': DateTime.now().millisecondsSinceEpoch.toString().padLeft(
-        20,
-        '0',
-      ),
-    };
+    return {...buildDefaultQuery(), 'method': 'query'};
   }
 
   /// 构建新建文件夹的URL查询参数
   static Map<String, dynamic> buildCreateFolderUrlParams({String? bdstoken}) {
-    final params = <String, dynamic>{
-      'a': 'commit',
-      'clienttype': 0,
-      'app_id': 250528,
-      'web': 1,
-      'dp-logid': DateTime.now().millisecondsSinceEpoch.toString().padLeft(
-        20,
-        '0',
-      ),
-    };
+    final params = <String, dynamic>{...buildDefaultQuery(), 'a': 'commit'};
 
     if (bdstoken != null) {
       params['bdstoken'] = bdstoken;
